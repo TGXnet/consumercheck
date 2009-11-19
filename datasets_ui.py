@@ -2,48 +2,62 @@
 
 # Enthought imports
 from enthought.traits.api \
-    import HasTraits, Instance, DelegatesTo, Button, Str
+    import HasTraits, Instance, DelegatesTo, Button, Str, File, Bool
 from enthought.traits.ui.api \
     import View, Item, Group, ListStrEditor, Handler, FileEditor
 from enthought.traits.ui.menu \
     import Action, OKButton, CancelButton
+
 
 # Local imports
 from dataset_collection import DatasetCollection
 from dataset import DataSet
 
 
-
-
 class DsViewHandler(Handler):
     """Handler for dataset view"""
 
-    def setattr(self, info, object, name, value):
-        Handler.setattr(self, info, object, name, value)
-        print 'Change:', name, 'to', value
+#    def setattr(self, info, object, name, value):
+#        Handler.setattr(self, info, object, name, value)
+#        print 'Change:', name, 'to', value
 
 
 
     # Also called on window creation
     def object__selIndex_changed(self, info):
         if not info.initialized:
-            info.object.vs = info.object.vc.retriveDatasetByIndex(0)
+            # Inital assign view to dummy dataset
+            # info.object.vs = DataSet()
+            pass
         else:
-            info.object.vs = info.object.vc.retriveDatasetByIndex(info.object._selIndex)
-            print "Vs changed to", info.object.vs
+            if info.object._selIndex >= 0:
+                info.object.vs = info.object.vc.retriveDatasetByIndex(info.object._selIndex)
+                info.object.vs.configure_traits()
+                print "Vs changed to", info.object.vs
 
 
-
-    def import_dataset(self, uiInfo):
+    # Event handler signature
+    # extended_traitname_changed(info)
+    # default context is object
+    def object__addSet_changed(self, uiInfo):
         """Action called when activating importing of new dataset"""
-        print "Import dataset pressed"
+        fi = FileImport()
+        fi.configure_traits(kind='modal')
+        ds = DataSet()
+        ds.importDataset(fi.fileName, fi.colHead)
+        uiInfo.object.vc.addDataset(ds)
 
 
-    def remove_dataset(self, uiInfo):
+    def object__delSet_changed(self, uiInfo):
         """Action called when activating removing of selected dataset"""
         print "Remove dataset pressed"
 
 
+
+class FileImport(HasTraits):
+    """File import dialog"""
+    fileName = File()
+    colHead = Bool(True)
 
 
 
@@ -59,7 +73,6 @@ class DatasetsView(HasTraits):
     # Collection
     _dispNameIndex      = DelegatesTo('vc')
     _selIndex           = DelegatesTo('vc')
-    _testBool           = DelegatesTo('vc')
     _addSet             = Button(label='Import')
     _delSet             = Button(label='Remove')
 
@@ -73,7 +86,6 @@ class DatasetsView(HasTraits):
 
     # Test tab for PCA
     _pca = Str('PCA comming here')
-
 
 
     traits_ui_view = View(
@@ -92,7 +104,6 @@ class DatasetsView(HasTraits):
                          ),
                     Item('_addSet'),
                     Item('_delSet'),
-                    Item('_testBool'),
                     label='Collection list',
                     show_border=True
                     ),
