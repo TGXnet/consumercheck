@@ -26,13 +26,11 @@ class DsViewHandler(Handler):
 
     # Also called on window creation
     def object__selIndex_changed(self, info):
-        print "Handler: selIndex change"
-##        if not info.initialized:
-##            info.object.vs = info.object.vc.retriveDatasetByIndex(0)
-##        else:
-##            info.object.vs = info.object.vc.retriveDatasetByIndex(info.object._selIndex)
-
-
+        if not info.initialized:
+            info.object.vs = info.object.vc.retriveDatasetByIndex(0)
+        else:
+            info.object.vs = info.object.vc.retriveDatasetByIndex(info.object._selIndex)
+            print "Vs changed to", info.object.vs
 
 
 
@@ -75,20 +73,6 @@ class DatasetsView(HasTraits):
 
     # Test tab for PCA
     _pca = Str('PCA comming here')
-
-
-    def __init__(self, *args, **kw):
-        # Add test setst to collection
-        firstDataset = DataSet()
-        firstDataset._internalName = 'gurg1'
-        firstDataset._displayName = 'Test set one'
-        secondDataset = DataSet()
-        secondDataset._internalName = 'gug2re'
-        secondDataset._displayName = 'Second test set'
-        self.vc = DatasetCollection()
-        self.vc.addDataset(firstDataset)
-        self.vc.addDataset(secondDataset)
-        self.vs = secondDataset
 
 
 

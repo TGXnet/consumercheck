@@ -26,19 +26,10 @@ class DatasetCollection(HasTraits):
     _testBool = Bool()
 
 
-    def __selIndex_changed(self, old, new):
-        print "Sel index changed"
-
-
-    def __testBool_changed(self, old, new):
-        print "Test bool changed"
-
-
 
     def retriveDatasetByName(self, internalName):
         """Return DataSet object specified by internal name"""
         return self._dataDict[internalName]
-
 
 
 
@@ -50,7 +41,6 @@ class DatasetCollection(HasTraits):
             return self._dataDict[iname]
         else:
             return None
-
 
 
 
@@ -67,7 +57,6 @@ class DatasetCollection(HasTraits):
     def delDataset(self, internalName):
         """Remove dataset from collection"""
         pass
-
 
 
 

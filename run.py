@@ -8,9 +8,18 @@ from datasets_ui import DatasetsView
 
 def main():
     """Run the application. """
-
+    # Add test setst to collection
+    firstDataset = DataSet()
+    firstDataset._internalName = 'gurg1'
+    firstDataset._displayName = 'Test set one'
+    secondDataset = DataSet()
+    secondDataset._internalName = 'gug2re'
+    secondDataset._displayName = 'Second test set'
     sets = DatasetCollection()
-    view = DatasetsView()
+    sets.addDataset(firstDataset)
+    sets.addDataset(secondDataset)
+
+    view = DatasetsView(vc=sets, vs=secondDataset)
     view.configure_traits()
 
 

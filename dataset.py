@@ -62,12 +62,6 @@ class DataSet(HasTraits):
 
 
 
-#    def __init__(self):
-#        pass
-
-
-
-
     def importDataset(self):
         """ Initiaze dataimport from file"""
         txtImporter = FileData(self._sourceFile)
