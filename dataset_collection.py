@@ -23,14 +23,12 @@ class DatasetCollection(HasTraits):
     _keyIndex = ListStr()
     _dispNameIndex = ListStr()
     _selIndex = Int(0)
-    _testBool = Bool()
 
 
 
     def retriveDatasetByName(self, internalName):
         """Return DataSet object specified by internal name"""
         return self._dataDict[internalName]
-
 
 
 
@@ -44,7 +42,6 @@ class DatasetCollection(HasTraits):
 
 
 
-
     def addDataset(self, dataSet):
         """Add or update dataset"""
         self._dataDict[dataSet._internalName] = dataSet
@@ -52,12 +49,9 @@ class DatasetCollection(HasTraits):
         
 
 
-
-
     def delDataset(self, internalName):
         """Remove dataset from collection"""
         pass
-
 
 
 
