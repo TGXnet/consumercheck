@@ -1,5 +1,6 @@
 # coding=utf-8
 
+# Scipy imports
 from numpy import array, loadtxt
 
 
@@ -9,21 +10,23 @@ class FileData:
     First from tab separated text files.
     """
 
-    def __init__(self, fileUri):
+    def __init__(self, fileUri, colHead = True):
         """Try to read and parse file from given filepath"""
         self._fileUri = fileUri
         # FIXME: May fail if file not foud
-        self._readColumnHeader()
+        skips = 0
+        if colHead:
+            skips = 1
+            self._readColumnHeader()
+        else:
+            self._columnHeader = []
         # FIXME: Except open file error and dataformat error
-        self._dataset = loadtxt(fname=self._fileUri, delimiter="\t", skiprows=1)
-
-
+        self._dataset = loadtxt(fname=self._fileUri, delimiter="\t", skiprows=skips)
 
 
     def _fileProbe(self):
         """Try to find formating of unknown file"""
         pass
-
 
 
     def _readColumnHeader(self, lineNumber=1):
@@ -37,13 +40,9 @@ class FileData:
         fp.close()
 
 
-
-
-
     def _parseFile(self):
         """Open and mannualy parse file line by line"""
         pass
-
 
 
     def getMatrix(self):
@@ -51,12 +50,9 @@ class FileData:
         return self._dataset
 
 
-
     def getColumnHeader(self):
         """Return list of column headers as list"""
         return self._columnHeader
-
-
 
 
 
@@ -68,7 +64,6 @@ if __name__ == "__main__":
     matrix = readTest.getMatrix()
     print len(headers)
     print matrix.shape
-
 
 
 #### EOF ######################################################################
