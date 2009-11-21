@@ -1,5 +1,8 @@
 # coding=utf-8
 
+# Python SL imports
+from os import path
+
 # Enthought imports
 from numpy import array, ndarray, zeros
 from enthought.traits.api import \
@@ -30,13 +33,14 @@ class DataSet(HasTraits):
     _matrix = Array(desc='Data matrix')
 
     # Used as dictionary index
-    _internalName = String('',
+    _internalName = String('test1',
                            label='Dict key name')
 
     # Displayed to the user
     _displayName = Str('Unamed dataset',
                        desc='User friendly display name',
                        label='Dataset name')
+
 
     # Type of data (classification) indicated by the user
     _datasetType = Enum(('Design variable',
@@ -61,13 +65,17 @@ class DataSet(HasTraits):
     _isActive = Bool(True, label='Used in calculation?')
 
 
-
-    def importDataset(self):
+    def importDataset(self, fileUri, colHead = True):
         """ Initiaze dataimport from file"""
-        txtImporter = FileData(self._sourceFile)
+        self._sourceFile = fileUri
+        txtImporter = FileData(self._sourceFile, colHead)
         self._matrixColumnHeader = txtImporter.getColumnHeader()
         self._matrix = txtImporter.getMatrix()
-
+        # FIXME: Find a better more general solution
+        fn = path.basename(fileUri)
+        fn = fn.partition('.')[0]
+        fn = fn.lower()
+        self._internalName = fn
 
 
 
