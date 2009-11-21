@@ -10,8 +10,7 @@ def main():
     """Run the application. """
     # Add test setst to collection
     sets = DatasetCollection()
-    dummySet = DataSet()
-    view = DatasetsView(vc=sets, vs=dummySet)
+    view = DatasetsView(vc=sets)
     view.configure_traits()
 
 

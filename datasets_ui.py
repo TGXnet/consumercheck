@@ -4,7 +4,7 @@
 from enthought.traits.api \
     import HasTraits, Instance, DelegatesTo, Button, Str, File, Bool
 from enthought.traits.ui.api \
-    import View, Item, Group, ListStrEditor, Handler, FileEditor
+    import View, Item, Group, ListStrEditor, Handler, FileEditor, InstanceEditor
 from enthought.traits.ui.menu \
     import Action, OKButton, CancelButton
 
@@ -32,7 +32,6 @@ class DsViewHandler(Handler):
         else:
             if info.object._selIndex >= 0:
                 info.object.vs = info.object.vc.retriveDatasetByIndex(info.object._selIndex)
-                info.object.vs.configure_traits()
                 print "Vs changed to", info.object.vs
 
 
@@ -67,7 +66,7 @@ class DatasetsView(HasTraits):
     # View Collection
     vc = Instance(DatasetCollection)
     # View Set
-    vs = Instance(DataSet)
+    vs = Instance(DataSet, DataSet())
 
     # Delegations
     # Collection
@@ -77,7 +76,6 @@ class DatasetsView(HasTraits):
     _delSet             = Button(label='Remove')
 
     # Data set
-    _internalName       = DelegatesTo('vs')
     _displayName        = DelegatesTo('vs')
     _datasetType        = DelegatesTo('vs')
     _matrixColumnHeader = DelegatesTo('vs')
@@ -108,14 +106,17 @@ class DatasetsView(HasTraits):
                     show_border=True
                     ),
                 Group(
-                    Item('_internalName'),
-                    Item('_displayName'),
-                    Item('_datasetType'),
-                    Item('_matrixColumnHeader'),
-                    Item('_isCalculated'),
-                    Item('_isActive'),
+                    Item(name = 'vs',
+                         editor=InstanceEditor(
+                            view=View(
+                                Item(name = '_displayName'),
+                                Item(name = '_datasetType')
+                                ),
+                            ),
+                         style='custom',
+                         ),
                     label='Collection',
-                    show_border=True
+                    show_border=True,
                     ),
                 orientation = 'horizontal',
                 label='Datasets'
