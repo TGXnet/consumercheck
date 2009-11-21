@@ -1,5 +1,8 @@
 # coding=utf-8
 
+# Enthought imports
+from enthought.pyface.api import GUI
+
 # Local imports
 from dataset_collection import DatasetCollection
 from dataset import DataSet
@@ -11,7 +14,8 @@ def main():
     # Add test setst to collection
     sets = DatasetCollection()
     view = DatasetsView(vc=sets)
-    view.configure_traits()
+    view.edit_traits()
+    GUI().start_event_loop()
 
 
 
