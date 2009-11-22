@@ -6,7 +6,7 @@ from enthought.traits.api \
 from enthought.traits.ui.api \
     import View, Item, Group, ListStrEditor, Handler, FileEditor, InstanceEditor
 from enthought.traits.ui.menu \
-    import Action, OKButton, CancelButton
+    import Action, Menu, MenuBar
 
 
 # Local imports
@@ -38,7 +38,7 @@ class DsViewHandler(Handler):
     # Event handler signature
     # extended_traitname_changed(info)
     # default context is object
-    def object__addSet_changed(self, uiInfo):
+    def importDataset(self, uiInfo):
         """Action called when activating importing of new dataset"""
         fi = FileImport()
         fi.configure_traits(kind='modal')
@@ -74,6 +74,14 @@ class DatasetsView(HasTraits):
     _selIndex           = DelegatesTo('vc')
     _addSet             = Button(label='Import')
     _delSet             = Button(label='Remove')
+
+    
+    setImport = Action(name = 'Add &Dataset',
+                       action = 'importDataset')
+    # Create an action that exits the application.
+    exitAction = Action(name='E&xit',
+                        action='_on_close')
+
 
     # Data set
     _displayName        = DelegatesTo('vs')
@@ -127,7 +135,13 @@ class DatasetsView(HasTraits):
                 ),
             layout='tabbed'
             ),
+#        width = 800, height = 600,
+        resizable = True,
         title = 'Consumer Check',
+        menubar = MenuBar(
+            Menu(setImport, exitAction,
+                 name = '&File'
+                 )
+            ),
         handler = DsViewHandler(),
-        buttons = [OKButton, CancelButton]
         )
