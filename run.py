@@ -5,17 +5,14 @@ from enthought.pyface.api import GUI
 
 # Local imports
 from dataset_collection import DatasetCollection
-from dataset import DataSet
-from datasets_ui import DatasetsView
+from datasets_ui import DsViewHandler
+
 
 def main():
     """Run the application. """
-    # Add test setst to collection
-    sets = DatasetCollection()
-    view = DatasetsView(vc=sets)
-    view.edit_traits()
+    dc = DatasetCollection()
+    ui = DsViewHandler().edit_traits( context = dc )
     GUI().start_event_loop()
-
 
 
 if __name__ == '__main__':

@@ -53,7 +53,7 @@ class DataSet(HasTraits):
                         )
 
     # Where the matrix is imported from (datasource)
-    _sourceFile = File('./Ost.txt', label='Open file')
+    _sourceFile = File('./testdata/test.txt', label='Open file')
 
     # List of sting containing column headers for matrix
     _matrixColumnHeader = ListStr(desc='Matrix column headers')
