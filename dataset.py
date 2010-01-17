@@ -12,7 +12,7 @@ from enthought.traits.ui.api import View, Item, Group
 from enthought.traits.ui.menu import OKButton, CancelButton
 
 # Local imports
-from import_data import FileData
+from file_import import FileData
 
 
 class DataSet(HasTraits):
