@@ -14,15 +14,15 @@ from enthought.traits.ui.menu \
 
 # Local imports
 from dataset import DataSet
-
+from plot_pca_ui import PlotPca
+from nipals import PCA
 
 
 class PcaViewHandler(Handler):
     """Handler for dataset view"""
 
-    # Test tab for PCA
-    _pca = Str('PCA hei')
     _runPca = Button(label = 'Run PCA')
+
 
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
@@ -30,10 +30,20 @@ class PcaViewHandler(Handler):
         print 'PcaViewHandler:setattr:', name, 'to', value
 
 
-    def handler_runPca_changed(self, uiInfo):
+    def handler__runPca_changed(self, info):
         """PCA activated"""
         print "PcaViewHandle: RunPca pressed"
-
+        if not info.initialized:
+            pass
+        else:
+            # data matrix
+            dm = info.object.ds._matrix
+            print dm
+            pca = PCA(dm, 2, 1)
+            print pca.scores
+            plot = PlotPca(pca.scores)
+            
+            plotUI = plot.edit_traits(kind='modal')
 
     # end PcaViewHandler
 
@@ -46,7 +56,6 @@ class PcaModel(HasTraits):
 
     # View
     pca_view = View(
-        Item('handler._pca'),
         Item('handler._runPca'),
         handler = PcaViewHandler,
         )
