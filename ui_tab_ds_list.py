@@ -14,7 +14,8 @@ from enthought.traits.ui.menu \
 
 # Local imports
 from dataset_collection import DatasetCollection
-from dataset import DataSet
+from ds import DataSet
+from ds_ui import ds_list_tab
 from table_ui import MatrixView
 from file_import_ui import FileImport
 
@@ -32,10 +33,7 @@ class DsViewHandler(Handler):
     # Button to show dataset table
     _updateList = Button(label = 'Update List')
 
-    # View Set
     vs = Instance(DataSet, DataSet())
-    # vs = Instance(DataSet)
-
 
 
     # Called when some value in object changes
@@ -60,13 +58,12 @@ class DsViewHandler(Handler):
     def handler__selIndex_changed(self, info):
         if not info.initialized:
             # Inital assign view to dummy dataset
-            self.vs = DataSet()
             print "DsViewHandler:selIndex_changed"
         else:
             if info.handler._selIndex >= 0:
                 name = self.indexToName(info.handler._selIndex)
-                self.vs = info.object.retriveDatasetByName(name)
-                print "DsViewHandler:selIndex_changed to", info.handler._selIndex
+                self.vs = info.object.activeSet = info.object.retriveDatasetByName(name)
+                print "DsViewHandler:selIndex_changed. Selected dataset", name
 
 
     def indexToName(self, index):
@@ -98,45 +95,31 @@ class DsViewHandler(Handler):
     # end DsViewHandler
 
 
-
-class DsList(HasTraits):
-    """Selection list GUI tab"""
-    pass
-
-
-dslist_view_item = Item('handler._nameList',
-                        editor = ListStrEditor(
+dslist_view_item = Item(
+    'handler._nameList',
+    editor = ListStrEditor(
         editable=False,
         multi_select=False,
         activated_index='_selIndex',
         selected_index='_selIndex',
         ),
-                        height = 75,
-                        width = 200
-                        )
+    height = 75,
+    width = 200
+    )
 
 
-dataset_view_item = Item('handler.vs',
-                         editor=InstanceEditor(
-        view=View(
-            # FIXME: Check if this directly should reflect members in dataset class
-            Item(name = '_displayName'),
-            Item(name = '_datasetType'),
-            ),
-        ),
-                         style='custom',
-                         ),
-
-
+dataset_view_item = Item(
+    'handler.vs',
+    editor=InstanceEditor(view=ds_list_tab,),
+    style='custom',
+    ),
 
 
 datasets_view = View(
     HGroup(
         Group(
             dslist_view_item,
-            Item('handler._updateList',
-                # editor = ButtonEditor() 
-                 ),
+            Item('handler._updateList',),
             label='Collection list',
             show_border=True
             ), # end Collection list group
@@ -154,8 +137,9 @@ datasets_view = View(
 
 if __name__ == '__main__':
     """Run the application. """
-    from enthought.pyface.api import GUI
     ds1 = DataSet(_internalName = 'test1', _displayName = 'Test 1')
+    ds1.importDataset('./testdata/Ost.txt', True)
+    ds1._displayName = 'Oste test'
     ds2 = DataSet(_internalName = 'test2', _displayName = 'Test 2')
     dc = DatasetCollection()
     dc.addDataset(ds1)

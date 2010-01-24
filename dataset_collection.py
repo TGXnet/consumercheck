@@ -2,11 +2,11 @@
 
 # Enthought traits imports
 from enthought.traits.api import \
-    HasTraits, DictStrAny, ListStr, Int, List, Event, \
+    HasTraits, Dict, Str, ListStr, Int, List, Event, \
     Bool, Property, cached_property, on_trait_change, property_depends_on
 
 # Local imports
-from dataset import DataSet
+from ds import DataSet
 
 
 class DatasetCollection(HasTraits):
@@ -17,8 +17,9 @@ class DatasetCollection(HasTraits):
     """
 
     # Dictionary to hold dataset and a editor to select dataset
-    _dataDict = DictStrAny()
+    _dataDict = Dict(Str, DataSet)
     _updated = Bool(False)
+    activeSet = DataSet()
 
 
     def retriveDatasetByName(self, internalName):

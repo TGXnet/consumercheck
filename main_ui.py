@@ -13,7 +13,7 @@ from enthought.traits.ui.menu \
 
 # Local imports
 from dataset_collection import DatasetCollection
-from dataset import DataSet
+from ds import DataSet
 from file_import_ui import FileImport
 from ui_tab_pca import PcaModel
 from ui_tab_ds_list import datasets_view
@@ -38,8 +38,7 @@ class MainViewHandler(Handler):
             # FIXME: Handle Cancel/abort
             ds = DataSet()
             ds.importDataset(fi.fileName, fi.colHead)
-            uiInfo.object.addDataset(ds)
-            self.updateIndexList(uiInfo)
+            uiInfo.object.dsl.addDataset(ds)
             print "DsViewHandler:importDataset", ds._matrix
         else:
             print "DsViewHandler:import aborted"
@@ -53,10 +52,10 @@ class MainUi(HasTraits):
     # Singular dataset list for the application
     # or not?
     dsl = Instance(DatasetCollection, DatasetCollection())
-    currset = DataSet()
+    activeSet = DelegatesTo('dsl')
 
     # Object representing the PCA and the GUI tab
-    pca = Instance(PcaModel, PcaModel(ds=currset))
+    pca = Instance(PcaModel, PcaModel(ds=activeSet))
 
     # Create an action that open dialog for dataimport
     setImport = Action(name = 'Add &Dataset',
@@ -85,8 +84,6 @@ class MainUi(HasTraits):
 
 if __name__ == '__main__':
     """Run the application. """
-    from enthought.pyface.api import GUI
-
     # dsl = DatasetCollection()
     mother = MainUi()
     ui = mother.edit_traits()

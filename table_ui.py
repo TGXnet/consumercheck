@@ -14,7 +14,7 @@ from enthought.traits.ui.ui_editors.array_view_editor \
     import ArrayViewEditor
 
 #Local imports
-from dataset import DataSet
+from ds import DataSet
 
 
 class MatrixView(HasTraits):

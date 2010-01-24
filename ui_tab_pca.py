@@ -13,7 +13,7 @@ from enthought.traits.ui.menu \
 
 
 # Local imports
-from dataset import DataSet
+from ds import DataSet
 from plot_pca_ui import PlotPca
 from nipals import PCA
 
@@ -37,10 +37,10 @@ class PcaViewHandler(Handler):
             pass
         else:
             # data matrix
-            dm = info.object.ds._matrix
-            print dm
+            dm = info.object.activeSet._matrix
+            print "Data matrix\n", dm
             pca = PCA(dm, 2, 1)
-            print pca.scores
+            print "Principal components\n", pca.scores
             plot = PlotPca(pca.scores)
             
             plotUI = plot.edit_traits(kind='modal')
@@ -52,7 +52,7 @@ class PcaViewHandler(Handler):
 class PcaModel(HasTraits):
     """Model for PCA"""
 
-    ds = Instance(DataSet)
+    activeSet = DataSet()
 
     # View
     pca_view = View(
@@ -66,8 +66,7 @@ class PcaModel(HasTraits):
 
 if __name__ == '__main__':
     """Run the application. """
-    from enthought.pyface.api import GUI
     testset = DataSet()
     testset.importDataset('./testdata/test.txt')
-    pca = PcaModel(ds=testset)
+    pca = PcaModel(activeSet=testset)
     ui = pca.edit_traits()
