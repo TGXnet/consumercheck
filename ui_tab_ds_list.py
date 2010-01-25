@@ -62,7 +62,7 @@ class DsViewHandler(Handler):
         else:
             if info.handler._selIndex >= 0:
                 name = self.indexToName(info.handler._selIndex)
-                self.vs = info.object.activeSet = info.object.retriveDatasetByName(name)
+                self.vs = info.object.retriveDatasetByName(name)
                 print "DsViewHandler:selIndex_changed. Selected dataset", name
 
 

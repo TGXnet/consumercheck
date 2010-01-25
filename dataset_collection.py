@@ -19,7 +19,6 @@ class DatasetCollection(HasTraits):
     # Dictionary to hold dataset and a editor to select dataset
     _dataDict = Dict(Str, DataSet)
     _updated = Bool(False)
-    activeSet = DataSet()
 
 
     def retriveDatasetByName(self, internalName):
