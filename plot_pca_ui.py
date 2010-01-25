@@ -27,7 +27,7 @@ class PlotPca(HasTraits):
         y = self.dm[:,1]
         plotdata = ArrayPlotData(x=x, y=y)
         plot = Plot(plotdata)
-        plot.plot(("Pricipal 1", "Principal 2"), type="scatter", color="blue")
+        plot.plot(("x", "y"), type="scatter", color="blue")
         plot.title = "Principal Componet Analysis"
         self.plot = plot
 
