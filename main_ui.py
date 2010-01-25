@@ -24,8 +24,8 @@ class MainViewHandler(Handler):
 
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
-        super(DsViewHandler, self).setattr(info, object, name, value)
-        print 'DsViewHandler:setattr:', name, 'to', value
+        super(MainViewHandler, self).setattr(info, object, name, value)
+        print 'MainViewHandler:setattr:', name, 'to', value
 
     # Event handler signature
     # extended_traitname_changed(info)
@@ -39,9 +39,9 @@ class MainViewHandler(Handler):
             ds = DataSet()
             ds.importDataset(fi.fileName, fi.colHead)
             uiInfo.object.dsl.addDataset(ds)
-            print "DsViewHandler:importDataset", ds._matrix
+            print "MainViewHandler:importDataset", ds._matrix
         else:
-            print "DsViewHandler:import aborted"
+            print "MainViewHandler:import aborted"
 
     # end MainViewHandler
 
@@ -51,11 +51,10 @@ class MainUi(HasTraits):
     """Main application class"""
     # Singular dataset list for the application
     # or not?
-    dsl = Instance(DatasetCollection, DatasetCollection())
-    activeSet = DelegatesTo('dsl')
+    dsl = DatasetCollection()
 
     # Object representing the PCA and the GUI tab
-    pca = Instance(PcaModel, PcaModel(ds=activeSet))
+    pca = Instance(PcaModel, PcaModel(dsl=dsl))
 
     # Create an action that open dialog for dataimport
     setImport = Action(name = 'Add &Dataset',
