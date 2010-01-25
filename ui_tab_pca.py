@@ -13,6 +13,7 @@ from enthought.traits.ui.menu \
 
 
 # Local imports
+from dataset_collection import DatasetCollection
 from ds import DataSet
 from plot_pca_ui import PlotPca
 from nipals import PCA
@@ -22,7 +23,9 @@ class PcaViewHandler(Handler):
     """Handler for dataset view"""
 
     _runPca = Button(label = 'Run PCA')
-
+    _fillSel = Button(label = 'Update list')
+    _selIndex = Int(0)
+    _selList = List
 
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
@@ -37,7 +40,8 @@ class PcaViewHandler(Handler):
             pass
         else:
             # data matrix
-            dm = info.object.activeSet._matrix
+            key = self._selList[self._selIndex]
+            dm = info.object.dsl._dataDict[key]._matrix
             print "Data matrix\n", dm
             pca = PCA(dm, 2, 1)
             print "Principal components\n", pca.scores
@@ -45,17 +49,38 @@ class PcaViewHandler(Handler):
             
             plotUI = plot.edit_traits(kind='modal')
 
+
+    def handler__fillSel_changed(self, info):
+        liste = []
+        for sn, so in info.object.dsl._dataDict.iteritems():
+            liste.append(sn)
+        self._selList = liste
+        print "PcaViewHandler: fillSell pressed", liste
+
+
+    def handler__selIndex_changed(self, info):
+        print "PcaViewHandler: selSet changed", self._selIndex
+
+
     # end PcaViewHandler
 
 
 
 class PcaModel(HasTraits):
     """Model for PCA"""
-
-    activeSet = DataSet()
+    dsl = Instance(DatasetCollection)
 
     # View
     pca_view = View(
+        Item('handler._selList',
+             editor = ListStrEditor(
+                editable=False,
+                multi_select=False,
+                activated_index='_selIndex',
+                selected_index='_selIndex',
+                ),
+             ),
+        Item('handler._fillSel'),
         Item('handler._runPca'),
         handler = PcaViewHandler,
         )
@@ -68,5 +93,5 @@ if __name__ == '__main__':
     """Run the application. """
     testset = DataSet()
     testset.importDataset('./testdata/test.txt')
-    pca = PcaModel(activeSet=testset)
+    pca = PcaModel()
     ui = pca.edit_traits()
