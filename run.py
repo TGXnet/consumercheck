@@ -11,6 +11,6 @@ from main_ui import MainUi
 
 if __name__ == '__main__':
     mother = MainUi()
-    mother.edit_traits()
+    mother.configure_traits()
 
 #### EOF ######################################################################
