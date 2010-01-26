@@ -73,7 +73,7 @@ class DataSet(HasTraits):
         fn = path.basename(fileUri)
         fn = fn.partition('.')[0]
         fn = fn.lower()
-        self._internalName = fn
+        self._internalName = self._displayName = fn
 
     def _get_nRows(self):
         if self._matrix.shape[0]>0:
