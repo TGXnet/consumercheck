@@ -15,7 +15,7 @@ from enthought.traits.ui.menu \
 # Local imports
 from dataset_collection import DatasetCollection
 from ds import DataSet
-from plot_pca_ui import PlotPca
+from plot_pca_ui import PlotPca, PlotPcaNew
 from nipals import PCA
 
 
@@ -45,7 +45,10 @@ class PcaViewHandler(Handler):
             print "Data matrix\n", dm
             pca = PCA(dm, 2, 1)
             print "Principal components\n", pca.scores
-            plot = PlotPca(pca.scores)
+#            plot = PlotPca(pca.scores)
+            pc1 = pca.scores[:,0]
+            pc2 = pca.scores[:,1]
+            plot = PlotPcaNew(pc1=pc1, pc2=pc2)
             
             plotUI = plot.edit_traits(kind='modal')
 
