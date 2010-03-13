@@ -41,7 +41,7 @@ class FileData:
 
 
     def _parseFile(self):
-        """Open and mannualy parse file line by line"""
+        """Open and manually parse file line by line"""
         pass
 
 
@@ -59,7 +59,7 @@ class FileData:
 # Application entry point.
 if __name__ == "__main__":
     # import sys
-    readTest = FileData('./Ost.txt')
+    readTest = FileData('./testdata/Ost.txt')
     headers = readTest.getColumnHeader()
     matrix = readTest.getMatrix()
     print len(headers)
