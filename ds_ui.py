@@ -9,9 +9,6 @@ from enthought.traits.ui.menu import OKButton, CancelButton
 from ds import DataSet
 
 
-
-
-
 dsview = View(
     Item(name = '_internalName'),
     Item(name = '_displayName'),
@@ -27,8 +24,6 @@ ds_list_tab = View(
     Item(name = 'nRows', style = 'readonly'),
     Item(name = 'nCols', style = 'readonly'),
     )
-
-
 
 
 # Application entry point.

@@ -80,19 +80,11 @@ class DataSet(HasTraits):
             return self._matrix.shape[0]
         else:
             return 0
-        
+
     def _get_nCols(self):
         if self._matrix.shape[0]>0:
             return self._matrix.shape[1]
         else:
             return 0
 
-
-
-# Application entry point.
-if __name__ == "__main__":
-    # import sys
-    ts1 = DataSet()
-    ts1.importDataset('./testdata/Ost.txt', True)
-    ts1._displayName = 'Oste test'
-    ts1.print_traits()
+#end DataSet

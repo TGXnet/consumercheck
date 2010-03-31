@@ -20,6 +20,9 @@ class DatasetCollection(HasTraits):
     _dataDict = Dict(Str, DataSet)
     _updated = Bool(False)
 
+    indexNameList = Property()
+
+
 
     def retriveDatasetByName(self, internalName):
         """Return DataSet object specified by internal name"""
@@ -28,44 +31,37 @@ class DatasetCollection(HasTraits):
 
     def addDataset(self, dataSet):
         """Add or update dataset"""
-        self._dataDict[dataSet._internalName] = dataSet
+        name = dataSet._internalName
+        if self._dataDict.__contains__(name):
+            raise Exception('Key (' + name + ') already exists')
+        self._dataDict[name] = dataSet
         self._updated = True
-        print "DatasetCollection:addDataset:", dataSet._internalName
+        print "DatasetCollection:addDataset:", name
 
 
-    def delDataset(self, internalName):
+    def deleteDataset(self, internalName):
         """Remove dataset from collection"""
+        del self._dataDict[internalName]
         self._updated = True
 
 
+    def _get_indexNameList(self):
+        indexList = []
+        for sn, so in self._dataDict.iteritems():
+            tu = (sn, so._displayName)
+            indexList.append(tu)
+        return indexList
 
-    # FIXME: does not handle change of _internalName correct
+
     @on_trait_change('_dataDict:_internalName')
     def dictNameChanged(self, object, name, old, new):
         """Update dictionary name"""
+        toMove = self._dataDict.pop(old)
+        self.addDataset(toMove)
         self._updated = True
         print "DatasetCollection:", name, "changed from", old ,"to", new
-
-
-
-#    def __str__(self):
-#        """Return object info"""
-#        return 'Matrix'
-
 
 
     def _genInternalName(self):
         """Generate unique internal name for datasets"""
         pass
-
-
-# Unit test code
-if __name__ == "__main__":
-    dsc = DatasetCollection()
-    ts1 = DataSet(_internalName='ts1', _displayName='Test set 1')
-    ts2 = DataSet(_internalName='ts2', _displayName='Test set 2')
-    dsc.addDataset(ts1)
-    dsc.addDataset(ts2)
-    ts2.importDataset('./testdata/test.txt', False)
-    ds = dsc.retriveDatasetByName('ts1')
-    ds._internalName = 'gurba'
