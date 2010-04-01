@@ -1,5 +1,8 @@
 # coding=utf-8
 
+# stdlib imports
+import logging
+
 # Enthought traits imports
 from enthought.traits.api import \
     HasTraits, Dict, Str, ListStr, Int, List, Event, \
@@ -36,7 +39,7 @@ class DatasetCollection(HasTraits):
             raise Exception('Key (' + name + ') already exists')
         self._dataDict[name] = dataSet
         self._updated = True
-        print "DatasetCollection:addDataset:", name
+        logging.info("addDataset:", name)
 
 
     def deleteDataset(self, internalName):
@@ -59,7 +62,7 @@ class DatasetCollection(HasTraits):
         toMove = self._dataDict.pop(old)
         self.addDataset(toMove)
         self._updated = True
-        print "DatasetCollection:", name, "changed from", old ,"to", new
+        logger.info("nameChange: %s change from %s to %s", name, old, new)
 
 
     def _genInternalName(self):

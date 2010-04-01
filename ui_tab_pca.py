@@ -1,5 +1,8 @@
 # coding=utf-8
 
+# stdlib imports
+import logging
+
 # Enthought imports
 from enthought.traits.api \
     import HasTraits, Instance, DelegatesTo, Button, Str, Int,\
@@ -9,8 +12,6 @@ from enthought.traits.ui.api \
     InstanceEditor, ButtonEditor
 from enthought.traits.ui.menu \
     import Action, Menu, MenuBar
-
-
 
 # Local imports
 from dataset_collection import DatasetCollection
@@ -30,26 +31,22 @@ class PcaViewHandler(Handler):
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
         super(PcaViewHandler, self).setattr(info, object, name, value)
-        print 'PcaViewHandler:setattr:', name, 'to', value
+        logging.info("setattr: %s change to %s", name, value)
 
 
     def handler__runPca_changed(self, info):
         """PCA activated"""
-        print "PcaViewHandle: RunPca pressed"
+        logging.info("runPca_changed: RunPca pressed")
         if not info.initialized:
             pass
         else:
             # data matrix
             key = self._selList[self._selIndex]
             dm = info.object.dsl._dataDict[key]._matrix
-            print "Data matrix\n", dm
             pca = PCA(dm, 2, 1)
-            print "Principal components\n", pca.scores
-#            plot = PlotPca(pca.scores)
             pc1 = pca.scores[:,0]
             pc2 = pca.scores[:,1]
             plot = PlotPcaNew(pc1=pc1, pc2=pc2)
-            
             plotUI = plot.edit_traits(kind='modal')
 
 
@@ -58,11 +55,11 @@ class PcaViewHandler(Handler):
         for sn, so in info.object.dsl._dataDict.iteritems():
             liste.append(sn)
         self._selList = liste
-        print "PcaViewHandler: fillSell pressed", liste
+        logging.info("fillSel_changed: fillSell pressed")
 
 
     def handler__selIndex_changed(self, info):
-        print "PcaViewHandler: selSet changed", self._selIndex
+        logging.info("selIndex_changed: to %s", self._selIndex)
 
 
     # end PcaViewHandler

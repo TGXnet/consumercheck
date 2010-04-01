@@ -1,5 +1,8 @@
 # coding=utf-8
 
+#stdlib imports
+import logging
+
 # Enthought imports
 from enthought.traits.api \
     import HasTraits, Instance, DelegatesTo, Button, Str, Int,\
@@ -39,31 +42,31 @@ class DsViewHandler(Handler):
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
         super(DsViewHandler, self).setattr(info, object, name, value)
-        print 'DsViewHandler:setattr:', name, 'to', value
+        logging.info("setattr: %s change to %s", name, value)
 
 
     # generateIndexList
     def object__updated_changed(self, info):
         """Reacts to changes in dataset names"""
-        # Ask te dc to return a list of tuples
-        print "DsViewHandler: Updated changed"
+        self.handler__updateList_changed(info)
+        logging.info("update_changed: activated")
 
 
     def object__dataDict_changed(self, info):
         """Reacts to changes in dataset"""
-        print "DsViewHandler: dataDict changed"
+        logging.info("dataDict_changed: dataDict changed")
 
 
     # Also called on window creation
     def handler__selIndex_changed(self, info):
         if not info.initialized:
             # Inital assign view to dummy dataset
-            print "DsViewHandler:selIndex_changed"
+            logging.info("selIndex_changed: initialized")
         else:
             if info.handler._selIndex >= 0:
                 name = self.indexToName(info.handler._selIndex)
                 self.vs = info.object.retriveDatasetByName(name)
-                print "DsViewHandler:selIndex_changed. Selected dataset", name
+                logging.info("selIndex_changed: index is %s and selected dataset is %s", info.handler._selIndex, name)
 
 
     def indexToName(self, index):
@@ -90,7 +93,7 @@ class DsViewHandler(Handler):
             # FIXME: Detta kan vel ikke funke
             mv = MatrixView()
             mv.edit_traits(kind='modal')
-            print "DsViewHandler:Table view activated"
+            logging.info("viewTable_changed: activated")
 
     # end DsViewHandler
 

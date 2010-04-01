@@ -1,5 +1,8 @@
 # coding=utf-8
 
+# stdlib imports
+import logging
+
 # Enthought imports
 from enthought.traits.api \
     import HasTraits, Instance, DelegatesTo, Button, Str, Int,\
@@ -25,7 +28,7 @@ class MainViewHandler(Handler):
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
         super(MainViewHandler, self).setattr(info, object, name, value)
-        print 'MainViewHandler:setattr:', name, 'to', value
+        logging.info('setattr: Variables %s set to %s', name, value)
 
     # Event handler signature
     # extended_traitname_changed(info)
@@ -35,13 +38,12 @@ class MainViewHandler(Handler):
         fi = FileImport()
         fiUi = fi.edit_traits(kind='modal')
         if fiUi.result:
-            # FIXME: Handle Cancel/abort
             ds = DataSet()
             ds.importDataset(fi.fileName, fi.colHead)
             uiInfo.object.dsl.addDataset(ds)
-            print "MainViewHandler:importDataset", ds._matrix
+            logging.info("importDataset: internal name = %s", ds._internalName)
         else:
-            print "MainViewHandler:import aborted"
+            logging.info("importDataset: aborted")
 
     # end MainViewHandler
 
