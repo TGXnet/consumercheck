@@ -33,9 +33,6 @@ class DsViewHandler(Handler):
     # Index to the selected dataset name
     _selIndex    = Int(0)
 
-    # Button to show dataset table
-    _updateList = Button(label = 'Update List')
-
     vs = Instance(DataSet, DataSet())
 
 
@@ -46,15 +43,19 @@ class DsViewHandler(Handler):
 
 
     # generateIndexList
-    def object__updated_changed(self, info):
+    def object_datasetNameChanged_changed(self, uiInfo):
         """Reacts to changes in dataset names"""
-        self.handler__updateList_changed(info)
-        logging.info("update_changed: activated")
+        self._indexList = uiInfo.object.indexNameList
+        self._nameList = []
+        for kName, dName in self._indexList:
+            self._nameList.append(dName)
+        logging.info("datasetNameChanged_changed: activated")
 
 
-    def object__dataDict_changed(self, info):
-        """Reacts to changes in dataset"""
-        logging.info("dataDict_changed: dataDict changed")
+
+    def object__dataDict_changed(self, uiInfo):
+        logging.info("dataDict_changed: activated")
+
 
 
     # Also called on window creation
@@ -73,15 +74,6 @@ class DsViewHandler(Handler):
         """Return dataset name from list index"""
         return self._indexList[index][0]
 
-
-    def handler__updateList_changed(self, uiInfo):
-        """Regenerate the indexLists"""
-        self._indexList = []
-        self._nameList = []
-        for sn, so in uiInfo.object._dataDict.iteritems():
-            tu = (sn, so._displayName)
-            self._indexList.append(tu)
-            self._nameList.append(so._displayName)
 
 
     def handler_viewTable_changed(self, uiInfo):
@@ -122,7 +114,6 @@ datasets_view = View(
     HGroup(
         Group(
             dslist_view_item,
-            Item('handler._updateList',),
             label='Collection list',
             show_border=True
             ), # end Collection list group

@@ -14,17 +14,16 @@ from ds import DataSet
 
 class DatasetCollection(HasTraits):
     """ Application wide collection of datasets
-
-    Associated view as a subpanel.
-    ListStrEditor() to list datsets
     """
 
     # Dictionary to hold dataset and a editor to select dataset
     _dataDict = Dict(Str, DataSet)
-    _updated = Bool(False)
 
+    # Events for dataset namechanges
+    datasetNameChanged = Event
+
+    # Dataset index list
     indexNameList = Property()
-
 
 
     def retriveDatasetByName(self, internalName):
@@ -36,16 +35,17 @@ class DatasetCollection(HasTraits):
         """Add or update dataset"""
         name = dataSet._internalName
         if self._dataDict.__contains__(name):
-            raise Exception('Key (' + name + ') already exists')
+            raise Exception("Key (%s) already exists", name)
         self._dataDict[name] = dataSet
-        self._updated = True
-        logging.info("addDataset:", name)
+        self.datasetNameChanged = True
+        logging.info("addDataset: %s", name)
 
 
     def deleteDataset(self, internalName):
         """Remove dataset from collection"""
         del self._dataDict[internalName]
-        self._updated = True
+        self.datasetNameChanged = True
+        logging.info("deleteDataset: %s", internalName)
 
 
     def _get_indexNameList(self):
@@ -61,10 +61,11 @@ class DatasetCollection(HasTraits):
         """Update dictionary name"""
         toMove = self._dataDict.pop(old)
         self.addDataset(toMove)
-        self._updated = True
-        logger.info("nameChange: %s change from %s to %s", name, old, new)
+        self.datasetNameChanged = True
+        logging.info("dictNameChange: %s change from %s to %s", name, old, new)
 
 
-    def _genInternalName(self):
-        """Generate unique internal name for datasets"""
-        pass
+    @on_trait_change('_dataDict:_displayName')
+    def displayNameChanged(self, object, name, old, new):
+        self.datasetNameChanged = True
+        logging.info("displayNameChange: %s changed from %s to %s", name, old, new)

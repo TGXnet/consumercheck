@@ -8,7 +8,6 @@ import optparse
 from enthought.pyface.api import GUI
 
 # Local imports
-from dataset_collection import DatasetCollection
 from main_ui import MainUi
 
 LOGGING_LEVELS = {'critical': logging.CRITICAL,
