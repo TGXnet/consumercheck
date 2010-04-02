@@ -28,10 +28,12 @@ class DsViewHandler(Handler):
 
     # list of tuples (internalName, displayName)
     _indexList = List()
+
     # View list of dataset names
     _nameList    = List()
+
     # Index to the selected dataset name
-    _selIndex    = Int(0)
+    _selIndex    = Int(-1)
 
     vs = Instance(DataSet, DataSet())
 
@@ -42,45 +44,52 @@ class DsViewHandler(Handler):
         logging.info("setattr: %s change to %s", name, value)
 
 
-    # generateIndexList
     def object_datasetNameChanged_changed(self, uiInfo):
         """Reacts to changes in dataset names"""
+        self._buildIndexList(uiInfo)
+        logging.info("datasetNameChanged_changed: activated")
+
+
+    def object_dataDictContentChanged_changed(self, uiInfo):
+        if uiInfo.initialized:
+            self._buildIndexList(uiInfo)
+            self._activateLastAddedDataset()
+        logging.info("dataDictContentChange_changed: activated")
+
+
+    def _activateLastAddedDataset(self):
+        self._selIndex = -1
+        lastIndex = len(self._indexList) - 1
+        self._selIndex = lastIndex
+
+
+    # Generate indexList
+    def _buildIndexList(self, uiInfo):
         self._indexList = uiInfo.object.indexNameList
         self._nameList = []
         for kName, dName in self._indexList:
             self._nameList.append(dName)
-        logging.info("datasetNameChanged_changed: activated")
-
-
-
-    def object__dataDict_changed(self, uiInfo):
-        logging.info("dataDict_changed: activated")
-
 
 
     # Also called on window creation
-    def handler__selIndex_changed(self, info):
-        if not info.initialized:
-            # Inital assign view to dummy dataset
-            logging.info("selIndex_changed: initialized")
-        else:
-            if info.handler._selIndex >= 0:
-                name = self.indexToName(info.handler._selIndex)
-                self.vs = info.object.retriveDatasetByName(name)
-                logging.info("selIndex_changed: index is %s and selected dataset is %s", info.handler._selIndex, name)
+    def handler__selIndex_changed(self, uiInfo):
+        if (uiInfo.initialized) and (uiInfo.handler._selIndex >= 0):
+            name = self._indexToName(uiInfo.handler._selIndex)
+            self.vs = uiInfo.object.retriveDatasetByName(name)
+            logging.info(
+                "selIndex_changed: index is %s and selected dataset is %s",
+                uiInfo.handler._selIndex, name)
 
 
-    def indexToName(self, index):
+    def _indexToName(self, index):
         """Return dataset name from list index"""
         return self._indexList[index][0]
 
 
-
+    # FIXME: Not in use yet!!
     def handler_viewTable_changed(self, uiInfo):
         """Activated show table."""
-        if not uiInfo.initialized:
-            pass
-        else:
+        if uiInfo.initialized:
             #mv = MatrixView(theDataset=uiInfo.objects.vs)
             # FIXME: Detta kan vel ikke funke
             mv = MatrixView()

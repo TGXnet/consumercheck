@@ -22,6 +22,9 @@ class DatasetCollection(HasTraits):
     # Events for dataset namechanges
     datasetNameChanged = Event
 
+    # Events for dictionari content change
+    dataDictContentChanged = Event
+
     # Dataset index list
     indexNameList = Property()
 
@@ -37,14 +40,14 @@ class DatasetCollection(HasTraits):
         if self._dataDict.__contains__(name):
             raise Exception("Key (%s) already exists", name)
         self._dataDict[name] = dataSet
-        self.datasetNameChanged = True
+        self.dataDictContentChanged = True
         logging.info("addDataset: %s", name)
 
 
     def deleteDataset(self, internalName):
         """Remove dataset from collection"""
         del self._dataDict[internalName]
-        self.datasetNameChanged = True
+        self.dataDictContentChanged = True
         logging.info("deleteDataset: %s", internalName)
 
 
@@ -61,7 +64,7 @@ class DatasetCollection(HasTraits):
         """Update dictionary name"""
         toMove = self._dataDict.pop(old)
         self.addDataset(toMove)
-        self.datasetNameChanged = True
+        self.dataDictContentChanged = True
         logging.info("dictNameChange: %s change from %s to %s", name, old, new)
 
 

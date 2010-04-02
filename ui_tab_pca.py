@@ -25,7 +25,7 @@ class PcaViewHandler(Handler):
 
     _runPca = Button(label = 'Run PCA')
     _fillSel = Button(label = 'Update list')
-    _selIndex = Int(0)
+    _selIndex = Int(-1)
     _selList = List
 
     # Called when some value in object changes
