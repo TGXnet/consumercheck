@@ -5,7 +5,7 @@ import logging
 
 # Enthought imports
 from enthought.traits.api \
-    import HasTraits, Instance, DelegatesTo, Button, Str, Int,\
+    import HasTraits, Instance, DelegatesTo, Event, Button, Str, Int,\
     File, Bool, List, on_trait_change
 from enthought.traits.ui.api \
     import View, Item, Group, ListStrEditor, Handler, FileEditor,\
@@ -24,9 +24,16 @@ class PcaViewHandler(Handler):
     """Handler for dataset view"""
 
     _runPca = Button(label = 'Run PCA')
-    _fillSel = Button(label = 'Update list')
+
+    # list of tuples (internalName, displayName)
+    _indexList = List()
+
+    # View list of dataset names
+    _nameList    = List()
+
+    # Index to the selected dataset name
     _selIndex = Int(-1)
-    _selList = List
+
 
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
@@ -34,15 +41,12 @@ class PcaViewHandler(Handler):
         logging.info("setattr: %s change to %s", name, value)
 
 
-    def handler__runPca_changed(self, info):
+    def handler__runPca_changed(self, uiInfo):
         """PCA activated"""
         logging.info("runPca_changed: RunPca pressed")
-        if not info.initialized:
-            pass
-        else:
-            # data matrix
-            key = self._selList[self._selIndex]
-            dm = info.object.dsl._dataDict[key]._matrix
+        if uiInfo.initialized:
+            key = self._indexToName(self._selIndex)
+            dm = uiInfo.object.dsl._dataDict[key]._matrix
             pca = PCA(dm, 2, 1)
             pc1 = pca.scores[:,0]
             pc2 = pca.scores[:,1]
@@ -50,15 +54,25 @@ class PcaViewHandler(Handler):
             plotUI = plot.edit_traits(kind='modal')
 
 
-    def handler__fillSel_changed(self, info):
-        liste = []
-        for sn, so in info.object.dsl._dataDict.iteritems():
-            liste.append(sn)
-        self._selList = liste
-        logging.info("fillSel_changed: fillSell pressed")
+    def _indexToName(self, index):
+        """Return dataset name from list index"""
+        return self._indexList[index][0]
 
 
-    def handler__selIndex_changed(self, info):
+    def object_datasetsAltered_changed(self, uiInfo):
+        self._buildIndexList(uiInfo.object.dsl)
+        logging.info("datasetAltered: activated")
+
+
+    # FIXME: Copy from ui_tab_ds_list
+    def _buildIndexList(self, datasetCollectionObject):
+        self._indexList = datasetCollectionObject.indexNameList
+        self._nameList = []
+        for kName, dName in self._indexList:
+            self._nameList.append(dName)
+
+
+    def handler__selIndex_changed(self, uiInfo):
         logging.info("selIndex_changed: to %s", self._selIndex)
 
 
@@ -69,10 +83,18 @@ class PcaViewHandler(Handler):
 class PcaModel(HasTraits):
     """Model for PCA"""
     dsl = Instance(DatasetCollection)
+    datasetsAltered = Event
+
+
+    @on_trait_change('dsl:[dataDictContentChanged,datasetNameChanged]')
+    def datasetsChanged(self, object, name, old, new):
+        self.datasetsAltered = True
+
+
 
     # View
     pca_view = View(
-        Item('handler._selList',
+        Item('handler._nameList',
              editor = ListStrEditor(
                 editable=False,
                 multi_select=False,
@@ -80,7 +102,6 @@ class PcaModel(HasTraits):
                 selected_index='_selIndex',
                 ),
              ),
-        Item('handler._fillSel'),
         Item('handler._runPca'),
         handler = PcaViewHandler,
         )

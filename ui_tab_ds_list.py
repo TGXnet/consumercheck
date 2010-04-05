@@ -46,13 +46,13 @@ class DsViewHandler(Handler):
 
     def object_datasetNameChanged_changed(self, uiInfo):
         """Reacts to changes in dataset names"""
-        self._buildIndexList(uiInfo)
+        self._buildIndexList(uiInfo.object)
         logging.info("datasetNameChanged_changed: activated")
 
 
     def object_dataDictContentChanged_changed(self, uiInfo):
         if uiInfo.initialized:
-            self._buildIndexList(uiInfo)
+            self._buildIndexList(uiInfo.object)
             self._activateLastAddedDataset()
         logging.info("dataDictContentChange_changed: activated")
 
@@ -64,8 +64,8 @@ class DsViewHandler(Handler):
 
 
     # Generate indexList
-    def _buildIndexList(self, uiInfo):
-        self._indexList = uiInfo.object.indexNameList
+    def _buildIndexList(self, datasetCollectionObject):
+        self._indexList = datasetCollectionObject.indexNameList
         self._nameList = []
         for kName, dName in self._indexList:
             self._nameList.append(dName)
