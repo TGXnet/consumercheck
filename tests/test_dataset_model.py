@@ -1,15 +1,15 @@
 # codeing=utf-8
 
 def setConsumerCheckIncludePath():
-    consumerBase = findApplicationBasePath('ConsumerCheck');
+    consumerBase = findApplicationBasePath();
     addLoadPath(consumerBase)
 
 
-def findApplicationBasePath(baseFolderName):
+def findApplicationBasePath():
     basePath = os.getcwd()
-    while os.path.basename(basePath) != baseFolderName:
+    while os.path.basename(basePath) != 'tests':
         basePath = os.path.dirname(basePath)
-
+    basePath = os.path.dirname(basePath)
     return basePath
 
 
@@ -26,7 +26,7 @@ class TestDatasetModel(unittest.TestCase):
 
 
     def testImport(self):
-        path = findApplicationBasePath('ConsumerCheck') + '/testdata/Ost.txt'
+        path = findApplicationBasePath() + '/testdata/Ost.txt'
         self.testSet.importDataset(path, True)
         self.assertEqual('ost', self.testSet._displayName)
         self.assertEqual(336, self.testSet.nRows)

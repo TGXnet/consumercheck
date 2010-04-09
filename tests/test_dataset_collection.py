@@ -1,15 +1,15 @@
 # codeing=utf-8
 
 def setConsumerCheckIncludePath():
-    consumerBase = findApplicationBasePath('ConsumerCheck');
+    consumerBase = findApplicationBasePath();
     addLoadPath(consumerBase)
 
 
-def findApplicationBasePath(baseFolderName):
+def findApplicationBasePath():
     basePath = os.getcwd()
-    while os.path.basename(basePath) != baseFolderName:
+    while os.path.basename(basePath) != 'tests':
         basePath = os.path.dirname(basePath)
-
+    basePath = os.path.dirname(basePath)
     return basePath
 
 
@@ -60,7 +60,7 @@ class TestDatasetCollection(unittest.TestCase):
         self.testSetsCollection.deleteDataset('ts1')
         self.assertEquals(['ts2'], self._getKeyNames() )
         self.testSetsCollection.deleteDataset('ts2')
-        self.assertEquals([], self._getKeykNames() )
+        self.assertEquals([], self._getKeyNames() )
         self.assertRaises(KeyError, self.testSetsCollection.deleteDataset, 'nonExixtingKey')
 
 
