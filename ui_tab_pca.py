@@ -101,8 +101,11 @@ class PcaModel(HasTraits):
                 activated_index='_selIndex',
                 selected_index='_selIndex',
                 ),
+             show_label = False
              ),
-        Item('handler._runPca'),
+        Item('handler._runPca',
+             show_label = False
+             ),
         handler = PcaViewHandler,
         )
 

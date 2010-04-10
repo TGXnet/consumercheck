@@ -123,17 +123,17 @@ datasets_view = View(
     HGroup(
         Group(
             dslist_view_item,
-            label='Collection list',
-            show_border=True
+            label = 'Collection list',
+            show_border = True,
             ), # end Collection list group
         Group(
             dataset_view_item,
-            label='Dataset',
-            show_border=True,
+            label = 'Dataset',
+            show_border = True,
             ), # end Dataset frame
         orientation = 'horizontal',
         # label='Datasets',
-    ),
+        ),
     handler = DsViewHandler,
     )
 
