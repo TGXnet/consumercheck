@@ -51,6 +51,10 @@ class DatasetCollection(HasTraits):
         logging.info("deleteDataset: %s", internalName)
 
 
+    def getDatasetList(self):
+        return self._dataDict.values()
+
+
     def _get_indexNameList(self):
         indexList = []
         for sn, so in self._dataDict.iteritems():

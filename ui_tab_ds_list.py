@@ -1,5 +1,7 @@
 # coding=utf-8
 
+# FIXME: This is replaced by ui_datasets_tree
+
 #stdlib imports
 import logging
 
@@ -87,6 +89,7 @@ class DsViewHandler(Handler):
 
 
     # FIXME: Not in use yet!!
+    # And shoud be a part of dataset handler
     def handler_viewTable_changed(self, uiInfo):
         """Activated show table."""
         if uiInfo.initialized:
@@ -133,7 +136,7 @@ datasets_view = View(
             ), # end Dataset frame
         orientation = 'horizontal',
         # label='Datasets',
-    ),
+        ),
     handler = DsViewHandler,
     )
 

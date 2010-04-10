@@ -1,6 +1,6 @@
 # coding=utf-8
 
-# Python SL imports
+# Python stdlib imports
 from os import path
 
 # Enthought imports

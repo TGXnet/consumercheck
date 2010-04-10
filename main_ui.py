@@ -19,7 +19,7 @@ from dataset_collection import DatasetCollection
 from ds import DataSet
 from file_import_ui import FileImport
 from ui_tab_pca import PcaModel
-from ui_tab_ds_list import datasets_view
+from ui_datasets_tree import tree_view
 
 
 class MainViewHandler(Handler):
@@ -69,10 +69,13 @@ class MainUi(HasTraits):
     # The main view
     traits_ui_view = View(
         Group(
-            Item('dsl', editor=InstanceEditor(view=datasets_view), style='custom'),
+            Item('dsl', editor=InstanceEditor(view=tree_view), style='custom'),
             Item('pca', editor=InstanceEditor(), style='custom'),
             layout='tabbed'
             ), # end UI tabs group
+        resizable = True,
+        width = .3,
+        height = .3,
         title = 'Consumer Check',
         menubar = MenuBar(
             Menu(setImport, exitAction,
