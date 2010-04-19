@@ -40,7 +40,7 @@ class MainViewHandler(Handler):
         fiUi = fi.edit_traits(kind='modal')
         if fiUi.result:
             ds = DataSet()
-            ds.importDataset(fi.fileName, fi.colHead)
+            ds.importDataset(fi.fileName, fi.colHead, fi.txtObjNames)
             uiInfo.object.dsl.addDataset(ds)
             logging.info("importDataset: internal name = %s", ds._internalName)
         else:

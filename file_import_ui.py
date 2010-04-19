@@ -11,3 +11,4 @@ class FileImport(HasTraits):
     """File import dialog"""
     fileName = File()
     colHead = Bool(True)
+    txtObjNames = Bool(False)

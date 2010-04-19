@@ -63,10 +63,10 @@ class DataSet(HasTraits):
     nCols = Property(label='Cols', desc='Number of variables')
 
 
-    def importDataset(self, fileUri, colHead = True):
+    def importDataset(self, fileUri, colHead = True, txtObjNames = False):
         """ Initiaze dataimport from file"""
         self._sourceFile = fileUri
-        txtImporter = FileData(self._sourceFile, colHead)
+        txtImporter = FileData(self._sourceFile, colHead, txtObjNames)
         self._matrixColumnHeader = txtImporter.getColumnHeader()
         self._matrix = txtImporter.getMatrix()
         # FIXME: Find a better more general solution
