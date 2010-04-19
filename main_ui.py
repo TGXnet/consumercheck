@@ -18,8 +18,9 @@ from enthought.traits.ui.menu \
 from dataset_collection import DatasetCollection
 from ds import DataSet
 from file_import_ui import FileImport
-from ui_tab_pca import PcaModel
 from ui_datasets_tree import tree_view
+from ui_tab_pca import PcaModel
+from ui_tab_prefmap import PrefmapModel, prefmap_tree_view
 
 
 class MainViewHandler(Handler):
@@ -58,6 +59,9 @@ class MainUi(HasTraits):
     # Object representing the PCA and the GUI tab
     pca = Instance(PcaModel, PcaModel(dsl=dsl))
 
+    # Object representing the Prefmap and the GUI tab
+    prefmap = Instance(PrefmapModel, PrefmapModel(dsl=dsl))
+
     # Create an action that open dialog for dataimport
     setImport = Action(name = 'Add &Dataset',
                        action = 'importDataset')
@@ -71,6 +75,7 @@ class MainUi(HasTraits):
         Group(
             Item('dsl', editor=InstanceEditor(view=tree_view), style='custom'),
             Item('pca', editor=InstanceEditor(), style='custom'),
+            Item('prefmap', editor=InstanceEditor(view=prefmap_tree_view), style='custom'),
             layout='tabbed'
             ), # end UI tabs group
         resizable = True,
