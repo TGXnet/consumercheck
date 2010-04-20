@@ -87,4 +87,9 @@ class DataSet(HasTraits):
         else:
             return 0
 
+
+    def isEqDisplayName(self, name):
+        return name == self._displayName
+
+
 #end DataSet

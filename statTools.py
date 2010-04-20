@@ -18,9 +18,7 @@ def RVcoeff(dataList):
 
     REF: H. Abdi, D. Valentin; 'The STATIS method' (unofficial paper)
 
-    <dataList>: python list holding the matrices that are to be compared. 
-                Number of rows needs to be identical for all matrices, but 
-                number of columns may differ. Minimum number of matrices is 2.
+    <dataList>: type list holding rectangular matrices (no need for equal dim)
     """
 
     # First centre matrices column-wise
@@ -43,9 +41,12 @@ def RVcoeff(dataList):
 
 
     for index, element in numpy.ndenumerate(C):
-        nom = numpy.trace(numpy.dot(numpy.transpose(scalArrList[index[0]]), scalArrList[index[1]]))
-        denom1 = numpy.trace(numpy.dot(numpy.transpose(scalArrList[index[0]]), scalArrList[index[0]]))
-        denom2 = numpy.trace(numpy.dot(numpy.transpose(scalArrList[index[1]]), scalArrList[index[1]]))
+        nom = numpy.trace(numpy.dot(numpy.transpose(scalArrList[index[0]]), \
+            scalArrList[index[1]]))
+        denom1 = numpy.trace(numpy.dot(numpy.transpose(scalArrList[index[0]]), \
+            scalArrList[index[0]]))
+        denom2 = numpy.trace(numpy.dot(numpy.transpose(scalArrList[index[1]]), \
+            scalArrList[index[1]]))
         Rv = nom / numpy.sqrt(denom1 * denom2)
         C[index[0], index[1]] = Rv
 
@@ -58,9 +59,6 @@ def ortho(arr1, arr2):
     """
     This function orthogonalises arr1 with respect to arr2. The function then
     returns orthogonalised array arr1_orth.
-    
-    <arr1>: numpy array
-    <arr2>: numpy array
     """
 
     # Find number of rows, such that identity matrix I can be created
@@ -76,14 +74,12 @@ def ortho(arr1, arr2):
     arr1_orth = numpy.dot((I - term3), arr1)
 
     return arr1_orth
-    
-    
-    
+
+
+
 def centre(Y):
     """
     This function centers an array column-wise.
-    
-    <Y>: numpy array
     """
 
     # First make a copy of input matrix and make it a matrix with float
@@ -103,14 +99,11 @@ def centre(Y):
 
 def STD(Y, selection):
     """
-    This function standardises the input array either 
+    This function standardises the input array either
     column-wise (selection = 0) or row-wise (selection = 1).
-    
-    <Y>: numpy array
-    <selection>: scalar; possible values: 0 and 1
     """
-    
     # First make a copy of input array
+    #X = array(Y, float)
     X = Y.copy()
     numberOfObjects, numberOfVariables = numpy.shape(X)
     colMeans = numpy.mean(X, axis=0)
@@ -130,10 +123,67 @@ def STD(Y, selection):
         transX = numpy.transpose(X)
         transColMeans = numpy.mean(transX, axis=0)
         transColSTD = numpy.std(transX, axis=0, ddof=1)
-        
+
         centTransX = transX - transColMeans
         stdTransX = centTransX / transColSTD
         stdX = numpy.transpose(stdTransX)
-        
+
 
     return stdX
+
+
+
+class arrayIO:
+    def __init__(self, fileName):
+        """
+        This class reads data from text files. First row are variable names
+        and first row are object names.
+
+        INPUT:
+        <fileName>: type string
+        """
+
+        # File is opened using name that is given by
+        # the file-open dialog in the main file.
+        dataFile = open(fileName, 'r')
+
+
+        # All the data is read into a list.
+        allText = dataFile.readlines()
+
+
+        # Initiate lists that will hold variable names, object names and data.
+        varNames = []
+        objNames = []
+        data = []
+
+
+        # Loop through allText and extract variable names, object names and
+        # data.
+        for ind, row in enumerate(allText):
+
+            # Get variable names from first row
+            if ind == 0:
+                firstRowList = row.split('\t')
+                firstRowList[-1] = firstRowList[-1].rstrip()
+                varNames = firstRowList[1:]
+
+            # Split remaining rows into object names and data
+            else:
+                rowObjectsList = row.split('\t')
+                objNames.append(rowObjectsList[0])
+                rowObjectsList.pop(0)
+
+                # Convert strings into floats
+                floatList = []
+                for item in rowObjectsList:
+                    floatList.append(float(item))
+
+                data.append(floatList)
+
+
+        # Make variable names, object names and data available as
+        # class variables.
+        self.varNames = varNames[:]
+        self.objNames = objNames[:]
+        self.data = numpy.array(data)

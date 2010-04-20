@@ -34,6 +34,14 @@ class DatasetCollection(HasTraits):
         return self._dataDict[internalName]
 
 
+    def retriveDatasetByDisplayName(self, name):
+        """Return DataSet object by display name"""
+        # FIXME: This is dirty
+        for do in self._dataDict.itervalues():
+            if do.isEqDisplayName(name):
+                return do
+
+
     def addDataset(self, dataSet):
         """Add or update dataset"""
         name = dataSet._internalName
