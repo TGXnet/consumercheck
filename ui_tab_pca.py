@@ -47,11 +47,12 @@ class PcaViewHandler(Handler):
         if uiInfo.initialized:
             key = self._indexToName(self._selIndex)
             dm = uiInfo.object.dsl._dataDict[key]._matrix
-            pca = PCA(dm, 2, 1)
-            pc1 = pca.scores[:,0]
-            pc2 = pca.scores[:,1]
+            pca = PCA(dm, numPC = 2, mode = 1)
+            T = pca.getScores()
+            pc1 = T[:,0]
+            pc2 = T[:,1]
             plot = PlotScatter(
-                ttext = "PCA Plot",
+                ttext = "PCA Scores Plot",
                 valX = pc1,
                 valY = pc2
                 )
