@@ -11,7 +11,11 @@ from enthought.traits.ui.api \
     import View, Item, Group, Handler, EnumEditor, CheckListEditor,\
     TreeEditor, TreeNode
 from enthought.traits.ui.menu \
-    import Action, Menu, MenuBar
+    import Action, Menu, MenuBar, Separator
+from enthought.traits.ui.wx.tree_editor \
+    import NewAction, CopyAction, CutAction, \
+    PasteAction, DeleteAction, RenameAction
+
 
 # Local imports
 from dataset_collection import DatasetCollection
@@ -27,7 +31,6 @@ class PrefmapOverviewHandler( Handler ):
     nameSetX = Str(label = 'Sensory profiling (X)')
     nameSetY = Str(label = 'Consumer (Y)')
     validate = Enum('None', ['None', 'Full cross'], label = 'Validation')
-    _runPrefmap = Button(label = 'Do PrefMap')
 
 
     # Called when some value in object changes
@@ -35,25 +38,6 @@ class PrefmapOverviewHandler( Handler ):
         super(PrefmapOverviewHandler, self).setattr(
             info, object, name, value)
         logging.info("setattr: %s change to %s", name, value)
-
-
-    def handler__runPrefmap_changed(self, info):
-        logging.info("Do prefmap pressed")
-        model = mvr.plsr(info.object.setX._matrix,
-                         info.object.setY._matrix,
-                         centre="yes",
-                         fncomp=4,
-                         fmethod="oscorespls",
-                         fvalidation="LOO")
-        score1 = model['Scores T'][:,0]
-        score2 = model['Scores T'][:,1]
-        plot = PlotScatter(
-            ttext = "Prefmap Plot",
-            valX = score1,
-            valY = score2
-            )
-        plotUI = plot.edit_traits(kind='modal')
-
 
 
     def handler_nameSetX_changed(self, info):
@@ -82,6 +66,7 @@ class PrefmapOverviewHandler( Handler ):
             self.nameSetX = self.dsChoices[0]
             self.nameSetY = self.dsChoices[0]
 
+
 # end PrefmapOverviewHandler
 
 
@@ -90,8 +75,14 @@ class Options(HasTraits):
     dsl = Instance(DatasetCollection)
     setX = DataSet()
     setY = DataSet()
+
+    # Represent selections in tree
     overview = List()
     scores = List()
+    loadings = List()
+    corrLoadings = List()
+    explResVar = List()
+    measVsPred = List()
 
 
 class PrefmapModel(HasTraits):
@@ -114,8 +105,37 @@ class PrefmapModelHandler( Handler ):
         info.object.treeObjects.dsl = info.object.dsl
         print 'Init run'
 
+
+    def activate_score_plot(self, editor, object):
+        logging.info("Do prefmap pressed")
+        # prefmap = editor.get_parent( object )
+        print "Object"
+        object.print_traits()
+        print "Editor"
+        editor.print_traits()
+        model = mvr.plsr(object.setX._matrix,
+                         object.setY._matrix,
+                         centre="yes",
+                         fncomp=4,
+                         fmethod="oscorespls",
+                         fvalidation="LOO")
+        score1 = model['Scores T'][:,0]
+        score2 = model['Scores T'][:,1]
+        plot = PlotScatter(
+            ttext = "Prefmap plot",
+            valX = score1,
+            valY = score2
+            )
+        plotUI = plot.edit_traits(kind='modal')
+
 #end PrefmapModelHandler
 
+
+# Actions used by tree editor context menu
+plot_scores = Action(
+    name = 'Plot scores',
+    action = 'handler.activate_score_plot(editor, object)'
+    )
 
 # Views
 no_view = View()
@@ -128,15 +148,13 @@ prefmap_overview = View(
          editor = EnumEditor(name = 'handler.dsChoices'),
          ),
     Item('handler.validate'),
-    Item('handler._runPrefmap',
-         show_label = False
-         ),
     resizable = True,
     handler = PrefmapOverviewHandler(),
     )
 
 options_tree = TreeEditor(
     hide_root = False,
+    editable = True,
     nodes = [
         TreeNode( node_for = [ Options ],
                   children = '',
@@ -144,6 +162,12 @@ options_tree = TreeEditor(
                   tooltip = 'Oversikt',
                   view = no_view,
 #                  view = prefmap_overview,
+                  rename = False,
+                  rename_me = False,
+                  copy = False,
+                  delete = False,
+                  delete_me = False,
+                  insert = False,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'overview',
@@ -153,6 +177,31 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ Options ],
                   children = 'scores',
                   label = '=Scores',
+                  menu = Menu( plot_scores ),
+                  view = no_view,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'loadings',
+                  label = '=Loadings',
+                  menu = Menu( plot_scores ),
+                  view = no_view,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'corrLoadings',
+                  label = '=Correlation loadings',
+                  menu = Menu( plot_scores ),
+                  view = no_view,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'explResVar',
+                  label = '=Expl. / res var',
+                  menu = Menu( plot_scores ),
+                  view = no_view,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'measVsPred',
+                  label = '=Meas vs pred',
+                  menu = Menu( plot_scores ),
                   view = no_view,
                   ),
         ]
