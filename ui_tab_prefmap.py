@@ -16,7 +16,7 @@ from enthought.traits.ui.menu \
 # Local imports
 from dataset_collection import DatasetCollection
 from ds import DataSet
-from plot_pca_ui import PlotPcaNew
+from plot_scatter import PlotScatter
 import mvr
 
 
@@ -47,7 +47,11 @@ class PrefmapOverviewHandler( Handler ):
                          fvalidation="LOO")
         score1 = model['Scores T'][:,0]
         score2 = model['Scores T'][:,1]
-        plot = PlotPcaNew(pc1=score1, pc2=score2)
+        plot = PlotScatter(
+            ttext = "Prefmap Plot",
+            valX = score1,
+            valY = score2
+            )
         plotUI = plot.edit_traits(kind='modal')
 
 
