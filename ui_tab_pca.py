@@ -49,10 +49,15 @@ class PcaViewHandler(Handler):
             dm = uiInfo.object.dsl._dataDict[key]._matrix
             pca = PCA(dm, numPC = 2, mode = 1)
             T = pca.getScores()
+            calExplVars = pca.getCalExplVar()
             pc1 = T[:,0]
             pc2 = T[:,1]
+            pc1CEV = int(calExplVars[1])
+            pc2CEV = int(calExplVars[2])
             plot = PlotScatter(
                 ttext = "PCA Scores Plot",
+                titleX = "PC1 ({0}%)".format(pc1CEV),
+                titleY = "PC2 ({0}%)".format(pc2CEV),
                 valX = pc1,
                 valY = pc2
                 )

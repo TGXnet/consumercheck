@@ -29,7 +29,13 @@ class TestDatasetModel(unittest.TestCase):
 
 
     def testImport(self):
-        plot = PlotScatter(ttext='PCA plot', valX=self.x, valY=self.y)
+        plot = PlotScatter(
+            ttext='PCA plot',
+            titleX = 'PC1',
+            titleY = 'PC2',
+            valX=self.x,
+            valY=self.y
+            )
         ui = plot.configure_traits()
 
 

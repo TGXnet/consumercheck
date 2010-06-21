@@ -28,6 +28,8 @@ bg_color="lightgray"
 class PlotScatter(HasTraits):
 
     ttext = Str()
+    titleX = Str()
+    titleY = Str()
     valX = Array()
     valY = Array()
 
@@ -81,6 +83,8 @@ class PlotScatter(HasTraits):
         plot.title = self.ttext
         plot.line_width = 0.5
         plot.padding = 50
+        plot.x_axis.title = self.titleX
+        plot.y_axis.title = self.titleY
 
         return plot
 
