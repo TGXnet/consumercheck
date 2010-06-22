@@ -10,7 +10,7 @@ from enthought.traits.api import \
 
 
 # Local imports
-from file_import import FileData
+from file_importer import FileImporter
 
 
 class DataSet(HasTraits):
@@ -63,11 +63,12 @@ class DataSet(HasTraits):
     nCols = Property(label='Cols', desc='Number of variables')
 
 
-    def importDataset(self, fileUri, colHead = True, txtObjNames = False):
+    def importDataset(self, fileUri, haveVarNames = True, haveObjNames = False):
         """ Initiaze dataimport from file"""
         self._sourceFile = fileUri
-        txtImporter = FileData(self._sourceFile, colHead, txtObjNames)
-        self._matrixColumnHeader = txtImporter.getColumnHeader()
+        txtImporter = FileImporter(self._sourceFile, haveVarNames, haveObjNames)
+        txtImporter.readFile()
+        self._matrixColumnHeader = txtImporter.getVariableNames()
         self._matrix = txtImporter.getMatrix()
         # FIXME: Find a better more general solution
         fn = path.basename(fileUri)

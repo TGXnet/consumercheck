@@ -17,7 +17,7 @@ from enthought.traits.ui.menu \
 # Local imports
 from dataset_collection import DatasetCollection
 from ds import DataSet
-from file_import_ui import FileImport
+from file_importer_ui import FileImporterUi
 from ui_datasets_tree import tree_view
 from ui_tab_pca import PcaModel
 from ui_tab_prefmap import PrefmapModel, prefmap_tree_view
@@ -36,11 +36,15 @@ class MainViewHandler(Handler):
     # default context is object
     def importDataset(self, uiInfo):
         """Action called when activating importing of new dataset"""
-        fi = FileImport()
-        fiUi = fi.edit_traits(kind='modal')
+        importerUi = FileImporterUi()
+        fiUi = importerUi.edit_traits(kind='modal')
         if fiUi.result:
             ds = DataSet()
-            ds.importDataset(fi.fileName, fi.colHead, fi.txtObjNames)
+            ds.importDataset(
+                importerUi.fileName,
+                importerUi.haveVarNames,
+                importerUi.haveObjNames
+                )
             uiInfo.object.dsl.addDataset(ds)
             logging.info("importDataset: internal name = %s", ds._internalName)
         else:

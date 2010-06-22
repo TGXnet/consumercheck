@@ -7,8 +7,8 @@ from enthought.traits.ui.api \
     import View, Item, Group, FileEditor, ButtonEditor
 
 
-class FileImport(HasTraits):
+class FileImporterUi(HasTraits):
     """File import dialog"""
     fileName = File()
-    colHead = Bool(True)
-    txtObjNames = Bool(False)
+    haveVarNames = Bool(True)
+    haveObjNames = Bool(False)

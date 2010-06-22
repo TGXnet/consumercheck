@@ -22,7 +22,6 @@ from dataset_collection import DatasetCollection
 from ds import DataSet
 from ds_ui import ds_list_tab
 from table_ui import MatrixView
-from file_import_ui import FileImport
 
 
 class DsViewHandler(Handler):
