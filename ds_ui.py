@@ -13,7 +13,8 @@ dsview = View(
     Item(name = '_internalName'),
     Item(name = '_displayName'),
     Item(name = '_datasetType'),
-    Item(name = '_matrixColumnHeader'),
+    Item(name = 'variableNames'),
+    Item(name = 'objectNames'),
     Item(name = '_isCalculated'),
     buttons = [OKButton, CancelButton])
 
