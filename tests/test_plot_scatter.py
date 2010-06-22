@@ -26,6 +26,9 @@ class TestDatasetModel(unittest.TestCase):
         numpts = 10
         self.x = sort(random(numpts))
         self.y = random(numpts)
+        self.labels = []
+        for i in xrange(numpts):
+            self.labels.append("Test{0}".format(i))
 
 
     def testImport(self):
@@ -33,6 +36,7 @@ class TestDatasetModel(unittest.TestCase):
             ttext='PCA plot',
             titleX = 'PC1',
             titleY = 'PC2',
+            valPtLabel = self.labels,
             valX=self.x,
             valY=self.y
             )

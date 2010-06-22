@@ -10,11 +10,11 @@ from numpy.random import random
 
 # Enthought library imports
 from enthought.enable.api import Component, ComponentEditor
-from enthought.traits.api import HasTraits, Instance, Array, Str
+from enthought.traits.api import HasTraits, Instance, Array, Str, List
 from enthought.traits.ui.api import Item, Group, View
 
 # Chaco imports
-from enthought.chaco.api import ArrayPlotData, Plot
+from enthought.chaco.api import ArrayPlotData, Plot, DataLabel
 
 #===============================================================================
 # Attributes to use for the plot view.
@@ -30,6 +30,7 @@ class PlotScatter(HasTraits):
     ttext = Str()
     titleX = Str()
     titleY = Str()
+    valPtLabel = List()
     valX = Array()
     valY = Array()
 
@@ -83,10 +84,31 @@ class PlotScatter(HasTraits):
         plot.title = self.ttext
         plot.line_width = 0.5
         plot.padding = 50
-        plot.x_axis.title = self.titleX
-        plot.y_axis.title = self.titleY
+
+        plot = self._addAxisTitle(plot)
+        plot = self._addPtLabels(plot)
 
         return plot
+
+
+    def _addAxisTitle(self, plot):
+        plot.x_axis.title = self.titleX
+        plot.y_axis.title = self.titleY
+        return plot
+
+
+
+    def _addPtLabels(self, plot):
+        for i in xrange(len(self.valPtLabel)):
+            label = DataLabel(
+                component = plot,
+                data_point = (self.valX[i], self.valY[i]),
+                label_format = self.valPtLabel[i]
+                )
+            plot.overlays.append(label)
+
+        return plot
+
 
 
     def _calcBoundsLimits(self):
