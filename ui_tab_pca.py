@@ -47,6 +47,7 @@ class PcaViewHandler(Handler):
         if uiInfo.initialized:
             key = self._indexToName(self._selIndex)
             dm = uiInfo.object.dsl._dataDict[key]._matrix
+            objNames = uiInfo.object.dsl._dataDict[key].objectNames
             pca = PCA(dm, numPC = 2, mode = 1)
             T = pca.getScores()
             calExplVars = pca.getCalExplVar()
@@ -58,10 +59,12 @@ class PcaViewHandler(Handler):
                 ttext = "PCA Scores Plot",
                 titleX = "PC1 ({0}%)".format(pc1CEV),
                 titleY = "PC2 ({0}%)".format(pc2CEV),
+                valPtLabel = objNames,
                 valX = pc1,
                 valY = pc2
                 )
-            plotUI = plot.edit_traits(kind='modal')
+#            plotUI = plot.edit_traits(kind='modal')
+            plotUI = plot.configure_traits()
 
 
     def _indexToName(self, index):

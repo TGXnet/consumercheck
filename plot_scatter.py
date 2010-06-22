@@ -18,7 +18,7 @@ from enthought.chaco.api import ArrayPlotData, Plot, DataLabel
 
 #===============================================================================
 # Attributes to use for the plot view.
-size = (350, 350)
+size = (650, 650)
 title = "ConsumerCheck plot"
 bg_color="lightgray"
 
