@@ -27,7 +27,7 @@ class DataSet(HasTraits):
     """
 
     # The data read from the file
-    _matrix = Array(desc = 'Data matrix')
+    matrix = Array(desc = 'Data matrix')
 
     # Used as dictionary index
     _internalName = String('unnamed', label = 'Dict key name')
@@ -68,7 +68,7 @@ class DataSet(HasTraits):
         self._sourceFile = fileUri
         txtImporter = FileImporter(self._sourceFile, haveVarNames, haveObjNames)
         txtImporter.readFile()
-        self._matrix = txtImporter.getMatrix()
+        self.matrix = txtImporter.getMatrix()
 
         if haveVarNames:
             self.variableNames = txtImporter.getVariableNames()
@@ -83,15 +83,15 @@ class DataSet(HasTraits):
 
 
     def _get_nRows(self):
-        if self._matrix.shape[0]>0:
-            return self._matrix.shape[0]
+        if self.matrix.shape[0]>0:
+            return self.matrix.shape[0]
         else:
             return 0
 
 
     def _get_nCols(self):
-        if self._matrix.shape[0]>0:
-            return self._matrix.shape[1]
+        if self.matrix.shape[0]>0:
+            return self.matrix.shape[1]
         else:
             return 0
 

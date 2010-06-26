@@ -109,8 +109,8 @@ class PrefmapModelHandler( Handler ):
     def activate_score_plot(self, editor, object):
         logging.info("Do prefmap pressed")
         # prefmap = editor.get_parent( object )
-        model = plsr(object.setX._matrix,
-                     object.setY._matrix,
+        model = plsr(object.setX.matrix,
+                     object.setY.matrix,
                      centre="yes",
                      fncomp=4,
                      fmethod="oscorespls",

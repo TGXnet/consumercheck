@@ -100,7 +100,7 @@ class PcaModelHandler( Handler ):
         logging.info("Do pca pressed")
         # pca = editor.get_parent( object )
         objNames = object.setX.objectNames
-        pca = PCA(object.setX._matrix, numPC = 2, mode = 1)
+        pca = PCA(object.setX.matrix, numPC = 2, mode = 1)
         T = pca.getScores()
         calExplVars = pca.getCalExplVar()
         pc1 = T[:,0]
