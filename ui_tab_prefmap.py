@@ -21,7 +21,8 @@ from enthought.traits.ui.wx.tree_editor \
 from dataset_collection import DatasetCollection
 from ds import DataSet
 from plot_scatter import PlotScatter
-import mvr
+# import mvr
+from mvr import plsr
 
 
 class PrefmapOverviewHandler( Handler ):
@@ -103,22 +104,17 @@ class PrefmapModelHandler( Handler ):
 
     def init(self, info):
         info.object.treeObjects.dsl = info.object.dsl
-        print 'Init run'
 
 
     def activate_score_plot(self, editor, object):
         logging.info("Do prefmap pressed")
         # prefmap = editor.get_parent( object )
-        print "Object"
-        object.print_traits()
-        print "Editor"
-        editor.print_traits()
-        model = mvr.plsr(object.setX._matrix,
-                         object.setY._matrix,
-                         centre="yes",
-                         fncomp=4,
-                         fmethod="oscorespls",
-                         fvalidation="LOO")
+        model = plsr(object.setX._matrix,
+                     object.setY._matrix,
+                     centre="yes",
+                     fncomp=4,
+                     fmethod="oscorespls",
+                     fvalidation="LOO")
         score1 = model['Scores T'][:,0]
         score2 = model['Scores T'][:,1]
         plot = PlotScatter(
