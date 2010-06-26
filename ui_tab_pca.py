@@ -5,130 +5,203 @@ import logging
 
 # Enthought imports
 from enthought.traits.api \
-    import HasTraits, Instance, DelegatesTo, Event, Button, Str, Int,\
-    File, Bool, List, on_trait_change
+    import HasTraits, Instance, Event, Str,\
+    List, on_trait_change, Enum, Button
 from enthought.traits.ui.api \
-    import View, Item, Group, ListStrEditor, Handler, FileEditor,\
-    InstanceEditor, ButtonEditor
+    import View, Item, Group, Handler, EnumEditor, CheckListEditor,\
+    TreeEditor, TreeNode
 from enthought.traits.ui.menu \
-    import Action, Menu, MenuBar
+    import Action, Menu, MenuBar, Separator
+from enthought.traits.ui.wx.tree_editor \
+    import NewAction, CopyAction, CutAction, \
+    PasteAction, DeleteAction, RenameAction
+
 
 # Local imports
 from dataset_collection import DatasetCollection
 from ds import DataSet
 from plot_scatter import PlotScatter
+#import mvr
 from nipals import PCA
 
 
-class PcaViewHandler(Handler):
+class PcaOverviewHandler( Handler ):
     """Handler for dataset view"""
 
-    _runPca = Button(label = 'Run PCA')
-
-    # list of tuples (internalName, displayName)
-    _indexList = List()
-
-    # View list of dataset names
-    _nameList    = List()
-
-    # Index to the selected dataset name
-    _selIndex = Int(-1)
+    dsChoices = List(trait = Str)
+    nameSetX = Str(label = 'PCA input matrix')
 
 
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
-        super(PcaViewHandler, self).setattr(info, object, name, value)
+        super(PcaOverviewHandler, self).setattr(
+            info, object, name, value)
         logging.info("setattr: %s change to %s", name, value)
 
 
-    def handler__runPca_changed(self, uiInfo):
-        """PCA activated"""
-        logging.info("runPca_changed: RunPca pressed")
-        if uiInfo.initialized:
-            key = self._indexToName(self._selIndex)
-            dm = uiInfo.object.dsl._dataDict[key]._matrix
-            objNames = uiInfo.object.dsl._dataDict[key].objectNames
-            pca = PCA(dm, numPC = 2, mode = 1)
-            T = pca.getScores()
-            calExplVars = pca.getCalExplVar()
-            pc1 = T[:,0]
-            pc2 = T[:,1]
-            pc1CEV = int(calExplVars[1])
-            pc2CEV = int(calExplVars[2])
-            plot = PlotScatter(
-                ttext = "PCA Scores Plot",
-                titleX = "PC1 ({0}%)".format(pc1CEV),
-                titleY = "PC2 ({0}%)".format(pc2CEV),
-                valPtLabel = objNames,
-                valX = pc1,
-                valY = pc2
-                )
-#            plotUI = plot.edit_traits(kind='modal')
-            plotUI = plot.configure_traits()
+    def handler_nameSetX_changed(self, info):
+        info.object.setX = info.object.dsl.retriveDatasetByDisplayName(
+            info.handler.nameSetX)
+
+    def init(self, info):
+        self._buildSelectionList(info.object)
 
 
-    def _indexToName(self, index):
-        """Return dataset name from list index"""
-        return self._indexList[index][0]
+    def object_datasetsAltered_changed(self, info):
+        self._buildSelectionList(info.object)
 
 
-    def object_datasetsAltered_changed(self, uiInfo):
-        self._buildIndexList(uiInfo.object.dsl)
-        logging.info("datasetAltered: activated")
+    def _buildSelectionList(self, pcaObj):
+        self.dsChoices = []
+        for kName, dName in pcaObj.dsl.indexNameList:
+            self.dsChoices.append(dName)
+        if len(self.dsChoices) > 0:
+            self.nameSetX = self.dsChoices[0]
 
 
-    # FIXME: Copy from ui_tab_ds_list
-    def _buildIndexList(self, datasetCollectionObject):
-        self._indexList = datasetCollectionObject.indexNameList
-        self._nameList = []
-        for kName, dName in self._indexList:
-            self._nameList.append(dName)
+# end PcaOverviewHandler
 
 
-    def handler__selIndex_changed(self, uiInfo):
-        logging.info("selIndex_changed: to %s", self._selIndex)
+class Options(HasTraits):
+    name = Str( 'Options' )
+    dsl = Instance(DatasetCollection)
+    setX = DataSet()
 
-
-    # end PcaViewHandler
-
+    # Represent selections in tree
+    overview = List()
+    scores = List()
+    loadings = List()
+    corrLoadings = List()
+    explResVar = List()
+    measVsPred = List()
 
 
 class PcaModel(HasTraits):
-    """Model for PCA"""
+    """Model for Pca"""
     dsl = Instance(DatasetCollection)
     datasetsAltered = Event
+    treeObjects = Instance( Options, Options() )
 
 
     @on_trait_change('dsl:[dataDictContentChanged,datasetNameChanged]')
     def datasetsChanged(self, object, name, old, new):
         self.datasetsAltered = True
 
+#end PcaModel
 
 
-    # View
-    pca_view = View(
-        Item('handler._nameList',
-             editor = ListStrEditor(
-                editable=False,
-                multi_select=False,
-                activated_index='_selIndex',
-                selected_index='_selIndex',
-                ),
-             show_label = False
-             ),
-        Item('handler._runPca',
-             show_label = False
-             ),
-        handler = PcaViewHandler,
-        )
+class PcaModelHandler( Handler ):
 
-    #end PcaModel
+    def init(self, info):
+        info.object.treeObjects.dsl = info.object.dsl
 
 
+    def activate_score_plot(self, editor, object):
+        logging.info("Do pca pressed")
+        # pca = editor.get_parent( object )
+        objNames = object.setX.objectNames
+        pca = PCA(object.setX._matrix, numPC = 2, mode = 1)
+        T = pca.getScores()
+        calExplVars = pca.getCalExplVar()
+        pc1 = T[:,0]
+        pc2 = T[:,1]
+        pc1CEV = int(calExplVars[1])
+        pc2CEV = int(calExplVars[2])
+        plot = PlotScatter(
+            ttext = "PCA Scores Plot",
+            titleX = "PC1 ({0}%)".format(pc1CEV),
+            titleY = "PC2 ({0}%)".format(pc2CEV),
+            valPtLabel = objNames,
+            valX = pc1,
+            valY = pc2
+            )
+#       plotUI = plot.edit_traits(kind='modal')
+        plotUI = plot.configure_traits()
 
-if __name__ == '__main__':
-    """Run the application. """
-    testset = DataSet()
-    testset.importDataset('./testdata/test.txt')
-    pca = PcaModel()
-    ui = pca.edit_traits()
+#end PcaModelHandler
+
+
+# Actions used by tree editor context menu
+plot_scores = Action(
+    name = 'Plot scores',
+    action = 'handler.activate_score_plot(editor, object)'
+    )
+
+# Views
+no_view = View()
+
+pca_overview = View(
+    Item('handler.nameSetX',
+         editor = EnumEditor(name = 'handler.dsChoices'),
+         ),
+    resizable = True,
+    handler = PcaOverviewHandler(),
+    )
+
+options_tree = TreeEditor(
+    hide_root = False,
+    editable = True,
+    nodes = [
+        TreeNode( node_for = [ Options ],
+                  children = '',
+                  label = 'name',
+                  tooltip = 'Oversikt',
+                  view = no_view,
+#                  view = pca_overview,
+                  rename = False,
+                  rename_me = False,
+                  copy = False,
+                  delete = False,
+                  delete_me = False,
+                  insert = False,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'overview',
+                  label = '=Overview',
+                  view = pca_overview,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'scores',
+                  label = '=Scores',
+                  menu = Menu( plot_scores ),
+                  view = no_view,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'loadings',
+                  label = '=Loadings',
+                  menu = Menu( plot_scores ),
+                  view = no_view,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'corrLoadings',
+                  label = '=Correlation loadings',
+                  menu = Menu( plot_scores ),
+                  view = no_view,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'explResVar',
+                  label = '=Expl. / res var',
+                  menu = Menu( plot_scores ),
+                  view = no_view,
+                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'measVsPred',
+                  label = '=Meas vs pred',
+                  menu = Menu( plot_scores ),
+                  view = no_view,
+                  ),
+        ]
+    )
+
+pca_tree_view = View(
+    Item( 'treeObjects',
+          editor = options_tree,
+          resizable = True,
+          show_label = False
+          ),
+    title = 'Options tree',
+    resizable = True,
+    width = .4,
+    height = .3,
+    handler = PcaModelHandler(),
+    )

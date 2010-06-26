@@ -19,7 +19,7 @@ from dataset_collection import DatasetCollection
 from ds import DataSet
 from file_importer_ui import FileImporterUi
 from ui_datasets_tree import tree_view
-from ui_tab_pca import PcaModel
+from ui_tab_pca import PcaModel, pca_tree_view
 from ui_tab_prefmap import PrefmapModel, prefmap_tree_view
 
 
@@ -77,9 +77,9 @@ class MainUi(HasTraits):
     # The main view
     traits_ui_view = View(
         Group(
-            Item('dsl', editor=InstanceEditor(view=tree_view), style='custom'),
-            Item('pca', editor=InstanceEditor(), style='custom'),
-            Item('prefmap', editor=InstanceEditor(view=prefmap_tree_view), style='custom'),
+            Item('dsl', editor=InstanceEditor(view = tree_view), style='custom'),
+            Item('pca', editor=InstanceEditor(view = pca_tree_view), style='custom'),
+            Item('prefmap', editor=InstanceEditor(view = prefmap_tree_view), style='custom'),
             layout='tabbed'
             ), # end UI tabs group
         resizable = True,
