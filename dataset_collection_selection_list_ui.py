@@ -114,8 +114,5 @@ selection_list_view = View(
           editor     = dataset_editor
     ),
     title     = 'Selection list',
-    width     = 0.2,
-    height    = 0.3,
-    resizable = True,
     handler = SelectionListHandler
 )

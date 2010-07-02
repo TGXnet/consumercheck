@@ -6,7 +6,7 @@ import logging
 # Enthought imports
 from enthought.traits.api \
     import HasTraits, Instance, Event, Str,\
-    List, on_trait_change, Enum, Button
+    List, on_trait_change, Enum, Button, Any
 from enthought.traits.ui.api \
     import View, Item, Group, Handler, EnumEditor, CheckListEditor,\
     TreeEditor, TreeNode
@@ -35,9 +35,9 @@ class Options(HasTraits):
     overview = List()
     scores = List()
     loadings = List()
-    corrLoadings = List()
+#    corrLoadings = List()
     explResVar = List()
-    measVsPred = List()
+#    measVsPred = List()
 
 
 class PcaModel(HasTraits):
@@ -46,7 +46,6 @@ class PcaModel(HasTraits):
     datasetsAltered = Event
     treeObjects = Instance( Options, Options() )
 
-
     @on_trait_change('dsl:[dataDictContentChanged,datasetNameChanged]')
     def datasetsChanged(self, object, name, old, new):
         self.datasetsAltered = True
@@ -54,47 +53,66 @@ class PcaModel(HasTraits):
 #end PcaModel
 
 
+
 class PcaModelHandler( Handler ):
 
     def init(self, info):
         info.object.treeObjects.dsl = info.object.dsl
 
-
-    def activate_score_plot(self, editor, object):
-        logging.info("Do pca pressed")
-        # pca = editor.get_parent( object )
-        selDataset = self.getSelectedDataset(object.dsl)
-        selDataset.print_traits()
-        objNames = selDataset.objectNames
-        pca = PCA(selDataset.matrix, numPC = 2, mode = 1)
-        T = pca.getScores()
-        calExplVars = pca.getCalExplVar()
-        pc1 = T[:,0]
-        pc2 = T[:,1]
-        pc1CEV = int(calExplVars[1])
-        pc2CEV = int(calExplVars[2])
-        plot = PlotScatter(
-            ttext = "PCA Scores Plot",
-            titleX = "PC1 ({0}%)".format(pc1CEV),
-            titleY = "PC2 ({0}%)".format(pc2CEV),
-            valPtLabel = objNames,
-            valX = pc1,
-            valY = pc2
-            )
-#       plotUI = plot.edit_traits(kind='modal')
-        plotUI = plot.configure_traits()
-
-
-    def getSelectedDataset(self, dsl):
-        if dsl.selectedSet[0]:
-            setName = dsl.selectedSet[0]
-            selSet = dsl.retriveDatasetByName(setName)
-            return selSet
-        else:
-            return None
-
-
 #end PcaModelHandler
+
+
+# Doble click handers
+def clkScores(obj):
+    logging.info("Scoreplot activated")
+    selDataset = getSelectedDataset(obj.dsl)
+    pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
+    labels = selDataset.objectNames
+    # T
+    pcaMatrix = pcaResults.getScores()
+    calExplVars = pcaResults.getCalExplVar()
+    plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Score plot")
+
+
+
+def clkLoadings(obj):
+    logging.info("Loadingplot activated")
+    selDataset = getSelectedDataset(obj.dsl)
+    labels = selDataset.variableNames
+    pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
+    pcaMatrix = pcaResults.getLoadings()
+    calExplVars = pcaResults.getCalExplVar()
+    plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Loadings plot")
+
+
+
+def plotPcaResult(pcaMatrix, calExplVars, labels, title):
+    pc1 = pcaMatrix[:,0]
+    pc2 = pcaMatrix[:,1]
+    pc1CEV = int(calExplVars[1])
+    pc2CEV = int(calExplVars[2])
+    plot = PlotScatter(
+        ttext = title,
+        titleX = "PC1 ({0}%)".format(pc1CEV),
+        titleY = "PC2 ({0}%)".format(pc2CEV),
+        valPtLabel = labels,
+        valX = pc1,
+        valY = pc2
+        )
+    plotUI = plot.configure_traits()
+
+
+
+
+def getSelectedDataset(dsl):
+    if dsl.selectedSet[0]:
+        setName = dsl.selectedSet[0]
+        selSet = dsl.retriveDatasetByName(setName)
+        return selSet
+    else:
+        return None
+
+
 
 
 # Actions used by tree editor context menu
@@ -111,6 +129,8 @@ no_view = View()
 options_tree = TreeEditor(
     hide_root = False,
     editable = True,
+#    on_dclick = dbclicked,
+#    click = 'handler.clickert',
     nodes = [
         TreeNode( node_for = [ Options ],
                   children = '',
@@ -133,33 +153,35 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ Options ],
                   children = 'scores',
                   label = '=Scores',
+                  on_dclick = clkScores,
                   menu = Menu( plot_scores ),
                   view = no_view,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'loadings',
                   label = '=Loadings',
+                  on_dclick = clkLoadings,
                   menu = Menu( plot_scores ),
                   view = no_view,
                   ),
-        TreeNode( node_for = [ Options ],
-                  children = 'corrLoadings',
-                  label = '=Correlation loadings',
-                  menu = Menu( plot_scores ),
-                  view = no_view,
-                  ),
+#        TreeNode( node_for = [ Options ],
+#                  children = 'corrLoadings',
+#                  label = '=Correlation loadings',
+#                  menu = Menu( plot_scores ),
+#                  view = no_view,
+#                  ),
         TreeNode( node_for = [ Options ],
                   children = 'explResVar',
                   label = '=Expl. / res var',
                   menu = Menu( plot_scores ),
                   view = no_view,
                   ),
-        TreeNode( node_for = [ Options ],
-                  children = 'measVsPred',
-                  label = '=Meas vs pred',
-                  menu = Menu( plot_scores ),
-                  view = no_view,
-                  ),
+#        TreeNode( node_for = [ Options ],
+#                  children = 'measVsPred',
+#                  label = '=Meas vs pred',
+#                  menu = Menu( plot_scores ),
+#                  view = no_view,
+#                  ),
         ]
     )
 
