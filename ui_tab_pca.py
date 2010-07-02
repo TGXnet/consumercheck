@@ -21,6 +21,7 @@ from enthought.traits.ui.wx.tree_editor \
 from dataset_collection import DatasetCollection
 from ds import DataSet
 from plot_scatter import PlotScatter
+from plot_line import PlotLine
 #import mvr
 from nipals import PCA
 # from dataset_selector_ui import dataset_selector
@@ -62,7 +63,7 @@ class PcaModelHandler( Handler ):
 #end PcaModelHandler
 
 
-# Doble click handers
+# Double click handlers
 def clkScores(obj):
     logging.info("Scoreplot activated")
     selDataset = getSelectedDataset(obj.dsl)
@@ -98,6 +99,34 @@ def plotPcaResult(pcaMatrix, calExplVars, labels, title):
         valPtLabel = labels,
         valX = pc1,
         valY = pc2
+        )
+    plotUI = plot.configure_traits()
+
+
+
+def clkExplResVar(obj):
+    logging.info("Explained variance plot activated")
+    selDataset = getSelectedDataset(obj.dsl)
+    pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
+    calExplVars = pcaResults.getCalExplVar()
+
+    accContrib = []
+    index = []
+    for i, contrib in calExplVars.iteritems():
+        index.append(i)
+        if i <= 1:
+            accContrib.append(contrib)
+        else:
+            prevSum =  accContrib[i-2]
+            accContrib.append(prevSum + contrib)
+
+    plot = PlotLine(
+        ttext = 'PCA explained variance',
+        titleX = '# of principal components',
+        titleY = 'Explainded variance [%]',
+        valX = index,
+        valY = accContrib,
+        limY = (0, 100),
         )
     plotUI = plot.configure_traits()
 
@@ -173,6 +202,7 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ Options ],
                   children = 'explResVar',
                   label = '=Expl. / res var',
+                  on_dclick = clkExplResVar,
                   menu = Menu( plot_scores ),
                   view = no_view,
                   ),
