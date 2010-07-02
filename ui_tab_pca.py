@@ -23,49 +23,13 @@ from ds import DataSet
 from plot_scatter import PlotScatter
 #import mvr
 from nipals import PCA
-
-
-class PcaOverviewHandler( Handler ):
-    """Handler for dataset view"""
-
-    dsChoices = List(trait = Str)
-    nameSetX = Str(label = 'PCA input matrix')
-
-
-    # Called when some value in object changes
-    def setattr(self, info, object, name, value):
-        super(PcaOverviewHandler, self).setattr(
-            info, object, name, value)
-        logging.info("setattr: %s change to %s", name, value)
-
-
-    def handler_nameSetX_changed(self, info):
-        info.object.setX = info.object.dsl.retriveDatasetByDisplayName(
-            info.handler.nameSetX)
-
-    def init(self, info):
-        self._buildSelectionList(info.object)
-
-
-    def object_datasetsAltered_changed(self, info):
-        self._buildSelectionList(info.object)
-
-
-    def _buildSelectionList(self, pcaObj):
-        self.dsChoices = []
-        for kName, dName in pcaObj.dsl.indexNameList:
-            self.dsChoices.append(dName)
-        if len(self.dsChoices) > 0:
-            self.nameSetX = self.dsChoices[0]
-
-
-# end PcaOverviewHandler
+# from dataset_selector_ui import dataset_selector
+from dataset_collection_selection_list_ui import selection_list_view
 
 
 class Options(HasTraits):
     name = Str( 'Options' )
     dsl = Instance(DatasetCollection)
-    setX = DataSet()
 
     # Represent selections in tree
     overview = List()
@@ -99,8 +63,10 @@ class PcaModelHandler( Handler ):
     def activate_score_plot(self, editor, object):
         logging.info("Do pca pressed")
         # pca = editor.get_parent( object )
-        objNames = object.setX.objectNames
-        pca = PCA(object.setX.matrix, numPC = 2, mode = 1)
+        selDataset = self.getSelectedDataset(object.dsl)
+        selDataset.print_traits()
+        objNames = selDataset.objectNames
+        pca = PCA(selDataset.matrix, numPC = 2, mode = 1)
         T = pca.getScores()
         calExplVars = pca.getCalExplVar()
         pc1 = T[:,0]
@@ -118,6 +84,16 @@ class PcaModelHandler( Handler ):
 #       plotUI = plot.edit_traits(kind='modal')
         plotUI = plot.configure_traits()
 
+
+    def getSelectedDataset(self, dsl):
+        if dsl.selectedSet[0]:
+            setName = dsl.selectedSet[0]
+            selSet = dsl.retriveDatasetByName(setName)
+            return selSet
+        else:
+            return None
+
+
 #end PcaModelHandler
 
 
@@ -127,16 +103,10 @@ plot_scores = Action(
     action = 'handler.activate_score_plot(editor, object)'
     )
 
+
 # Views
 no_view = View()
 
-pca_overview = View(
-    Item('handler.nameSetX',
-         editor = EnumEditor(name = 'handler.dsChoices'),
-         ),
-    resizable = True,
-    handler = PcaOverviewHandler(),
-    )
 
 options_tree = TreeEditor(
     hide_root = False,
@@ -147,7 +117,7 @@ options_tree = TreeEditor(
                   label = 'name',
                   tooltip = 'Oversikt',
                   view = no_view,
-#                  view = pca_overview,
+#                  view = dataset_selector,
                   rename = False,
                   rename_me = False,
                   copy = False,
@@ -158,7 +128,7 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ Options ],
                   children = 'overview',
                   label = '=Overview',
-                  view = pca_overview,
+                  view = selection_list_view,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'scores',

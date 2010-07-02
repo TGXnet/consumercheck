@@ -28,6 +28,9 @@ class DatasetCollection(HasTraits):
     # Dataset index list
     indexNameList = Property()
 
+    # Selected set list
+    selectedSet = List()
+
 
     def retriveDatasetByName(self, internalName):
         """Return DataSet object specified by internal name"""
