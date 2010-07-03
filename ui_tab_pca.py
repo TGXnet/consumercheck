@@ -24,8 +24,8 @@ from plot_scatter import PlotScatter
 from plot_line import PlotLine
 #import mvr
 from nipals import PCA
-# from dataset_selector_ui import dataset_selector
-from dataset_collection_selection_list_ui import selection_list_view
+from dataset_selector_ui import dataset_selector
+# from dataset_collection_selection_list_ui import selection_list_view
 
 
 class Options(HasTraits):
@@ -177,21 +177,21 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ Options ],
                   children = 'overview',
                   label = '=Overview',
-                  view = selection_list_view,
+                  view = dataset_selector,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'scores',
                   label = '=Scores',
                   on_dclick = clkScores,
-                  menu = Menu( plot_scores ),
-                  view = no_view,
+#                  menu = Menu( plot_scores ),
+                  view = dataset_selector,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'loadings',
                   label = '=Loadings',
                   on_dclick = clkLoadings,
-                  menu = Menu( plot_scores ),
-                  view = no_view,
+#                  menu = Menu( plot_scores ),
+                  view = dataset_selector,
                   ),
 #        TreeNode( node_for = [ Options ],
 #                  children = 'corrLoadings',
@@ -203,8 +203,8 @@ options_tree = TreeEditor(
                   children = 'explResVar',
                   label = '=Expl. / res var',
                   on_dclick = clkExplResVar,
-                  menu = Menu( plot_scores ),
-                  view = no_view,
+#                  menu = Menu( plot_scores ),
+                  view = dataset_selector,
                   ),
 #        TreeNode( node_for = [ Options ],
 #                  children = 'measVsPred',
