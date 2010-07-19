@@ -26,7 +26,7 @@ import sys
 setConsumerCheckIncludePath()
 from ds import DataSet
 from dataset_collection import DatasetCollection
-from ui_tab_prefmap import PrefmapModel, prefmap_tree_view, prefmap_overview
+from ui_tab_prefmap import PrefmapModel, prefmap_tree_view, prefmap_control
 
 
 import unittest
@@ -40,9 +40,9 @@ class TestUiPrefmap(unittest.TestCase):
     def testImport(self):
         baseFolder = findApplicationBasePath()
         ds1 = DataSet()
-        ds1.importDataset(baseFolder + '/testdata/test.txt')
+        ds1.importDataset(baseFolder + '/testdata/A_lables.txt', True, True)
         ds2 = DataSet()
-        ds2.importDataset(baseFolder + '/testdata/Ost.txt')
+        ds2.importDataset(baseFolder + '/testdata/C_lables.txt', True, True)
         dc = DatasetCollection()
         prefmap = PrefmapModel(dsl=dc)
         dc.addDataset(ds1)

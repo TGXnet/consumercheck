@@ -4,18 +4,8 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api \
-    import HasTraits, Instance, Event, Str,\
-    List, on_trait_change, Enum, Button
-from enthought.traits.ui.api \
-    import View, Item, Group, Handler, EnumEditor, CheckListEditor,\
-    TreeEditor, TreeNode
-from enthought.traits.ui.menu \
-    import Action, Menu, MenuBar, Separator
-from enthought.traits.ui.wx.tree_editor \
-    import NewAction, CopyAction, CutAction, \
-    PasteAction, DeleteAction, RenameAction
-
+from enthought.traits.api import HasTraits, Instance, Event, Str, List, on_trait_change
+from enthought.traits.ui.api import View, Item, Handler, TreeEditor, TreeNode
 
 # Local imports
 from dataset_collection import DatasetCollection
@@ -23,52 +13,8 @@ from ds import DataSet
 from plot_scatter import PlotScatter
 # import mvr
 from mvr import plsr
+from prefmap_control_ui import prefmap_control
 
-
-class PrefmapOverviewHandler( Handler ):
-    """Handler for dataset view"""
-
-    dsChoices = List(trait = Str)
-    nameSetX = Str(label = 'Sensory profiling (X)')
-    nameSetY = Str(label = 'Consumer (Y)')
-    validate = Enum('None', ['None', 'Full cross'], label = 'Validation')
-
-
-    # Called when some value in object changes
-    def setattr(self, info, object, name, value):
-        super(PrefmapOverviewHandler, self).setattr(
-            info, object, name, value)
-        logging.info("setattr: %s change to %s", name, value)
-
-
-    def handler_nameSetX_changed(self, info):
-        info.object.setX = info.object.dsl.retriveDatasetByDisplayName(
-            info.handler.nameSetX)
-
-
-    def handler_nameSetY_changed(self, info):
-        info.object.setY = info.object.dsl.retriveDatasetByDisplayName(
-            info.handler.nameSetY)
-
-
-    def init(self, info):
-        self._buildSelectionList(info.object)
-
-
-    def object_datasetsAltered_changed(self, info):
-        self._buildSelectionList(info.object)
-
-
-    def _buildSelectionList(self, prefmapObj):
-        self.dsChoices = []
-        for kName, dName in prefmapObj.dsl.indexNameList:
-            self.dsChoices.append(dName)
-        if len(self.dsChoices) > 0:
-            self.nameSetX = self.dsChoices[0]
-            self.nameSetY = self.dsChoices[0]
-
-
-# end PrefmapOverviewHandler
 
 
 class Options(HasTraits):
@@ -79,11 +25,15 @@ class Options(HasTraits):
 
     # Represent selections in tree
     overview = List()
+    # T scores
     scores = List()
-    loadings = List()
-    corrLoadings = List()
+    # Y loadings
+    yloadings = List()
+    # X loadings
+    xloadings = List()
+    #
     explResVar = List()
-    measVsPred = List()
+#    measVsPred = List()
 
 
 class PrefmapModel(HasTraits):
@@ -105,48 +55,68 @@ class PrefmapModelHandler( Handler ):
     def init(self, info):
         info.object.treeObjects.dsl = info.object.dsl
 
-
-    def activate_score_plot(self, editor, object):
-        logging.info("Do prefmap pressed")
-        # prefmap = editor.get_parent( object )
-        model = plsr(object.setX.matrix,
-                     object.setY.matrix,
-                     centre="yes",
-                     fncomp=4,
-                     fmethod="oscorespls",
-                     fvalidation="LOO")
-        score1 = model['Scores T'][:,0]
-        score2 = model['Scores T'][:,1]
-        plot = PlotScatter(
-            ttext = "Prefmap plot",
-            valX = score1,
-            valY = score2
-            )
-        plotUI = plot.edit_traits(kind='modal')
-
 #end PrefmapModelHandler
 
 
-# Actions used by tree editor context menu
-plot_scores = Action(
-    name = 'Plot scores',
-    action = 'handler.activate_score_plot(editor, object)'
-    )
+# Double click handlers
+def clkScores(obj):
+    logging.info("Plot scores activated")
+    model = plsr(obj.setX.matrix,
+                 obj.setY.matrix,
+                 centre="yes",
+                 fncomp=4,
+                 fmethod="oscorespls",
+                 fvalidation="LOO")
+    score1 = model['Scores T'][:,0]
+    score2 = model['Scores T'][:,1]
+    plot = PlotScatter(
+        ttext = "Prefmap plot",
+        valX = score1,
+        valY = score2
+        )
+    plotUI = plot.configure_traits()
+
+
+def clkYloadings(obj):
+    logging.info("Plot Y loadings activated")
+    model = plsr(obj.setX.matrix,
+                 obj.setY.matrix,
+                 centre="yes",
+                 fncomp=4,
+                 fmethod="oscorespls",
+                 fvalidation="LOO")
+    score1 = model['Yloadings Q'][:,0]
+    score2 = model['Yloadings Q'][:,1]
+    plot = PlotScatter(
+        ttext = "Y loadings Q",
+        valX = score1,
+        valY = score2
+        )
+    plotUI = plot.configure_traits()
+
+
+def clkXloadings(obj):
+    logging.info("Plot X loadings activated")
+    model = plsr(obj.setX.matrix,
+                 obj.setY.matrix,
+                 centre="yes",
+                 fncomp=4,
+                 fmethod="oscorespls",
+                 fvalidation="LOO")
+    score1 = model['Xloadings P'][:,0]
+    score2 = model['Xloadings P'][:,1]
+    plot = PlotScatter(
+        ttext = "X loadings P",
+        valX = score1,
+        valY = score2
+        )
+    plotUI = plot.configure_traits()
+
+
+
 
 # Views
 no_view = View()
-
-prefmap_overview = View(
-    Item('handler.nameSetX',
-         editor = EnumEditor(name = 'handler.dsChoices'),
-         ),
-    Item('handler.nameSetY',
-         editor = EnumEditor(name = 'handler.dsChoices'),
-         ),
-    Item('handler.validate'),
-    resizable = True,
-    handler = PrefmapOverviewHandler(),
-    )
 
 options_tree = TreeEditor(
     hide_root = False,
@@ -157,7 +127,7 @@ options_tree = TreeEditor(
                   label = 'name',
                   tooltip = 'Oversikt',
                   view = no_view,
-#                  view = prefmap_overview,
+#                  view = prefmap_control,
                   rename = False,
                   rename_me = False,
                   copy = False,
@@ -168,38 +138,36 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ Options ],
                   children = 'overview',
                   label = '=Overview',
-                  view = prefmap_overview,
+                  view = prefmap_control,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'scores',
-                  label = '=Scores',
-                  menu = Menu( plot_scores ),
-                  view = no_view,
+                  label = '=Scores T',
+                  on_dclick = clkScores,
+                  view = prefmap_control,
                   ),
         TreeNode( node_for = [ Options ],
-                  children = 'loadings',
-                  label = '=Loadings',
-                  menu = Menu( plot_scores ),
-                  view = no_view,
+                  children = 'yloadings',
+                  label = '=Y loadings Q',
+                  on_dclick = clkYloadings,
+                  view = prefmap_control,
                   ),
         TreeNode( node_for = [ Options ],
-                  children = 'corrLoadings',
-                  label = '=Correlation loadings',
-                  menu = Menu( plot_scores ),
-                  view = no_view,
+                  children = 'xloadings',
+                  label = '=X loadings P',
+                  on_dclick = clkXloadings,
+                  view = prefmap_control,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'explResVar',
                   label = '=Expl. / res var',
-                  menu = Menu( plot_scores ),
-                  view = no_view,
+                  view = prefmap_control,
                   ),
-        TreeNode( node_for = [ Options ],
-                  children = 'measVsPred',
-                  label = '=Meas vs pred',
-                  menu = Menu( plot_scores ),
-                  view = no_view,
-                  ),
+#        TreeNode( node_for = [ Options ],
+#                  children = 'measVsPred',
+#                  label = '=Meas vs pred',
+#                  view = prefmap_control,
+#                  ),
         ]
     )
 
