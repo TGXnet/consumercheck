@@ -46,6 +46,10 @@ class DatasetSelectorHandler( Handler ):
         self.dsChoices = []
         for kName, dName in dsl.indexNameList:
             self.dsChoices.append(dName)
+        self._initChoices(dsl)
+
+
+    def _initChoices(self, dsl):
         if len(dsl.selectedSet) > 0:
             self.nameSetX = dsl.selectedSet[0]
         elif len(self.dsChoices) > 0:
