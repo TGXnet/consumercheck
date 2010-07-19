@@ -10,11 +10,6 @@ from enthought.traits.api \
 from enthought.traits.ui.api \
     import View, Item, Group, Handler, EnumEditor, CheckListEditor,\
     TreeEditor, TreeNode
-from enthought.traits.ui.menu \
-    import Action, Menu, MenuBar, Separator
-from enthought.traits.ui.wx.tree_editor \
-    import NewAction, CopyAction, CutAction, \
-    PasteAction, DeleteAction, RenameAction
 
 
 # Local imports
@@ -22,7 +17,6 @@ from dataset_collection import DatasetCollection
 from ds import DataSet
 from plot_scatter import PlotScatter
 from plot_line import PlotLine
-#import mvr
 from nipals import PCA
 from dataset_selector_ui import dataset_selector
 # from dataset_collection_selection_list_ui import selection_list_view
@@ -142,15 +136,6 @@ def getSelectedDataset(dsl):
         return None
 
 
-
-
-# Actions used by tree editor context menu
-plot_scores = Action(
-    name = 'Plot scores',
-    action = 'handler.activate_score_plot(editor, object)'
-    )
-
-
 # Views
 no_view = View()
 
@@ -183,33 +168,28 @@ options_tree = TreeEditor(
                   children = 'scores',
                   label = '=Scores',
                   on_dclick = clkScores,
-#                  menu = Menu( plot_scores ),
                   view = dataset_selector,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'loadings',
                   label = '=Loadings',
                   on_dclick = clkLoadings,
-#                  menu = Menu( plot_scores ),
                   view = dataset_selector,
                   ),
 #        TreeNode( node_for = [ Options ],
 #                  children = 'corrLoadings',
 #                  label = '=Correlation loadings',
-#                  menu = Menu( plot_scores ),
 #                  view = no_view,
 #                  ),
         TreeNode( node_for = [ Options ],
                   children = 'explResVar',
                   label = '=Expl. / res var',
                   on_dclick = clkExplResVar,
-#                  menu = Menu( plot_scores ),
                   view = dataset_selector,
                   ),
 #        TreeNode( node_for = [ Options ],
 #                  children = 'measVsPred',
 #                  label = '=Meas vs pred',
-#                  menu = Menu( plot_scores ),
 #                  view = no_view,
 #                  ),
         ]
