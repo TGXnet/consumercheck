@@ -69,8 +69,10 @@ def clkScores(obj):
                  fvalidation="LOO")
     score1 = model['Scores T'][:,0]
     score2 = model['Scores T'][:,1]
+    labels = obj.setX.objectNames
     plot = PlotScatter(
         ttext = "Prefmap plot",
+        valPtLabel = labels,
         valX = score1,
         valY = score2
         )
@@ -87,8 +89,15 @@ def clkYloadings(obj):
                  fvalidation="LOO")
     score1 = model['Yloadings Q'][:,0]
     score2 = model['Yloadings Q'][:,1]
+    calExplVars = model['YexplVar']
+    pc1CEV = int(calExplVars[0])
+    pc2CEV = int(calExplVars[1])
+    labels = obj.setY.variableNames
     plot = PlotScatter(
         ttext = "Y loadings Q",
+        titleX = "PC1 ({0}%)".format(pc1CEV),
+        titleY = "PC2 ({0}%)".format(pc2CEV),
+        valPtLabel = labels,
         valX = score1,
         valY = score2
         )
@@ -105,8 +114,15 @@ def clkXloadings(obj):
                  fvalidation="LOO")
     score1 = model['Xloadings P'][:,0]
     score2 = model['Xloadings P'][:,1]
+    calExplVars = model['XexplVar']
+    pc1CEV = int(calExplVars[0])
+    pc2CEV = int(calExplVars[1])
+    labels = obj.setX.variableNames
     plot = PlotScatter(
         ttext = "X loadings P",
+        titleX = "PC1 ({0}%)".format(pc1CEV),
+        titleY = "PC2 ({0}%)".format(pc2CEV),
+        valPtLabel = labels,
         valX = score1,
         valY = score2
         )
@@ -158,11 +174,11 @@ options_tree = TreeEditor(
                   on_dclick = clkXloadings,
                   view = prefmap_control,
                   ),
-        TreeNode( node_for = [ Options ],
-                  children = 'explResVar',
-                  label = '=Expl. / res var',
-                  view = prefmap_control,
-                  ),
+#        TreeNode( node_for = [ Options ],
+#                  children = 'explResVar',
+#                  label = '=Expl. / res var',
+#                  view = prefmap_control,
+#                  ),
 #        TreeNode( node_for = [ Options ],
 #                  children = 'measVsPred',
 #                  label = '=Meas vs pred',
