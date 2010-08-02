@@ -4,17 +4,12 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api \
-    import HasTraits, Instance, Event, Str,\
-    List, on_trait_change, Enum, Button, Any
-from enthought.traits.ui.api \
-    import View, Item, Group, Handler, EnumEditor, CheckListEditor,\
-    TreeEditor, TreeNode
+from enthought.traits.api import HasTraits, Instance, Event, Str, List, on_trait_change, Enum, Button, Any
+from enthought.traits.ui.api import View, Item, Group, Handler, EnumEditor, CheckListEditor, TreeEditor, TreeNode
 
 
 # Local imports
 from dataset_collection import DatasetCollection
-from ds import DataSet
 from plot_scatter import PlotScatter
 from plot_line import PlotLine
 from nipals import PCA
