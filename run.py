@@ -1,13 +1,18 @@
 # coding=utf-8
 
 # stdlib imports
+# import os
 import logging
 import optparse
 
 # Enthought imports
-from enthought.pyface.api import GUI
+#from enthought.pyface.api import GUI
 
 # Local imports
+# Set path to local R distribution
+import rpyLocate
+rpyLocate.set_rpy_env()
+
 from main_ui import MainUi
 
 LOGGING_LEVELS = {'critical': logging.CRITICAL,

@@ -1,0 +1,30 @@
+<?xml version='1.0'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+   <Product Id='{1A5CBF8D-806A-4aac-95E3-7AD97D381D8B}' Name='ConsumerCheck' Language='1033' 
+            Version='0.6.5' Manufacturer='TGXnet' UpgradeCode='{1A5CBF8D-806A-4aac-95E3-7AD97D381D8B}' >
+      <Package Description='Statistic application for sensory and consumer science'
+               Comments='Early test release'
+               Manufacturer='TGXnet' InstallerVersion='200' Compressed='yes' />
+
+	  <Media Id='1' Cabinet='product.cab' EmbedCab='yes' />
+
+      <Directory Id='TARGETDIR' Name='SourceDir'>
+         <Directory Id='ProgramFilesFolder' Name='PFiles'>
+            <Directory Id='APPLICATIONROOTDIRECTORY' Name='ConsumerCheck' />
+            </Directory>
+         </Directory>
+      </Directory>
+		<DirectoryRef Id="APPLICATIONROOTDIRECTORY">
+			<Component Id="myapplication.exe" Guid="PUT-GUID-HERE">
+				<File Id="myapplication.exe" Source="MySourceFiles\MyApplication.exe" KeyPath="yes" Checksum="yes"/>
+			</Component>
+			<Component Id="documentation.html" Guid="PUT-GUID-HERE">
+				<File Id="documentation.html" Source="MySourceFiles\documentation.html" KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
+
+      <Feature Id='MyFeature' Title='My 1st Feature' Level='1'>
+         <ComponentRef Id='MyComponent' />
+      </Feature>
+   </Product>
+</Wix>
