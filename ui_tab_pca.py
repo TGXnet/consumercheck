@@ -132,15 +132,12 @@ def clkExplResVar(obj):
     pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
     calExplVars = pcaResults.getCalExplVar()
 
-    accContrib = []
-    index = []
+    accContrib = [0]
+    index = [0]
     for i, contrib in calExplVars.iteritems():
         index.append(i)
-        if i <= 1:
-            accContrib.append(contrib)
-        else:
-            prevSum =  accContrib[i-2]
-            accContrib.append(prevSum + contrib)
+        prevSum =  accContrib[i-1]
+        accContrib.append(prevSum + contrib)
 
     plot = PlotLine(
         ttext = 'PCA explained variance',
@@ -208,7 +205,7 @@ options_tree = TreeEditor(
                   children = 'corrLoadings',
                   label = '=Correlation loadings',
                   on_dclick = clkCorrLoad,
-                  view = no_view,
+                  view = dataset_selector,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'explResVar',

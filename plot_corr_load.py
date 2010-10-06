@@ -104,6 +104,7 @@ class PlotCorrLoad(HasTraits):
     def _addAxisTitle(self, plot):
         plot.x_axis.title = self.titleX
         plot.y_axis.title = self.titleY
+
         return plot
 
 
