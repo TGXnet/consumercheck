@@ -1,7 +1,8 @@
 """
 Draws a simple scatterplot of a set of random points.
-
- Based on: /usr/share/doc/python-chaco/examples/basic/scatter.py
+Based on: /usr/share/doc/python-chaco/examples/basic/scatter.py
+FIXME: This is a copy of PlotScatter. Make a inherrited plot hiearcy
+and have a closer look at the interface in ui_tab_pca.py
 """
 
 # Enthought library imports
@@ -17,7 +18,7 @@ title = "ConsumerCheck plot"
 bg_color="lightgray"
 
 #===============================================================================
-class PlotScatter(HasTraits):
+class PlotCorrLoad(HasTraits):
 
     ttext = Str()
     titleX = Str()
@@ -25,6 +26,10 @@ class PlotScatter(HasTraits):
     valPtLabel = List()
     valX = Array()
     valY = Array()
+    elXF = Array()
+    elYF = Array()
+    elXH = Array()
+    elYH = Array()
 
     plot = Instance(Component)
 
@@ -41,7 +46,7 @@ class PlotScatter(HasTraits):
 
 
 #    def __init__(self, x, y):
-#        super(PlotScatter3, self).__init__()
+#        super(PlotCorrLoad3, self).__init__()
 #        self.valX = x
 #        self.valY = y
 
@@ -53,19 +58,15 @@ class PlotScatter(HasTraits):
         pd = ArrayPlotData()
         pd.set_data("pca1", self.valX)
         pd.set_data("pca2", self.valY)
+        pd.set_data("elxf", self.elXF)
+        pd.set_data("elyf", self.elYF)
+        pd.set_data("elxh", self.elXH)
+        pd.set_data("elyh", self.elYH)
 
         plot = Plot(pd)
 
-        # Set axis limits
-        xmapper = plot.x_mapper
-        ymapper = plot.y_mapper
-        xlim, ylim = self._calcBoundsLimits()
-        xlo, xhi = xlim
-        ylo, yhi = ylim
-        xmapper.range.set_bounds(xlo, xhi)
-        ymapper.range.set_bounds(ylo, yhi)
-
         plot.plot(("pca1", "pca2"),
+                  name = 'datapoints',
                   type="scatter",
                   marker="circle",
                   index_sort="ascending",
@@ -73,11 +74,27 @@ class PlotScatter(HasTraits):
                   marker_size=3,
                   bgcolor="white")
 
+
+
+        plot.plot(("elxf", "elyf"),
+                  name = 'fullellipse',
+                  type="line")
+
+
+
+        plot.plot(("elxh", "elyh"),
+                  name = 'halfellipse',
+                  type="line")
+
+
+
         # Tweak some of the plot properties
         plot.title = self.ttext
         plot.line_width = 0.5
         plot.padding = 50
 
+        # Set axis limits
+#        plot = self._setPlotAxix(plot)
         plot = self._addAxisTitle(plot)
         plot = self._addPtLabels(plot)
 
@@ -101,6 +118,20 @@ class PlotScatter(HasTraits):
             plot.overlays.append(label)
 
         return plot
+
+
+
+    def _setPlotAxix(self, plot):
+        xmapper = plot.x_mapper
+        ymapper = plot.y_mapper
+        xlim, ylim = self._calcBoundsLimits()
+        xlo, xhi = xlim
+        ylo, yhi = ylim
+        xmapper.range.set_bounds(xlo, xhi)
+        ymapper.range.set_bounds(ylo, yhi)
+
+        return plot
+
 
 
 

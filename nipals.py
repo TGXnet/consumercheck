@@ -16,6 +16,13 @@ Created on Mon Nov 16 21:28:47 2009
     > getResidualsMatrices
     > getPredictedMatrices
     > getSettings
+
+
+@update 02: 22.06.2010 (OTO)
+============================
+- new functions in PCA:
+    > getCorrLoadings
+    > getCorrLoadingsEllipses
 """
 
 # Import necessary modules
@@ -76,6 +83,10 @@ class PCA:
         else:
             self.mode = kargs['mode']
         
+        # Define inputArray within class. self.inputArray is later needed in
+        # .getCorrLoadings()
+        self.inputArray = inputArray
+        
         
         # Pre-process data according to user request.
         # -------------------------------------------
@@ -126,7 +137,7 @@ class PCA:
         X_new = self.data.copy()
         
         # Compute number of principal components as specified by user 
-        for j in range(self.numPC+1): 
+        for j in range(self.numPC): 
             
             t = X_new[:,0].reshape(-1,1)
             
@@ -217,5 +228,57 @@ class PCA:
         """
         return self.settings
     
+    
+    def getCorrLoadings(self):
+        """
+        Returns the loading matrix P. First column holds loadings for PC1, 
+        second column holds scores for PC2, etc.
+        """
 
+        # Creates empty matrix for correlation loadings
+        corrLoadings = np.zeros((np.shape(self.scores)[1], \
+            np.shape(self.loadings)[0]), float)
+        
+        # Compute correlation loadings:
+        # For each PC in score matrix
+        for PC in range(np.shape(self.scores)[1]):
+            PCscores = self.scores[:, PC]
+            
+            # For each variable/attribute in original matrix (not meancentered)
+            for var in range(np.shape(self.inputArray)[1]):
+                origVar = self.inputArray[:, var]
+                corrs = np.corrcoef(PCscores, origVar)
+                corrLoadings[PC, var] = corrs[0,1]
+        
+        self.corrLoadings = np.transpose(corrLoadings)
+        
+        return self.corrLoadings
+    
+    
+    def getCorrLoadingsEllipses(self):
+        """
+        Returns the ellipses that represent 50% and 100% expl. variance in
+        correlation loadings plot.
+        """
+        
+        # Create range for ellipses
+        t = np.arange(0.0, 2*np.pi, 0.01)
+        
+        # Compuing the outer circle (100 % expl. variance)
+        xcords100perc = np.cos(t)
+        ycords100perc = np.sin(t)
+        
+        # Computing inner circle
+        xcords50perc = 0.707 * np.cos(t)
+        ycords50perc = 0.707 * np.sin(t)
+        
+        # Collect ellipse coordinates in dictionary
+        ellipses = {}
+        ellipses['x50perc'] = xcords50perc
+        ellipses['y50perc'] = ycords50perc
+        
+        ellipses['x100perc'] = xcords100perc
+        ellipses['y100perc'] = ycords100perc
+        
+        return ellipses
 

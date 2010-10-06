@@ -11,7 +11,9 @@ from enthought.traits.ui.api import View, Item, Group, Handler, EnumEditor, Chec
 # Local imports
 from dataset_collection import DatasetCollection
 from plot_scatter import PlotScatter
+from plot_corr_load import PlotCorrLoad
 from plot_line import PlotLine
+
 from nipals import PCA
 from dataset_selector_ui import dataset_selector
 # from dataset_collection_selection_list_ui import selection_list_view
@@ -25,7 +27,7 @@ class Options(HasTraits):
     overview = List()
     scores = List()
     loadings = List()
-#    corrLoadings = List()
+    corrLoadings = List()
     explResVar = List()
 #    measVsPred = List()
 
@@ -91,6 +93,37 @@ def plotPcaResult(pcaMatrix, calExplVars, labels, title):
         )
     plotUI = plot.configure_traits()
 
+
+def clkCorrLoad(obj):
+    logging.info("Loadingplot activated")
+    selDataset = getSelectedDataset(obj.dsl)
+    labels = selDataset.variableNames
+    pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
+    corrLoadings = pcaResults.getCorrLoadings()
+    corrLoadEllipses = pcaResults.getCorrLoadingsEllipses()
+    plotCorrelationLoadings(corrLoadings, corrLoadEllipses, labels, "Correlation Loadings plot")
+
+
+
+def plotCorrelationLoadings(clMatrix, ellipsesMatrix, labels, title):
+    pc1 = clMatrix[:,0]
+    pc2 = clMatrix[:,1]
+    ellipsXFull = ellipsesMatrix['x100perc']
+    ellipsYFull = ellipsesMatrix['y100perc']
+    ellipsXHalf = ellipsesMatrix['x50perc']
+    ellipsYHalf = ellipsesMatrix['y50perc']
+
+    plot = PlotCorrLoad(
+        ttext = title,
+        valPtLabel = labels,
+        valX = pc1,
+        valY = pc2,
+        elXF = ellipsXFull,
+        elYF = ellipsYFull,
+        elXH = ellipsXHalf,
+        elYH = ellipsYHalf
+        )
+    plotUI = plot.configure_traits()
 
 
 def clkExplResVar(obj):
@@ -171,11 +204,12 @@ options_tree = TreeEditor(
                   on_dclick = clkLoadings,
                   view = dataset_selector,
                   ),
-#        TreeNode( node_for = [ Options ],
-#                  children = 'corrLoadings',
-#                  label = '=Correlation loadings',
-#                  view = no_view,
-#                  ),
+        TreeNode( node_for = [ Options ],
+                  children = 'corrLoadings',
+                  label = '=Correlation loadings',
+                  on_dclick = clkCorrLoad,
+                  view = no_view,
+                  ),
         TreeNode( node_for = [ Options ],
                   children = 'explResVar',
                   label = '=Expl. / res var',
