@@ -4,7 +4,7 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api import HasTraits, Instance, Event, Str, List, on_trait_change
+from enthought.traits.api import HasTraits, Instance, Event, Str, List, Bool, on_trait_change
 from enthought.traits.ui.api import View, Item, Handler, TreeEditor, TreeNode
 
 # Local imports
@@ -22,6 +22,7 @@ class Options(HasTraits):
     dsl = Instance(DatasetCollection)
     setX = DataSet()
     setY = DataSet()
+    eqPlotAxis = Bool()
 
     # Represent selections in tree
     overview = List()
@@ -74,7 +75,8 @@ def clkScores(obj):
         ttext = "Prefmap plot",
         valPtLabel = labels,
         valX = score1,
-        valY = score2
+        valY = score2,
+        eqAxis = obj.eqPlotAxis
         )
     plotUI = plot.configure_traits()
 
@@ -99,7 +101,8 @@ def clkYloadings(obj):
         titleY = "PC2 ({0}%)".format(pc2CEV),
         valPtLabel = labels,
         valX = score1,
-        valY = score2
+        valY = score2,
+        eqAxis = obj.eqPlotAxis
         )
     plotUI = plot.configure_traits()
 
@@ -124,7 +127,8 @@ def clkXloadings(obj):
         titleY = "PC2 ({0}%)".format(pc2CEV),
         valPtLabel = labels,
         valX = score1,
-        valY = score2
+        valY = score2,
+        eqAxis = obj.eqPlotAxis
         )
     plotUI = plot.configure_traits()
 

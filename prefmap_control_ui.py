@@ -5,7 +5,7 @@ import logging
 
 
 # Enthought imports
-from enthought.traits.api import Str, List, Enum
+from enthought.traits.api import Str, List, Enum, Bool
 from enthought.traits.ui.api import View, Item, Group, Handler, EnumEditor
 
 
@@ -16,6 +16,7 @@ class PrefmapControlHandler( Handler ):
     nameSetX = Str(label = 'Sensory profiling (X)')
     nameSetY = Str(label = 'Consumer (Y)')
 #    validate = Enum('None', ['None', 'Full cross'], label = 'Validation')
+    eqPlotAxis = Bool(False)
 
 
     # Called when some value in object changes
@@ -31,6 +32,10 @@ class PrefmapControlHandler( Handler ):
 
     def handler_nameSetY_changed(self, info):
         info.object.setY = info.object.dsl.retriveDatasetByDisplayName(self.nameSetY)
+
+
+    def handler_eqPlotAxis_changed(self, info):
+        info.object.eqPlotAxis = self.eqPlotAxis
 
 
     def init(self, info):
@@ -72,6 +77,7 @@ prefmap_control = View(
          editor = EnumEditor(name = 'handler.dsChoices'),
          ),
 #    Item('handler.validate'),
+    Item('handler.eqPlotAxis'),
     resizable = True,
     handler = PrefmapControlHandler,
     )

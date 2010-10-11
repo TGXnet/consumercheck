@@ -5,7 +5,7 @@ import logging
 
 # Enthought imports
 from enthought.traits.api \
-    import List, Str
+    import List, Str, Bool
 
 from enthought.traits.ui.api \
     import EnumEditor, Handler, Item, View
@@ -16,6 +16,7 @@ class DatasetSelectorHandler( Handler ):
 
     dsChoices = List(trait = Str)
     nameSetX = Str(label = 'PCA input matrix')
+    eqPlotAxis = Bool(False)
 
 
     # Called when some value in object changes
@@ -31,6 +32,11 @@ class DatasetSelectorHandler( Handler ):
         if selSet:
             info.object.dsl.selectedSet.append(selSet._internalName)
         logging.info("Selection list updated: %s", info.object.dsl.selectedSet)
+
+
+    def handler_eqPlotAxis_changed(self, info):
+        info.object.dsl.eqPlotAxis = self.eqPlotAxis
+        logging.info("eqPlotAxix changed")
 
 
     def init(self, info):
@@ -62,6 +68,7 @@ dataset_selector = View(
     Item('handler.nameSetX',
          editor = EnumEditor(name = 'handler.dsChoices'),
          ),
+    Item('handler.eqPlotAxis'),
     resizable = True,
     handler = DatasetSelectorHandler,
     )

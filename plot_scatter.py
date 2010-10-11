@@ -6,7 +6,7 @@ Draws a simple scatterplot of a set of random points.
 
 # Enthought library imports
 from enthought.enable.api import Component, ComponentEditor
-from enthought.traits.api import HasTraits, Instance, Array, Str, List
+from enthought.traits.api import HasTraits, Instance, Array, Str, List, Bool
 from enthought.traits.ui.api import Item, Group, View
 from enthought.chaco.api import ArrayPlotData, Plot, DataLabel
 
@@ -25,6 +25,7 @@ class PlotScatter(HasTraits):
     valPtLabel = List()
     valX = Array()
     valY = Array()
+    eqAxis = Bool()
 
     plot = Instance(Component)
 
@@ -56,15 +57,6 @@ class PlotScatter(HasTraits):
 
         plot = Plot(pd)
 
-        # Set axis limits
-        xmapper = plot.x_mapper
-        ymapper = plot.y_mapper
-        xlim, ylim = self._calcBoundsLimits()
-        xlo, xhi = xlim
-        ylo, yhi = ylim
-        xmapper.range.set_bounds(xlo, xhi)
-        ymapper.range.set_bounds(ylo, yhi)
-
         plot.plot(("pca1", "pca2"),
                   type="scatter",
                   marker="circle",
@@ -78,6 +70,8 @@ class PlotScatter(HasTraits):
         plot.line_width = 0.5
         plot.padding = 50
 
+        if self.eqAxis:
+            plot = self._setPlotAxix(plot)
         plot = self._addAxisTitle(plot)
         plot = self._addPtLabels(plot)
 
@@ -99,6 +93,19 @@ class PlotScatter(HasTraits):
                 label_format = self.valPtLabel[i]
                 )
             plot.overlays.append(label)
+
+        return plot
+
+
+
+    def _setPlotAxix(self, plot):
+        xmapper = plot.x_mapper
+        ymapper = plot.y_mapper
+        xlim, ylim = self._calcBoundsLimits()
+        xlo, xhi = xlim
+        ylo, yhi = ylim
+        xmapper.range.set_bounds(xlo, xhi)
+        ymapper.range.set_bounds(ylo, yhi)
 
         return plot
 

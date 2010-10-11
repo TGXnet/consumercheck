@@ -32,6 +32,7 @@ class DatasetCollection(HasTraits):
     # FIXME: This is a local control for the selected method
     # and not "global" for the entire application
     selectedSet = List()
+    eqPlotAxis = Bool()
 
 
     def retriveDatasetByName(self, internalName):

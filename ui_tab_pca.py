@@ -55,30 +55,33 @@ class PcaModelHandler( Handler ):
 
 
 # Double click handlers
+# FIXME: Lot of repitation here
 def clkScores(obj):
     logging.info("Scoreplot activated")
     selDataset = getSelectedDataset(obj.dsl)
+    eqPlotAxis = obj.dsl.eqPlotAxis
     pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
     labels = selDataset.objectNames
     # T
     pcaMatrix = pcaResults.getScores()
     calExplVars = pcaResults.getCalExplVar()
-    plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Score plot")
+    plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Score plot", eqPlotAxis)
 
 
 
 def clkLoadings(obj):
     logging.info("Loadingplot activated")
     selDataset = getSelectedDataset(obj.dsl)
+    eqPlotAxis = obj.dsl.eqPlotAxis
     labels = selDataset.variableNames
     pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
     pcaMatrix = pcaResults.getLoadings()
     calExplVars = pcaResults.getCalExplVar()
-    plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Loadings plot")
+    plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Loadings plot", eqPlotAxis)
 
 
 
-def plotPcaResult(pcaMatrix, calExplVars, labels, title):
+def plotPcaResult(pcaMatrix, calExplVars, labels, title, eqAxis):
     pc1 = pcaMatrix[:,0]
     pc2 = pcaMatrix[:,1]
     pc1CEV = int(calExplVars[1])
@@ -89,7 +92,8 @@ def plotPcaResult(pcaMatrix, calExplVars, labels, title):
         titleY = "PC2 ({0}%)".format(pc2CEV),
         valPtLabel = labels,
         valX = pc1,
-        valY = pc2
+        valY = pc2,
+        eqAxis = eqAxis
         )
     plotUI = plot.configure_traits()
 
