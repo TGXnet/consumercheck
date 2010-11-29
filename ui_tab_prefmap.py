@@ -61,7 +61,7 @@ class PrefmapModelHandler( Handler ):
 
 # Double click handlers
 def clkScores(obj):
-    logging.info("Plot scores activated")
+    logging.info("PLSR scores plot activated")
     model = plsr(obj.setX.matrix,
                  obj.setY.matrix,
                  centre="yes",
@@ -72,7 +72,7 @@ def clkScores(obj):
     score2 = model['Scores T'][:,1]
     labels = obj.setX.objectNames
     plot = PlotScatter(
-        ttext = "Prefmap plot",
+        ttext = "PLSR scores",
         valPtLabel = labels,
         valX = score1,
         valY = score2,
@@ -82,7 +82,7 @@ def clkScores(obj):
 
 
 def clkYloadings(obj):
-    logging.info("Plot Y loadings activated")
+    logging.info("PLSR Y loadings plot activated")
     model = plsr(obj.setX.matrix,
                  obj.setY.matrix,
                  centre="yes",
@@ -96,7 +96,7 @@ def clkYloadings(obj):
     pc2CEV = int(calExplVars[1])
     labels = obj.setY.variableNames
     plot = PlotScatter(
-        ttext = "Y loadings Q",
+        ttext = "PLSR Y loadings",
         titleX = "PC1 ({0}%)".format(pc1CEV),
         titleY = "PC2 ({0}%)".format(pc2CEV),
         valPtLabel = labels,
@@ -108,7 +108,7 @@ def clkYloadings(obj):
 
 
 def clkXloadings(obj):
-    logging.info("Plot X loadings activated")
+    logging.info("PLSR X loadings plot activated")
     model = plsr(obj.setX.matrix,
                  obj.setY.matrix,
                  centre="yes",
@@ -122,7 +122,7 @@ def clkXloadings(obj):
     pc2CEV = int(calExplVars[1])
     labels = obj.setX.variableNames
     plot = PlotScatter(
-        ttext = "X loadings P",
+        ttext = "PLSR X loadings",
         titleX = "PC1 ({0}%)".format(pc1CEV),
         titleY = "PC2 ({0}%)".format(pc2CEV),
         valPtLabel = labels,
@@ -162,19 +162,19 @@ options_tree = TreeEditor(
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'scores',
-                  label = '=Scores T',
+                  label = '=Scores',
                   on_dclick = clkScores,
                   view = prefmap_control,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'yloadings',
-                  label = '=Y loadings Q',
+                  label = '=Y loadings',
                   on_dclick = clkYloadings,
                   view = prefmap_control,
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'xloadings',
-                  label = '=X loadings P',
+                  label = '=X loadings',
                   on_dclick = clkXloadings,
                   view = prefmap_control,
                   ),

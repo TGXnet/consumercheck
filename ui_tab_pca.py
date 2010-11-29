@@ -65,7 +65,7 @@ def clkScores(obj):
     # T
     pcaMatrix = pcaResults.getScores()
     calExplVars = pcaResults.getCalExplVar()
-    plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Score plot", eqPlotAxis)
+    plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Scores plot", eqPlotAxis)
 
 
 
@@ -133,7 +133,7 @@ def plotCorrelationLoadings(clMatrix, ellipsesMatrix, labels, title):
 def clkExplResVar(obj):
     logging.info("Explained variance plot activated")
     selDataset = getSelectedDataset(obj.dsl)
-    pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
+    pcaResults = PCA(selDataset.matrix, mode = 1)
     calExplVars = pcaResults.getCalExplVar()
 
     accContrib = [0]
@@ -213,7 +213,7 @@ options_tree = TreeEditor(
                   ),
         TreeNode( node_for = [ Options ],
                   children = 'explResVar',
-                  label = '=Expl. / res var',
+                  label = '=Explained variance',
                   on_dclick = clkExplResVar,
                   view = dataset_selector,
                   ),
