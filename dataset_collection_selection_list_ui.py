@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 
 """
 This shows a table editor which has a checkbox column in addition to normal

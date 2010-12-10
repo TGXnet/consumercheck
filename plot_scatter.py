@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Draws a simple scatterplot of a set of random points.
 

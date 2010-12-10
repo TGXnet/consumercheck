@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 
 # FIXME: This is replaced by ui_datasets_tree
 

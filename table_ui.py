@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 # Enthought imports
 # FIXME: Just for testing
 from numpy import array, ndarray, zeros
