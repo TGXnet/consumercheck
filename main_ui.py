@@ -16,7 +16,7 @@ from enthought.traits.ui.menu \
 
 # Local imports
 from dataset_collection import DatasetCollection
-from ds import DataSet
+from dataset import DataSet
 from file_importer_ui import FileImporterUi
 from ui_datasets_tree import tree_view
 from ui_tab_pca import PcaModel, pca_tree_view

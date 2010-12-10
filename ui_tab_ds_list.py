@@ -19,7 +19,7 @@ from enthought.traits.ui.menu \
 
 # Local imports
 from dataset_collection import DatasetCollection
-from ds import DataSet
+from dataset import DataSet
 from ds_ui import ds_list_tab
 from table_ui import MatrixView
 

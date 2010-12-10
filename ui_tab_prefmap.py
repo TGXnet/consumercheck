@@ -9,7 +9,7 @@ from enthought.traits.ui.api import View, Item, Handler, TreeEditor, TreeNode
 
 # Local imports
 from dataset_collection import DatasetCollection
-from ds import DataSet
+from dataset import DataSet
 from plot_scatter import PlotScatter
 # import mvr
 from mvr import plsr

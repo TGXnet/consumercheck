@@ -9,7 +9,7 @@ from enthought.traits.api import \
     Bool, Property, cached_property, on_trait_change, property_depends_on
 
 # Local imports
-from ds import DataSet
+from dataset import DataSet
 
 
 class DatasetCollection(HasTraits):
