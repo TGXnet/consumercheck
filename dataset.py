@@ -30,9 +30,11 @@ class DataSet(HasTraits):
 	matrix = Array(desc = 'Data matrix')
 
 	# Used as dictionary index
+	# FIXME: Public
 	_internalName = String('unnamed', label = 'Dict key name')
 
 	# Displayed to the user
+	# FIXME: Public
 	_displayName = Str(
 		'Unnamed dataset',
 		desc = 'User friendly display name',

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Draws a simple scatterplot of a set of random points.
-
- Based on: /usr/share/doc/python-chaco/examples/basic/scatter.py
+FIXME: Deprecated by plots.PlotScatter
+Based on: /usr/share/doc/python-chaco/examples/basic/scatter.py
 """
 
 # Enthought library imports

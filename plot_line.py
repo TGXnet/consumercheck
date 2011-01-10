@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Draws a simple lineplot.
-
+FIXME: Deprecated by plots.PlotLine
 Based on: /usr/share/doc/python-chaco/examples/basic/scatter.py
 """
 

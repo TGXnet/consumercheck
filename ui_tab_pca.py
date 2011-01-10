@@ -16,6 +16,7 @@ from plot_line import PlotLine
 
 from nipals import PCA
 from dataset_selector_ui import dataset_selector
+from pca_plots import PCAPlotFactory
 # from dataset_collection_selection_list_ui import selection_list_view
 
 
@@ -29,7 +30,6 @@ class Options(HasTraits):
 	loadings = List()
 	corrLoadings = List()
 	explResVar = List()
-#	 measVsPred = List()
 
 
 class PcaModel(HasTraits):
@@ -42,119 +42,37 @@ class PcaModel(HasTraits):
 	def datasetsChanged(self, object, name, old, new):
 		self.datasetsAltered = True
 
-#end PcaModel
 
-
-
-class PcaModelHandler( Handler ):
+class PcaModelHandler(Handler):
 
 	def init(self, info):
 		info.object.treeObjects.dsl = info.object.dsl
 
-#end PcaModelHandler
-
-
 # Double click handlers
 # FIXME: Lot of repitation here
+def clkOverview(obj):
+	logging.info("Overview plot activated")
+	PCAPlotFactory().plot_overview(obj.dsl)
+
 def clkScores(obj):
 	logging.info("Scoreplot activated")
 	selDataset = getSelectedDataset(obj.dsl)
-	eqPlotAxis = obj.dsl.eqPlotAxis
-	pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
-	labels = selDataset.objectNames
-	# T
-	pcaMatrix = pcaResults.getScores()
-	calExplVars = pcaResults.getCalExplVar()
-	plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Scores plot", eqPlotAxis)
-
-
+	PCAPlotFactory().plot_scores(selDataset)
 
 def clkLoadings(obj):
 	logging.info("Loadingplot activated")
 	selDataset = getSelectedDataset(obj.dsl)
-	eqPlotAxis = obj.dsl.eqPlotAxis
-	labels = selDataset.variableNames
-	pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
-	pcaMatrix = pcaResults.getLoadings()
-	calExplVars = pcaResults.getCalExplVar()
-	plotPcaResult(pcaMatrix, calExplVars, labels, "PCA Loadings plot", eqPlotAxis)
-
-
-
-def plotPcaResult(pcaMatrix, calExplVars, labels, title, eqAxis):
-	pc1 = pcaMatrix[:,0]
-	pc2 = pcaMatrix[:,1]
-	pc1CEV = int(calExplVars[1])
-	pc2CEV = int(calExplVars[2])
-	plot = PlotScatter(
-		ttext = title,
-		titleX = "PC1 ({0}%)".format(pc1CEV),
-		titleY = "PC2 ({0}%)".format(pc2CEV),
-		valPtLabel = labels,
-		valX = pc1,
-		valY = pc2,
-		eqAxis = eqAxis
-		)
-	plotUI = plot.configure_traits()
-
+	PCAPlotFactory().plot_loadings(selDataset)
 
 def clkCorrLoad(obj):
 	logging.info("Loadingplot activated")
 	selDataset = getSelectedDataset(obj.dsl)
-	labels = selDataset.variableNames
-	pcaResults = PCA(selDataset.matrix, numPC = 2, mode = 1)
-	corrLoadings = pcaResults.getCorrLoadings()
-	corrLoadEllipses = pcaResults.getCorrLoadingsEllipses()
-	plotCorrelationLoadings(corrLoadings, corrLoadEllipses, labels, "Correlation Loadings plot")
-
-
-
-def plotCorrelationLoadings(clMatrix, ellipsesMatrix, labels, title):
-	pc1 = clMatrix[:,0]
-	pc2 = clMatrix[:,1]
-	ellipsXFull = ellipsesMatrix['x100perc']
-	ellipsYFull = ellipsesMatrix['y100perc']
-	ellipsXHalf = ellipsesMatrix['x50perc']
-	ellipsYHalf = ellipsesMatrix['y50perc']
-
-	plot = PlotCorrLoad(
-		ttext = title,
-		valPtLabel = labels,
-		valX = pc1,
-		valY = pc2,
-		elXF = ellipsXFull,
-		elYF = ellipsYFull,
-		elXH = ellipsXHalf,
-		elYH = ellipsYHalf
-		)
-	plotUI = plot.configure_traits()
-
+	PCAPlotFactory().plot_corr_loading(selDataset)
 
 def clkExplResVar(obj):
 	logging.info("Explained variance plot activated")
 	selDataset = getSelectedDataset(obj.dsl)
-	pcaResults = PCA(selDataset.matrix, mode = 1)
-	calExplVars = pcaResults.getCalExplVar()
-
-	accContrib = [0]
-	index = [0]
-	for i, contrib in calExplVars.iteritems():
-		index.append(i)
-		prevSum =  accContrib[i-1]
-		accContrib.append(prevSum + contrib)
-
-	plot = PlotLine(
-		ttext = 'PCA explained variance',
-		titleX = '# of principal components',
-		titleY = 'Explainded variance [%]',
-		valX = index,
-		valY = accContrib,
-		limY = (0, 100),
-		)
-	plotUI = plot.configure_traits()
-
-
-
+	PCAPlotFactory().plot_expl_var(selDataset)
 
 def getSelectedDataset(dsl):
 	if dsl.selectedSet[0]:
@@ -167,7 +85,6 @@ def getSelectedDataset(dsl):
 
 # Views
 no_view = View()
-
 
 options_tree = TreeEditor(
 	hide_root = False,
@@ -191,6 +108,7 @@ options_tree = TreeEditor(
 		TreeNode( node_for = [ Options ],
 				  children = 'overview',
 				  label = '=Overview',
+				  on_dclick = clkOverview,
 				  view = dataset_selector,
 				  ),
 		TreeNode( node_for = [ Options ],
@@ -217,11 +135,6 @@ options_tree = TreeEditor(
 				  on_dclick = clkExplResVar,
 				  view = dataset_selector,
 				  ),
-#		 TreeNode( node_for = [ Options ],
-#				   children = 'measVsPred',
-#				   label = '=Meas vs pred',
-#				   view = no_view,
-#				   ),
 		]
 	)
 

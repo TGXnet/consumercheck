@@ -52,7 +52,7 @@ class DatasetCollection(HasTraits):
 		"""Add or update dataset"""
 		name = dataSet._internalName
 		if self._dataDict.__contains__(name):
-			raise Exception("Key (%s) already exists", name)
+			raise Exception("Key ({0}) already exists".format(name))
 		self._dataDict[name] = dataSet
 		self.dataDictContentChanged = True
 		logging.info("addDataset: %s", name)

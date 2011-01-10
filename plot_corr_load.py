@@ -2,7 +2,7 @@
 """
 Draws a simple scatterplot of a set of random points.
 Based on: /usr/share/doc/python-chaco/examples/basic/scatter.py
-FIXME: This is a copy of PlotScatter. Make a inherrited plot hiearcy
+FIXME: Deprecated by plots.PlotCorrLoad
 and have a closer look at the interface in ui_tab_pca.py
 """
 
