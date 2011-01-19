@@ -26,20 +26,20 @@ class DatasetSelectorHandler( Handler ):
 
 
 	def handler_nameSetX_changed(self, info):
-		info.object.dsl.selectedSet = []
-		selSet = info.object.dsl.retriveDatasetByDisplayName(self.nameSetX)
+		info.object.mother.dsl.selectedSet = []
+		selSet = info.object.mother.dsl.retriveDatasetByDisplayName(self.nameSetX)
 		if selSet:
-			info.object.dsl.selectedSet.append(selSet._internalName)
-		logging.info("Selection list updated: %s", info.object.dsl.selectedSet)
+			info.object.mother.dsl.selectedSet.append(selSet._internalName)
+		logging.info("Selection list updated: %s", info.object.mother.dsl.selectedSet)
 
 
 	def init(self, info):
-		self._buildSelectionList(info.object.dsl)
+		self._buildSelectionList(info.object.mother.dsl)
 
 
 	def object_datasetsAltered_changed(self, info):
 		logging.info("datasetAltered_changed: activated")
-		self._buildSelectionList(info.object.dsl)
+		self._buildSelectionList(info.object.mother.dsl)
 
 
 	def _buildSelectionList(self, dsl):
