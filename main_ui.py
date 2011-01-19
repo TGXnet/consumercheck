@@ -61,7 +61,8 @@ class MainUi(HasTraits):
 	dsl = DatasetCollection()
 
 	# Object representing the PCA and the GUI tab
-	pca = Instance(PcaModel, PcaModel(dsl=dsl))
+	# pca = Instance(PcaModel, PcaModel(dsl=dsl))
+	pca = Instance(PcaModel)
 
 	# Object representing the Prefmap and the GUI tab
 	prefmap = Instance(PrefmapModel, PrefmapModel(dsl=dsl))
@@ -72,6 +73,13 @@ class MainUi(HasTraits):
 	# Create an action that exits the application.
 	exitAction = Action(name='E&xit',
 						action='_on_close')
+
+	def _pca_changed(self, old, new):
+		logging.info("Setting mother")
+		if old is not None:
+			old.mother = None
+		if new is not None:
+			new.mother = self
 
 
 	# The main view
