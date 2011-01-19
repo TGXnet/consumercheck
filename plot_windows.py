@@ -20,16 +20,17 @@ class SinglePlotWindow(HasTraits):
 	"""
 	plot = Instance(Component)
 	traits_view = View(
-					Group(
-						Item('plot',
-							 editor=ComponentEditor(
-								 size = size,
-								 bgcolor = bg_color),
-							 show_label=False),
-						orientation = "vertical"),
-					resizable=True, title=title,
-					buttons = ["OK"]
-					)
+		Group(
+			Item('plot',
+				 editor=ComponentEditor(
+					 size = size,
+					 bgcolor = bg_color),
+				 show_label=False),
+			orientation = "vertical"),
+		resizable=True, title=title,
+#		kind = 'nonmodal',
+		buttons = ["OK"]
+		)
 
 
 class MultiPlotWindow(HasTraits):
@@ -40,16 +41,17 @@ class MultiPlotWindow(HasTraits):
 	"""
 	plots = Instance(Component)
 	traits_view = View(
-					Group(
-						Item('plots',
-							 editor=ComponentEditor(
-								 size = size,
-								 bgcolor = bg_color),
-							 show_label=False),
-						orientation = "vertical"),
-					resizable=True, title=title,
-					buttons = ["OK"]
-					)
+		Group(
+			Item('plots',
+				 editor=ComponentEditor(
+					 size = size,
+					 bgcolor = bg_color),
+				 show_label=False),
+			orientation = "vertical"),
+		resizable=True, title=title,
+#		kind = 'nonmodal',
+		buttons = ["OK"]
+		)
 
 	def _plots_default(self):
 		container = GridPlotContainer(background="lightgray")
