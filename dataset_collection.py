@@ -27,6 +27,8 @@ class DatasetCollection(HasTraits):
 
 	# Dataset index list
 	indexNameList = Property()
+	# extended trait references, using the same syntax as the on_trait_change() method’s name parameter
+	# indexNameList = Property( depends_on = '_dataDict' )
 
 	# Selected set list
 	# FIXME: This is a local control for the selected method
@@ -68,8 +70,9 @@ class DatasetCollection(HasTraits):
 	def getDatasetList(self):
 		return self._dataDict.values()
 
-
+	# @cached_property
 	def _get_indexNameList(self):
+		logging.info("Update indexNameList")
 		indexList = []
 		for sn, so in self._dataDict.iteritems():
 			tu = (sn, so._displayName)

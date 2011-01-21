@@ -19,6 +19,7 @@ def addLoadPath(baseFolderPath):
 	sys.path.append(baseFolderPath)
 
 setConsumerCheckIncludePath()
+
 from dataset_collection import DatasetCollection
 from dataset import DataSet
 

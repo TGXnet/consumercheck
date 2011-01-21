@@ -2,7 +2,8 @@
 
 import unittest
 import test_tools
-# Local imports
+
+# ConsumerCheck imports
 from ui_tab_pca import PcaModel, pca_tree_view
 
 class TestUiTabPCA(unittest.TestCase):
