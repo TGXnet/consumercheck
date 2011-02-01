@@ -70,7 +70,7 @@ class DatasetCollection(HasTraits):
 	def getDatasetList(self):
 		return self._dataDict.values()
 
-	# @cached_property
+	@property_depends_on( '_dataDict' )
 	def _get_indexNameList(self):
 		logging.info("Update indexNameList")
 		indexList = []
