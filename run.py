@@ -6,6 +6,9 @@ import logging
 import optparse
 
 # Enthought imports
+from enthought.etsconfig.api import ETSConfig
+ETSConfig.toolkit = 'wx'
+# ETSConfig.toolkit = 'qt4'
 #from enthought.pyface.api import GUI
 
 # Local imports
