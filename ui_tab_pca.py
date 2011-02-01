@@ -15,6 +15,7 @@ from plots import PlotScatter, PlotLine, PlotCorrLoad
 from plot_windows import SinglePlotWindow, MultiPlotWindow
 from nipals import PCA
 from dataset_selector_ui import dataset_selector
+from dsl_check_list import CheckListController, check_view
 
 
 class Options(HasTraits):
@@ -22,6 +23,7 @@ class Options(HasTraits):
 	# FIXME: Bruke Traits deferral for å kopiere denne verdien
 	# dsl = Instance(DatasetCollection)
 	mother = Instance(HasTraits)
+	list_control = Instance(CheckListController)
 
 	# Represent selections in tree
 	overview = List()
@@ -45,12 +47,10 @@ class PcaModel(HasTraits):
 	# Control UI in unittest
 	show = False
 
-
 	@on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
 	def datasetsChanged(self, object, name, old, new):
 		print "dsl change fired"
 		self.datasetsAltered = True
-
 
 	def plot_overview(self, ds_names, show = True):
 		"""Make PCA overview plot.
@@ -74,14 +74,15 @@ class PcaModel(HasTraits):
 			if show:
 				mpw_ui = mpw.edit_traits()
 
-	def plot_scores(self, ds_name, show = True):
+	def plot_scores(self, sel_ds_list, ds_name, show = True):
 		""" Activate score plot
 		FIXME: Dataset internal name argument.
 		Dataset list set in constructor.
 		"""
 		self.show = show
-		s_plot = self._make_scores_plot(ds_name)
-		self._show_plot(s_plot)
+		for ds_name in sel_ds_list:
+			s_plot = self._make_scores_plot(ds_name)
+			self._show_plot(s_plot)
 
 	def _make_scores_plot(self, ds_name):
 		res = self._get_res(ds_name)
@@ -178,19 +179,29 @@ class PcaModel(HasTraits):
 			spw_ui = spw.configure_traits()
 
 
-
-
 class PcaModelHandler(Handler):
+	plot_uis = List()
 
 	def init(self, info):
 		# info.object.treeObjects.dsl = info.object.dsl
 		info.object.treeObjects.mother = info.object
+		info.object.treeObjects.list_control = CheckListController( model=info.object.dsl)
+		check_view.handler = info.object.treeObjects.list_control
+
+	def closed(self, info, is_ok):
+		while self.plot_uis:
+			plot_ui = self.plot_uis.pop()
+			plot_ui.dispose()
 
 
 # Double click handlers
 # FIXME: Lot of repitation here
 def clkOverview(obj):
 	logging.info("Overview plot activated")
+	obj.print_traits()
+	print("Mother")
+	obj.mother.print_traits()
+	print("Traits printed")
 	selDataset = getSelectedDataset(obj.mother.dsl)
 	ds_list = []
 	ds_list.append(selDataset._internalName)
@@ -198,8 +209,8 @@ def clkOverview(obj):
 
 def clkScores(obj):
 	logging.info("Scoreplot activated")
-	selDataset = getSelectedDataset(obj.mother.dsl)
-	obj.mother.plot_scores(selDataset._internalName)
+	sel_ds_list = obj.list_control.selected
+	obj.mother.plot_scores(sel_ds_list)
 
 def clkLoadings(obj):
 	logging.info("Loadingplot activated")
@@ -229,17 +240,12 @@ def getSelectedDataset(dsl):
 no_view = View()
 
 options_tree = TreeEditor(
-	hide_root = False,
-	editable = True,
-#	 on_dclick = dbclicked,
-#	 click = 'handler.clickert',
 	nodes = [
 		TreeNode( node_for = [ Options ],
 				  children = '',
 				  label = 'name',
 				  tooltip = 'Oversikt',
 				  view = no_view,
-#				   view = dataset_selector,
 				  rename = False,
 				  rename_me = False,
 				  copy = False,
@@ -251,13 +257,14 @@ options_tree = TreeEditor(
 				  children = 'overview',
 				  label = '=Overview',
 				  on_dclick = clkOverview,
-				  view = dataset_selector,
+				  view = check_view,
 				  ),
 		TreeNode( node_for = [ Options ],
 				  children = 'scores',
 				  label = '=Scores',
 				  on_dclick = clkScores,
-				  view = dataset_selector,
+				  view = check_view,
+#				  view = dataset_selector,
 				  ),
 		TreeNode( node_for = [ Options ],
 				  children = 'loadings',
@@ -277,19 +284,21 @@ options_tree = TreeEditor(
 				  on_dclick = clkExplResVar,
 				  view = dataset_selector,
 				  ),
-		]
+		],
+	hide_root = False,
+	editable = True
 	)
 
 
 pca_tree_view = View(
-	Item( 'treeObjects',
-		  editor = options_tree,
-		  resizable = True,
-		  show_label = False
-		  ),
-	title = 'Options tree',
-	resizable = True,
-	width = .4,
-	height = .3,
-	handler = PcaModelHandler(),
+	Item('treeObjects',
+		 editor=options_tree,
+		 resizable=True,
+		 show_label=False
+		 ),
+	title='Options tree',
+	resizable=True,
+	width=.4,
+	height=.3,
+	handler=PcaModelHandler(),
 	)
