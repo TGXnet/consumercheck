@@ -4,22 +4,20 @@ import unittest
 import test_tools
 
 #ConsumerCheck imports
-from dataset_collection import DatasetCollection, DataSet
-#from dataset_collection_selection_list_ui import SelectionListHandler
-from dataset_collection_selection_list_ui import selection_list_view
+from dsl_check_list import CheckListController, check_view
 
 
 class TestSelectionListUi(unittest.TestCase):
 
 	def setUp(self):
-		self.testColl = DatasetCollection()
-		set1 = DataSet(_internalName = 'set1', _displayName = 'Set 1')
-		self.testColl.addDataset(set1)
-		set2 = DataSet(_internalName = 'set2', _displayName = 'Set 2')
-		self.testColl.addDataset(set2)
+		self.show = True
+		self.test_main = test_tools.TestMain()
 
 	def testTull(self):
-		self.testColl.configure_traits(view = selection_list_view)
+		chief = CheckListController( model=self.test_main.dsl )
+		chief.print_traits()
+		chief.model.print_traits()
+		self.test_main.dsl.configure_traits( view=check_view, handler=chief, kind='nonmodal' )
 
 
 if __name__ == '__main__':

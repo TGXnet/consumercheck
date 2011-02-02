@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-This shows a table editor which has a checkbox column in addition to normal
+"""This shows a table editor which has a checkbox column in addition to normal
 data columns.
 """
 
@@ -50,7 +49,6 @@ dataset_editor = TableEditor(
 	)
 
 
-
 # 'SelectableDataset' class:
 class SelectableDataset ( HasStrictTraits ):
 
@@ -59,21 +57,17 @@ class SelectableDataset ( HasStrictTraits ):
 	kName	   = Str
 
 
-class SelectionListHandler ( Handler ):
-
+class SelectionListHandler( Handler ):
 	datasets = List( SelectableDataset )
 	clicked = Event()
 
 	def init(self, uiInfo):
 		self._populateSelectionList(uiInfo.object.dsl)
 
-
 	def object_datasetsAltered_changed(self, uiInfo):
 		logging.info("datasetAltered_changed: activated")
 		if uiInfo.initialized:
 			self._populateSelectionList(uiInfo.object.dsl)
-
-
 
 	def _populateSelectionList(self, dsl):
 		self.datasets = []
@@ -88,9 +82,6 @@ class SelectionListHandler ( Handler ):
 				kName = kName)
 			self.datasets.append(ob)
 
-
-
-
 	def handler_clicked_changed(self, uiInfo):
 		uiInfo.object.dsl.selectedSet = []
 		for ob in uiInfo.handler.datasets:
@@ -98,9 +89,6 @@ class SelectionListHandler ( Handler ):
 				uiInfo.object.dsl.selectedSet.append(ob.kName)
 
 		logging.info("Selection list updated: %s", uiInfo.object.dsl.selectedSet)
-
-
-
 
 
 selection_list_view = View(
