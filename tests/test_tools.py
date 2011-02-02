@@ -38,9 +38,12 @@ class TestMain(HasTraits):
 		self.dsl.addDataset(ds1)
 		self.dsl.addDataset(ds2)
 
-
 	def _to_be_tested_changed(self, old, new):
 		if old is not None:
 			old.mother = None
 		if new is not None:
 			new.mother = self
+
+
+if __name__== '__main__':
+	container = TestMain()
