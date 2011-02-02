@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+# stdlib imports
+import logging
+
 from enthought.traits.api \
 	import HasTraits, List, DelegatesTo
 
@@ -23,7 +26,7 @@ class CheckListController(Controller):
 		)
 
 	def _selected_changed(self, old, new):
-		print("changed from {0} to {1}".format(old, new))
+		logging.info("Selection list changed from {0} to {1}".format(old, new))
 
 
 # The view includes one group per column formation.	 These will be displayed

@@ -14,14 +14,11 @@ from dataset_collection import DatasetCollection
 from plots import PlotScatter, PlotLine, PlotCorrLoad
 from plot_windows import SinglePlotWindow, MultiPlotWindow
 from nipals import PCA
-from dataset_selector_ui import dataset_selector
 from dsl_check_list import CheckListController, check_view
 
 
 class Options(HasTraits):
 	name = Str( 'Options' )
-	# FIXME: Bruke Traits deferral for å kopiere denne verdien
-	# dsl = Instance(DatasetCollection)
 	mother = Instance(HasTraits)
 	list_control = Instance(CheckListController)
 
@@ -37,7 +34,6 @@ class PcaModel(HasTraits):
 	"""Model for Pca"""
 	# FIXME: Bruke Traits notification til å oppdatere utregnede verdier
 	#  It is worth using a WeakRef trait for the father trait to avoid reference cycles.
-	# mother = Instance(MainUi)
 	mother = Instance(HasTraits)
 	dsl = DelegatesTo('mother')
 	results = DictStrAny()
@@ -46,39 +42,36 @@ class PcaModel(HasTraits):
 	treeObjects = Instance( Options, Options() )
 	# Control UI in unittest
 	show = False
+	uis = List()
 
 	@on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
 	def datasetsChanged(self, object, name, old, new):
-		print "dsl change fired"
 		self.datasetsAltered = True
 
-	def plot_overview(self, ds_names, show = True):
+	def plot_overview(self, sel_ds_list, show = True):
 		"""Make PCA overview plot.
 
 		Plot an array of plots where we plot scores, loadings, corr. load and expl. var
 		for each of the datasets.
 		"""
+		self.show = show
 		# Run PCA for each of the datasets
 		# Make a list of plots for each of the datasets
 		# Put these lists into one list
 		# Make multiplot window with all these plots
-		for name in ds_names:
-			s_plot = self._make_scores_plot(name)
-			l_plot = self._make_loadings_plot(name)
-			cl_plot = self._make_corr_load_plot(name)
-			ev_plot = self._make_expl_var_plot(name)
+		for ds_name in sel_ds_list:
+			s_plot = self._make_scores_plot(ds_name)
+			l_plot = self._make_loadings_plot(ds_name)
+			cl_plot = self._make_corr_load_plot(ds_name)
+			ev_plot = self._make_expl_var_plot(ds_name)
 			ds_plots = [[s_plot, l_plot], [cl_plot, ev_plot]]
 			mpw = MultiPlotWindow()
 			mpw.plots.component_grid = ds_plots
 			mpw.plots.shape = (2, 2)
-			if show:
-				mpw_ui = mpw.edit_traits()
+			if self.show:
+				self.uis.append( mpw.edit_traits(kind='live') )
 
-	def plot_scores(self, sel_ds_list, ds_name, show = True):
-		""" Activate score plot
-		FIXME: Dataset internal name argument.
-		Dataset list set in constructor.
-		"""
+	def plot_scores(self, sel_ds_list, show = True):
 		self.show = show
 		for ds_name in sel_ds_list:
 			s_plot = self._make_scores_plot(ds_name)
@@ -91,10 +84,11 @@ class PcaModel(HasTraits):
 		plot = self._make_plot(pc_tab, ds_name, labels, "PCA Scores plot\n{0}".format(ds_name))
 		return plot
 
-	def plot_loadings(self, ds_name, show = True):
+	def plot_loadings(self, sel_ds_list, show = True):
 		self.show = show
-		l_plot = self._make_loadings_plot(ds_name)
-		self._show_plot(l_plot)
+		for ds_name in sel_ds_list:
+			l_plot = self._make_loadings_plot(ds_name)
+			self._show_plot(l_plot)
 
 	def _make_loadings_plot(self, ds_name):
 		res = self._get_res(ds_name)
@@ -103,10 +97,23 @@ class PcaModel(HasTraits):
 		plot = self._make_plot(pc_tab, ds_name, labels, "PCA Loadings plot\n{0}".format(ds_name))
 		return plot
 
-	def plot_corr_loading(self, ds_name, show = True):
+	def _make_plot(self, pc_tab, ds_name, labels, plot_title):
+		expl_vars = self._get_res(ds_name).getCalExplVar()
+		pd = ArrayPlotData()
+		pd.set_data('pc_x', pc_tab[:,0])
+		pd.set_data('pc_y', pc_tab[:,1])
+		ps = PlotScatter(pd)
+		ps.title = plot_title
+		ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
+		ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
+		ps.addPtLabels(labels)
+		return ps
+
+	def plot_corr_loading(self, sel_ds_list, show = True):
 		self.show = show
-		cl_plot = self._make_corr_load_plot(ds_name)
-		self._show_plot(cl_plot)
+		for ds_name in sel_ds_list:
+			cl_plot = self._make_corr_load_plot(ds_name)
+			self._show_plot(cl_plot)
 
 	def _make_corr_load_plot(self, ds_name):
 		res = self._get_res(ds_name)
@@ -128,10 +135,11 @@ class PcaModel(HasTraits):
 		pcl.addPtLabels(labels)
 		return pcl
 
-	def plot_expl_var(self, ds_name, show = True):
+	def plot_expl_var(self, sel_ds_list, show = True):
 		self.show = show
-		ev_plot = self._make_expl_var_plot(ds_name)
-		self._show_plot(ev_plot)
+		for ds_name in sel_ds_list:
+			ev_plot = self._make_expl_var_plot(ds_name)
+			self._show_plot(ev_plot)
 
 	def _make_expl_var_plot(self, ds_name):
 		res = self._get_res(ds_name)
@@ -149,6 +157,11 @@ class PcaModel(HasTraits):
 		pl.y_mapper.range.set_bounds(0, 100)
 		return pl
 
+	def _show_plot(self, plot):
+		spw = SinglePlotWindow(plot=plot)
+		if self.show:
+			self.uis.append( spw.edit_traits(kind='live') )
+
 	def _get_res(self, name):
 		try:
 			return self.results[name]
@@ -160,27 +173,9 @@ class PcaModel(HasTraits):
 		self.results[ds_name] = res
 		return res
 
-	def _make_plot(self, pc_tab, ds_name, labels, plot_title):
-		# labels = self.dsl.retriveDatasetByName(ds_name).objectNames
-		expl_vars = self._get_res(ds_name).getCalExplVar()
-		pd = ArrayPlotData()
-		pd.set_data('pc_x', pc_tab[:,0])
-		pd.set_data('pc_y', pc_tab[:,1])
-		ps = PlotScatter(pd)
-		ps.title = plot_title
-		ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
-		ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-		ps.addPtLabels(labels)
-		return ps
-
-	def _show_plot(self, plot):
-		spw = SinglePlotWindow(plot=plot)
-		if self.show:
-			spw_ui = spw.configure_traits()
-
 
 class PcaModelHandler(Handler):
-	plot_uis = List()
+	# plot_uis = List()
 
 	def init(self, info):
 		# info.object.treeObjects.dsl = info.object.dsl
@@ -188,52 +183,32 @@ class PcaModelHandler(Handler):
 		info.object.treeObjects.list_control = CheckListController( model=info.object.dsl)
 		check_view.handler = info.object.treeObjects.list_control
 
-	def closed(self, info, is_ok):
-		while self.plot_uis:
-			plot_ui = self.plot_uis.pop()
-			plot_ui.dispose()
+	## def closed(self, info, is_ok):
+	## 	while self.plot_uis:
+	## 		plot_ui = self.plot_uis.pop()
+	## 		plot_ui.dispose()
 
 
 # Double click handlers
-# FIXME: Lot of repitation here
 def clkOverview(obj):
 	logging.info("Overview plot activated")
-	obj.print_traits()
-	print("Mother")
-	obj.mother.print_traits()
-	print("Traits printed")
-	selDataset = getSelectedDataset(obj.mother.dsl)
-	ds_list = []
-	ds_list.append(selDataset._internalName)
-	obj.mother.plot_overview(ds_list)
+	obj.mother.plot_overview(obj.list_control.selected)
 
 def clkScores(obj):
 	logging.info("Scoreplot activated")
-	sel_ds_list = obj.list_control.selected
-	obj.mother.plot_scores(sel_ds_list)
+	obj.mother.plot_scores(obj.list_control.selected)
 
 def clkLoadings(obj):
 	logging.info("Loadingplot activated")
-	selDataset = getSelectedDataset(obj.mother.dsl)
-	obj.mother.plot_loadings(selDataset._internalName)
+	obj.mother.plot_loadings(obj.list_control.selected)
 
 def clkCorrLoad(obj):
 	logging.info("Loadingplot activated")
-	selDataset = getSelectedDataset(obj.mother.dsl)
-	obj.mother.plot_corr_loading(selDataset._internalName)
+	obj.mother.plot_corr_loading(obj.list_control.selected)
 
 def clkExplResVar(obj):
 	logging.info("Explained variance plot activated")
-	selDataset = getSelectedDataset(obj.mother.dsl)
-	obj.mother.plot_expl_var(selDataset._internalName)
-
-def getSelectedDataset(dsl):
-	if dsl.selectedSet[0]:
-		setName = dsl.selectedSet[0]
-		selSet = dsl.retriveDatasetByName(setName)
-		return selSet
-	else:
-		return None
+	obj.mother.plot_expl_var(obj.list_control.selected)
 
 
 # Views
@@ -264,25 +239,24 @@ options_tree = TreeEditor(
 				  label = '=Scores',
 				  on_dclick = clkScores,
 				  view = check_view,
-#				  view = dataset_selector,
 				  ),
 		TreeNode( node_for = [ Options ],
 				  children = 'loadings',
 				  label = '=Loadings',
 				  on_dclick = clkLoadings,
-				  view = dataset_selector,
+				  view = check_view,
 				  ),
 		TreeNode( node_for = [ Options ],
 				  children = 'corrLoadings',
 				  label = '=Correlation loadings',
 				  on_dclick = clkCorrLoad,
-				  view = dataset_selector,
+				  view = check_view,
 				  ),
 		TreeNode( node_for = [ Options ],
 				  children = 'explResVar',
 				  label = '=Explained variance',
 				  on_dclick = clkExplResVar,
-				  view = dataset_selector,
+				  view = check_view,
 				  ),
 		],
 	hide_root = False,
