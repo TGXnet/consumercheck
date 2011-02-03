@@ -40,9 +40,9 @@ class TestMain(HasTraits):
 
 	def _to_be_tested_changed(self, old, new):
 		if old is not None:
-			old.mother = None
+			old.main_ui_ptr = None
 		if new is not None:
-			new.mother = self
+			new.main_ui_ptr = self
 
 
 if __name__== '__main__':

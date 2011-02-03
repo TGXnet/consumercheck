@@ -4,13 +4,14 @@ import unittest
 import test_tools
 
 # ConsumerCheck imports
-from ui_tab_pca import PcaModel, pca_tree_view
+from ui_tab_pca import PcaModel, PcaModelViewHandler, pca_tree_view
 
 class TestUiTabPCA(unittest.TestCase):
 	def setUp(self):
 		# Show the plot?
 		self.show = True
-		self.test_main = test_tools.TestMain( to_be_tested=PcaModel() )
+		pmvh = PcaModelViewHandler( PcaModel() )
+		self.test_main = test_tools.TestMain( to_be_tested=pmvh )
 
 	## def test1PlotScores(self):
 	## 	test_main = test_tools.TestMain( to_be_tested=PcaModel() )
@@ -34,6 +35,7 @@ class TestUiTabPCA(unittest.TestCase):
 
 	def test6treeUI(self):
 		self.test_main.to_be_tested.configure_traits( view=pca_tree_view )
+		# self.test_main.to_be_tested.configure_traits()
 
 	def tearDown(self):
 		pass

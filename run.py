@@ -17,7 +17,7 @@ import rpyLocate
 rpyLocate.set_rpy_env()
 
 from main_ui import MainUi
-from ui_tab_pca import PcaModel
+from ui_tab_pca import PcaModel, PcaModelViewHandler
 
 LOGGING_LEVELS = {'critical': logging.CRITICAL,
 				  'error': logging.ERROR,
@@ -38,7 +38,7 @@ def main():
 		datefmt='%Y-%m-%d %H:%M:%S'
 		)
 	logging.info('Starting ConsumerCheck')
-	mother = MainUi( pca = PcaModel() )
+	mother = MainUi( pca = PcaModelViewHandler(PcaModel()) )
 	mother.configure_traits()
 
 

@@ -19,7 +19,7 @@ from dataset_collection import DatasetCollection
 from dataset import DataSet
 from file_importer_ui import FileImporterUi
 from ui_datasets_tree import tree_view
-from ui_tab_pca import PcaModel, pca_tree_view
+from ui_tab_pca import PcaModel, PcaModelViewHandler, pca_tree_view
 from ui_tab_prefmap import PrefmapModel, prefmap_tree_view
 
 
@@ -62,7 +62,7 @@ class MainUi(HasTraits):
 
 	# Object representing the PCA and the GUI tab
 	# pca = Instance(PcaModel, PcaModel(dsl=dsl))
-	pca = Instance(PcaModel)
+	pca = Instance(PcaModelViewHandler)
 
 	# Object representing the Prefmap and the GUI tab
 	prefmap = Instance(PrefmapModel, PrefmapModel(dsl=dsl))
@@ -77,9 +77,9 @@ class MainUi(HasTraits):
 	def _pca_changed(self, old, new):
 		logging.info("Setting mother")
 		if old is not None:
-			old.mother = None
+			old.main_ui_ptr = None
 		if new is not None:
-			new.mother = self
+			new.main_ui_ptr = self
 
 
 	# The main view
