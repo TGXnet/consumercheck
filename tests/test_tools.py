@@ -2,6 +2,8 @@
 
 import os
 import sys
+import logging
+
 from enthought.traits.api import HasTraits, Instance
 
 def setConsumerCheckIncludePath():
@@ -18,6 +20,9 @@ def findApplicationBasePath():
 def addLoadPath(baseFolderPath):
 	sys.path.append(baseFolderPath)
 
+logging.basicConfig(level=logging.DEBUG)
+logging.info('Starts unittest')
+
 setConsumerCheckIncludePath()
 
 from dataset_collection import DatasetCollection
@@ -32,9 +37,9 @@ class TestMain(HasTraits):
 	def __init__(self, *args, **kwargs):
 		super(TestMain, self).__init__(*args, **kwargs)
 		ds1 = DataSet()
-		ds1.importDataset('../testdata/Ost.txt')
+		ds1.importDataset('../datasets/Ost.txt')
 		ds2 = DataSet()
-		ds2.importDataset('../testdata/Polser.txt', True, True)
+		ds2.importDataset('../datasets/Polser.txt', True, True)
 		self.dsl.addDataset(ds1)
 		self.dsl.addDataset(ds2)
 
