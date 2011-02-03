@@ -143,7 +143,7 @@ datasets_view = View(
 if __name__ == '__main__':
 	"""Run the application. """
 	ds1 = DataSet(_internalName = 'test1', _displayName = 'Test 1')
-	ds1.importDataset('./testdata/Ost.txt', True)
+	ds1.importDataset('./datasets/Ost.txt', True)
 	ds1._displayName = 'Oste test'
 	ds2 = DataSet(_internalName = 'test2', _displayName = 'Test 2')
 	dc = DatasetCollection()

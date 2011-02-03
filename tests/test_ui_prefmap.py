@@ -20,9 +20,9 @@ class TestUiPrefmap(unittest.TestCase):
 	def testImport(self):
 		baseFolder = test_tools.findApplicationBasePath()
 		ds1 = DataSet()
-		ds1.importDataset(baseFolder + '/testdata/A_lables.txt', True, True)
+		ds1.importDataset(baseFolder + '/datasets/A_lables.txt', True, True)
 		ds2 = DataSet()
-		ds2.importDataset(baseFolder + '/testdata/C_lables.txt', True, True)
+		ds2.importDataset(baseFolder + '/datasets/C_lables.txt', True, True)
 		dc = DatasetCollection()
 		prefmap = PrefmapModel(dsl=dc)
 		dc.addDataset(ds1)

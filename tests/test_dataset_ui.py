@@ -13,7 +13,7 @@ class TestDatasetModel(unittest.TestCase):
 		self.testSet = DataSet()
 
 	def testImport(self):
-		path = test_tools.findApplicationBasePath() + '/testdata/test.txt'
+		path = test_tools.findApplicationBasePath() + '/datasets/test.txt'
 		self.testSet.importDataset(path, True)
 		self.assertEqual('test', self.testSet._displayName)
 		self.assertEqual(11, self.testSet.nRows)

@@ -29,7 +29,7 @@ class TestDatasetModel(unittest.TestCase):
 	def setUp(self):
 		self.show_gui = False
 		# Load a data set
-		data = st.arrayIO('../testdata/Polser.txt')
+		data = st.arrayIO('../datasets/Polser.txt')
 		dataMat = data.data
 		dataObjs = data.objNames
 		dataVars = data.varNames

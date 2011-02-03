@@ -10,7 +10,7 @@ from file_importer import FileImporter
 class TestReadDataFile(unittest.TestCase):
 
 	def setUp(self):
-		self.testDir = test_tools.findApplicationBasePath() + '/testdata/'
+		self.testDir = test_tools.findApplicationBasePath() + '/datasets/'
 
 	def tearDown(self):
 		pass
