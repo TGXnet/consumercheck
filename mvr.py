@@ -99,7 +99,7 @@ def plsr(X, Y, centre, fncomp, fmethod, fvalidation):
 
 
 	# Run PLSR with parameters
-	fit = mvr(fmla, ncomp=4, method=fmethod, validation=fvalidation)
+	fit = mvr(fmla, ncomp=fncomp, method=fmethod, validation=fvalidation)
 
 
 	# Define global environment variable in Python. With globalEnv all matrices
