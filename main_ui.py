@@ -21,6 +21,7 @@ from file_importer_ui import FileImporterUi
 from ui_datasets_tree import tree_view
 from ui_tab_pca import PcaModel, PcaModelViewHandler, pca_tree_view
 from ui_tab_prefmap import PrefmapModel, prefmap_tree_view
+from about_consumercheck import ConsumerCheckAbout
 
 
 class MainViewHandler(Handler):
@@ -50,6 +51,10 @@ class MainViewHandler(Handler):
 		else:
 			logging.info("importDataset: aborted")
 
+	def view_about(self, info):
+		ConsumerCheckAbout().edit_traits()
+
+
 	# end MainViewHandler
 
 
@@ -71,8 +76,9 @@ class MainUi(HasTraits):
 	setImport = Action(name = 'Add &Dataset',
 					   action = 'importDataset')
 	# Create an action that exits the application.
-	exitAction = Action(name='E&xit',
-						action='_on_close')
+	exitAction = Action(name='E&xit', action='_on_close')
+	show_about = Action(name='&About', action='view_about')
+
 
 	def _pca_changed(self, old, new):
 		logging.info("Setting mother")
@@ -95,9 +101,8 @@ class MainUi(HasTraits):
 		height = .3,
 		title = 'Consumer Check',
 		menubar = MenuBar(
-			Menu(setImport, exitAction,
-				 name = '&File'
-				 )
+			Menu(setImport, exitAction, name = '&File'),
+			Menu(show_about, name='&Help'),
 			),
 		handler = MainViewHandler
 		)
