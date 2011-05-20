@@ -128,9 +128,3 @@ class PlotLine(Plot):
 	def _customize_settings(self):
 		self.line_width = 0.5
 		self.padding = 50
-
-	def reset_axis(self):
-		"""Reset axix to default
-		"""
-		self.x_mapper.range.reset()
-		self.y_mapper.range.reset()
