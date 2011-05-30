@@ -91,9 +91,12 @@ class MainUi(HasTraits):
 	# The main view
 	traits_ui_view = View(
 		Group(
-			Item('dsl', editor=InstanceEditor(view = tree_view), style='custom'),
-			Item('pca', editor=InstanceEditor(view = pca_tree_view), style='custom'),
-			Item('prefmap', editor=InstanceEditor(view = prefmap_tree_view), style='custom'),
+			Item('dsl', editor=InstanceEditor(view = tree_view),
+				 style='custom', show_label=False),
+			Item('pca', editor=InstanceEditor(view = pca_tree_view),
+				 style='custom', show_label=False),
+			Item('prefmap', editor=InstanceEditor(view = prefmap_tree_view),
+				 style='custom', show_label=False),
 			layout='tabbed'
 			), # end UI tabs group
 		resizable = True,
