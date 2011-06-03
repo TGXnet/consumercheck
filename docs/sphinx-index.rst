@@ -10,11 +10,12 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
 
    plotting
    data-structures
    algorithms
-
+   event-driven
 
 Indices and tables
 ==================

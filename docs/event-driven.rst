@@ -1,4 +1,9 @@
 
+.. En kommentar
+
+Enthought traits based
+======================
+
 ConsumerCheck is based on Traits, and event driven MVC framework.
 The datasets is contained in an dataset collection class.
 Each dataset holds an array (matrix) and som metadata for the dataset.

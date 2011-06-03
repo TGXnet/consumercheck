@@ -9,3 +9,7 @@ Dataset the "atoms"
 
 .. automodule:: dataset_collection
    :members:
+
+.. automodule:: file_importer
+   :members:
+

@@ -6,7 +6,6 @@ The ploting windows is separated into two parts. The plots is defined without an
 And there is different kind of plot windows. Single plot window for displaying a single plot
 and multiple plot windows for listing several plots in one frame.
 
-
 Abstraction and embedding
 =========================
 
