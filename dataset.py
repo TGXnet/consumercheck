@@ -1,105 +1,78 @@
-# -*- coding: utf-8 -*-
+"""Dataset matrix module.
 
-# Python stdlib imports
-from os import path
+"""
 
 # Enthought imports
-from numpy import array, ndarray, zeros
 from enthought.traits.api import \
-	HasTraits, Array, String, Str, Enum, File, ListStr, Bool, Property
-
-
-# Local imports
-from file_importer import FileImporter
+    HasTraits, Array, Str, Enum, File, ListStr, Bool, Property
 
 
 class DataSet(HasTraits):
-	"""One dataset
+    """One data matirx
 
-	Dataset model class. Consist of matrix and various metadata:
-	* Internal technical name
-	* Userfriendly display name
-	* Type of data classification
-	* Named subset (FIXME: Maybe this shoud be classified as well?)
-	* Is this dataset calculated in this application
-	* Data source (file name)
-	* Column headers
-	"""
+    Consist of matrix and metadata
 
-	# The data read from the file
-	matrix = Array(desc = 'Data matrix')
+	Members
+	=======
 
-	# Used as dictionary index
-	# FIXME: Public
-	_internalName = String('unnamed', label = 'Dict key name')
+	matrix
+	  The data matrix
+	internalName
+	  Internal technical name
+	displayName
+	  Userfriendly display name
+	datasetType
+	  Type of data classification
+	isCalculated
+	  Is this dataset calculated in this application
+	sourceFile
+	  Data source (file name)
+	variableNames
+	  Column headers
+	objectNames
+	  Row headers
+	nRows
+	  Number of objects
+	nCols
+	  Number of variables
 
-	# Displayed to the user
-	# FIXME: Public
-	_displayName = Str(
-		'Unnamed dataset',
-		desc = 'User friendly display name',
-		label = 'Dataset name')
+    """
+    matrix = Array(desc = 'Data matrix')
+    # FIXME: Public
+    _internalName = Str('unnamed', label = 'Dict key name')
+    # FIXME: Public
+    _displayName = Str(
+        'Unnamed dataset',
+        desc = 'User friendly display name',
+        label = 'Dataset name')
+    _datasetType = Enum(
+        ('Design variable',
+         'Sensory profiling',
+         'Consumer liking',
+         'Consumer attributes',
+         'Hedonic attributes',),
+        desc = 'Classify dataset',
+        label = 'Dataset type')
+    _sourceFile = File(label = 'Source file')
+    variableNames = ListStr(desc = 'Variable names')
+    objectNames = ListStr(desc = 'Object names')
+    _isCalculated = Bool(False, lable='Calculated?')
+    nRows = Property(label = 'Rows', desc = 'Number of objects')
+    nCols = Property(label = 'Cols', desc = 'Number of variables')
 
-	# Type of data (classification) indicated by the user
-	_datasetType = Enum(
-		('Design variable',
-		 'Sensory profiling',
-		 'Consumer liking',
-		 'Consumer attributes',
-		 'Hedonic attributes',),
-		desc = 'Classify dataset',
-		label = 'Dataset type')
+    def _get_nRows(self):
+        if self.matrix.shape[0]>0:
+            return self.matrix.shape[0]
+        else:
+            return 0
 
-	# Where the matrix is imported from (datasource)
-	_sourceFile = File(label = 'Source file')
+    def _get_nCols(self):
+        if self.matrix.shape[0]>0:
+            return self.matrix.shape[1]
+        else:
+            return 0
 
-	# List of sting containing column headers for matrix
-	variableNames = ListStr(desc = 'Variable names')
-	objectNames = ListStr(desc = 'Object names')
-
-	# Is this dataset result of calculation in this application
-	_isCalculated = Bool(False, lable='Calculated?')
-
-	# Matrix dimensions
-	nRows = Property(label = 'Rows', desc = 'Number of objects')
-	nCols = Property(label = 'Cols', desc = 'Number of variables')
-
-
-	def importDataset(self, fileUri, haveVarNames = True, haveObjNames = False):
-		""" Initiaze dataimport from file"""
-		self._sourceFile = fileUri
-		txtImporter = FileImporter(self._sourceFile, haveVarNames, haveObjNames)
-		txtImporter.readFile()
-		self.matrix = txtImporter.getMatrix()
-
-		if haveVarNames:
-			self.variableNames = txtImporter.getVariableNames()
-		if haveObjNames:
-			self.objectNames = txtImporter.getObjectNames()
-
-		# FIXME: Find a better more general solution
-		fn = path.basename(fileUri)
-		fn = fn.partition('.')[0]
-		fn = fn.lower()
-		self._internalName = self._displayName = fn
-
-
-	def _get_nRows(self):
-		if self.matrix.shape[0]>0:
-			return self.matrix.shape[0]
-		else:
-			return 0
-
-
-	def _get_nCols(self):
-		if self.matrix.shape[0]>0:
-			return self.matrix.shape[1]
-		else:
-			return 0
-
-
-	def isEqDisplayName(self, name):
-		return name == self._displayName
-
+    def isEqDisplayName(self, name):
+        return name == self._displayName
 
 #end DataSet

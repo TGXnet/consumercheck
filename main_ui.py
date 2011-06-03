@@ -17,7 +17,7 @@ from enthought.traits.ui.menu \
 # Local imports
 from dataset_collection import DatasetCollection
 from dataset import DataSet
-from file_importer_ui import FileImporterUi
+from file_importer import FileImporter
 from ui_datasets_tree import tree_view
 from ui_tab_pca import PcaModel, PcaModelViewHandler, pca_tree_view
 from ui_tab_prefmap import PrefmapModel, prefmap_tree_view
@@ -26,6 +26,7 @@ from about_consumercheck import ConsumerCheckAbout
 
 class MainViewHandler(Handler):
 	"""Handler for dataset view"""
+	importer = FileImporter()
 
 	# Called when some value in object changes
 	def setattr(self, info, object, name, value):
@@ -37,19 +38,9 @@ class MainViewHandler(Handler):
 	# default context is object
 	def importDataset(self, uiInfo):
 		"""Action called when activating importing of new dataset"""
-		importerUi = FileImporterUi()
-		fiUi = importerUi.edit_traits(kind='modal')
-		if fiUi.result:
-			ds = DataSet()
-			ds.importDataset(
-				importerUi.fileName,
-				importerUi.haveVarNames,
-				importerUi.haveObjNames
-				)
-			uiInfo.object.dsl.addDataset(ds)
-			logging.info("importDataset: internal name = %s", ds._internalName)
-		else:
-			logging.info("importDataset: aborted")
+		ds = self.importer.import_interactive()
+		uiInfo.object.dsl.addDataset(ds)
+		logging.info("importDataset: internal name = %s", ds._internalName)
 
 	def view_about(self, info):
 		ConsumerCheckAbout().edit_traits()
