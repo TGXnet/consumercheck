@@ -27,6 +27,20 @@ class TestReadDataFile(unittest.TestCase):
     ##     self.assertEqual(ds.nCols, 36)
     ##     self.assertEqual(ds.nRows, 7)
 
+    ## def testReadVarnameObjecnameDatafile(self):
+    ##      readTest = FileImporter(self.testDir + 'C_lables.txt', True, True)
+    ##      readTest.readFile()
+    ##      matrix = readTest.getMatrix()
+    ##      nRows, nCols = matrix.shape
+    ##      self.assertEqual(nRows, 21)
+    ##      self.assertEqual(nCols, 3)
+    ##      varNames = readTest.getVariableNames()
+    ##      nVarName = len(varNames)
+    ##      self.assertEqual(nVarName, nCols)
+    ##      objNames = readTest.getObjectNames()
+    ##      nObjNames = len(objNames)
+    ##      self.assertEqual(nObjNames, nRows)
+
     ## def test3XlsImport(self):
     ##     ds_fn = self.testDir + 'Ost_sensorikk.xls'
     ##     ds = self.tested.import_noninteractive(ds_fn)
