@@ -17,6 +17,7 @@ Contents:
    statistical-methods
    algorithms
    event-driven
+   cc-coding-standard
 
 Indices and tables
 ==================

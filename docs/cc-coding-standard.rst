@@ -1,0 +1,23 @@
+Coding standard for ConsumerCheck
+*********************************
+
+Inspiration and guideline
+
+http://www.python.org/dev/peps/pep-0008/
+
+Indentation preferably with tab but as long as Spyder do not support tab do we have to use 4 space.
+
+Classnames: CamelCase
+Method names: camelCase()
+Variables names: camelCase
+
+Module name: short lowercase
+
+      Function names should be lowercase, with words separated by underscores
+      as necessary to improve readability.
+
+      mixedCase is allowed only in contexts where that's already the
+      prevailing style (e.g. threading.py), to retain backwards compatibility.
+
+      Use the function naming rules: lowercase with words separated by
+      underscores as necessary to improve readability.
