@@ -14,6 +14,7 @@ Contents:
 
    plotting
    data-structures
+   statistical-methods
    algorithms
    event-driven
 
@@ -23,4 +24,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
