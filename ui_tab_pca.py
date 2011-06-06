@@ -1,9 +1,13 @@
+"""PCA module for ConsumerCheck application
 
+Adds statistical methods, user inteface and plots for PCA
+
+"""
 # stdlib imports
 import logging
 
 # Enthought imports
-from enthought.traits.api import HasTraits, Instance, Event, Str, List, on_trait_change, DelegatesTo, DictStrAny
+from enthought.traits.api import HasTraits, Instance, Event, Str, List, on_trait_change, DelegatesTo, Dict, Any
 from enthought.traits.ui.api import View, Item, UItem, Group, Handler, ModelView, CheckListEditor, TreeEditor, TreeNode
 from enthought.chaco.api import ArrayPlotData
 
@@ -16,10 +20,12 @@ from dsl_check_list import CheckListController, check_view
 
 
 class PcaModel(HasTraits):
-    """Pca model class
+    """Interface to PCA calculation class
+
+    Might also implement caching of calculated results
     """
-    # FIXME: Bruke Traits notification til å oppdatere utregnede verdier
-    #  It is worth using a WeakRef trait for the father trait to avoid reference cycles.
+    # FIXME: Use Traits notification to update calculated values
+    # FIXME: It is worth using a WeakRef trait for the father trait to avoid reference cycles.
 
     controller = Instance(Handler)
 
@@ -28,7 +34,7 @@ class PcaModel(HasTraits):
     dsl = DelegatesTo('main_ui_ptr')
 
     # Hold calculated pca results
-    results = DictStrAny()
+    results = Dict(unicode, Any)
 
     # To notify dataset selector
     # datasetsAltered = Event
@@ -59,7 +65,7 @@ class PcaModel(HasTraits):
 
 
 class PcaModelViewHandler(ModelView):
-
+    """UI code that vil react to UI events for PCA tab"""
     # Disable UI when unittesting
     show = True
     main_ui_ptr = Instance(HasTraits)
