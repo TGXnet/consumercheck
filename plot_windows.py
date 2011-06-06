@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Frames (view) for plotting
+
 """
 
 # Enthought library imports
@@ -16,43 +16,43 @@ bg_color="lightgray"
 
 #===============================================================================
 class SinglePlotWindow(HasTraits):
-	"""Window for embedding single plot
-	"""
-	plot = Instance(Component)
-	traits_view = View(
-		Group(
-			Item('plot',
-				 editor=ComponentEditor(
-					 size = size,
-					 bgcolor = bg_color),
-				 show_label=False),
-			orientation = "vertical"),
-		resizable=True, title=title,
-#		kind = 'nonmodal',
-		buttons = ["OK"]
-		)
+    """Window for embedding single plot
+    """
+    plot = Instance(Component)
+    traits_view = View(
+        Group(
+            Item('plot',
+                 editor=ComponentEditor(
+                     size = size,
+                     bgcolor = bg_color),
+                 show_label=False),
+            orientation = "vertical"),
+        resizable=True, title=title,
+#       kind = 'nonmodal',
+        buttons = ["OK"]
+        )
 
 
 class MultiPlotWindow(HasTraits):
-	"""Window for embedding multiple plots
+    """Window for embedding multiple plots
 
-	Set plots.component_grid with list of plots to add the plots
-	Set plots.shape to tuple(rows, columns) to indicate the layout of the plots
-	"""
-	plots = Instance(Component)
-	traits_view = View(
-		Group(
-			Item('plots',
-				 editor=ComponentEditor(
-					 size = size,
-					 bgcolor = bg_color),
-				 show_label=False),
-			orientation = "vertical"),
-		resizable=True, title=title,
-#		kind = 'nonmodal',
-		buttons = ["OK"]
-		)
+    Set plots.component_grid with list of plots to add the plots
+    Set plots.shape to tuple(rows, columns) to indicate the layout of the plots
+    """
+    plots = Instance(Component)
+    traits_view = View(
+        Group(
+            Item('plots',
+                 editor=ComponentEditor(
+                     size = size,
+                     bgcolor = bg_color),
+                 show_label=False),
+            orientation = "vertical"),
+        resizable=True, title=title,
+#       kind = 'nonmodal',
+        buttons = ["OK"]
+        )
 
-	def _plots_default(self):
-		container = GridPlotContainer(background="lightgray")
-		return container
+    def _plots_default(self):
+        container = GridPlotContainer(background="lightgray")
+        return container

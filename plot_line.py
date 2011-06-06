@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Draws a simple lineplot.
 FIXME: Deprecated by plots.PlotLine
@@ -21,89 +20,89 @@ bg_color="lightgray"
 
 class PlotLine(HasTraits):
 
-	ttext = Str()
-	titleX = Str()
-	titleY = Str()
-	valPtLabel = List()
-	valX = Array()
-	valY = Array()
-	limX = Tuple()
-	limY = Tuple()
+    ttext = Str()
+    titleX = Str()
+    titleY = Str()
+    valPtLabel = List()
+    valX = Array()
+    valY = Array()
+    limX = Tuple()
+    limY = Tuple()
 
-	plot = Instance(Component)
+    plot = Instance(Component)
 
-	traits_view = View(
-					Group(
-						Item('plot',
-							 editor = ComponentEditor( size=size,
-													   bgcolor=bg_color),
-							 show_label = False),
-						orientation = "vertical"),
-					resizable = True, title = title,
-					buttons = ["OK"]
-					)
-
-
-	def _plot_default(self):
-		# Create a plot data object and give it this data
-
-		# Plot data
-		pd = ArrayPlotData()
-		pd.set_data("index", self.valX)
-		pd.set_data("y0", self.valY)
-
-		plot = Plot(pd, title = self.ttext, line_width = 0.5, padding = 50)
-
-		plot.plot(("index", "y0"),
-				  type="line",
-				  index_sort="ascending",
-				  color="orange",
-				  bgcolor="white")
-
-		# Set axis limits
-		plot = self._setAxisLimits(plot)
-
-		# Add title to axis
-		plot = self._addAxisTitle(plot)
-
-		# Add labels to datapoints
-#		 plot = self._addPtLabels(plot)
-
-		return plot
+    traits_view = View(
+                    Group(
+                        Item('plot',
+                             editor = ComponentEditor( size=size,
+                                                       bgcolor=bg_color),
+                             show_label = False),
+                        orientation = "vertical"),
+                    resizable = True, title = title,
+                    buttons = ["OK"]
+                    )
 
 
+    def _plot_default(self):
+        # Create a plot data object and give it this data
+
+        # Plot data
+        pd = ArrayPlotData()
+        pd.set_data("index", self.valX)
+        pd.set_data("y0", self.valY)
+
+        plot = Plot(pd, title = self.ttext, line_width = 0.5, padding = 50)
+
+        plot.plot(("index", "y0"),
+                  type="line",
+                  index_sort="ascending",
+                  color="orange",
+                  bgcolor="white")
+
+        # Set axis limits
+        plot = self._setAxisLimits(plot)
+
+        # Add title to axis
+        plot = self._addAxisTitle(plot)
+
+        # Add labels to datapoints
+#        plot = self._addPtLabels(plot)
+
+        return plot
 
 
-	def _setAxisLimits(self, plot):
-		if self.limX:
-			xlo, xhi = self.limX
-			xmapper = plot.x_mapper
-			xmapper.range.set_bounds(xlo, xhi)
-
-		if self.limY:
-			ylo, yhi = self.limY
-			ymapper = plot.y_mapper
-			ymapper.range.set_bounds(ylo, yhi)
-
-		return plot
 
 
-	def _addAxisTitle(self, plot):
-		plot.x_axis.title = self.titleX
-		plot.y_axis.title = self.titleY
-		return plot
+    def _setAxisLimits(self, plot):
+        if self.limX:
+            xlo, xhi = self.limX
+            xmapper = plot.x_mapper
+            xmapper.range.set_bounds(xlo, xhi)
+
+        if self.limY:
+            ylo, yhi = self.limY
+            ymapper = plot.y_mapper
+            ymapper.range.set_bounds(ylo, yhi)
+
+        return plot
 
 
-	def _addPtLabels(self, plot):
-		for i in xrange(len(self.valPtLabel)):
-			label = DataLabel(
-				component = plot,
-				data_point = (self.valX[i], self.valY[i]),
-				label_format = self.valPtLabel[i]
-				)
-			plot.overlays.append(label)
+    def _addAxisTitle(self, plot):
+        plot.x_axis.title = self.titleX
+        plot.y_axis.title = self.titleY
+        return plot
 
-		return plot
+
+    def _addPtLabels(self, plot):
+        for i in xrange(len(self.valPtLabel)):
+            label = DataLabel(
+                component = plot,
+                data_point = (self.valX[i], self.valY[i]),
+                label_format = self.valPtLabel[i]
+                )
+            plot.overlays.append(label)
+
+        return plot
 
 
 #---EOF---

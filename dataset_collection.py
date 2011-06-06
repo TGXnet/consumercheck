@@ -18,14 +18,14 @@ from dataset import DataSet
 class DatasetCollection(HasTraits):
     """ Application wide collection of datasets
 
-	Members
-	=======
-	  * dataDict
-	  * indexNameList
+    Members
+    =======
+      * dataDict
+      * indexNameList
 
     Description
-	===========
-	Collection of all the data in the application.
+    ===========
+    Collection of all the data in the application.
 
     """
     # Dictionary to hold dataset and a editor to select dataset

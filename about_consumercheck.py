@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from enthought.traits.api import HasTraits, HTML
 from enthought.traits.ui.api import View, Item
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 import unittest
 import test_tools
@@ -14,17 +13,17 @@ from ui_datasets_tree import tree_view
 
 class TestUiDatasetTree(unittest.TestCase):
 
-	def setUp(self):
-		pass
+    def setUp(self):
+        pass
 
-	def testImport(self):
-		ds1 = DataSet(_internalName = 'test1', _displayName = 'Test sett en')
-		ds2 = DataSet(_internalName = 'test2', _displayName = 'Test sett to')
-		dc = DatasetCollection()
-		dc.addDataset(ds1)
-		dc.addDataset(ds2)
-		dcUi = dc.configure_traits(view=tree_view)
+    def testImport(self):
+        ds1 = DataSet(_internalName = 'test1', _displayName = 'Test sett en')
+        ds2 = DataSet(_internalName = 'test2', _displayName = 'Test sett to')
+        dc = DatasetCollection()
+        dc.addDataset(ds1)
+        dc.addDataset(ds2)
+        dcUi = dc.configure_traits(view=tree_view)
 
 
 if __name__ == '__main__':
-	unittest.main()
+    unittest.main()

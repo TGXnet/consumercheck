@@ -12,29 +12,29 @@ class DataSet(HasTraits):
 
     Consist of matrix and metadata
 
-	Members
-	=======
+    Members
+    =======
 
-	matrix
-	  The data matrix
-	internalName
-	  Internal technical name
-	displayName
-	  Userfriendly display name
-	datasetType
-	  Type of data classification
-	isCalculated
-	  Is this dataset calculated in this application
-	sourceFile
-	  Data source (file name)
-	variableNames
-	  Column headers
-	objectNames
-	  Row headers
-	nRows
-	  Number of objects
-	nCols
-	  Number of variables
+    matrix
+      The data matrix
+    internalName
+      Internal technical name
+    displayName
+      Userfriendly display name
+    datasetType
+      Type of data classification
+    isCalculated
+      Is this dataset calculated in this application
+    sourceFile
+      Data source (file name)
+    variableNames
+      Column headers
+    objectNames
+      Row headers
+    nRows
+      Number of objects
+    nCols
+      Number of variables
 
     """
     matrix = Array(desc = 'Data matrix')
