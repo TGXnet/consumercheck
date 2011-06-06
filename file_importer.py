@@ -4,7 +4,9 @@ Read a file and make a dataset object.
 
 """
 # Stdlib imports
-from os import path, getcwd
+import os.path
+import sys
+from os import getcwd, environ
 
 # Scipy imports
 from numpy import array, loadtxt
@@ -18,6 +20,7 @@ from enthought.traits.ui.menu import OKButton, CancelButton
 # Local imports
 from dataset import DataSet
 
+APPNAME = "ConsumerCheck"
 
 class FileImporter(HasTraits):
     """Importer class"""
@@ -39,11 +42,12 @@ class FileImporter(HasTraits):
         self._do_import()
         return self._make_dataset()
 
-    def import_interactive(self, start_path=getcwd() ):
+    def import_interactive(self):
         """Open dialog for selecting file, import and return DataSet object"""
-        self._file_uri = start_path
+        self._getWorkingPath()
         self.configure_traits()
         self._do_import()
+        self._saveWorkingPath()
         return self._make_dataset()
 
     def _do_import(self):
@@ -55,7 +59,7 @@ class FileImporter(HasTraits):
         self._make_name()
 
     def _det_filetype(self):
-        fn = path.basename(self._file_uri)
+        fn = os.path.basename(self._file_uri)
         return fn.partition('.')[2].lower()
 
     def _make_dataset(self):
@@ -69,7 +73,7 @@ class FileImporter(HasTraits):
 
     def _make_name(self):
         # FIXME: Find a better more general solution
-        fn = path.basename(self._file_uri)
+        fn = os.path.basename(self._file_uri)
         fn = fn.partition('.')[0]
         fn = fn.lower()
         self._internalName = self._displayName = fn
@@ -163,6 +167,36 @@ class FileImporter(HasTraits):
         varName = sh.row_values(0, 1)
         self._variableNames = [unicode(x).encode('ascii', 'ignore') for x in sh.row_values(0, 1)]
 
+    def _getWorkingPath(self):
+        try:
+            fp = open(self._getConfFileName(), 'r')
+            uri = fp.readline()
+            fp.close()
+        except IOError:
+            self._file_uri = getcwd()
+        else:
+            self._file_uri = uri.strip()
+
+    def _saveWorkingPath(self):
+        dir_path = os.path.dirname(self._file_uri) + '\n'
+        fp = open(self._getConfFileName(), 'w')
+        fp.write(dir_path)
+        fp.close()
+
+    def _getConfFileName(self):
+        if sys.platform == 'darwin':
+            from AppKit import NSSearchPathForDirectoriesInDomains
+            # http://developer.apple.com/DOCUMENTATION/Cocoa/Reference/Foundation/Miscellaneous/Foundation_Functions/Reference/reference.html#//apple_ref/c/func/NSSearchPathForDirectoriesInDomains
+            # NSApplicationSupportDirectory = 14
+            # NSUserDomainMask = 1
+            # True for expanding the tilde into a fully qualified path
+            appdata = os.path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME + '.cfg')
+        elif sys.platform == 'win32':
+            appdata = os.path.join(environ['APPDATA'], APPNAME + '.cfg')
+        else:
+            appdata = os.path.expanduser(os.path.join("~", ".config", APPNAME + '.cfg'))
+        return appdata
+
 
     view = View(
         UCustom(
@@ -179,3 +213,9 @@ class FileImporter(HasTraits):
         width=600,
         buttons=[OKButton, CancelButton],
         )
+
+
+if __name__ == '__main__':
+    fi = FileImporter()
+    ## ds = fi.import_interactive()
+    ## ds.print_traits()
