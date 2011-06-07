@@ -3,6 +3,10 @@ import os
 import sys
 import logging
 
+# Enthought imports
+from enthought.etsconfig.api import ETSConfig
+ETSConfig.toolkit = 'wx'
+# ETSConfig.toolkit = 'qt4'
 from enthought.traits.api import HasTraits, Instance
 
 def setConsumerCheckIncludePath():

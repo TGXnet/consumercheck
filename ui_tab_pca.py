@@ -13,7 +13,7 @@ from enthought.chaco.api import ArrayPlotData
 
 # Local imports
 from dataset_collection import DatasetCollection
-from plots import PlotScatter, PlotLine, PlotCorrLoad
+from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
 from plot_windows import SinglePlotWindow, MultiPlotWindow
 from nipals import PCA
 from dsl_check_list import CheckListController, check_view
@@ -135,13 +135,13 @@ class PcaModelViewHandler(ModelView):
     def _make_plot(self, pc_tab, ds_name, labels, plot_title):
         expl_vars = self.model.get_res(ds_name).getCalExplVar()
         pd = ArrayPlotData()
-        pd.set_data('pc_x', pc_tab[:,0])
-        pd.set_data('pc_y', pc_tab[:,1])
-        ps = PlotScatter(pd)
+        pd.set_data('pc1', pc_tab[:,0])
+        pd.set_data('pc2', pc_tab[:,1])
+        ps = CCPlotScatter(pd)
         ps.title = plot_title
         ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-        ps.addPtLabels(labels)
+        ps.addDataLabels(labels)
         return ps
 
     def plot_corr_loading(self, show = True):
@@ -155,20 +155,15 @@ class PcaModelViewHandler(ModelView):
         res = self.model.get_res(ds_name)
         labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
         pc_tab = res.getCorrLoadings()
-        ellipses = res.getCorrLoadingsEllipses()
         expl_vars = res.getCalExplVar()
         pd = ArrayPlotData()
-        pd.set_data('pc_x', pc_tab[:,0])
-        pd.set_data('pc_y', pc_tab[:,1])
-        pd.set_data('ell_full_x', ellipses['x100perc'])
-        pd.set_data('ell_full_y', ellipses['y100perc'])
-        pd.set_data('ell_half_x', ellipses['x50perc'])
-        pd.set_data('ell_half_y', ellipses['y50perc'])
-        pcl = PlotCorrLoad(pd)
+        pd.set_data('pc1', pc_tab[:,0])
+        pd.set_data('pc2', pc_tab[:,1])
+        pcl = CCPlotCorrLoad(pd)
         pcl.title = "PCA Correlation Loadings plot\n{0}".format(ds_name)
         pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-        pcl.addPtLabels(labels)
+        pcl.addDataLabels(labels)
         return pcl
 
     def plot_expl_var(self, show = True):
@@ -186,8 +181,8 @@ class PcaModelViewHandler(ModelView):
         for index, value in expl_vars.iteritems():
             expl_index.append(index)
             expl_val.append(expl_val[index-1] + value)
-        pd = ArrayPlotData(index=expl_index, y_val=expl_val)
-        pl = PlotLine(pd)
+        pd = ArrayPlotData(index=expl_index, pc_sigma=expl_val)
+        pl = CCPlotLine(pd)
         pl.title = "PCA explained variance plot\n{0}".format(ds_name)
         pl.x_axis.title = "# f principal components"
         pl.y_axis.title = "Explained variance [%]"
