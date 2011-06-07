@@ -25,8 +25,6 @@ from about_consumercheck import ConsumerCheckAbout
 
 class MainViewHandler(Handler):
     """Handler for dataset view"""
-    importer = FileImporter()
-
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
         super(MainViewHandler, self).setattr(info, object, name, value)
@@ -37,9 +35,13 @@ class MainViewHandler(Handler):
     # default context is object
     def importDataset(self, uiInfo):
         """Action called when activating importing of new dataset"""
-        ds = self.importer.import_interactive()
-        uiInfo.object.dsl.addDataset(ds)
-        logging.info("importDataset: internal name = %s", ds._internalName)
+        importer = FileImporter()
+        ## ds = importer.import_interactive()
+        ## uiInfo.object.dsl.addDataset(ds)
+        dsl = importer.interactiveMultiImport()
+        for ds in dsl:
+            uiInfo.object.dsl.addDataset(ds)
+            logging.info("importDataset: internal name = %s", ds._internalName)
 
     def view_about(self, info):
         ConsumerCheckAbout().edit_traits()

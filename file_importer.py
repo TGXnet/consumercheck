@@ -13,67 +13,127 @@ from numpy import array, loadtxt
 import xlrd
 
 # Enthought imports
-from enthought.traits.api import HasTraits, File, Str, Bool, Array, List
+from enthought.traits.api import HasTraits, File, Str, Bool, Array, Tuple, List, Button
 from enthought.traits.ui.api import View, Item, UItem, Custom, UCustom, Label, Heading, FileEditor
 from enthought.traits.ui.menu import OKButton, CancelButton
+from enthought.pyface.api import FileDialog, OK
 
 # Local imports
 from dataset import DataSet
 
 APPNAME = "ConsumerCheck"
 
+
 class FileImporter(HasTraits):
     """Importer class"""
-    _file_uri = File()
+    _filePath = File()
+    _pathList = List(File)
     _haveVarNames = Bool(True)
     _haveObjNames = Bool(True)
 
     _dataset = Array()
+    _dsColl = List(DataSet)
     _variableNames = List()
     _objectNames = List()
     _internalName = Str()
     _displayName = Str()
 
-    def import_noninteractive(self, fileUri, haveVarNames = True, haveObjNames = True):
+    one_view = View(
+        UCustom(
+            name='_filePath',
+            editor=FileEditor(
+                filter=['*.csv;*.txt;*.xls'],
+                ),
+            resizable=True,
+            full_size=True,
+            ),
+        resizable=True,
+        kind='modal',
+        height=600,
+        width=600,
+        buttons=[OKButton, CancelButton],
+        )
+
+    open_files = Button("Open Files...")
+
+    many_view = View(
+        Item('open_files'),
+        )
+
+    ds_options_view = View(
+        Item('_internalName', style='readonly', label='File name'),
+        Item('_displayName', label='Dataset name'),
+        Item('_haveVarNames', label='Have variables names?', tooltip='Is first row variables names?'),
+        Item('_haveObjNames', label='Have object names?', tooltip='Is first column object names?'),
+        kind='modal',
+        buttons=[OKButton]
+        )
+
+
+    def noninteractiveImport(self, filePath, haveVarNames = True, haveObjNames = True):
         """Read file and return DataSet objekt"""
-        self._file_uri = fileUri
+        self._filePath = filePath
         self._haveVarNames = haveVarNames
         self._haveObjNames = haveObjNames
-        self._do_import()
-        return self._make_dataset()
+        self._doImport()
+        self._makeName()
+        return self._makeDataset()
 
-    def import_interactive(self):
-        """Open dialog for selecting file, import and return DataSet object"""
-        self._getWorkingPath()
-        self.configure_traits()
-        self._do_import()
-        self._saveWorkingPath()
-        return self._make_dataset()
+    def interactiveImport(self):
+        """Open dialog for selecting a file, import and return the DataSet"""
+        self._getWorkDir()
+        self.configure_traits(view='one_view')
+        self._doImport()
+        self._saveWorkDir()
+        self._makeName()
+        return self._makeDataset()
 
-    def _do_import(self):
-        fext = self._det_filetype()
+    def interactiveMultiImport(self):
+        """Open dialog for selecting multiple files and return a list of DataSet's"""
+        self._getWorkDir()
+        # For stand alone testing
+        # self.configure_traits(view='many_view')
+        self._open_files_changed()
+        for filePath in self._pathList:
+            self._filePath = filePath
+            self._makeName()
+            self.configure_traits(view='ds_options_view')
+            self._doImport()
+            self._dsColl.append(self._makeDataset())
+        self._saveWorkDir()
+        return self._dsColl
+
+    def _open_files_changed(self):
+        dlg = FileDialog(
+            action='open files',
+            default_directory=self._filePath,
+            title='Import data')
+        if dlg.open() == OK:
+            self._pathList = dlg.paths
+
+    def _doImport(self):
+        fext = self._detFiletype()
         if fext == 'txt':
             self._read_txt_file()
         elif fext == 'xls':
             self._read_xls_file()
-        self._make_name()
 
-    def _det_filetype(self):
-        fn = os.path.basename(self._file_uri)
+    def _detFiletype(self):
+        fn = os.path.basename(self._filePath)
         return fn.partition('.')[2].lower()
 
-    def _make_dataset(self):
+    def _makeDataset(self):
         return DataSet(
             matrix=self._dataset,
-            _sourceFile=self._file_uri,
+            _sourceFile=self._filePath,
             variableNames=self._variableNames,
             objectNames=self._objectNames,
             _internalName=self._internalName,
             _displayName=self._displayName)
 
-    def _make_name(self):
+    def _makeName(self):
         # FIXME: Find a better more general solution
-        fn = os.path.basename(self._file_uri)
+        fn = os.path.basename(self._filePath)
         fn = fn.partition('.')[0]
         fn = fn.lower()
         self._internalName = self._displayName = fn
@@ -90,14 +150,14 @@ class FileImporter(HasTraits):
                 self._readVarNames()
             # FIXME: Except open file error and dataformat error
             self._dataset = loadtxt(
-                fname = self._file_uri,
+                fname = self._filePath,
                 delimiter = '\t',
                 skiprows = skips)
 
-    def _read_var_names(self):
+    def _readVarNames(self):
         """Read Matrix column header from text file"""
         # Open file and read headers
-        fp = open(self._file_uri, 'rU')
+        fp = open(self._filePath, 'rU')
         line = fp.readline()
         fp.close()
         # Remove newline char
@@ -107,7 +167,7 @@ class FileImporter(HasTraits):
     def _read_matrix_with_obj_names(self):
         # File is opened using name that is given by
         # the file-open dialog in the main file.
-        dataFile = open(self._file_uri, 'rU')
+        dataFile = open(self._filePath, 'rU')
 
         # All the data is read into a list.
         # FIXME: Prefer to operate on line by line basis to save memory.
@@ -148,7 +208,7 @@ class FileImporter(HasTraits):
         self._dataset = array(data)
 
     def _read_xls_file(self):
-        wb = xlrd.open_workbook(self._file_uri, encoding_override=None)
+        wb = xlrd.open_workbook(self._filePath, encoding_override=None)
         # wb.sheet_names()
         # sh = wb.sheet_by_name(name)
         sh = wb.sheet_by_index(0)
@@ -167,18 +227,18 @@ class FileImporter(HasTraits):
         varName = sh.row_values(0, 1)
         self._variableNames = [unicode(x).encode('ascii', 'ignore') for x in sh.row_values(0, 1)]
 
-    def _getWorkingPath(self):
+    def _getWorkDir(self):
         try:
             fp = open(self._getConfFileName(), 'r')
             uri = fp.readline()
             fp.close()
         except IOError:
-            self._file_uri = getcwd()
+            self._filePath = getcwd()
         else:
-            self._file_uri = uri.strip()
+            self._filePath = uri.strip()
 
-    def _saveWorkingPath(self):
-        dir_path = os.path.dirname(self._file_uri) + '\n'
+    def _saveWorkDir(self):
+        dir_path = os.path.dirname(self._filePath) + '\n'
         fp = open(self._getConfFileName(), 'w')
         fp.write(dir_path)
         fp.close()
@@ -196,23 +256,6 @@ class FileImporter(HasTraits):
         else:
             appdata = os.path.expanduser(os.path.join("~", ".config", APPNAME + '.cfg'))
         return appdata
-
-
-    view = View(
-        UCustom(
-            name='_file_uri',
-            editor=FileEditor(
-                filter=['*.csv;*.txt;*.xls'],
-                ),
-            resizable=True,
-            full_size=True,
-             ),
-        resizable=True,
-        kind='modal',
-        height=600,
-        width=600,
-        buttons=[OKButton, CancelButton],
-        )
 
 
 if __name__ == '__main__':
