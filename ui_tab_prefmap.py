@@ -1,6 +1,6 @@
-"""PCA module for ConsumerCheck application
+"""Prefmap module for ConsumerCheck application
 
-Adds statistical methods, user inteface and plots for PCA
+Adds statistical methods, user inteface and plots for Prefmap
 
 """
 # stdlib imports
@@ -14,12 +14,12 @@ from enthought.chaco.api import ArrayPlotData
 # Local imports
 from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
 from plot_windows import SinglePlotWindow, MultiPlotWindow
-from nipals import PCA
+from mvr import plsr
 from dsl_check_list import CheckListController, check_view
 
 
 class PrefmapModel(HasTraits):
-    """Interface to PCA calculation class
+    """Interface to Prefmap calculation class
 
     Might also implement caching of calculated results
     """
@@ -32,7 +32,7 @@ class PrefmapModel(HasTraits):
     main_ui_ptr = Instance(HasTraits)
     dsl = DelegatesTo('main_ui_ptr')
 
-    # Hold calculated pca results
+    # Hold calculated prefmap results
     results = Dict(unicode, Any)
 
     # To notify dataset selector
@@ -40,12 +40,6 @@ class PrefmapModel(HasTraits):
 
     name = Str( 'Options' )
     list_control = Instance(CheckListController)
-    # Represent selections in tree
-    overview = List()
-    scores = List()
-    loadings = List()
-    corrLoadings = List()
-    explResVar = List()
 
     ## @on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
     ## def datasetsChanged(self, object, name, old, new):
@@ -55,16 +49,26 @@ class PrefmapModel(HasTraits):
         try:
             return self.results[name]
         except KeyError:
-            return self._run_pca(name)
+            return self._run_prefmap(name)
 
-    def _run_pca(self, ds_name):
-        res = PCA(self.dsl.retriveDatasetByName(ds_name).matrix)
+    def _run_prefmap(self, ds_name):
+        # FIXME: By now fixed dataset names
+        res = plsr(
+            self.dsl.retriveDatasetByName('a_lables').matrix,
+            self.dsl.retriveDatasetByName('c_lables').matrix,
+#            obj.setX.matrix,
+#            obj.setY.matrix,
+            centre="yes",
+            fncomp=5,
+            fmethod="oscorespls",
+            fvalidation="LOO")
+
         self.results[ds_name] = res
         return res
 
 
 class PrefmapModelViewHandler(ModelView):
-    """UI code that vil react to UI events for PCA tab"""
+    """UI code that vil react to UI events for Prefmap tab"""
     # Disable UI when unittesting
     show = True
     main_ui_ptr = Instance(HasTraits)
@@ -74,6 +78,7 @@ class PrefmapModelViewHandler(ModelView):
         # info.ui.context: model, handler, object
         # info.ui.control: wx._windows.Frame
         self.model.main_ui_ptr = self.main_ui_ptr
+        # FIXME: Replace with Prefmap controller
         self.model.list_control = CheckListController( model=self.model.dsl )
         check_view.handler = self.model.list_control
 
@@ -89,7 +94,7 @@ class PrefmapModelViewHandler(ModelView):
             new.controller = self
 
     def plot_overview(self, show = True):
-        """Make PCA overview plot.
+        """Make Prefmap overview plot.
 
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
         for each of the datasets.
@@ -114,7 +119,7 @@ class PrefmapModelViewHandler(ModelView):
         res = self.model.get_res(ds_name)
         pc_tab = res.getScores()
         labels = self.model.dsl.retriveDatasetByName(ds_name).objectNames
-        plot = self._make_plot(pc_tab, ds_name, labels, "PCA Scores plot\n{0}".format(ds_name))
+        plot = self._make_plot(pc_tab, ds_name, labels, "Prefmap Scores plot\n{0}".format(ds_name))
         return plot
 
     def plot_loadings(self, show = True):
@@ -128,7 +133,7 @@ class PrefmapModelViewHandler(ModelView):
         res = self.model.get_res(ds_name)
         pc_tab = res.getLoadings()
         labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
-        plot = self._make_plot(pc_tab, ds_name, labels, "PCA Loadings plot\n{0}".format(ds_name))
+        plot = self._make_plot(pc_tab, ds_name, labels, "Prefmap Loadings plot\n{0}".format(ds_name))
         return plot
 
     def _make_plot(self, pc_tab, ds_name, labels, plot_title):
@@ -159,7 +164,7 @@ class PrefmapModelViewHandler(ModelView):
         pd.set_data('pc1', pc_tab[:,0])
         pd.set_data('pc2', pc_tab[:,1])
         pcl = CCPlotCorrLoad(pd)
-        pcl.title = "PCA Correlation Loadings plot\n{0}".format(ds_name)
+        pcl.title = "Prefmap Correlation Loadings plot\n{0}".format(ds_name)
         pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         pcl.addDataLabels(labels)
@@ -182,7 +187,7 @@ class PrefmapModelViewHandler(ModelView):
             expl_val.append(expl_val[index-1] + value)
         pd = ArrayPlotData(index=expl_index, pc_sigma=expl_val)
         pl = CCPlotLine(pd)
-        pl.title = "PCA explained variance plot\n{0}".format(ds_name)
+        pl.title = "Prefmap explained variance plot\n{0}".format(ds_name)
         pl.x_axis.title = "# f principal components"
         pl.y_axis.title = "Explained variance [%]"
         pl.y_mapper.range.set_bounds(0, 100)
@@ -225,8 +230,8 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ PrefmapModel ],
                   children = '',
                   label = 'name',
-                  tooltip = 'Oversikt',
-                  view = no_view,
+                  tooltip = 'Overview',
+                  view = check_view,
                   rename = False,
                   rename_me = False,
                   copy = False,
@@ -235,32 +240,37 @@ options_tree = TreeEditor(
                   insert = False,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
-                  children = 'overview',
-                  label = '=Overview',
+                  label = '=Overview plot',
                   on_dclick = clkOverview,
                   view = check_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
-                  children = 'scores',
                   label = '=Scores',
                   on_dclick = clkScores,
                   view = check_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
-                  children = 'loadings',
-                  label = '=Loadings',
-                  on_dclick = clkLoadings,
-                  view = check_view,
-                  ),
-        TreeNode( node_for = [ PrefmapModel ],
-                  children = 'corrLoadings',
-                  label = '=Correlation loadings',
+                  label = '=X & Y correlation loadings',
                   on_dclick = clkCorrLoad,
                   view = check_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
-                  children = 'explResVar',
-                  label = '=Explained variance',
+                  label = '=Explained variance X',
+                  on_dclick = clkExplResVar,
+                  view = check_view,
+                  ),
+        TreeNode( node_for = [ PrefmapModel ],
+                  label = '=Explained variance Y',
+                  on_dclick = clkExplResVar,
+                  view = check_view,
+                  ),
+        TreeNode( node_for = [ PrefmapModel ],
+                  label = '=X loadings',
+                  on_dclick = clkExplResVar,
+                  view = check_view,
+                  ),
+        TreeNode( node_for = [ PrefmapModel ],
+                  label = '=Y loadings',
                   on_dclick = clkExplResVar,
                   view = check_view,
                   ),
