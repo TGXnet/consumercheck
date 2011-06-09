@@ -12,7 +12,6 @@ from enthought.traits.ui.api import View, Item, UItem, Group, Handler, ModelView
 from enthought.chaco.api import ArrayPlotData
 
 # Local imports
-from dataset_collection import DatasetCollection
 from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
 from plot_windows import SinglePlotWindow, MultiPlotWindow
 from nipals import PCA
