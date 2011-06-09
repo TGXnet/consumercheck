@@ -40,12 +40,6 @@ class PcaModel(HasTraits):
 
     name = Str( 'Options' )
     list_control = Instance(CheckListController)
-    # Represent selections in tree
-    overview = List()
-    scores = List()
-    loadings = List()
-    corrLoadings = List()
-    explResVar = List()
 
     ## @on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
     ## def datasetsChanged(self, object, name, old, new):
@@ -235,31 +229,26 @@ options_tree = TreeEditor(
                   insert = False,
                   ),
         TreeNode( node_for = [ PcaModel ],
-                  children = 'overview',
                   label = '=Overview',
                   on_dclick = clkOverview,
                   view = check_view,
                   ),
         TreeNode( node_for = [ PcaModel ],
-                  children = 'scores',
                   label = '=Scores',
                   on_dclick = clkScores,
                   view = check_view,
                   ),
         TreeNode( node_for = [ PcaModel ],
-                  children = 'loadings',
                   label = '=Loadings',
                   on_dclick = clkLoadings,
                   view = check_view,
                   ),
         TreeNode( node_for = [ PcaModel ],
-                  children = 'corrLoadings',
                   label = '=Correlation loadings',
                   on_dclick = clkCorrLoad,
                   view = check_view,
                   ),
         TreeNode( node_for = [ PcaModel ],
-                  children = 'explResVar',
                   label = '=Explained variance',
                   on_dclick = clkExplResVar,
                   view = check_view,
