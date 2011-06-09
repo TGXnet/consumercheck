@@ -1,152 +1,232 @@
+"""PCA module for ConsumerCheck application
 
+Adds statistical methods, user inteface and plots for PCA
+
+"""
 # stdlib imports
 import logging
 
 # Enthought imports
-from enthought.traits.api import HasTraits, Instance, Event, Str, List, Bool, on_trait_change
-from enthought.traits.ui.api import View, Item, Handler, TreeEditor, TreeNode
+from enthought.traits.api import HasTraits, Instance, Event, Str, List, on_trait_change, DelegatesTo, Dict, Any
+from enthought.traits.ui.api import View, Item, UItem, Group, Handler, ModelView, CheckListEditor, TreeEditor, TreeNode
+from enthought.chaco.api import ArrayPlotData
 
 # Local imports
-from dataset_collection import DatasetCollection
-from dataset import DataSet
-from plot_scatter import PlotScatter
-# import mvr
-from mvr import plsr
-from prefmap_control_ui import prefmap_control
-
-
-
-class Options(HasTraits):
-    name = Str( 'Options' )
-    dsl = Instance(DatasetCollection)
-    setX = DataSet()
-    setY = DataSet()
-    eqPlotAxis = Bool()
-
-    # Represent selections in tree
-    overview = List()
-    # T scores
-    scores = List()
-    # Y loadings
-    yloadings = List()
-    # X loadings
-    xloadings = List()
-    #
-    explResVar = List()
-#    measVsPred = List()
+from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
+from plot_windows import SinglePlotWindow, MultiPlotWindow
+from nipals import PCA
+from dsl_check_list import CheckListController, check_view
 
 
 class PrefmapModel(HasTraits):
-    """Model for Prefmap"""
-    dsl = Instance(DatasetCollection)
-    datasetsAltered = Event
-    treeObjects = Instance( Options, Options() )
+    """Interface to PCA calculation class
+
+    Might also implement caching of calculated results
+    """
+    # FIXME: Use Traits notification to update calculated values
+    # FIXME: It is worth using a WeakRef trait for the father trait to avoid reference cycles.
+
+    controller = Instance(Handler)
+
+    # Access to datasets and parent window
+    main_ui_ptr = Instance(HasTraits)
+    dsl = DelegatesTo('main_ui_ptr')
+
+    # Hold calculated pca results
+    results = Dict(unicode, Any)
+
+    # To notify dataset selector
+    # datasetsAltered = Event
+
+    name = Str( 'Options' )
+    list_control = Instance(CheckListController)
+    # Represent selections in tree
+    overview = List()
+    scores = List()
+    loadings = List()
+    corrLoadings = List()
+    explResVar = List()
+
+    ## @on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
+    ## def datasetsChanged(self, object, name, old, new):
+    ##      self.datasetsAltered = True
+
+    def get_res(self, name):
+        try:
+            return self.results[name]
+        except KeyError:
+            return self._run_pca(name)
+
+    def _run_pca(self, ds_name):
+        res = PCA(self.dsl.retriveDatasetByName(ds_name).matrix)
+        self.results[ds_name] = res
+        return res
 
 
-    @on_trait_change('dsl:[dataDictContentChanged,datasetNameChanged]')
-    def datasetsChanged(self, object, name, old, new):
-        self.datasetsAltered = True
-
-#end PrefmapModel
-
-
-class PrefmapModelHandler( Handler ):
+class PrefmapModelViewHandler(ModelView):
+    """UI code that vil react to UI events for PCA tab"""
+    # Disable UI when unittesting
+    show = True
+    main_ui_ptr = Instance(HasTraits)
+    plot_uis = List()
 
     def init(self, info):
-        info.object.treeObjects.dsl = info.object.dsl
+        # info.ui.context: model, handler, object
+        # info.ui.control: wx._windows.Frame
+        self.model.main_ui_ptr = self.main_ui_ptr
+        self.model.list_control = CheckListController( model=self.model.dsl )
+        check_view.handler = self.model.list_control
 
-#end PrefmapModelHandler
+    def closed(self, info, is_ok):
+        while self.plot_uis:
+            plot_ui = self.plot_uis.pop()
+            plot_ui.dispose()
+
+    def _model_changed(self, old, new):
+        if old is not None:
+            old.controller = None
+        if new is not None:
+            new.controller = self
+
+    def plot_overview(self, show = True):
+        """Make PCA overview plot.
+
+        Plot an array of plots where we plot scores, loadings, corr. load and expl. var
+        for each of the datasets.
+        """
+        # self.show = show
+        for ds_name in self.model.list_control.selected:
+            ds_plots = [[self._make_scores_plot(ds_name), self._make_loadings_plot(ds_name)],
+                        [self._make_corr_load_plot(ds_name), self._make_expl_var_plot(ds_name)]]
+            mpw = MultiPlotWindow()
+            mpw.plots.component_grid = ds_plots
+            mpw.plots.shape = (2, 2)
+            self._show_plot_window(mpw)
+
+    def plot_scores(self, show = True):
+        # self.show = show
+        for ds_name in self.model.list_control.selected:
+            s_plot = self._make_scores_plot(ds_name)
+            spw = SinglePlotWindow( plot=s_plot )
+            self._show_plot_window(spw)
+
+    def _make_scores_plot(self, ds_name):
+        res = self.model.get_res(ds_name)
+        pc_tab = res.getScores()
+        labels = self.model.dsl.retriveDatasetByName(ds_name).objectNames
+        plot = self._make_plot(pc_tab, ds_name, labels, "PCA Scores plot\n{0}".format(ds_name))
+        return plot
+
+    def plot_loadings(self, show = True):
+        # self.show = show
+        for ds_name in self.model.list_control.selected:
+            l_plot = self._make_loadings_plot(ds_name)
+            spw = SinglePlotWindow( plot=l_plot )
+            self._show_plot_window(spw)
+
+    def _make_loadings_plot(self, ds_name):
+        res = self.model.get_res(ds_name)
+        pc_tab = res.getLoadings()
+        labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
+        plot = self._make_plot(pc_tab, ds_name, labels, "PCA Loadings plot\n{0}".format(ds_name))
+        return plot
+
+    def _make_plot(self, pc_tab, ds_name, labels, plot_title):
+        expl_vars = self.model.get_res(ds_name).getCalExplVar()
+        pd = ArrayPlotData()
+        pd.set_data('pc1', pc_tab[:,0])
+        pd.set_data('pc2', pc_tab[:,1])
+        ps = CCPlotScatter(pd)
+        ps.title = plot_title
+        ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
+        ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
+        ps.addDataLabels(labels)
+        return ps
+
+    def plot_corr_loading(self, show = True):
+        # self.show = show
+        for ds_name in self.model.list_control.selected:
+            cl_plot = self._make_corr_load_plot(ds_name)
+            spw = SinglePlotWindow( plot=cl_plot )
+            self._show_plot_window(spw)
+
+    def _make_corr_load_plot(self, ds_name):
+        res = self.model.get_res(ds_name)
+        labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
+        pc_tab = res.getCorrLoadings()
+        expl_vars = res.getCalExplVar()
+        pd = ArrayPlotData()
+        pd.set_data('pc1', pc_tab[:,0])
+        pd.set_data('pc2', pc_tab[:,1])
+        pcl = CCPlotCorrLoad(pd)
+        pcl.title = "PCA Correlation Loadings plot\n{0}".format(ds_name)
+        pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
+        pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
+        pcl.addDataLabels(labels)
+        return pcl
+
+    def plot_expl_var(self, show = True):
+        # self.show = show
+        for ds_name in self.model.list_control.selected:
+            ev_plot = self._make_expl_var_plot(ds_name)
+            spw = SinglePlotWindow( plot=ev_plot )
+            self._show_plot_window(spw)
+
+    def _make_expl_var_plot(self, ds_name):
+        res = self.model.get_res(ds_name)
+        expl_vars = res.getCalExplVar()
+        expl_index = [0]
+        expl_val = [0]
+        for index, value in expl_vars.iteritems():
+            expl_index.append(index)
+            expl_val.append(expl_val[index-1] + value)
+        pd = ArrayPlotData(index=expl_index, pc_sigma=expl_val)
+        pl = CCPlotLine(pd)
+        pl.title = "PCA explained variance plot\n{0}".format(ds_name)
+        pl.x_axis.title = "# f principal components"
+        pl.y_axis.title = "Explained variance [%]"
+        pl.y_mapper.range.set_bounds(0, 100)
+        return pl
+
+    def _show_plot_window(self, plot_window):
+        if self.show:
+            # FIXME: Setting parent forcing main ui to stay behind plot windows
+            # self.plot_uis.append( plot_window.edit_traits(parent=self.info.ui.control, kind='live') )
+            self.plot_uis.append( plot_window.edit_traits(kind='live') )
 
 
 # Double click handlers
+def clkOverview(obj):
+    logging.info("Overview plot activated")
+    obj.controller.plot_overview()
+
 def clkScores(obj):
-    logging.info("PLSR scores plot activated")
-    model = plsr(obj.setX.matrix,
-                 obj.setY.matrix,
-                 centre="yes",
-                 fncomp=4,
-                 fmethod="oscorespls",
-                 fvalidation="LOO")
-    score1 = model['Scores T'][:,0]
-    score2 = model['Scores T'][:,1]
-    labels = obj.setX.objectNames
-    plot = PlotScatter(
-        ttext = "PLSR scores",
-        valPtLabel = labels,
-        valX = score1,
-        valY = score2,
-        eqAxis = obj.eqPlotAxis
-        )
-    plotUI = plot.configure_traits()
+    logging.info("Scoreplot activated")
+    obj.controller.plot_scores()
 
+def clkLoadings(obj):
+    logging.info("Loadingplot activated")
+    obj.controller.plot_loadings()
 
-def clkYloadings(obj):
-    logging.info("PLSR Y loadings plot activated")
-    model = plsr(obj.setX.matrix,
-                 obj.setY.matrix,
-                 centre="yes",
-                 fncomp=4,
-                 fmethod="oscorespls",
-                 fvalidation="LOO")
-    score1 = model['Yloadings Q'][:,0]
-    score2 = model['Yloadings Q'][:,1]
-    calExplVars = model['YexplVar']
-    pc1CEV = int(calExplVars[0])
-    pc2CEV = int(calExplVars[1])
-    labels = obj.setY.variableNames
-    plot = PlotScatter(
-        ttext = "PLSR Y loadings",
-        titleX = "PC1 ({0}%)".format(pc1CEV),
-        titleY = "PC2 ({0}%)".format(pc2CEV),
-        valPtLabel = labels,
-        valX = score1,
-        valY = score2,
-        eqAxis = obj.eqPlotAxis
-        )
-    plotUI = plot.configure_traits()
+def clkCorrLoad(obj):
+    logging.info("Loadingplot activated")
+    obj.controller.plot_corr_loading()
 
-
-def clkXloadings(obj):
-    logging.info("PLSR X loadings plot activated")
-    model = plsr(obj.setX.matrix,
-                 obj.setY.matrix,
-                 centre="yes",
-                 fncomp=4,
-                 fmethod="oscorespls",
-                 fvalidation="LOO")
-    score1 = model['Xloadings P'][:,0]
-    score2 = model['Xloadings P'][:,1]
-    calExplVars = model['XexplVar']
-    pc1CEV = int(calExplVars[0])
-    pc2CEV = int(calExplVars[1])
-    labels = obj.setX.variableNames
-    plot = PlotScatter(
-        ttext = "PLSR X loadings",
-        titleX = "PC1 ({0}%)".format(pc1CEV),
-        titleY = "PC2 ({0}%)".format(pc2CEV),
-        valPtLabel = labels,
-        valX = score1,
-        valY = score2,
-        eqAxis = obj.eqPlotAxis
-        )
-    plotUI = plot.configure_traits()
-
-
+def clkExplResVar(obj):
+    logging.info("Explained variance plot activated")
+    obj.controller.plot_expl_var()
 
 
 # Views
 no_view = View()
 
 options_tree = TreeEditor(
-    hide_root = False,
-    editable = True,
     nodes = [
-        TreeNode( node_for = [ Options ],
+        TreeNode( node_for = [ PrefmapModel ],
                   children = '',
                   label = 'name',
                   tooltip = 'Oversikt',
                   view = no_view,
-#                  view = prefmap_control,
                   rename = False,
                   rename_me = False,
                   copy = False,
@@ -154,51 +234,49 @@ options_tree = TreeEditor(
                   delete_me = False,
                   insert = False,
                   ),
-        TreeNode( node_for = [ Options ],
+        TreeNode( node_for = [ PrefmapModel ],
                   children = 'overview',
                   label = '=Overview',
-                  view = prefmap_control,
+                  on_dclick = clkOverview,
+                  view = check_view,
                   ),
-        TreeNode( node_for = [ Options ],
+        TreeNode( node_for = [ PrefmapModel ],
                   children = 'scores',
                   label = '=Scores',
                   on_dclick = clkScores,
-                  view = prefmap_control,
+                  view = check_view,
                   ),
-        TreeNode( node_for = [ Options ],
-                  children = 'yloadings',
-                  label = '=Y loadings',
-                  on_dclick = clkYloadings,
-                  view = prefmap_control,
+        TreeNode( node_for = [ PrefmapModel ],
+                  children = 'loadings',
+                  label = '=Loadings',
+                  on_dclick = clkLoadings,
+                  view = check_view,
                   ),
-        TreeNode( node_for = [ Options ],
-                  children = 'xloadings',
-                  label = '=X loadings',
-                  on_dclick = clkXloadings,
-                  view = prefmap_control,
+        TreeNode( node_for = [ PrefmapModel ],
+                  children = 'corrLoadings',
+                  label = '=Correlation loadings',
+                  on_dclick = clkCorrLoad,
+                  view = check_view,
                   ),
-#        TreeNode( node_for = [ Options ],
-#                  children = 'explResVar',
-#                  label = '=Expl. / res var',
-#                  view = prefmap_control,
-#                  ),
-#        TreeNode( node_for = [ Options ],
-#                  children = 'measVsPred',
-#                  label = '=Meas vs pred',
-#                  view = prefmap_control,
-#                  ),
-        ]
+        TreeNode( node_for = [ PrefmapModel ],
+                  children = 'explResVar',
+                  label = '=Explained variance',
+                  on_dclick = clkExplResVar,
+                  view = check_view,
+                  ),
+        ],
+    hide_root = False,
+    editable = True
     )
 
+
 prefmap_tree_view = View(
-    Item( 'treeObjects',
-          editor = options_tree,
-          resizable = True,
-          show_label = False
-          ),
-    title = 'Options tree',
-    resizable = True,
-    width = .4,
-    height = .3,
-    handler = PrefmapModelHandler(),
+    UItem('model',
+         editor=options_tree,
+         resizable=True,
+         ),
+    title='Options tree',
+    resizable=True,
+    width=.4,
+    height=.3,
     )

@@ -17,12 +17,15 @@ rpyLocate.set_rpy_env()
 
 from main_ui import MainUi
 from ui_tab_pca import PcaModel, PcaModelViewHandler
+from ui_tab_prefmap import PrefmapModel, PrefmapModelViewHandler
 
-LOGGING_LEVELS = {'critical': logging.CRITICAL,
-                  'error': logging.ERROR,
-                  'warning': logging.WARNING,
-                  'info': logging.INFO,
-                  'debug': logging.DEBUG}
+LOGGING_LEVELS = {
+    'critical': logging.CRITICAL,
+    'error': logging.ERROR,
+    'warning': logging.WARNING,
+    'info': logging.INFO,
+    'debug': logging.DEBUG,
+    }
 
 def main():
     parser = optparse.OptionParser()
@@ -37,7 +40,10 @@ def main():
         datefmt='%Y-%m-%d %H:%M:%S'
         )
     logging.info('Starting ConsumerCheck')
-    mother = MainUi( pca = PcaModelViewHandler(PcaModel()) )
+    mother = MainUi(
+#        pca = PcaModelViewHandler(PcaModel()),
+        prefmap = PrefmapModelViewHandler(PrefmapModel()),
+        )
     mother.configure_traits()
 
 

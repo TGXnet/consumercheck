@@ -18,8 +18,8 @@ from dataset_collection import DatasetCollection
 from dataset import DataSet
 from file_importer import FileImporter
 from ui_datasets_tree import tree_view
-from ui_tab_pca import PcaModel, PcaModelViewHandler, pca_tree_view
-from ui_tab_prefmap import PrefmapModel, prefmap_tree_view
+from ui_tab_pca import PcaModelViewHandler, pca_tree_view
+from ui_tab_prefmap import PrefmapModelViewHandler, prefmap_tree_view
 from about_consumercheck import ConsumerCheckAbout
 
 
@@ -36,8 +36,6 @@ class MainViewHandler(Handler):
     def importDataset(self, uiInfo):
         """Action called when activating importing of new dataset"""
         importer = FileImporter()
-        ## ds = importer.import_interactive()
-        ## uiInfo.object.dsl.addDataset(ds)
         dsl = importer.interactiveMultiImport()
         for ds in dsl:
             uiInfo.object.dsl.addDataset(ds)
@@ -45,7 +43,6 @@ class MainViewHandler(Handler):
 
     def view_about(self, info):
         ConsumerCheckAbout().edit_traits()
-
 
     # end MainViewHandler
 
@@ -58,11 +55,10 @@ class MainUi(HasTraits):
     dsl = DatasetCollection()
 
     # Object representing the PCA and the GUI tab
-    # pca = Instance(PcaModel, PcaModel(dsl=dsl))
     pca = Instance(PcaModelViewHandler)
 
     # Object representing the Prefmap and the GUI tab
-    prefmap = Instance(PrefmapModel, PrefmapModel(dsl=dsl))
+    prefmap = Instance(PrefmapModelViewHandler)
 
     # Create an action that open dialog for dataimport
     setImport = Action(name = 'Add &Dataset',
@@ -73,12 +69,18 @@ class MainUi(HasTraits):
 
 
     def _pca_changed(self, old, new):
-        logging.info("Setting mother")
+        logging.info("Setting pca mother")
         if old is not None:
             old.main_ui_ptr = None
         if new is not None:
             new.main_ui_ptr = self
 
+    def _prefmap_changed(self, old, new):
+        logging.info("Setting prefmap mother")
+        if old is not None:
+            old.main_ui_ptr = None
+        if new is not None:
+            new.main_ui_ptr = self
 
     # The main view
     traits_ui_view = View(
