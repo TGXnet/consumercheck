@@ -41,7 +41,7 @@ def main():
         )
     logging.info('Starting ConsumerCheck')
     mother = MainUi(
-#        pca = PcaModelViewHandler(PcaModel()),
+        pca = PcaModelViewHandler(PcaModel()),
         prefmap = PrefmapModelViewHandler(PrefmapModel()),
         )
     mother.configure_traits()

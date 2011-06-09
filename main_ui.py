@@ -4,7 +4,7 @@ import logging
 
 # Enthought imports
 from enthought.traits.api \
-    import HasTraits, Instance, DelegatesTo, Button, Str, Int,\
+    import HasTraits, Instance, Button, Str, Int,\
     File, Bool, List, on_trait_change
 from enthought.traits.ui.api \
     import View, Item, Group, ListStrEditor, Handler, FileEditor,\
@@ -66,7 +66,6 @@ class MainUi(HasTraits):
     # Create an action that exits the application.
     exitAction = Action(name='E&xit', action='_on_close')
     show_about = Action(name='&About', action='view_about')
-
 
     def _pca_changed(self, old, new):
         logging.info("Setting pca mother")

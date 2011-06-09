@@ -15,7 +15,7 @@ from enthought.chaco.api import ArrayPlotData
 from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
 from plot_windows import SinglePlotWindow, MultiPlotWindow
 from mvr import plsr
-from dsl_check_list import CheckListController, check_view
+# from dsl_check_list import CheckListController, check_view
 
 
 class PrefmapModel(HasTraits):
@@ -39,32 +39,42 @@ class PrefmapModel(HasTraits):
     # datasetsAltered = Event
 
     name = Str( 'Options' )
-    list_control = Instance(CheckListController)
+#    list_control = Instance(CheckListController)
+    # List of selected (X, Y) tuples
+    selectedXYlist = List([
+        ('ost_forbruker', 'ost_sensorikk'),
+        ('ost_sensorikk', 'ost_forbruker'),
+        ('a_labels', 'a_labels'),
+        ])
 
     ## @on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
     ## def datasetsChanged(self, object, name, old, new):
     ##      self.datasetsAltered = True
 
-    def get_res(self, name):
+    def get_res(self, xId, yId):
+        resId = self._makeResId(xId, yId)
         try:
-            return self.results[name]
+            return self.results[resId]
         except KeyError:
-            return self._run_prefmap(name)
+            res = self._run_prefmap(xId, yId)
+            self.results[resId] = res
+            return res
 
-    def _run_prefmap(self, ds_name):
-        # FIXME: By now fixed dataset names
-        res = plsr(
-            self.dsl.retriveDatasetByName('a_lables').matrix,
-            self.dsl.retriveDatasetByName('c_lables').matrix,
-#            obj.setX.matrix,
-#            obj.setY.matrix,
+    def _run_prefmap(self, xId, yId):
+        logging.info("Run plsr for: X: {0} ,Y: {1}".format(xId, yId))
+        return plsr(
+            self.dsl.retriveDatasetByName(xId).matrix,
+            self.dsl.retriveDatasetByName(yId).matrix,
             centre="yes",
             fncomp=5,
             fmethod="oscorespls",
             fvalidation="LOO")
 
-        self.results[ds_name] = res
-        return res
+    def _makeResId(self, *inputIds):
+        resId = ''
+        for iid in inputIds:
+            resId += iid
+        return resId
 
 
 class PrefmapModelViewHandler(ModelView):
@@ -79,8 +89,8 @@ class PrefmapModelViewHandler(ModelView):
         # info.ui.control: wx._windows.Frame
         self.model.main_ui_ptr = self.main_ui_ptr
         # FIXME: Replace with Prefmap controller
-        self.model.list_control = CheckListController( model=self.model.dsl )
-        check_view.handler = self.model.list_control
+#        self.model.list_control = CheckListController( model=self.model.dsl )
+#        check_view.handler = self.model.list_control
 
     def closed(self, info, is_ok):
         while self.plot_uis:
@@ -100,9 +110,9 @@ class PrefmapModelViewHandler(ModelView):
         for each of the datasets.
         """
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            ds_plots = [[self._make_scores_plot(ds_name), self._make_loadings_plot(ds_name)],
-                        [self._make_corr_load_plot(ds_name), self._make_expl_var_plot(ds_name)]]
+        for xId, yId in self.model.selectedXYlist:
+            ds_plots = [[self._make_scores_plot(xId, yId), self._make_corr_load_plot(xId, yId)],
+                        [self._make_expl_var_plot_x(xId, yId), self._make_expl_var_plot_y(xId, yId)]]
             mpw = MultiPlotWindow()
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
@@ -110,34 +120,48 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_scores(self, show = True):
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            s_plot = self._make_scores_plot(ds_name)
+        for xId, yId in self.model.selectedXYlist:
+            s_plot = self._make_scores_plot(xId, yId)
             spw = SinglePlotWindow( plot=s_plot )
             self._show_plot_window(spw)
 
-    def _make_scores_plot(self, ds_name):
-        res = self.model.get_res(ds_name)
-        pc_tab = res.getScores()
-        labels = self.model.dsl.retriveDatasetByName(ds_name).objectNames
-        plot = self._make_plot(pc_tab, ds_name, labels, "Prefmap Scores plot\n{0}".format(ds_name))
+    def _make_scores_plot(self, xId, yId):
+        res = self.model.get_res(xId, yId)
+        pc_tab = res['Scores T']
+        labels = self.model.dsl.retriveDatasetByName(xId).objectNames
+        plot = self._make_plot(pc_tab, xId, yId, labels, "Prefmap Scores plot\n{0}".format(xId))
         return plot
 
-    def plot_loadings(self, show = True):
+    def plot_loadings_x(self, show = True):
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            l_plot = self._make_loadings_plot(ds_name)
+        for xId, yId in self.model.selectedXYlist:
+            l_plot = self._make_loadings_plot_x(xId, yId)
             spw = SinglePlotWindow( plot=l_plot )
             self._show_plot_window(spw)
 
-    def _make_loadings_plot(self, ds_name):
-        res = self.model.get_res(ds_name)
-        pc_tab = res.getLoadings()
-        labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
-        plot = self._make_plot(pc_tab, ds_name, labels, "Prefmap Loadings plot\n{0}".format(ds_name))
+    def _make_loadings_plot_x(self, xId, yId):
+        res = self.model.get_res(xId, yId)
+        xLP = res['Xloadings P']
+        labels = self.model.dsl.retriveDatasetByName(xId).variableNames
+        plot = self._make_plot(xLP, xId, yId, labels, "Prefmap Loadings plot X")
         return plot
 
-    def _make_plot(self, pc_tab, ds_name, labels, plot_title):
-        expl_vars = self.model.get_res(ds_name).getCalExplVar()
+    def plot_loadings_y(self, show = True):
+        # self.show = show
+        for xId, yId in self.model.selectedXYlist:
+            l_plot = self._make_loadings_plot_y(xId, yId)
+            spw = SinglePlotWindow( plot=l_plot )
+            self._show_plot_window(spw)
+
+    def _make_loadings_plot_y(self, xId, yId):
+        res = self.model.get_res(xId, yId)
+        yLP = res['Yloadings Q']
+        labels = self.model.dsl.retriveDatasetByName(yId).variableNames
+        plot = self._make_plot(yLP, xId, yId, labels, "Prefmap Loadings plot Y")
+        return plot
+
+    def _make_plot(self, pc_tab, xId, yId, labels, plot_title):
+        expl_vars = self.model.get_res(xId, yId)['calExplVarX']
         pd = ArrayPlotData()
         pd.set_data('pc1', pc_tab[:,0])
         pd.set_data('pc2', pc_tab[:,1])
@@ -150,44 +174,67 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_corr_loading(self, show = True):
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            cl_plot = self._make_corr_load_plot(ds_name)
+        for xId, yId in self.model.selectedXYlist:
+            cl_plot = self._make_corr_load_plot(xId, yId)
             spw = SinglePlotWindow( plot=cl_plot )
             self._show_plot_window(spw)
 
-    def _make_corr_load_plot(self, ds_name):
-        res = self.model.get_res(ds_name)
-        labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
-        pc_tab = res.getCorrLoadings()
-        expl_vars = res.getCalExplVar()
+    def _make_corr_load_plot(self, xId, yId):
+        # VarNameX, CorrLoadX
+        # labels
+        vnx = self.model.dsl.retriveDatasetByName(xId).variableNames
+        vny = self.model.dsl.retriveDatasetByName(yId).variableNames
+        res = self.model.get_res(xId, yId)
+        # pc_tab = res.getCorrLoadings()
+        clx = res['corrLoadX']
+        cly = res['corrLoadY']
+        # calExplVarX
+        cevx = res['calExplVarX']
+        cevy = res['calExplVarY']
         pd = ArrayPlotData()
-        pd.set_data('pc1', pc_tab[:,0])
-        pd.set_data('pc2', pc_tab[:,1])
+        pd.set_data('pc1', clx[:,0])
+        pd.set_data('pc2', clx[:,1])
         pcl = CCPlotCorrLoad(pd)
-        pcl.title = "Prefmap Correlation Loadings plot\n{0}".format(ds_name)
-        pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
-        pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-        pcl.addDataLabels(labels)
+        pcl.title = "Prefmap Correlation Loadings plot"
+        pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
+        pcl.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(cevx[1], cevy[1])
+#        pcl.addDataLabels(labels)
         return pcl
 
-    def plot_expl_var(self, show = True):
+    def plot_expl_var_x(self, show = True):
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            ev_plot = self._make_expl_var_plot(ds_name)
+        for xId, yId in self.model.selectedXYlist:
+            ev_plot = self._make_expl_var_plot_x(xId, yId)
             spw = SinglePlotWindow( plot=ev_plot )
             self._show_plot_window(spw)
 
-    def _make_expl_var_plot(self, ds_name):
-        res = self.model.get_res(ds_name)
-        expl_vars = res.getCalExplVar()
-        expl_index = [0]
-        expl_val = [0]
-        for index, value in expl_vars.iteritems():
-            expl_index.append(index)
-            expl_val.append(expl_val[index-1] + value)
-        pd = ArrayPlotData(index=expl_index, pc_sigma=expl_val)
+    def _make_expl_var_plot_x(self, xId, yId):
+        res = self.model.get_res(xId, yId)
+        sumCalX = res['cumCalExplVarX']
+        expl_index = range(len(sumCalX))
+        pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalX)
         pl = CCPlotLine(pd)
-        pl.title = "Prefmap explained variance plot\n{0}".format(ds_name)
+        pl.title = "Prefmap explained variance plot"
+        pl.x_axis.title = "# f principal components"
+        pl.y_axis.title = "Explained variance [%]"
+        pl.y_mapper.range.set_bounds(0, 100)
+        return pl
+
+    def plot_expl_var_y(self, show = True):
+        # self.show = show
+        for xId, yId in self.model.selectedXYlist:
+            ev_plot = self._make_expl_var_plot_y(xId, yId)
+            spw = SinglePlotWindow( plot=ev_plot )
+            self._show_plot_window(spw)
+
+    def _make_expl_var_plot_y(self, xId, yId):
+        res = self.model.get_res(xId, yId)
+        sumCalY = res['cumCalExplVarY']
+        sumValY = res['cumValExplVarY']
+        expl_index = range(len(sumCalY))
+        pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalY)
+        pl = CCPlotLine(pd)
+        pl.title = "Prefmap explained variance plot"
         pl.x_axis.title = "# f principal components"
         pl.y_axis.title = "Explained variance [%]"
         pl.y_mapper.range.set_bounds(0, 100)
@@ -206,20 +253,28 @@ def clkOverview(obj):
     obj.controller.plot_overview()
 
 def clkScores(obj):
-    logging.info("Scoreplot activated")
+    logging.info("Scores plot activated")
     obj.controller.plot_scores()
 
-def clkLoadings(obj):
-    logging.info("Loadingplot activated")
-    obj.controller.plot_loadings()
-
 def clkCorrLoad(obj):
-    logging.info("Loadingplot activated")
+    logging.info("X & Y correlation loadings plot activated")
     obj.controller.plot_corr_loading()
 
-def clkExplResVar(obj):
-    logging.info("Explained variance plot activated")
-    obj.controller.plot_expl_var()
+def clkExplResVarX(obj):
+    logging.info("Explained variance X plot activated")
+    obj.controller.plot_expl_var_x()
+
+def clkExplResVarY(obj):
+    logging.info("Explained variance Y plot activated")
+    obj.controller.plot_expl_var_y()
+
+def clkLoadingsX(obj):
+    logging.info("X loadings plot activated")
+    obj.controller.plot_loadings_x()
+
+def clkLoadingsY(obj):
+    logging.info("Y loadings plot activated")
+    obj.controller.plot_loadings_y()
 
 
 # Views
@@ -231,7 +286,7 @@ options_tree = TreeEditor(
                   children = '',
                   label = 'name',
                   tooltip = 'Overview',
-                  view = check_view,
+                  view = no_view,
                   rename = False,
                   rename_me = False,
                   copy = False,
@@ -242,37 +297,37 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Overview plot',
                   on_dclick = clkOverview,
-                  view = check_view,
+                  view = no_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Scores',
                   on_dclick = clkScores,
-                  view = check_view,
+                  view = no_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=X & Y correlation loadings',
                   on_dclick = clkCorrLoad,
-                  view = check_view,
+                  view = no_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Explained variance X',
-                  on_dclick = clkExplResVar,
-                  view = check_view,
+                  on_dclick = clkExplResVarX,
+                  view = no_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Explained variance Y',
-                  on_dclick = clkExplResVar,
-                  view = check_view,
+                  on_dclick = clkExplResVarY,
+                  view = no_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=X loadings',
-                  on_dclick = clkExplResVar,
-                  view = check_view,
+                  on_dclick = clkLoadingsX,
+                  view = no_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Y loadings',
-                  on_dclick = clkExplResVar,
-                  view = check_view,
+                  on_dclick = clkLoadingsY,
+                  view = no_view,
                   ),
         ],
     hide_root = False,
@@ -290,3 +345,29 @@ prefmap_tree_view = View(
     width=.4,
     height=.3,
     )
+
+
+if __name__ == '__main__':
+    """Test run the View"""
+    print("Interactive start")
+    from dataset_collection import DatasetCollection
+    from file_importer import FileImporter
+    
+    class FakeMain(HasTraits):
+        dsl = DatasetCollection()
+        prefmap = Instance(PrefmapModelViewHandler)
+
+        def _prefmap_changed(self, old, new):
+            logging.info("Setting prefmap mother")
+            if old is not None:
+                old.main_ui_ptr = None
+            if new is not None:
+                new.main_ui_ptr = self
+
+    main = FakeMain(prefmap = PrefmapModelViewHandler(PrefmapModel()))
+    fi = FileImporter()
+    main.dsl.addDataset(fi.noninteractiveImport('datasets/A_labels.txt'))
+    main.dsl.addDataset(fi.noninteractiveImport('datasets/C_labels.txt'))
+    main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
+    main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
+    main.prefmap.configure_traits(view=prefmap_tree_view)
