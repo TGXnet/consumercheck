@@ -18,15 +18,17 @@ class SinglePlotWindow(HasTraits):
     """Window for embedding single plot
     """
     plot = Instance(Component)
+    eq_axis = Bool(True)
     show_x1 = Bool(True)
-    show_x2 = Bool(True)
-    show_x3 = Bool(True)
-    show_y2 = Bool(True)
 
-    @on_trait_change('show_x1, show_x2, show_x3, show_y2')
+    @on_trait_change('show_x1')
     def switch_labels(self, object, name, new):
         ds_id = name.partition('_')[2]
         object.plot.switchLabellVisibility(ds_id, new)
+
+    @on_trait_change('eq_axis')
+    def switch_axis(self, object, name, new):
+        object.plot.toggleEqAxis(new)
 
     traits_view = View(
         Group(
@@ -40,10 +42,8 @@ class SinglePlotWindow(HasTraits):
                 ),
             Label('Mouse scroll and drag to zoom and pan in plot'),
             Group(
-                Item('show_x1', label="Show sensory attributes"),
-                Item('show_x2', label="Show consumer ID"),
-                Item('show_x3', label="Show question no"),
-                Item('show_y2', label="Show product ID"),
+                Item('eq_axis', label="Set equal axis"),
+                Item('show_x1', label="Show labels"),
                 orientation="horizontal",
                 ),
             layout="normal",

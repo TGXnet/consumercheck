@@ -99,23 +99,43 @@ class CCBasePlotScatter(CCBasePlot):
         self.x_mapper.range.set_bounds(*xlim)
         self.y_mapper.range.set_bounds(*ylim)
 
-    def _calcBoundsLimits(self, margin_factor=0.2):
-        # Return tuple of tuple with x and y bounds low and high limit
-        minLim = None
-        maxLim = None
+    ## def _calcBoundsLimits(self, margin_factor=0.0):
+    ##     # Return tuple of tuple with x and y bounds low and high limit
+    ##     minLim = None
+    ##     maxLim = None
+    ##     for pt_index, pt_color in self.meta_plots.itervalues():
+    ##         pt_xdata, pt_ydata = pt_index
+    ##         xlim = (min(self.data.get_data(pt_xdata)), max(self.data.get_data(pt_xdata)))
+    ##         ylim = (max(self.data.get_data(pt_ydata)), max(self.data.get_data(pt_ydata)))
+    ##         if minLim:
+    ##             minLim = min(xlim[0], ylim[0], minLim)
+    ##             maxLim = max(xlim[1], ylim[1], maxLim)
+    ##         else:
+    ##             minLim = min(xlim[0], ylim[0])
+    ##             maxLim = max(xlim[1], ylim[1])
+    ##     minLim = minLim - maxLim * margin_factor
+    ##     maxLim = maxLim + maxLim * margin_factor
+    ##     return ((minLim, maxLim), (minLim, maxLim))
+
+    def _calcBoundsLimits(self, marginFactor=0.1):
         for pt_index, pt_color in self.meta_plots.itervalues():
             pt_xdata, pt_ydata = pt_index
-            xlim = (min(self.data.get_data(pt_xdata)), max(self.data.get_data(pt_xdata)))
-            ylim = (max(self.data.get_data(pt_ydata)), max(self.data.get_data(pt_ydata)))
-            if minLim:
-                minLim = min(xlim[0], ylim[0], minLim)
-                maxLim = max(xlim[1], ylim[1], maxLim)
-            else:
-                minLim = min(xlim[0], ylim[0])
-                maxLim = max(xlim[1], ylim[1])
-        minLim = minLim - maxLim * margin_factor
-        maxLim = maxLim + maxLim * margin_factor
-        return ((minLim, maxLim), (minLim, maxLim))
+            xMinMax = (min(self.data.get_data(pt_xdata)), max(self.data.get_data(pt_xdata)))
+            yMinMax = (min(self.data.get_data(pt_ydata)), max(self.data.get_data(pt_ydata)))
+            xDelta = xMinMax[1] - xMinMax[0]
+            yDelta = yMinMax[1] - yMinMax[0]
+            delta = max(xDelta, yDelta)
+            print("Delta: {}".format(delta))
+            margin = delta*marginFactor
+            delta += margin
+            print("Delta + margin: {}".format(delta))
+            center = (xMinMax[0]+xDelta/2, yMinMax[0]+yDelta/2)
+            print("Center: {}".format(center))
+            xMin = center[0]-delta/2
+            xMax = center[0]+delta/2
+            yMin = center[1]-delta/2
+            yMax = center[1]+delta/2
+        return ((xMin, xMax), (yMin, yMax))
 
     def reset_axis(self):
         """Reset axix to default
@@ -154,6 +174,13 @@ class CCBasePlotScatter(CCBasePlot):
         sel_set = self.label_refs[ds_id]
         for label in sel_set:
             label.visible = isVisible
+        self.request_redraw()
+
+    def toggleEqAxis(self, axisEq):
+        if axisEq:
+            self.set_eq_axis()
+        else:
+            self.reset_axis()
         self.request_redraw()
 
 
@@ -275,11 +302,11 @@ class CCPlotLPLS(CCBasePlotScatter):
     def __init__(self, *args, **kw):
         super(CCPlotLPLS, self).__init__(*args, **kw)
 
-    def addDataLabels(self, ds_id, labels):
-        ## if ds_id == 'x3':
-        ##     self._addValueQCategory(ds_id, labels)
-        ## else:
-        super(CCPlotLPLS, self).addDataLabels(ds_id, labels)
+    ## def addDataLabels(self, ds_id, labels):
+    ##     if ds_id == 'x3':
+    ##         self._addValueQCategory(ds_id, labels)
+    ##     else:
+    ##         super(CCPlotLPLS, self).addDataLabels(ds_id, labels)
 
     def _addValueQCategory(self, ds_id, labels):
         if len(labels) != 21:
@@ -342,32 +369,16 @@ if __name__ == '__main__':
     from enthought.chaco.api import ArrayPlotData
     from plot_windows import SinglePlotWindow
     
-    x1 = [x + 3 for x in [-0.3, 0.5, 0.34]]
-    y1 = [x + 3 for x in [-0.7, -0.7, 0.45]]
-    x2 = [x + 3 for x in [0.9, 0.6, -0.95]]
-    y2 = [x + 3 for x in [0.8, -0.9, 0.5]]
-    x3 = [x + 3 for x in [-0.1, 0.1, 0.2]]
-    y3 = [x + 3 for x in [-0.1, -0.75, -0.3]]
-    x4 = [x + 3 for x in [-0.45, 0.45, 0.67]]
-    y4 = [x + 3 for x in [-0.9, 0, 0.9]]
+    x1 = [-0.2, 0.4, 0.4]
+    y1 = [-0.8, -0.6, 0.4]
+    ## x1 = [-2.0, -1.0, -1.25]
+    ## y1 = [-0.3, -0.2, -0.1]
     pd = ArrayPlotData(
-        x1PC1=x1,
-        x1PC2=y1,
-        x2PC1=x2,
-        x2PC2=y2,
-        x3PC1=x3,
-        x3PC2=y3,
-        x2PC1scores=x4,
-        x2PC2scores=y4,
+        pc1=x1,
+        pc2=y1,
         )
-    plot = CCPlotLPLS(pd)
+    plot = CCPlotScatter(pd)
     labels1 = ['x11', 'x12', 'x13']
-    labels2 = ['x21', 'x22', 'x23']
-    labels3 = ['x31', 'x32', 'x33']
-    labels4 = ['y21', 'y22', 'y23']
-    plot.addDataLabels('x1', labels1)
-    plot.addDataLabels('x2', labels2)
-    plot.addDataLabels('x3', labels3)
-    plot.addDataLabels('y2', labels4)
+    plot.addDataLabels(labels1, 'x1')
     spw = SinglePlotWindow(plot=plot)
     spw.configure_traits()
