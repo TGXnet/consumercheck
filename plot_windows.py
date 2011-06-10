@@ -18,7 +18,7 @@ class SinglePlotWindow(HasTraits):
     """Window for embedding single plot
     """
     plot = Instance(Component)
-    eq_axis = Bool(True)
+    eq_axis = Bool(False)
     show_x1 = Bool(True)
 
     @on_trait_change('show_x1')

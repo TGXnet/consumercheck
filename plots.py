@@ -40,7 +40,7 @@ class CCBasePlot(Plot):
 
     def _customize_settings(self):
         self.line_width = 0.5
-        self.padding = 50
+        self.padding = 54
 
     def _add_plots(self):
         for pt_name, pt_data in self.meta_plots.iteritems():
@@ -201,7 +201,7 @@ class CCPlotScatter(CCBasePlotScatter):
 
     def __init__(self, *args, **kw):
         super(CCPlotScatter, self).__init__(*args, **kw)
-        self.set_eq_axis()
+        # self.set_eq_axis()
 
 
 class CCPlotCorrLoad(CCBasePlotScatter):
@@ -226,7 +226,7 @@ class CCPlotCorrLoad(CCBasePlotScatter):
     def __init__(self, *args, **kw):
         super(CCPlotCorrLoad, self).__init__(*args, **kw)
         self._add_circle()
-        self.set_eq_axis()
+        # self.set_eq_axis()
 
     def _add_circle(self, show_half=False):
         # Create range for ellipses
