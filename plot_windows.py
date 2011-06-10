@@ -3,8 +3,8 @@
 """
 # Enthought library imports
 from enthought.enable.api import Component, ComponentEditor
-from enthought.traits.api import HasTraits, Instance, Bool, on_trait_change
-from enthought.traits.ui.api import View, Group, Item, Label
+from enthought.traits.api import HasTraits, Instance, Bool, Str, on_trait_change
+from enthought.traits.ui.api import View, Group, Item, Label, Handler
 from enthought.chaco.api import GridPlotContainer, HPlotContainer
 
 #===============================================================================
@@ -14,12 +14,28 @@ title = "ConsumerCheck plot"
 bg_color="white"
 
 #===============================================================================
+
+class TitleHandler(Handler):
+    """ Change the title on the UI.
+
+    """
+
+    def object_title_text_changed(self, info):
+        """ Called whenever the title_text attribute changes on the handled object.
+
+        """
+        info.ui.title = info.object.title_text
+
+
+
+
 class SinglePlotWindow(HasTraits):
     """Window for embedding single plot
     """
     plot = Instance(Component)
     eq_axis = Bool(False)
     show_x1 = Bool(True)
+    title_text = Str("ConsumerCheck")
 
     @on_trait_change('show_x1')
     def switch_labels(self, object, name, new):
@@ -48,8 +64,10 @@ class SinglePlotWindow(HasTraits):
                 ),
             layout="normal",
             ),
-        resizable=True, title=title,
-#       kind = 'nonmodal',
+        resizable=True,
+        title=title,
+        handler=TitleHandler(),
+        # kind = 'nonmodal',
         buttons = ["OK"]
         )
 
@@ -61,6 +79,8 @@ class MultiPlotWindow(HasTraits):
     Set plots.shape to tuple(rows, columns) to indicate the layout of the plots
     """
     plots = Instance(Component)
+    title_text = Str("ConsumerCheck")
+
     traits_view = View(
         Group(
             Item('plots',
@@ -69,8 +89,10 @@ class MultiPlotWindow(HasTraits):
                      bgcolor = bg_color),
                  show_label=False),
             orientation = "vertical"),
-        resizable=True, title=title,
-#       kind = 'nonmodal',
+        resizable=True,
+        title=title,
+        handler=TitleHandler(),
+        # kind = 'nonmodal',
         buttons = ["OK"]
         )
 

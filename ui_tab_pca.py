@@ -9,7 +9,7 @@ import logging
 
 # Enthought imports
 from enthought.traits.api import HasTraits, Instance, Event, Str, List, on_trait_change, DelegatesTo, Dict, Any
-from enthought.traits.ui.api import View, Item, UItem, Group, Handler, ModelView, CheckListEditor, TreeEditor, TreeNode
+from enthought.traits.ui.api import View, Item, UItem, Group, Handler, ModelView, TreeEditor, TreeNode
 from enthought.chaco.api import ArrayPlotData
 
 # Local imports
@@ -93,7 +93,7 @@ class PcaModelViewHandler(ModelView):
         for ds_name in self.model.list_control.selected:
             ds_plots = [[self._make_scores_plot(ds_name), self._make_loadings_plot(ds_name)],
                         [self._make_corr_load_plot(ds_name), self._make_expl_var_plot(ds_name)]]
-            mpw = MultiPlotWindow()
+            mpw = MultiPlotWindow(title_text=self._wind_title(ds_name))
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
             self._show_plot_window(mpw)
@@ -102,28 +102,34 @@ class PcaModelViewHandler(ModelView):
         # self.show = show
         for ds_name in self.model.list_control.selected:
             s_plot = self._make_scores_plot(ds_name)
-            spw = SinglePlotWindow( plot=s_plot )
+            spw = SinglePlotWindow(
+                plot=s_plot,
+                title_text=self._wind_title(ds_name)
+                )
             self._show_plot_window(spw)
 
     def _make_scores_plot(self, ds_name):
         res = self.model.get_res(ds_name)
         pc_tab = res.getScores()
         labels = self.model.dsl.retriveDatasetByName(ds_name).objectNames
-        plot = self._make_plot(pc_tab, ds_name, labels, "PCA Scores plot\n{0}".format(ds_name))
+        plot = self._make_plot(pc_tab, ds_name, labels, "Scores")
         return plot
 
     def plot_loadings(self, show = True):
         # self.show = show
         for ds_name in self.model.list_control.selected:
             l_plot = self._make_loadings_plot(ds_name)
-            spw = SinglePlotWindow( plot=l_plot )
+            spw = SinglePlotWindow(
+                plot=l_plot,
+                title_text=self._wind_title(ds_name)
+                )
             self._show_plot_window(spw)
 
     def _make_loadings_plot(self, ds_name):
         res = self.model.get_res(ds_name)
         pc_tab = res.getLoadings()
         labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
-        plot = self._make_plot(pc_tab, ds_name, labels, "PCA Loadings plot\n{0}".format(ds_name))
+        plot = self._make_plot(pc_tab, ds_name, labels, "Loadings")
         return plot
 
     def _make_plot(self, pc_tab, ds_name, labels, plot_title):
@@ -142,7 +148,10 @@ class PcaModelViewHandler(ModelView):
         # self.show = show
         for ds_name in self.model.list_control.selected:
             cl_plot = self._make_corr_load_plot(ds_name)
-            spw = SinglePlotWindow( plot=cl_plot )
+            spw = SinglePlotWindow(
+                plot=cl_plot,
+                title_text=self._wind_title(ds_name)
+                )
             self._show_plot_window(spw)
 
     def _make_corr_load_plot(self, ds_name):
@@ -154,7 +163,7 @@ class PcaModelViewHandler(ModelView):
         pd.set_data('pc1', pc_tab[:,0])
         pd.set_data('pc2', pc_tab[:,1])
         pcl = CCPlotCorrLoad(pd)
-        pcl.title = "PCA Correlation Loadings plot\n{0}".format(ds_name)
+        pcl.title = "Correlation Loadings"
         pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         pcl.addDataLabels(labels)
@@ -164,7 +173,10 @@ class PcaModelViewHandler(ModelView):
         # self.show = show
         for ds_name in self.model.list_control.selected:
             ev_plot = self._make_expl_var_plot(ds_name)
-            spw = SinglePlotWindow( plot=ev_plot )
+            spw = SinglePlotWindow(
+                plot=ev_plot,
+                title_text=self._wind_title(ds_name)
+                )
             self._show_plot_window(spw)
 
     def _make_expl_var_plot(self, ds_name):
@@ -177,7 +189,7 @@ class PcaModelViewHandler(ModelView):
             expl_val.append(expl_val[index-1] + value)
         pd = ArrayPlotData(index=expl_index, pc_sigma=expl_val)
         pl = CCPlotLine(pd)
-        pl.title = "PCA explained variance plot\n{0}".format(ds_name)
+        pl.title = "Explained variance"
         pl.x_axis.title = "# f principal components"
         pl.y_axis.title = "Explained variance [%]"
         pl.y_mapper.range.set_bounds(0, 100)
@@ -189,7 +201,12 @@ class PcaModelViewHandler(ModelView):
             if sys.platform == 'linux2':
                 self.plot_uis.append( plot_window.edit_traits(kind='live') )
             else:
-                self.plot_uis.append( plot_window.edit_traits(parent=self.info.ui.control, kind='live') )
+                self.plot_uis.append(
+                    plot_window.edit_traits(parent=self.info.ui.control, kind='live')
+                    )
+
+    def _wind_title(self, ds_id):
+        return "ConsumerCheck PCA - {0}".format(ds_id)
 
 
 # Double click handlers
@@ -272,3 +289,29 @@ pca_tree_view = View(
     width=.4,
     height=.3,
     )
+
+
+if __name__ == '__main__':
+    """Test run the View"""
+    print("Interactive start")
+    from dataset_collection import DatasetCollection
+    from file_importer import FileImporter
+    
+    class FakeMain(HasTraits):
+        dsl = DatasetCollection()
+        pca = Instance(PcaModelViewHandler)
+
+        def _pca_changed(self, old, new):
+            logging.info("Setting pca mother")
+            if old is not None:
+                old.main_ui_ptr = None
+            if new is not None:
+                new.main_ui_ptr = self
+
+    main = FakeMain(pca = PcaModelViewHandler(PcaModel()))
+    fi = FileImporter()
+    main.dsl.addDataset(fi.noninteractiveImport('datasets/A_labels.txt'))
+    main.dsl.addDataset(fi.noninteractiveImport('datasets/C_labels.txt'))
+    main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
+    main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
+    main.pca.configure_traits(view=pca_tree_view)

@@ -115,7 +115,7 @@ class PrefmapModelViewHandler(ModelView):
         for xId, yId in self.model.selector.xyMappings:
             ds_plots = [[self._make_scores_plot(xId, yId), self._make_corr_load_plot(xId, yId)],
                         [self._make_expl_var_plot_x(xId, yId), self._make_expl_var_plot_y(xId, yId)]]
-            mpw = MultiPlotWindow()
+            mpw = MultiPlotWindow(title_text=self._wind_title(xId, yId))
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
             self._show_plot_window(mpw)
@@ -124,42 +124,51 @@ class PrefmapModelViewHandler(ModelView):
         # self.show = show
         for xId, yId in self.model.selector.xyMappings:
             s_plot = self._make_scores_plot(xId, yId)
-            spw = SinglePlotWindow( plot=s_plot )
+            spw = SinglePlotWindow(
+                plot=s_plot,
+                title_text=self._wind_title(xId, yId)
+                )
             self._show_plot_window(spw)
 
     def _make_scores_plot(self, xId, yId):
         res = self.model.get_res(xId, yId)
         pc_tab = res['Scores T']
         labels = self.model.dsl.retriveDatasetByName(xId).objectNames
-        plot = self._make_plot(pc_tab, xId, yId, labels, "Prefmap Scores plot\n{0}".format(xId))
+        plot = self._make_plot(pc_tab, xId, yId, labels, "Scores")
         return plot
 
     def plot_loadings_x(self, show = True):
         # self.show = show
         for xId, yId in self.model.selector.xyMappings:
             l_plot = self._make_loadings_plot_x(xId, yId)
-            spw = SinglePlotWindow( plot=l_plot )
+            spw = SinglePlotWindow(
+                plot=l_plot,
+                title_text=self._wind_title(xId, yId)
+                )
             self._show_plot_window(spw)
 
     def _make_loadings_plot_x(self, xId, yId):
         res = self.model.get_res(xId, yId)
         xLP = res['Xloadings P']
         labels = self.model.dsl.retriveDatasetByName(xId).variableNames
-        plot = self._make_plot(xLP, xId, yId, labels, "Prefmap Loadings plot X")
+        plot = self._make_plot(xLP, xId, yId, labels, "X Loadings")
         return plot
 
     def plot_loadings_y(self, show = True):
         # self.show = show
         for xId, yId in self.model.selector.xyMappings:
             l_plot = self._make_loadings_plot_y(xId, yId)
-            spw = SinglePlotWindow( plot=l_plot )
+            spw = SinglePlotWindow(
+                plot=l_plot,
+                title_text=self._wind_title(xId, yId)
+                )
             self._show_plot_window(spw)
 
     def _make_loadings_plot_y(self, xId, yId):
         res = self.model.get_res(xId, yId)
         yLP = res['Yloadings Q']
         labels = self.model.dsl.retriveDatasetByName(yId).variableNames
-        plot = self._make_plot(yLP, xId, yId, labels, "Prefmap Loadings plot Y")
+        plot = self._make_plot(yLP, xId, yId, labels, "Y Loadings")
         return plot
 
     def _make_plot(self, pc_tab, xId, yId, labels, plot_title):
@@ -178,7 +187,10 @@ class PrefmapModelViewHandler(ModelView):
         # self.show = show
         for xId, yId in self.model.selector.xyMappings:
             cl_plot = self._make_corr_load_plot(xId, yId)
-            spw = SinglePlotWindow( plot=cl_plot )
+            spw = SinglePlotWindow(
+                plot=cl_plot,
+                title_text=self._wind_title(xId, yId)
+                )
             self._show_plot_window(spw)
 
     def _make_corr_load_plot(self, xId, yId):
@@ -197,7 +209,7 @@ class PrefmapModelViewHandler(ModelView):
         pd.set_data('pc1', clx[:,0])
         pd.set_data('pc2', clx[:,1])
         pcl = CCPlotCorrLoad(pd)
-        pcl.title = "Prefmap Correlation Loadings plot"
+        pcl.title = "X & Y correlation loadings"
         pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
         pcl.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(cevx[1], cevy[1])
 #        pcl.addDataLabels(labels)
@@ -207,7 +219,10 @@ class PrefmapModelViewHandler(ModelView):
         # self.show = show
         for xId, yId in self.model.selector.xyMappings:
             ev_plot = self._make_expl_var_plot_x(xId, yId)
-            spw = SinglePlotWindow( plot=ev_plot )
+            spw = SinglePlotWindow(
+                plot=ev_plot,
+                title_text=self._wind_title(xId, yId)
+                )
             self._show_plot_window(spw)
 
     def _make_expl_var_plot_x(self, xId, yId):
@@ -216,7 +231,7 @@ class PrefmapModelViewHandler(ModelView):
         expl_index = range(len(sumCalX))
         pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalX)
         pl = CCPlotLine(pd)
-        pl.title = "Prefmap explained variance plot"
+        pl.title = "Explained variance X"
         pl.x_axis.title = "# f principal components"
         pl.y_axis.title = "Explained variance [%]"
         pl.y_mapper.range.set_bounds(0, 100)
@@ -226,7 +241,10 @@ class PrefmapModelViewHandler(ModelView):
         # self.show = show
         for xId, yId in self.model.selector.xyMappings:
             ev_plot = self._make_expl_var_plot_y(xId, yId)
-            spw = SinglePlotWindow( plot=ev_plot )
+            spw = SinglePlotWindow(
+                plot=ev_plot,
+                title_text=self._wind_title(xId, yId)
+                )
             self._show_plot_window(spw)
 
     def _make_expl_var_plot_y(self, xId, yId):
@@ -236,7 +254,7 @@ class PrefmapModelViewHandler(ModelView):
         expl_index = range(len(sumCalY))
         pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalY)
         pl = CCPlotLine(pd)
-        pl.title = "Prefmap explained variance plot"
+        pl.title = "Explained variance Y"
         pl.x_axis.title = "# f principal components"
         pl.y_axis.title = "Explained variance [%]"
         pl.y_mapper.range.set_bounds(0, 100)
@@ -247,7 +265,12 @@ class PrefmapModelViewHandler(ModelView):
             if sys.platform == 'linux2':
                 self.plot_uis.append( plot_window.edit_traits(kind='live') )
             else:
-                self.plot_uis.append( plot_window.edit_traits(parent=self.info.ui.control, kind='live') )
+                self.plot_uis.append(
+                    plot_window.edit_traits(parent=self.info.ui.control, kind='live')
+                    )
+
+    def _wind_title(self, dsx_id, dsy_id):
+        return "ConsumerCheck Prefmap - ({0}) X ~ Y ({1})".format(dsx_id, dsy_id)
 
 
 # Double click handlers
