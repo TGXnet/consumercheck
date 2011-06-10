@@ -15,7 +15,7 @@ from enthought.chaco.api import ArrayPlotData
 from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
 from plot_windows import SinglePlotWindow, MultiPlotWindow
 from mvr import plsr
-# from dsl_check_list import CheckListController, check_view
+from prefmap_selector import PrefmapSelectorController, prefmap_selector_view
 
 
 class PrefmapModel(HasTraits):
@@ -39,7 +39,8 @@ class PrefmapModel(HasTraits):
     # datasetsAltered = Event
 
     name = Str( 'Options' )
-#    list_control = Instance(CheckListController)
+    selector = Instance(PrefmapSelectorController)
+
     # List of selected (X, Y) tuples
     selectedXYlist = List([
         ('ost_forbruker', 'ost_sensorikk'),
@@ -89,8 +90,8 @@ class PrefmapModelViewHandler(ModelView):
         # info.ui.control: wx._windows.Frame
         self.model.main_ui_ptr = self.main_ui_ptr
         # FIXME: Replace with Prefmap controller
-#        self.model.list_control = CheckListController( model=self.model.dsl )
-#        check_view.handler = self.model.list_control
+        self.model.selector = PrefmapSelectorController( model=self.model.dsl )
+        prefmap_selector_view.handler = self.model.selector
 
     def closed(self, info, is_ok):
         while self.plot_uis:
@@ -110,7 +111,7 @@ class PrefmapModelViewHandler(ModelView):
         for each of the datasets.
         """
         # self.show = show
-        for xId, yId in self.model.selectedXYlist:
+        for xId, yId in self.model.selector.xyMappings:
             ds_plots = [[self._make_scores_plot(xId, yId), self._make_corr_load_plot(xId, yId)],
                         [self._make_expl_var_plot_x(xId, yId), self._make_expl_var_plot_y(xId, yId)]]
             mpw = MultiPlotWindow()
@@ -120,7 +121,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_scores(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selectedXYlist:
+        for xId, yId in self.model.selector.xyMappings:
             s_plot = self._make_scores_plot(xId, yId)
             spw = SinglePlotWindow( plot=s_plot )
             self._show_plot_window(spw)
@@ -134,7 +135,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_loadings_x(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selectedXYlist:
+        for xId, yId in self.model.selector.xyMappings:
             l_plot = self._make_loadings_plot_x(xId, yId)
             spw = SinglePlotWindow( plot=l_plot )
             self._show_plot_window(spw)
@@ -148,7 +149,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_loadings_y(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selectedXYlist:
+        for xId, yId in self.model.selector.xyMappings:
             l_plot = self._make_loadings_plot_y(xId, yId)
             spw = SinglePlotWindow( plot=l_plot )
             self._show_plot_window(spw)
@@ -174,7 +175,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_corr_loading(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selectedXYlist:
+        for xId, yId in self.model.selector.xyMappings:
             cl_plot = self._make_corr_load_plot(xId, yId)
             spw = SinglePlotWindow( plot=cl_plot )
             self._show_plot_window(spw)
@@ -203,7 +204,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_expl_var_x(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selectedXYlist:
+        for xId, yId in self.model.selector.xyMappings:
             ev_plot = self._make_expl_var_plot_x(xId, yId)
             spw = SinglePlotWindow( plot=ev_plot )
             self._show_plot_window(spw)
@@ -222,7 +223,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_expl_var_y(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selectedXYlist:
+        for xId, yId in self.model.selector.xyMappings:
             ev_plot = self._make_expl_var_plot_y(xId, yId)
             spw = SinglePlotWindow( plot=ev_plot )
             self._show_plot_window(spw)
@@ -286,7 +287,7 @@ options_tree = TreeEditor(
                   children = '',
                   label = 'name',
                   tooltip = 'Overview',
-                  view = no_view,
+                  view = prefmap_selector_view,
                   rename = False,
                   rename_me = False,
                   copy = False,
@@ -297,37 +298,37 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Overview plot',
                   on_dclick = clkOverview,
-                  view = no_view,
+                  view = prefmap_selector_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Scores',
                   on_dclick = clkScores,
-                  view = no_view,
+                  view = prefmap_selector_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=X & Y correlation loadings',
                   on_dclick = clkCorrLoad,
-                  view = no_view,
+                  view = prefmap_selector_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Explained variance X',
                   on_dclick = clkExplResVarX,
-                  view = no_view,
+                  view = prefmap_selector_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Explained variance Y',
                   on_dclick = clkExplResVarY,
-                  view = no_view,
+                  view = prefmap_selector_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=X loadings',
                   on_dclick = clkLoadingsX,
-                  view = no_view,
+                  view = prefmap_selector_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Y loadings',
                   on_dclick = clkLoadingsY,
-                  view = no_view,
+                  view = prefmap_selector_view,
                   ),
         ],
     hide_root = False,
