@@ -2,11 +2,9 @@
 # stdlib imports
 import logging
 
-from enthought.traits.api \
-    import HasTraits, List, DelegatesTo
+from enthought.traits.api import List, DelegatesTo
+from enthought.traits.ui.api import Item, View, CheckListEditor, Controller
 
-from enthought.traits.ui.api \
-    import Item, View, CheckListEditor, Controller
 
 # Define the demo class:
 class CheckListController(Controller):
