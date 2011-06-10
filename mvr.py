@@ -24,6 +24,7 @@ This version returns:
 # Import necessary modules to make analysis work.
 import numpy as np
 import statTools as st
+import rpy2
 import rpy2.robjects as ro
 import rpy2.robjects.numpy2ri # necessary for array conversion from Python to R
 
@@ -107,7 +108,12 @@ def plsr(X, Y, centre, fncomp, fmethod, fvalidation):
     
     # Definition of the regression equation for mvr commando. 
     # Use .getenvironment to link R arrays to R formula.
-    fmla = ro.Formula('Y ~ X')
+    if rpy2.__version__ == '2.0.8':
+        fmla = ro.RFormula('Y ~ X')
+        globalenv = ro.globalEnv
+    elif rpy2.__version == '2.1.9':
+        fmla = ro.Formula('Y ~ X')
+        globalenv = ro.globalenv
     env = fmla.getenvironment()
     env['X'] = r_X
     env['Y'] = r_Y
@@ -120,7 +126,6 @@ def plsr(X, Y, centre, fncomp, fmethod, fvalidation):
     # global environment extracted from 'fit' model.
     # However, first 'fit' needs to be transfered from Python to R, such that
     # it can be used in R code strings.
-    globalenv = ro.globalenv
     globalenv['fit'] = fit
     
     # Fetch results from model and convert R-objects to numpy arrays
