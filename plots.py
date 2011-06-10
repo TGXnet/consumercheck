@@ -125,12 +125,12 @@ class CCBasePlotScatter(CCBasePlot):
             xDelta = xMinMax[1] - xMinMax[0]
             yDelta = yMinMax[1] - yMinMax[0]
             delta = max(xDelta, yDelta)
-            print("Delta: {}".format(delta))
+            print("Delta: {0}".format(delta))
             margin = delta*marginFactor
             delta += margin
-            print("Delta + margin: {}".format(delta))
+            print("Delta + margin: {0}".format(delta))
             center = (xMinMax[0]+xDelta/2, yMinMax[0]+yDelta/2)
-            print("Center: {}".format(center))
+            print("Center: {0}".format(center))
             xMin = center[0]-delta/2
             xMax = center[0]+delta/2
             yMin = center[1]-delta/2
