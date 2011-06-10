@@ -4,6 +4,7 @@ Adds statistical methods, user inteface and plots for Prefmap
 
 """
 # stdlib imports
+import sys
 import logging
 
 # Enthought imports
@@ -242,10 +243,11 @@ class PrefmapModelViewHandler(ModelView):
         return pl
 
     def _show_plot_window(self, plot_window):
-        if self.show:
             # FIXME: Setting parent forcing main ui to stay behind plot windows
-            # self.plot_uis.append( plot_window.edit_traits(parent=self.info.ui.control, kind='live') )
-            self.plot_uis.append( plot_window.edit_traits(kind='live') )
+            if sys.platform == 'linux2':
+                self.plot_uis.append( plot_window.edit_traits(kind='live') )
+            else:
+                self.plot_uis.append( plot_window.edit_traits(parent=self.info.ui.control, kind='live') )
 
 
 # Double click handlers
