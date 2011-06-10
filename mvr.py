@@ -111,7 +111,7 @@ def plsr(X, Y, centre, fncomp, fmethod, fvalidation):
     if rpy2.__version__ == '2.0.8':
         fmla = ro.RFormula('Y ~ X')
         globalenv = ro.globalEnv
-    elif rpy2.__version == '2.1.9':
+    elif rpy2.__version__ == '2.1.9':
         fmla = ro.Formula('Y ~ X')
         globalenv = ro.globalenv
     env = fmla.getenvironment()
