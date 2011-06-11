@@ -13,7 +13,7 @@ from enthought.traits.ui.api import View, Item, UItem, Group, Handler, ModelView
 from enthought.chaco.api import ArrayPlotData
 
 # Local imports
-from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
+from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad, CCPlotXYCorrLoad
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from mvr import plsr
 from prefmap_selector import PrefmapSelectorController, prefmap_selector_view
@@ -200,8 +200,6 @@ class PrefmapModelViewHandler(ModelView):
     def _make_corr_load_plot(self, xId, yId, add_labels=True):
         # VarNameX, CorrLoadX
         # labels
-        vnx = self.model.dsl.retriveDatasetByName(xId).variableNames
-        vny = self.model.dsl.retriveDatasetByName(yId).variableNames
         res = self.model.get_res(xId, yId)
         # pc_tab = res.getCorrLoadings()
         clx = res['corrLoadX']
@@ -210,15 +208,19 @@ class PrefmapModelViewHandler(ModelView):
         cevx = res['calExplVarX']
         cevy = res['calExplVarY']
         pd = ArrayPlotData()
-        pd.set_data('pc1', clx[:,0])
-        pd.set_data('pc2', clx[:,1])
-        pcl = CCPlotCorrLoad(pd)
+        pd.set_data('pc1', clx[0,:])
+        pd.set_data('pc2', clx[1,:])
+        pd.set_data('pcy1', cly[0,:])
+        pd.set_data('pcy2', cly[1,:])
+        pcl = CCPlotXYCorrLoad(pd)
         pcl.title = "X & Y correlation loadings"
         pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
         pcl.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(cevx[1], cevy[1])
         if add_labels:
-            pass
-        # pcl.addDataLabels(labels)
+            vnx = self.model.dsl.retriveDatasetByName(xId).variableNames
+            vny = self.model.dsl.retriveDatasetByName(yId).variableNames
+            pcl.addDataLabels(vnx, 'x1')
+            pcl.addDataLabels(vny, 'y1')
         return pcl
 
     def plot_expl_var_x(self, show = True):

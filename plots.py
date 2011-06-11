@@ -54,6 +54,7 @@ class CCBasePlotScatter(CCBasePlot):
         self._add_zero_axis()
         self._add_tools()
 
+    # FIXME: Move to base and rename to scatterplot
     def _add_plot(self, pt_name, pt_index, pt_color):
         self.plot(
             pt_index, name=pt_name,
@@ -99,24 +100,6 @@ class CCBasePlotScatter(CCBasePlot):
         self.x_mapper.range.set_bounds(*xlim)
         self.y_mapper.range.set_bounds(*ylim)
 
-    ## def _calcBoundsLimits(self, margin_factor=0.0):
-    ##     # Return tuple of tuple with x and y bounds low and high limit
-    ##     minLim = None
-    ##     maxLim = None
-    ##     for pt_index, pt_color in self.meta_plots.itervalues():
-    ##         pt_xdata, pt_ydata = pt_index
-    ##         xlim = (min(self.data.get_data(pt_xdata)), max(self.data.get_data(pt_xdata)))
-    ##         ylim = (max(self.data.get_data(pt_ydata)), max(self.data.get_data(pt_ydata)))
-    ##         if minLim:
-    ##             minLim = min(xlim[0], ylim[0], minLim)
-    ##             maxLim = max(xlim[1], ylim[1], maxLim)
-    ##         else:
-    ##             minLim = min(xlim[0], ylim[0])
-    ##             maxLim = max(xlim[1], ylim[1])
-    ##     minLim = minLim - maxLim * margin_factor
-    ##     maxLim = maxLim + maxLim * margin_factor
-    ##     return ((minLim, maxLim), (minLim, maxLim))
-
     def _calcBoundsLimits(self, marginFactor=0.1):
         for pt_index, pt_color in self.meta_plots.itervalues():
             pt_xdata, pt_ydata = pt_index
@@ -125,12 +108,9 @@ class CCBasePlotScatter(CCBasePlot):
             xDelta = xMinMax[1] - xMinMax[0]
             yDelta = yMinMax[1] - yMinMax[0]
             delta = max(xDelta, yDelta)
-            print("Delta: {0}".format(delta))
             margin = delta*marginFactor
             delta += margin
-            print("Delta + margin: {0}".format(delta))
             center = (xMinMax[0]+xDelta/2, yMinMax[0]+yDelta/2)
-            print("Center: {0}".format(center))
             xMin = center[0]-delta/2
             xMax = center[0]+delta/2
             yMin = center[1]-delta/2
@@ -199,10 +179,6 @@ class CCPlotScatter(CCBasePlotScatter):
         'x1': (('pc1', 'pc2'), 'orange'), # (0.451, 0.137, 0.459, 1)
         }
 
-    def __init__(self, *args, **kw):
-        super(CCPlotScatter, self).__init__(*args, **kw)
-        # self.set_eq_axis()
-
 
 class CCPlotCorrLoad(CCBasePlotScatter):
     """Specialization of the PlotScatter class customized for convenient correlation loading plotting
@@ -241,6 +217,7 @@ class CCPlotCorrLoad(CCBasePlotScatter):
         self.data.set_data('ell_full_y', ycords100perc)
         self.data.set_data('ell_half_x', xcords50perc)
         self.data.set_data('ell_half_y', ycords50perc)
+        # FIXME: Add to meta_plots instead and use that
         self.plot(
             ("ell_full_x", "ell_full_y"), name="ell_full",
             type="line", index_sort="ascending",
@@ -252,6 +229,31 @@ class CCPlotCorrLoad(CCBasePlotScatter):
                 type="line", index_sort="ascending",
                 marker="dot", marker_size=1,
                 color="blue", bgcolor="white")
+
+
+class CCPlotXYCorrLoad(CCPlotCorrLoad):
+    """Specialization of the PlotScatter class customized for convenient correlation loading plotting
+
+    This plots takes data for ploting 2 ellipses.
+
+    This have to be instantiated with an ArrayPlotData object.
+    Where data key names is *pc_x* and *pc_y* for PC data.
+    ell_full_x and ell_full_y for full ellipse.
+    ell_half_x and ell_half_y for half ellipse.
+    Other values to set:
+    title
+    [x|y]_axis.title
+
+    The intended use of this plots is PC scatter plot.
+    """
+    meta_plots = {
+        'x1': (('pc1', 'pc2'), 'orange'), # (0.451, 0.137, 0.459, 1)
+        'y1': (('pcy1', 'pcy2'), 'red'),
+        }
+
+    def switchLabellVisibility(self, ds_id, isVisible):
+        super(CCPlotXYCorrLoad, self).switchLabellVisibility('x1', isVisible)
+        super(CCPlotXYCorrLoad, self).switchLabellVisibility('y1', isVisible)
 
 
 class CCPlotLine(CCBasePlot):
@@ -267,12 +269,10 @@ class CCPlotLine(CCBasePlot):
     The intended use of this plot is PCA explained variance.
     """
     meta_plots = {
-        'x1': (('index', 'pc_sigma'), 'orange'), # (0.451, 0.137, 0.459, 1)
+        'x1': (('index', 'pc_sigma'), 'orange') # (0.451, 0.137, 0.459, 1)
         }
 
-    def __init__(self, *args, **kw):
-        super(CCPlotLine, self).__init__(*args, **kw)
-
+    # FIXME: Move to base an rename to add line plot
     def _add_plot(self, pt_name, pt_index, pt_color):
         self.plot(
             pt_index, name=pt_name,
