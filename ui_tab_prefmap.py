@@ -13,7 +13,7 @@ from enthought.traits.ui.api import View, Item, UItem, Group, Handler, ModelView
 from enthought.chaco.api import ArrayPlotData
 
 # Local imports
-from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad, CCPlotXYCorrLoad
+from plots import CCPlotScatter, CCPlotLine, CCPlotCalValExplVariance, CCPlotCorrLoad, CCPlotXYCorrLoad
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from mvr import plsr
 from prefmap_selector import PrefmapSelectorController, prefmap_selector_view
@@ -260,12 +260,15 @@ class PrefmapModelViewHandler(ModelView):
         sumCalY = res['cumCalExplVarY']
         sumValY = res['cumValExplVarY']
         expl_index = range(len(sumCalY))
-        pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalY)
-        pl = CCPlotLine(pd)
+        pd = ArrayPlotData()
+        pd.set_data('index', expl_index)
+        pd.set_data('pc_cal_sigma', sumCalY)
+        pd.set_data('pc_val_sigma', sumValY)
+        pl = CCPlotCalValExplVariance(pd)
         pl.title = "Explained variance Y"
         pl.x_axis.title = "# f principal components"
         pl.y_axis.title = "Explained variance [%]"
-        pl.y_mapper.range.set_bounds(0, 100)
+        pl.y_mapper.range.set_bounds(-50, 100)
         return pl
 
     def _show_plot_window(self, plot_window):

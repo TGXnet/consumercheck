@@ -281,6 +281,32 @@ class CCPlotLine(CCBasePlot):
             color=pt_color, bgcolor="white")
 
 
+class CCPlotCalValExplVariance(CCBasePlot):
+    """This is a specialization of the Plot class for convenience
+
+    This have to be instantiated with an ArrayPlotData object.
+    Where data key names is *index* and *y_val*.
+    Other values to set:
+    title
+    [x|y]_axis.title
+    [x|y]mapper.range.set_bounds(lo, hi)
+
+    The intended use of this plot is PCA explained variance.
+    """
+    meta_plots = {
+        'x1': (('index', 'pc_cal_sigma'), 'orange'), # (0.451, 0.137, 0.459, 1)
+        'x2': (('index', 'pc_val_sigma'), 'red'), # (0.451, 0.137, 0.459, 1)
+        }
+
+    # FIXME: Move to base an rename to add line plot
+    def _add_plot(self, pt_name, pt_index, pt_color):
+        self.plot(
+            pt_index, name=pt_name,
+            type="line", index_sort="ascending",
+            marker="dot", marker_size=3,
+            color=pt_color, bgcolor="white")
+
+
 class CCPlotLPLS(CCBasePlotScatter):
     """This is a specialization of the Plot class for convenience
 
