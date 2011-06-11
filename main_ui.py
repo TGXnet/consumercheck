@@ -39,7 +39,7 @@ class MainViewHandler(Handler):
         dsl = importer.interactiveMultiImport()
         for ds in dsl:
             uiInfo.object.dsl.addDataset(ds)
-            logging.info("importDataset: internal name = %s", ds._internalName)
+            logging.info("importDataset: internal name = %s", ds._ds_id)
 
     def view_about(self, info):
         ConsumerCheckAbout().edit_traits()

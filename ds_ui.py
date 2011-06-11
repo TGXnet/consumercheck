@@ -8,7 +8,7 @@ from dataset import DataSet
 
 
 dsview = View(
-    Item(name = '_internalName'),
+    Item(name = '_ds_id'),
     Item(name = '_displayName'),
     Item(name = '_datasetType'),
     Item(name = 'variableNames'),

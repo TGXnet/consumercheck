@@ -39,7 +39,7 @@ class DataSet(HasTraits):
     """
     matrix = Array(desc = 'Data matrix')
     # FIXME: Public
-    _internalName = Str('unnamed', label = 'Dict key name')
+    _ds_id = Str('unnamed', label = 'Dict key name')
     # FIXME: Public
     _displayName = Str(
         'Unnamed dataset',

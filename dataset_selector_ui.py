@@ -28,7 +28,7 @@ class DatasetSelectorHandler( Handler ):
         info.object.mother.dsl.selectedSet = []
         selSet = info.object.mother.dsl.getByName(self.nameSetX)
         if selSet:
-            info.object.mother.dsl.selectedSet.append(selSet._internalName)
+            info.object.mother.dsl.selectedSet.append(selSet._ds_id)
         logging.info("Selection list updated: %s", info.object.mother.dsl.selectedSet)
 
 

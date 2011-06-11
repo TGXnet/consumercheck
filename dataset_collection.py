@@ -58,7 +58,7 @@ class DatasetCollection(HasTraits):
 
     def addDataset(self, dataSet):
         """Add or update dataset"""
-        name = dataSet._internalName
+        name = dataSet._ds_id
         if self._dataDict.__contains__(name):
             raise Exception("Key ({0}) already exists".format(name))
         self._dataDict[name] = dataSet
@@ -83,7 +83,7 @@ class DatasetCollection(HasTraits):
             indexList.append(tu)
         return indexList
 
-    @on_trait_change('_dataDict:_internalName')
+    @on_trait_change('_dataDict:_ds_id')
     def dictNameChanged(self, object, name, old, new):
         """Update dictionary name"""
         toMove = self._dataDict.pop(old)
