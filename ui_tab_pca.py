@@ -91,8 +91,8 @@ class PcaModelViewHandler(ModelView):
         """
         # self.show = show
         for ds_name in self.model.list_control.selected:
-            ds_plots = [[self._make_scores_plot(ds_name), self._make_loadings_plot(ds_name)],
-                        [self._make_corr_load_plot(ds_name), self._make_expl_var_plot(ds_name)]]
+            ds_plots = [[self._make_scores_plot(ds_name, False), self._make_loadings_plot(ds_name, False)],
+                        [self._make_corr_load_plot(ds_name, False), self._make_expl_var_plot(ds_name)]]
             mpw = MultiPlotWindow(title_text=self._wind_title(ds_name))
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
@@ -108,11 +108,14 @@ class PcaModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_scores_plot(self, ds_name):
+    def _make_scores_plot(self, ds_name, add_labels = True):
         res = self.model.get_res(ds_name)
         pc_tab = res.getScores()
-        labels = self.model.dsl.retriveDatasetByName(ds_name).objectNames
-        plot = self._make_plot(pc_tab, ds_name, labels, "Scores")
+        if add_labels:
+            labels = self.model.dsl.retriveDatasetByName(ds_name).objectNames
+            plot = self._make_plot(pc_tab, ds_name, "Scores", labels)
+        else:
+            plot = self._make_plot(pc_tab, ds_name, "Scores")
         return plot
 
     def plot_loadings(self, show = True):
@@ -125,14 +128,17 @@ class PcaModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_loadings_plot(self, ds_name):
+    def _make_loadings_plot(self, ds_name, add_labels=True):
         res = self.model.get_res(ds_name)
         pc_tab = res.getLoadings()
-        labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
-        plot = self._make_plot(pc_tab, ds_name, labels, "Loadings")
+        if add_labels:
+            labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
+            plot = self._make_plot(pc_tab, ds_name, "Loadings", labels)
+        else:
+            plot = self._make_plot(pc_tab, ds_name, "Loadings")
         return plot
 
-    def _make_plot(self, pc_tab, ds_name, labels, plot_title):
+    def _make_plot(self, pc_tab, ds_name, plot_title, labels=None):
         expl_vars = self.model.get_res(ds_name).getCalExplVar()
         pd = ArrayPlotData()
         pd.set_data('pc1', pc_tab[:,0])
@@ -141,7 +147,8 @@ class PcaModelViewHandler(ModelView):
         ps.title = plot_title
         ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-        ps.addDataLabels(labels)
+        if labels:
+            ps.addDataLabels(labels)
         return ps
 
     def plot_corr_loading(self, show = True):
@@ -154,9 +161,8 @@ class PcaModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_corr_load_plot(self, ds_name):
+    def _make_corr_load_plot(self, ds_name, add_labels=True):
         res = self.model.get_res(ds_name)
-        labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
         pc_tab = res.getCorrLoadings()
         expl_vars = res.getCalExplVar()
         pd = ArrayPlotData()
@@ -166,7 +172,9 @@ class PcaModelViewHandler(ModelView):
         pcl.title = "Correlation Loadings"
         pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-        pcl.addDataLabels(labels)
+        if add_labels:
+            labels = self.model.dsl.retriveDatasetByName(ds_name).variableNames
+            pcl.addDataLabels(labels)
         return pcl
 
     def plot_expl_var(self, show = True):

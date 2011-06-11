@@ -113,7 +113,7 @@ class PrefmapModelViewHandler(ModelView):
         """
         # self.show = show
         for xId, yId in self.model.selector.xyMappings:
-            ds_plots = [[self._make_scores_plot(xId, yId), self._make_corr_load_plot(xId, yId)],
+            ds_plots = [[self._make_scores_plot(xId, yId, False), self._make_corr_load_plot(xId, yId, False)],
                         [self._make_expl_var_plot_x(xId, yId), self._make_expl_var_plot_y(xId, yId)]]
             mpw = MultiPlotWindow(title_text=self._wind_title(xId, yId))
             mpw.plots.component_grid = ds_plots
@@ -130,11 +130,14 @@ class PrefmapModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_scores_plot(self, xId, yId):
+    def _make_scores_plot(self, xId, yId, add_labels=True):
         res = self.model.get_res(xId, yId)
         pc_tab = res['Scores T']
-        labels = self.model.dsl.retriveDatasetByName(xId).objectNames
-        plot = self._make_plot(pc_tab, xId, yId, labels, "Scores")
+        if add_labels:
+            labels = self.model.dsl.retriveDatasetByName(xId).objectNames
+            plot = self._make_plot(pc_tab, xId, yId, "Scores", labels)
+        else:
+            plot = self._make_plot(pc_tab, xId, yId, "Scores")
         return plot
 
     def plot_loadings_x(self, show = True):
@@ -151,7 +154,7 @@ class PrefmapModelViewHandler(ModelView):
         res = self.model.get_res(xId, yId)
         xLP = res['Xloadings P']
         labels = self.model.dsl.retriveDatasetByName(xId).variableNames
-        plot = self._make_plot(xLP, xId, yId, labels, "X Loadings")
+        plot = self._make_plot(xLP, xId, yId, "X Loadings", labels)
         return plot
 
     def plot_loadings_y(self, show = True):
@@ -168,10 +171,10 @@ class PrefmapModelViewHandler(ModelView):
         res = self.model.get_res(xId, yId)
         yLP = res['Yloadings Q']
         labels = self.model.dsl.retriveDatasetByName(yId).variableNames
-        plot = self._make_plot(yLP, xId, yId, labels, "Y Loadings")
+        plot = self._make_plot(yLP, xId, yId, "Y Loadings", labels)
         return plot
 
-    def _make_plot(self, pc_tab, xId, yId, labels, plot_title):
+    def _make_plot(self, pc_tab, xId, yId, plot_title, labels=None):
         expl_vars = self.model.get_res(xId, yId)['calExplVarX']
         pd = ArrayPlotData()
         pd.set_data('pc1', pc_tab[:,0])
@@ -180,7 +183,8 @@ class PrefmapModelViewHandler(ModelView):
         ps.title = plot_title
         ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-        ps.addDataLabels(labels)
+        if labels:
+            ps.addDataLabels(labels)
         return ps
 
     def plot_corr_loading(self, show = True):
@@ -193,7 +197,7 @@ class PrefmapModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_corr_load_plot(self, xId, yId):
+    def _make_corr_load_plot(self, xId, yId, add_labels=True):
         # VarNameX, CorrLoadX
         # labels
         vnx = self.model.dsl.retriveDatasetByName(xId).variableNames
@@ -212,7 +216,9 @@ class PrefmapModelViewHandler(ModelView):
         pcl.title = "X & Y correlation loadings"
         pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
         pcl.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(cevx[1], cevy[1])
-#        pcl.addDataLabels(labels)
+        if add_labels:
+            pass
+        # pcl.addDataLabels(labels)
         return pcl
 
     def plot_expl_var_x(self, show = True):
