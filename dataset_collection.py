@@ -79,7 +79,7 @@ class DatasetCollection(HasTraits):
         logging.info("Update indexNameList")
         indexList = []
         for sn, so in self._dataDict.iteritems():
-            tu = (sn, so._displayName)
+            tu = (sn, so._ds_name)
             indexList.append(tu)
         return indexList
 
@@ -91,7 +91,7 @@ class DatasetCollection(HasTraits):
         self.dataDictContentChanged = True
         logging.info("dictNameChange: %s change from %s to %s", name, old, new)
 
-    @on_trait_change('_dataDict:_displayName')
+    @on_trait_change('_dataDict:_ds_name')
     def displayNameChanged(self, object, name, old, new):
         self.datasetNameChanged = True
         logging.info("displayNameChange: %s changed from %s to %s", name, old, new)

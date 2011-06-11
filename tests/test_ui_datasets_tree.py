@@ -17,8 +17,8 @@ class TestUiDatasetTree(unittest.TestCase):
         pass
 
     def testImport(self):
-        ds1 = DataSet(_ds_id = 'test1', _displayName = 'Test sett en')
-        ds2 = DataSet(_ds_id = 'test2', _displayName = 'Test sett to')
+        ds1 = DataSet(_ds_id = 'test1', _ds_name = 'Test sett en')
+        ds2 = DataSet(_ds_id = 'test2', _ds_name = 'Test sett to')
         dc = DatasetCollection()
         dc.addDataset(ds1)
         dc.addDataset(ds2)

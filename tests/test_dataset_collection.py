@@ -18,7 +18,7 @@ class TestDatasetCollection(unittest.TestCase):
         self._initAndAddTwoUniqueDataset()
         self.assertEquals(self.keyNames, self._getKeyNames())
         self.assertEquals(self.dispNames, self._getDispNames())
-        dupDataSet = DataSet(_ds_id='ts2', _displayName='Failed duplicate')
+        dupDataSet = DataSet(_ds_id='ts2', _ds_name='Failed duplicate')
         self.assertRaises(Exception, self.testSetsCollection.addDataset, dupDataSet)
 
     def testChangeNames(self):
@@ -46,7 +46,7 @@ class TestDatasetCollection(unittest.TestCase):
         self._addDummyDataset('ts2')
 
     def _addDummyDataset(self, internalName):
-        testSet = DataSet(_ds_id=internalName, _displayName='DisplayName for ' + internalName)
+        testSet = DataSet(_ds_id=internalName, _ds_name='DisplayName for ' + internalName)
         self.testSetsCollection.addDataset(testSet)
         return testSet
 

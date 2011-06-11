@@ -71,7 +71,7 @@ datasets_tree = TreeEditor(
                   ),
         TreeNode( node_for  = [ DataSet ],
                   auto_open = True,
-                  label     = '_displayName',
+                  label     = '_ds_name',
                   view      = ds_list_tab,
                   )
         ]

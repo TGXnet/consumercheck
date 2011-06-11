@@ -36,7 +36,7 @@ class FileImporter(HasTraits):
     _variableNames = List()
     _objectNames = List()
     _ds_id = Str()
-    _displayName = Str()
+    _ds_name = Str()
 
     one_view = View(
         UCustom(
@@ -62,7 +62,7 @@ class FileImporter(HasTraits):
 
     ds_options_view = View(
         Item('_ds_id', style='readonly', label='File name'),
-        Item('_displayName', label='Dataset name'),
+        Item('_ds_name', label='Dataset name'),
         Item('_haveVarNames', label='Have variables names?', tooltip='Is first row variables names?'),
         Item('_haveObjNames', label='Have object names?', tooltip='Is first column object names?'),
         kind='modal',
@@ -129,14 +129,14 @@ class FileImporter(HasTraits):
             variableNames=self._variableNames,
             objectNames=self._objectNames,
             _ds_id=self._ds_id,
-            _displayName=self._displayName)
+            _ds_name=self._ds_name)
 
     def _makeName(self):
         # FIXME: Find a better more general solution
         fn = os.path.basename(self._filePath)
         fn = fn.partition('.')[0]
         fn = fn.lower()
-        self._ds_id = self._displayName = fn
+        self._ds_id = self._ds_name = fn
 
     def _read_txt_file(self):
         if self._haveObjNames:

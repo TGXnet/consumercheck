@@ -42,11 +42,11 @@ class PrefmapSelectorController(Controller):
     ## def _initChoices(self, obj):
     ##     if (len(self.dsChoices) > 0) and (not self.nameSetX or not self.nameSetY):
     ##         if obj.setX:
-    ##             self.nameSetX = obj.setX._displayName
+    ##             self.nameSetX = obj.setX._ds_name
     ##         else:
     ##             self.nameSetX = self.dsChoices[0]
     ##         if obj.setY:
-    ##             self.nameSetY = obj.setY._displayName
+    ##             self.nameSetY = obj.setY._ds_name
     ##         else:
     ##             self.nameSetY = self.dsChoices[0]
 

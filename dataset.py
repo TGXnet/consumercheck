@@ -41,7 +41,7 @@ class DataSet(HasTraits):
     # FIXME: Public
     _ds_id = Str('unnamed', label = 'Dict key name')
     # FIXME: Public
-    _displayName = Str(
+    _ds_name = Str(
         'Unnamed dataset',
         desc = 'User friendly display name',
         label = 'Dataset name')
@@ -73,6 +73,6 @@ class DataSet(HasTraits):
             return 0
 
     def isEqDisplayName(self, name):
-        return name == self._displayName
+        return name == self._ds_name
 
 #end DataSet

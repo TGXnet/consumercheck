@@ -9,7 +9,7 @@ from dataset import DataSet
 
 dsview = View(
     Item(name = '_ds_id'),
-    Item(name = '_displayName'),
+    Item(name = '_ds_name'),
     Item(name = '_datasetType'),
     Item(name = 'variableNames'),
     Item(name = 'objectNames'),
@@ -18,7 +18,7 @@ dsview = View(
 
 
 ds_list_tab = View(
-    Item(name = '_displayName'),
+    Item(name = '_ds_name'),
     Item(name = '_datasetType'),
     Item(name = 'nRows', style = 'readonly'),
     Item(name = 'nCols', style = 'readonly'),
