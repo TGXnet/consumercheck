@@ -65,8 +65,8 @@ class PrefmapModel(HasTraits):
     def _run_prefmap(self, xId, yId):
         logging.info("Run plsr for: X: {0} ,Y: {1}".format(xId, yId))
         return plsr(
-            self.dsl.retriveDatasetByName(xId).matrix,
-            self.dsl.retriveDatasetByName(yId).matrix,
+            self.dsl.getById(xId).matrix,
+            self.dsl.getById(yId).matrix,
             centre="yes",
             fncomp=5,
             fmethod="oscorespls",
@@ -134,7 +134,7 @@ class PrefmapModelViewHandler(ModelView):
         res = self.model.get_res(xId, yId)
         pc_tab = res['Scores T']
         if add_labels:
-            labels = self.model.dsl.retriveDatasetByName(xId).objectNames
+            labels = self.model.dsl.getById(xId).objectNames
             plot = self._make_plot(pc_tab, xId, yId, "Scores", labels)
         else:
             plot = self._make_plot(pc_tab, xId, yId, "Scores")
@@ -153,7 +153,7 @@ class PrefmapModelViewHandler(ModelView):
     def _make_loadings_plot_x(self, xId, yId):
         res = self.model.get_res(xId, yId)
         xLP = res['Xloadings P']
-        labels = self.model.dsl.retriveDatasetByName(xId).variableNames
+        labels = self.model.dsl.getById(xId).variableNames
         plot = self._make_plot(xLP, xId, yId, "X Loadings", labels)
         return plot
 
@@ -170,7 +170,7 @@ class PrefmapModelViewHandler(ModelView):
     def _make_loadings_plot_y(self, xId, yId):
         res = self.model.get_res(xId, yId)
         yLP = res['Yloadings Q']
-        labels = self.model.dsl.retriveDatasetByName(yId).variableNames
+        labels = self.model.dsl.getById(yId).variableNames
         plot = self._make_plot(yLP, xId, yId, "Y Loadings", labels)
         return plot
 
@@ -217,8 +217,8 @@ class PrefmapModelViewHandler(ModelView):
         pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
         pcl.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(cevx[1], cevy[1])
         if add_labels:
-            vnx = self.model.dsl.retriveDatasetByName(xId).variableNames
-            vny = self.model.dsl.retriveDatasetByName(yId).variableNames
+            vnx = self.model.dsl.getById(xId).variableNames
+            vny = self.model.dsl.getById(yId).variableNames
             pcl.addDataLabels(vnx, 'x1')
             pcl.addDataLabels(vny, 'y1')
         return pcl

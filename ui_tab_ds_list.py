@@ -75,7 +75,7 @@ class DsViewHandler(Handler):
     def handler__selIndex_changed(self, uiInfo):
         if (uiInfo.initialized) and (uiInfo.handler._selIndex >= 0):
             name = self._indexToName(uiInfo.handler._selIndex)
-            self.vs = uiInfo.object.retriveDatasetByName(name)
+            self.vs = uiInfo.object.getById(name)
             logging.info(
                 "selIndex_changed: index is %s and selected dataset is %s",
                 uiInfo.handler._selIndex, name)

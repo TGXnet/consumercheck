@@ -42,10 +42,9 @@ class DatasetCollection(HasTraits):
 
     # indexNameList = Property( depends_on = '_dataDict' )
 
-    def retriveDatasetByName(self, internalName):
+    def getById(self, internalName):
         """Return DataSet object specified by internal name"""
         return self._dataDict[internalName]
-
 
     def retriveDatasetByDisplayName(self, name):
         """Return DataSet object by display name"""
@@ -54,6 +53,8 @@ class DatasetCollection(HasTraits):
             if do.isEqDisplayName(name):
                 return do
 
+    def idByName(self, name):
+        pass
 
     def addDataset(self, dataSet):
         """Add or update dataset"""
@@ -64,13 +65,11 @@ class DatasetCollection(HasTraits):
         self.dataDictContentChanged = True
         logging.info("addDataset: %s", name)
 
-
     def deleteDataset(self, internalName):
         """Remove dataset from collection"""
         del self._dataDict[internalName]
         self.dataDictContentChanged = True
         logging.info("deleteDataset: %s", internalName)
-
 
     def getDatasetList(self):
         return self._dataDict.values()
@@ -84,7 +83,6 @@ class DatasetCollection(HasTraits):
             indexList.append(tu)
         return indexList
 
-
     @on_trait_change('_dataDict:_internalName')
     def dictNameChanged(self, object, name, old, new):
         """Update dictionary name"""
@@ -92,7 +90,6 @@ class DatasetCollection(HasTraits):
         self.addDataset(toMove)
         self.dataDictContentChanged = True
         logging.info("dictNameChange: %s change from %s to %s", name, old, new)
-
 
     @on_trait_change('_dataDict:_displayName')
     def displayNameChanged(self, object, name, old, new):
