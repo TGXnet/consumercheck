@@ -46,15 +46,15 @@ class PcaModel(HasTraits):
     ## def datasetsChanged(self, object, name, old, new):
     ##      self.datasetsAltered = True
 
-    def get_res(self, name):
+    def get_res(self, ds_id):
         try:
-            return self.results[name]
+            return self.results[ds_id]
         except KeyError:
-            return self._run_pca(name)
+            return self._run_pca(ds_id)
 
-    def _run_pca(self, ds_name):
-        res = PCA(self.dsl.getById(ds_name).matrix)
-        self.results[ds_name] = res
+    def _run_pca(self, ds_id):
+        res = PCA(self.dsl.getById(ds_id).matrix)
+        self.results[ds_id] = res
         return res
 
 
@@ -90,56 +90,56 @@ class PcaModelViewHandler(ModelView):
         for each of the datasets.
         """
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            ds_plots = [[self._make_scores_plot(ds_name, False), self._make_loadings_plot(ds_name, False)],
-                        [self._make_corr_load_plot(ds_name, False), self._make_expl_var_plot(ds_name)]]
-            mpw = MultiPlotWindow(title_text=self._wind_title(ds_name))
+        for ds_id in self.model.list_control.selected:
+            ds_plots = [[self._make_scores_plot(ds_id, False), self._make_loadings_plot(ds_id, False)],
+                        [self._make_corr_load_plot(ds_id, False), self._make_expl_var_plot(ds_id)]]
+            mpw = MultiPlotWindow(title_text=self._wind_title(ds_id))
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
             self._show_plot_window(mpw)
 
     def plot_scores(self, show = True):
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            s_plot = self._make_scores_plot(ds_name)
+        for ds_id in self.model.list_control.selected:
+            s_plot = self._make_scores_plot(ds_id)
             spw = SinglePlotWindow(
                 plot=s_plot,
-                title_text=self._wind_title(ds_name)
+                title_text=self._wind_title(ds_id)
                 )
             self._show_plot_window(spw)
 
-    def _make_scores_plot(self, ds_name, add_labels = True):
-        res = self.model.get_res(ds_name)
+    def _make_scores_plot(self, ds_id, add_labels = True):
+        res = self.model.get_res(ds_id)
         pc_tab = res.getScores()
         if add_labels:
-            labels = self.model.dsl.getById(ds_name).objectNames
-            plot = self._make_plot(pc_tab, ds_name, "Scores", labels)
+            labels = self.model.dsl.getById(ds_id).objectNames
+            plot = self._make_plot(pc_tab, ds_id, "Scores", labels)
         else:
-            plot = self._make_plot(pc_tab, ds_name, "Scores")
+            plot = self._make_plot(pc_tab, ds_id, "Scores")
         return plot
 
     def plot_loadings(self, show = True):
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            l_plot = self._make_loadings_plot(ds_name)
+        for ds_id in self.model.list_control.selected:
+            l_plot = self._make_loadings_plot(ds_id)
             spw = SinglePlotWindow(
                 plot=l_plot,
-                title_text=self._wind_title(ds_name)
+                title_text=self._wind_title(ds_id)
                 )
             self._show_plot_window(spw)
 
-    def _make_loadings_plot(self, ds_name, add_labels=True):
-        res = self.model.get_res(ds_name)
+    def _make_loadings_plot(self, ds_id, add_labels=True):
+        res = self.model.get_res(ds_id)
         pc_tab = res.getLoadings()
         if add_labels:
-            labels = self.model.dsl.getById(ds_name).variableNames
-            plot = self._make_plot(pc_tab, ds_name, "Loadings", labels)
+            labels = self.model.dsl.getById(ds_id).variableNames
+            plot = self._make_plot(pc_tab, ds_id, "Loadings", labels)
         else:
-            plot = self._make_plot(pc_tab, ds_name, "Loadings")
+            plot = self._make_plot(pc_tab, ds_id, "Loadings")
         return plot
 
-    def _make_plot(self, pc_tab, ds_name, plot_title, labels=None):
-        expl_vars = self.model.get_res(ds_name).getCalExplVar()
+    def _make_plot(self, pc_tab, ds_id, plot_title, labels=None):
+        expl_vars = self.model.get_res(ds_id).getCalExplVar()
         pd = ArrayPlotData()
         pd.set_data('pc1', pc_tab[:,0])
         pd.set_data('pc2', pc_tab[:,1])
@@ -153,16 +153,16 @@ class PcaModelViewHandler(ModelView):
 
     def plot_corr_loading(self, show = True):
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            cl_plot = self._make_corr_load_plot(ds_name)
+        for ds_id in self.model.list_control.selected:
+            cl_plot = self._make_corr_load_plot(ds_id)
             spw = SinglePlotWindow(
                 plot=cl_plot,
-                title_text=self._wind_title(ds_name)
+                title_text=self._wind_title(ds_id)
                 )
             self._show_plot_window(spw)
 
-    def _make_corr_load_plot(self, ds_name, add_labels=True):
-        res = self.model.get_res(ds_name)
+    def _make_corr_load_plot(self, ds_id, add_labels=True):
+        res = self.model.get_res(ds_id)
         pc_tab = res.getCorrLoadings()
         expl_vars = res.getCalExplVar()
         pd = ArrayPlotData()
@@ -173,22 +173,22 @@ class PcaModelViewHandler(ModelView):
         pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         if add_labels:
-            labels = self.model.dsl.getById(ds_name).variableNames
+            labels = self.model.dsl.getById(ds_id).variableNames
             pcl.addDataLabels(labels)
         return pcl
 
     def plot_expl_var(self, show = True):
         # self.show = show
-        for ds_name in self.model.list_control.selected:
-            ev_plot = self._make_expl_var_plot(ds_name)
+        for ds_id in self.model.list_control.selected:
+            ev_plot = self._make_expl_var_plot(ds_id)
             spw = LinePlotWindow(
                 plot=ev_plot,
-                title_text=self._wind_title(ds_name)
+                title_text=self._wind_title(ds_id)
                 )
             self._show_plot_window(spw)
 
-    def _make_expl_var_plot(self, ds_name):
-        res = self.model.get_res(ds_name)
+    def _make_expl_var_plot(self, ds_id):
+        res = self.model.get_res(ds_id)
         expl_vars = res.getCalExplVar()
         expl_index = [0]
         expl_val = [0]
@@ -214,7 +214,8 @@ class PcaModelViewHandler(ModelView):
                     )
 
     def _wind_title(self, ds_id):
-        return "ConsumerCheck PCA - {0}".format(ds_id)
+        ds_name = self.model.dsl.getById(ds_id)._ds_name
+        return "ConsumerCheck PCA - {0}".format(ds_name)
 
 
 # Double click handlers
@@ -318,8 +319,8 @@ if __name__ == '__main__':
 
     main = FakeMain(pca = PcaModelViewHandler(PcaModel()))
     fi = FileImporter()
-    main.dsl.addDataset(fi.noninteractiveImport('datasets/A_labels.txt'))
-    main.dsl.addDataset(fi.noninteractiveImport('datasets/C_labels.txt'))
     main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
     main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
+    main.dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker ost'
+    main.dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
     main.pca.configure_traits(view=pca_tree_view)

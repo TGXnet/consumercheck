@@ -39,22 +39,18 @@ class DatasetCollection(HasTraits):
 
     # Dataset index list
     indexNameList = Property()
-
     # indexNameList = Property( depends_on = '_dataDict' )
+    nameMap = Property()
 
-    def getById(self, internalName):
+    def getById(self, ds_id):
         """Return DataSet object specified by internal name"""
-        return self._dataDict[internalName]
-
-    def getByName(self, name):
-        """Return DataSet object by display name"""
-        # FIXME: This is dirty
-        for do in self._dataDict.itervalues():
-            if do.isEqDisplayName(name):
-                return do
+        return self._dataDict[ds_id]
 
     def idByName(self, name):
-        pass
+        return self.nameMap[name]
+
+    def getByName(self, name):
+        return self.getById(self.idByName(name))
 
     def addDataset(self, dataSet):
         """Add or update dataset"""
@@ -83,6 +79,14 @@ class DatasetCollection(HasTraits):
             indexList.append(tu)
         return indexList
 
+    # @property_depends_on( '_dataDict' )
+    def _get_nameMap(self):
+        logging.info("Update nameMap")
+        nameDict = {}
+        for si, so in self._dataDict.iteritems():
+            nameDict[so._ds_name] = si
+        return nameDict
+
     @on_trait_change('_dataDict:_ds_id')
     def dictNameChanged(self, object, name, old, new):
         """Update dictionary name"""
@@ -95,3 +99,16 @@ class DatasetCollection(HasTraits):
     def displayNameChanged(self, object, name, old, new):
         self.datasetNameChanged = True
         logging.info("displayNameChange: %s changed from %s to %s", name, old, new)
+
+
+if __name__ == '__main__':
+    """Test run the View"""
+    print("Interactive start")
+    from file_importer import FileImporter
+    
+    dsl = DatasetCollection()
+    fi = FileImporter()
+    dsl.addDataset(fi.noninteractiveImport('datasets/A_labels.txt'))
+    dsl.addDataset(fi.noninteractiveImport('datasets/C_labels.txt'))
+    dsl._dataDict['a_labels']._ds_name = 'Set A tull'
+    dsl._dataDict['c_labels']._ds_name = 'Set C tull'

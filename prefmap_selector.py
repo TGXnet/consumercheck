@@ -51,15 +51,19 @@ class PrefmapSelectorController(Controller):
     ##             self.nameSetY = self.dsChoices[0]
 
     def _xName_changed(self, name, old, new):
-        self.xyMappings = [(self.xName, self.yName)]
-        logging.info("{0} changed from {1} to {2}".format(name, old, new))
-        print(self.xyMappings)
+        self._update_mappings()
 
     def _yName_changed(self, name, old, new):
-        self.xyMappings = [(self.xName, self.yName)]
-        logging.info("{0} changed from {1} to {2}".format(name, old, new))
-        print(self.xyMappings)
+        self._update_mappings()
 
+    def _update_mappings(self):
+        dsx_id = ''
+        dsy_id = ''
+        if self.xName:
+            dsx_id = self.model.idByName(self.xName)
+        if self.yName:
+            dsy_id = self.model.idByName(self.yName)
+        self.xyMappings = [(dsx_id, dsy_id)]
 
 # The view includes one group per column formation.      These will be displayed
 # on separate tabbed panels.

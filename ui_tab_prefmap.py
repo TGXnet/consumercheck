@@ -281,7 +281,9 @@ class PrefmapModelViewHandler(ModelView):
                     )
 
     def _wind_title(self, dsx_id, dsy_id):
-        return "ConsumerCheck Prefmap - ({0}) X ~ Y ({1})".format(dsx_id, dsy_id)
+        dsx_name = self.model.dsl.getById(dsx_id)._ds_name
+        dsy_name = self.model.dsl.getById(dsy_id)._ds_name
+        return "ConsumerCheck Prefmap - ({0}) X ~ Y ({1})".format(dsx_name, dsy_name)
 
 
 # Double click handlers
@@ -403,8 +405,8 @@ if __name__ == '__main__':
 
     main = FakeMain(prefmap = PrefmapModelViewHandler(PrefmapModel()))
     fi = FileImporter()
-    main.dsl.addDataset(fi.noninteractiveImport('datasets/A_labels.txt'))
-    main.dsl.addDataset(fi.noninteractiveImport('datasets/C_labels.txt'))
     main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
     main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
+    main.dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker ost'
+    main.dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
     main.prefmap.configure_traits(view=prefmap_tree_view)
