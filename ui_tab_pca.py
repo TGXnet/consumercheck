@@ -14,7 +14,7 @@ from enthought.chaco.api import ArrayPlotData
 
 # Local imports
 from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
-from plot_windows import SinglePlotWindow, MultiPlotWindow
+from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from nipals import PCA
 from dsl_check_list import CheckListController, check_view
 
@@ -173,7 +173,7 @@ class PcaModelViewHandler(ModelView):
         # self.show = show
         for ds_name in self.model.list_control.selected:
             ev_plot = self._make_expl_var_plot(ds_name)
-            spw = SinglePlotWindow(
+            spw = LinePlotWindow(
                 plot=ev_plot,
                 title_text=self._wind_title(ds_name)
                 )

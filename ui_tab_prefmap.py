@@ -14,7 +14,7 @@ from enthought.chaco.api import ArrayPlotData
 
 # Local imports
 from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
-from plot_windows import SinglePlotWindow, MultiPlotWindow
+from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from mvr import plsr
 from prefmap_selector import PrefmapSelectorController, prefmap_selector_view
 
@@ -219,7 +219,7 @@ class PrefmapModelViewHandler(ModelView):
         # self.show = show
         for xId, yId in self.model.selector.xyMappings:
             ev_plot = self._make_expl_var_plot_x(xId, yId)
-            spw = SinglePlotWindow(
+            spw = LinePlotWindow(
                 plot=ev_plot,
                 title_text=self._wind_title(xId, yId)
                 )
@@ -241,7 +241,7 @@ class PrefmapModelViewHandler(ModelView):
         # self.show = show
         for xId, yId in self.model.selector.xyMappings:
             ev_plot = self._make_expl_var_plot_y(xId, yId)
-            spw = SinglePlotWindow(
+            spw = LinePlotWindow(
                 plot=ev_plot,
                 title_text=self._wind_title(xId, yId)
                 )
