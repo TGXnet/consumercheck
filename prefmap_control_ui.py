@@ -21,10 +21,10 @@ class PrefmapControlHandler( Handler ):
         logging.info("setattr: %s change to %s", name, value)
 
     def handler_nameSetX_changed(self, info):
-        info.object.setX = info.object.dsl.retriveDatasetByDisplayName(self.nameSetX)
+        info.object.setX = info.object.dsl.getByName(self.nameSetX)
 
     def handler_nameSetY_changed(self, info):
-        info.object.setY = info.object.dsl.retriveDatasetByDisplayName(self.nameSetY)
+        info.object.setY = info.object.dsl.getByName(self.nameSetY)
 
     def init(self, info):
         info.object.print_traits()

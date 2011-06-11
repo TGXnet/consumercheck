@@ -26,7 +26,7 @@ class DatasetSelectorHandler( Handler ):
 
     def handler_nameSetX_changed(self, info):
         info.object.mother.dsl.selectedSet = []
-        selSet = info.object.mother.dsl.retriveDatasetByDisplayName(self.nameSetX)
+        selSet = info.object.mother.dsl.getByName(self.nameSetX)
         if selSet:
             info.object.mother.dsl.selectedSet.append(selSet._internalName)
         logging.info("Selection list updated: %s", info.object.mother.dsl.selectedSet)

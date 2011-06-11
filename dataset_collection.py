@@ -46,7 +46,7 @@ class DatasetCollection(HasTraits):
         """Return DataSet object specified by internal name"""
         return self._dataDict[internalName]
 
-    def retriveDatasetByDisplayName(self, name):
+    def getByName(self, name):
         """Return DataSet object by display name"""
         # FIXME: This is dirty
         for do in self._dataDict.itervalues():
