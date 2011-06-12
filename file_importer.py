@@ -13,7 +13,7 @@ from numpy import array, loadtxt
 import xlrd
 
 # Enthought imports
-from enthought.traits.api import HasTraits, File, Str, Bool, Array, Tuple, List, Button
+from enthought.traits.api import HasTraits, File, Str, Bool, Enum, Array, List, Button
 from enthought.traits.ui.api import View, Item, UItem, Custom, UCustom, Label, Heading, FileEditor
 from enthought.traits.ui.menu import OKButton, CancelButton
 from enthought.pyface.api import FileDialog, OK
@@ -37,6 +37,13 @@ class FileImporter(HasTraits):
     _objectNames = List()
     _ds_id = Str()
     _ds_name = Str()
+    _datasetType = Enum(
+        ('Design variable',
+         'Sensory profiling',
+         'Consumer liking',
+         'Consumer attributes',
+         'Hedonic attributes',)
+        )
 
     one_view = View(
         UCustom(
@@ -63,6 +70,7 @@ class FileImporter(HasTraits):
     ds_options_view = View(
         Item('_ds_id', style='readonly', label='File name'),
         Item('_ds_name', label='Dataset name'),
+        Item('_datasetType', label='Dataset type'),
         Item('_haveVarNames', label='Have variables names?', tooltip='Is first row variables names?'),
         Item('_haveObjNames', label='Have object names?', tooltip='Is first column object names?'),
         kind='modal',
@@ -129,7 +137,9 @@ class FileImporter(HasTraits):
             variableNames=self._variableNames,
             objectNames=self._objectNames,
             _ds_id=self._ds_id,
-            _ds_name=self._ds_name)
+            _ds_name=self._ds_name,
+            _datasetType=self._datasetType,
+            )
 
     def _makeName(self):
         # FIXME: Find a better more general solution
@@ -260,5 +270,6 @@ class FileImporter(HasTraits):
 
 if __name__ == '__main__':
     fi = FileImporter()
-    ## ds = fi.import_interactive()
-    ## ds.print_traits()
+    dsl = fi.interactiveMultiImport()
+    for ds in dsl:
+        ds.print_traits()
