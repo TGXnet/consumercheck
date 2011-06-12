@@ -3,8 +3,8 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api import Str, List, Enum, Bool, DelegatesTo
-from enthought.traits.ui.api import View, Group, Item, Handler, EnumEditor, CheckListEditor, Controller
+from enthought.traits.api import Str, List, DelegatesTo
+from enthought.traits.ui.api import View, Group, Item, Handler, EnumEditor, Controller
 
 
 # Define the demo class:
@@ -14,7 +14,7 @@ class PrefmapSelectorController(Controller):
     The model attribute have to be set to the dataset collection (dsl)
     object in this object constructor.
     """
-    sel_list = DelegatesTo('model', prefix='indexNameList')
+    # sel_list = DelegatesTo('model', prefix='indexNameList')
     dsChoices = List(trait = Str)
     xyMappings = List()
     xName = Str(
@@ -36,8 +36,9 @@ class PrefmapSelectorController(Controller):
 
     def _buildSelectionList(self):
         self.dsChoices = []
-        for kName, dName in self.sel_list:
-            self.dsChoices.append(dName)
+        for ds in self.model.getDatasetList():
+            if ds._datasetType in ['Sensory profiling', 'Consumer liking']:
+                self.dsChoices.append(ds._ds_name)
 
     ## def _initChoices(self, obj):
     ##     if (len(self.dsChoices) > 0) and (not self.nameSetX or not self.nameSetY):
@@ -72,3 +73,26 @@ prefmap_selector_view = View(
     Item('handler.yName'),
     resizable = True
 )
+
+
+if __name__ == '__main__':
+    """Test run the View"""
+    print("Interactive start")
+    from dataset_collection import DatasetCollection
+    from file_importer import FileImporter
+    
+    dsl = DatasetCollection()
+    fi = FileImporter()
+    dsl.addDataset(fi.noninteractiveImport('datasets/A_labels.txt'))
+    dsl.addDataset(fi.noninteractiveImport('datasets/C_labels.txt'))
+    dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
+    dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
+    dsl._dataDict['a_labels']._ds_name = 'Set A tull'
+    dsl._dataDict['c_labels']._ds_name = 'Set C tull'
+    dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker'
+    dsl._dataDict['ost_forbruker']._datasetType = 'Consumer liking'
+    dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk'
+    dsl._dataDict['ost_sensorikk']._datasetType = 'Sensory profiling'
+    selector = PrefmapSelectorController(model=dsl)
+    selector.configure_traits(view=prefmap_selector_view)
+    
