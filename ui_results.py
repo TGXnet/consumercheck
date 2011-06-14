@@ -15,23 +15,19 @@ from dataset import DataSet
 
 
 class ArrayAdapter(TabularAdapter):
-    
+    index = List()
     # font = 'Courier 10'
     # default_bg_color = 'yellow'
     # default_text_color = 'red'
     # alignment = 'right'
-    # format = '%.2f'
+    format = '%.2f'
     width = 70
 
-    # index_text = Property
+    index_text = Property
     # index_alignment = Constant('right')
 
-    ## def _get_index_text(self, name):
-    ##     if self.model_ptr.objectNames:
-    ##         return self.model_ptr.objectNames[self.row]
-    ##     else:
-    ##         return str(self.row)
-
+    def _get_index_text(self, name):
+        return self.index[self.row]
 
 
 class TableViewController(ModelView):
@@ -69,14 +65,15 @@ class TableViewController(ModelView):
 
     def init_info(self, info):
         la = []
-        keys = self.model.data.list_data()
-        keys.sort()
-        for row in keys:
-            la.append(self.model.data.get_data(row))
+        self.ad.index = self.model.data.list_data()
+        self.ad.index.sort()
+        for name in self.ad.index:
+            la.append(self.model.data.get_data(name))
         self.table = array(la)
         rows, cols = self.table.shape
+        self.ad.columns = [('i', 'index')]
         for i in range(cols):
-            self.ad.columns.append(str(i))
+            self.ad.columns.append((str(i), i))
         # self.ad.columns=[('en', 0), ('to', 1), ('tre', 2)]
 
     ## def init(self, info):
