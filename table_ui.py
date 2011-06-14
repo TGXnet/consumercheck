@@ -1,31 +1,96 @@
-# Enthought imports
-# FIXME: Just for testing
-from numpy import array, ndarray, zeros
-from enthought.traits.api import Array
 
-from enthought.traits.api \
-    import HasTraits, Instance
-from enthought.traits.ui.api \
-    import View, Item
-from enthought.traits.ui.menu \
-    import OKButton
-from enthought.traits.ui.ui_editors.array_view_editor \
-    import ArrayViewEditor
+# Std libs import
+import tempfile
+from numpy import savetxt
 
-#Local imports
-from ds import DataSet
+# Enthough imports
+from enthought.traits.api import HasTraits, Instance, Array, Button, DelegatesTo, Property
+from enthought.traits.ui.api import Controller, View, Item, TabularEditor
+from enthought.traits.ui.tabular_adapter import TabularAdapter
+from enthought.traits.ui.menu import OKButton
+from enthought.pyface.clipboard import clipboard
+
+# Local imports
+from dataset import DataSet
 
 
-class MatrixView(HasTraits):
+class ArrayAdapter(TabularAdapter):
+
+    model_ptr = Instance(DataSet)
+
+    # font = 'Courier 10'
+    # default_bg_color = 'yellow'
+    # default_text_color = 'red'
+    # alignment = 'right'
+    # format = '%.2f'
+    width = 70
+
+    index_text = Property
+    # index_alignment = Constant('right')
+
+    def _model_ptr_changed(self):
+        self.columns = [('Index', 'index')]
+        rows, cols = self.model_ptr.matrix.shape
+        for i in xrange(cols):
+            if self.model_ptr.variableNames:
+                self.columns.append((self.model_ptr.variableNames[i], i))
+            else:
+                self.columns.append((str(i), i))
+
+    def _get_index_text(self, name):
+        if self.model_ptr.objectNames:
+            return self.model_ptr.objectNames[self.row]
+        else:
+            return str(self.row)
+
+
+
+class MatrixViewController(Controller):
     """Separate table view for the dataset matrix."""
-    theDataset = Instance(DataSet)
-#    _matrix = DelegatesTo('theDataset')
-    _matrix = Array(value = array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+    # data = DelegatesTo('model', prefix='matrix')
+    cp_clip = Button('Copy to clipboard')
+    ad = ArrayAdapter()
+    tab_ed=TabularEditor(
+        adapter=ad,
+        operations=[],
+        editable=False,
+        show_titles=True,
+        multi_select=True,
+        )
 
-    traits_view = View(Item(name='_matrix',
-                            editor = ArrayViewEditor()
-                            ),
-                       resizable = True, 
-                       buttons = [OKButton]
-                       )
+    trait_view = View(
+        Item(name='matrix',
+             editor=tab_ed,
+             show_label=False,
+             style='readonly',
+             ),
+        Item('controller.cp_clip'),
+        title='Dataset matrix',
+        width=0.3,
+        height=0.3,
+        resizable=True,
+        buttons=[OKButton],
+        )
 
+    def init_info(self, info):
+        print("init info run")
+        self.ad.model_ptr = self.model
+
+    def init(self, info):
+        print("init runt")
+
+    def controller_cp_clip_changed(self, info):
+        tf = tempfile.TemporaryFile()
+        savetxt(tf, self.model.matrix, fmt='%.2f', delimiter='\t', newline='\n')
+        tf.seek(0)
+        txt_mat = tf.read()
+        clipboard.data = txt_mat
+
+
+if __name__ == '__main__':
+    
+    from file_importer import FileImporter
+    fi = FileImporter()
+    ds = fi.noninteractiveImport('./datasets/A_labels.txt', True, True)
+    mvc = MatrixViewController(model=ds)
+    mvc.configure_traits()
