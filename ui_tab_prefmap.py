@@ -409,4 +409,6 @@ if __name__ == '__main__':
     main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
     main.dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker ost'
     main.dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
+    main.dsl._dataDict['ost_forbruker']._datasetType = 'Consumer liking'
+    main.dsl._dataDict['ost_sensorikk']._datasetType = 'Sensory profiling'
     main.prefmap.configure_traits(view=prefmap_tree_view)
