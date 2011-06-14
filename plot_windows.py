@@ -85,6 +85,7 @@ class LinePlotWindow(HasTraits):
     plot = Instance(Component)
     eq_axis = Bool(False)
     show_x1 = Bool(True)
+    view_table = Button('View result table')
     title_text = Str("ConsumerCheck")
 
     @on_trait_change('show_x1')
@@ -95,6 +96,11 @@ class LinePlotWindow(HasTraits):
     @on_trait_change('eq_axis')
     def switch_axis(self, object, name, new):
         object.plot.toggleEqAxis(new)
+
+    @on_trait_change('view_table')
+    def show_table(self, object, name, new):
+        tvc = TableViewController(model=object.plot)
+        tvc.configure_traits()
 
     traits_view = View(
         Group(
@@ -107,6 +113,10 @@ class LinePlotWindow(HasTraits):
                 orientation = "vertical"
                 ),
             Label('Mouse scroll and drag to zoom and pan in plot'),
+            Group(
+                Item('view_table', show_label=False),
+                orientation="horizontal",
+                ),
             layout="normal",
             ),
         resizable=True,
