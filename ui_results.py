@@ -68,10 +68,17 @@ class TableViewController(ModelView):
         self.ad.index = self.model.data.list_data()
         self.ad.index.sort()
         for name in self.ad.index:
-            la.append(self.model.data.get_data(name))
+            # FIXME: Lot of hack here
+            # needs redesign
+            if name in ['ell_full_x', 'ell_full_y', 'ell_half_x', 'ell_half_y', 'pcy1', 'pcy2']:
+                continue
+            set = self.model.data.get_data(name)
+            print(name, set)
+            la.append(set)
         self.table = array(la)
         rows, cols = self.table.shape
-        self.ad.columns = [('i', 'index')]
+        # self.ad.columns = [('i', 'index')]
+        self.ad.columns = []
         for i in range(cols):
             self.ad.columns.append((str(i), i))
         # self.ad.columns=[('en', 0), ('to', 1), ('tre', 2)]
@@ -88,7 +95,6 @@ class TableViewController(ModelView):
 
 
 if __name__ == '__main__':
-    from numpy import array
     from enthought.chaco.api import ArrayPlotData
     from plots import CCPlotScatter
 
