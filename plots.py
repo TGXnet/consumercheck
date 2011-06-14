@@ -53,6 +53,7 @@ class CCBasePlotScatter(CCBasePlot):
         super(CCBasePlotScatter, self).__init__(*args, **kw)
         self._add_zero_axis()
         self._add_tools()
+        self._calcBox()
 
     # FIXME: Move to base and rename to scatterplot
     def _add_plot(self, pt_name, pt_index, pt_color):
@@ -96,11 +97,15 @@ class CCBasePlotScatter(CCBasePlot):
     def set_eq_axis(self):
         """To set the same range on both x and y axis
         """
+        # FIXME: check self.plot.aspect_ratio
+        # /usr/share/doc/python-chaco/examples/aspect_ratio.py
         xlim, ylim = self._calcBoundsLimits()
         self.x_mapper.range.set_bounds(*xlim)
         self.y_mapper.range.set_bounds(*ylim)
 
-    def _calcBoundsLimits(self, marginFactor=0.1):
+    def _calcBoundsLimits(self, marginFactor=0.15):
+        """Calc bounding box for orthonormal plotting.
+        """
         for pt_index, pt_color in self.meta_plots.itervalues():
             pt_xdata, pt_ydata = pt_index
             xMinMax = (min(self.data.get_data(pt_xdata)), max(self.data.get_data(pt_xdata)))
@@ -116,6 +121,16 @@ class CCBasePlotScatter(CCBasePlot):
             yMin = center[1]-delta/2
             yMax = center[1]+delta/2
         return ((xMin, xMax), (yMin, yMax))
+
+    def _calcBox(self, margin_factor=0.15):
+        index_min, index_max = self.index_range.low, self.index_range.high
+        value_min, value_max = self.value_range.low, self.value_range.high
+        index_range = index_max - index_min
+        value_range = value_max - value_min
+        index_margin = index_range * margin_factor
+        value_margin = value_range * margin_factor
+        self.value_range.set_bounds(value_min-value_margin/2, value_max+value_margin/2)
+        self.index_range.set_bounds(index_min-index_margin/2, index_max+index_margin/2)
 
     def reset_axis(self):
         """Reset axix to default
@@ -160,7 +175,8 @@ class CCBasePlotScatter(CCBasePlot):
         if axisEq:
             self.set_eq_axis()
         else:
-            self.reset_axis()
+            self._calcBox()
+            # self.reset_axis()
         self.request_redraw()
 
 
@@ -201,7 +217,8 @@ class CCPlotCorrLoad(CCBasePlotScatter):
 
     def __init__(self, *args, **kw):
         super(CCPlotCorrLoad, self).__init__(*args, **kw)
-        self._add_circle()
+        self._add_circle(True)
+        self._calcBox()
         # self.set_eq_axis()
 
     def _add_circle(self, show_half=False):
