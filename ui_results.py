@@ -5,7 +5,7 @@ from numpy import array, arange, savetxt
 
 # Enthough imports
 from enthought.traits.api import HasTraits, Instance, Array, List, Button, DelegatesTo, Property
-from enthought.traits.ui.api import ModelView, View, Item, TabularEditor
+from enthought.traits.ui.api import ModelView, View, Group, Item, TabularEditor
 from enthought.traits.ui.tabular_adapter import TabularAdapter
 from enthought.traits.ui.menu import OKButton
 from enthought.pyface.clipboard import clipboard
@@ -48,12 +48,18 @@ class TableViewController(ModelView):
         )
 
     trait_view = View(
-        Item('table',
-             editor=tab_ed,
-             show_label=False,
-             style='readonly',
-             ),
-        Item('cp_clip'),
+        Group(
+            Item('table',
+                 editor=tab_ed,
+                 show_label=False,
+                 style='readonly',
+                 ),
+            Group(
+                Item('cp_clip', show_label=False),
+                orientation="horizontal",
+                ),
+            layout="normal",
+            ),
         title='Dataset matrix',
         width=0.3,
         height=0.3,
