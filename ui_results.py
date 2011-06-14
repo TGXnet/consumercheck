@@ -73,7 +73,6 @@ class TableViewController(ModelView):
             if name in ['ell_full_x', 'ell_full_y', 'ell_half_x', 'ell_half_y', 'pcy1', 'pcy2']:
                 continue
             set = self.model.data.get_data(name)
-            print(name, set)
             la.append(set)
         self.table = array(la)
         rows, cols = self.table.shape
