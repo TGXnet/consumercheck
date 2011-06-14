@@ -3,3 +3,6 @@ syntax: glob
 TAGS
 analyse
 docs/_build
+glob:R-2*
+glob:*.log
+glob:consumercheck-*
