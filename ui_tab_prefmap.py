@@ -133,11 +133,18 @@ class PrefmapModelViewHandler(ModelView):
     def _make_scores_plot(self, xId, yId, add_labels=True):
         res = self.model.get_res(xId, yId)
         pc_tab = res['Scores T']
+        expl_vars_x = self.model.get_res(xId, yId)['calExplVarX']
+        expl_vars_y = self.model.get_res(xId, yId)['calExplVarY']
+        pd = ArrayPlotData()
+        pd.set_data('pc1', pc_tab[:,0])
+        pd.set_data('pc2', pc_tab[:,1])
+        plot = CCPlotScatter(pd)
+        plot.title = "Scores"
+        plot.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[0], expl_vars_y[0])
+        plot.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[1], expl_vars_y[1])
         if add_labels:
             labels = self.model.dsl.getById(xId).objectNames
-            plot = self._make_plot(pc_tab, xId, yId, "Scores", labels)
-        else:
-            plot = self._make_plot(pc_tab, xId, yId, "Scores")
+            plot.addDataLabels(labels)
         return plot
 
     def plot_loadings_x(self, show = True):
@@ -153,8 +160,16 @@ class PrefmapModelViewHandler(ModelView):
     def _make_loadings_plot_x(self, xId, yId):
         res = self.model.get_res(xId, yId)
         xLP = res['Xloadings P']
+        pd = ArrayPlotData()
+        pd.set_data('pc1', xLP[:,0])
+        pd.set_data('pc2', xLP[:,1])
+        plot = CCPlotScatter(pd)
+        plot.title = "X Loadings"
+        expl_vars = self.model.get_res(xId, yId)['calExplVarX']
+        plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
+        plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
         labels = self.model.dsl.getById(xId).variableNames
-        plot = self._make_plot(xLP, xId, yId, "X Loadings", labels)
+        plot.addDataLabels(labels)
         return plot
 
     def plot_loadings_y(self, show = True):
@@ -170,22 +185,17 @@ class PrefmapModelViewHandler(ModelView):
     def _make_loadings_plot_y(self, xId, yId):
         res = self.model.get_res(xId, yId)
         yLP = res['Yloadings Q']
-        labels = self.model.dsl.getById(yId).variableNames
-        plot = self._make_plot(yLP, xId, yId, "Y Loadings", labels)
-        return plot
-
-    def _make_plot(self, pc_tab, xId, yId, plot_title, labels=None):
-        expl_vars = self.model.get_res(xId, yId)['calExplVarX']
         pd = ArrayPlotData()
-        pd.set_data('pc1', pc_tab[:,0])
-        pd.set_data('pc2', pc_tab[:,1])
-        ps = CCPlotScatter(pd)
-        ps.title = plot_title
-        ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
-        ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-        if labels:
-            ps.addDataLabels(labels)
-        return ps
+        pd.set_data('pc1', yLP[:,0])
+        pd.set_data('pc2', yLP[:,1])
+        plot = CCPlotScatter(pd)
+        plot.title = "Y Loadings"
+        expl_vars = self.model.get_res(xId, yId)['calExplVarY']
+        plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
+        plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
+        labels = self.model.dsl.getById(yId).variableNames
+        plot.addDataLabels(labels)
+        return plot
 
     def plot_corr_loading(self, show = True):
         # self.show = show
