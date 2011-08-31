@@ -3,7 +3,7 @@
 """
 # Enthought library imports
 from enthought.enable.api import Component, ComponentEditor
-from enthought.traits.api import HasTraits, Instance, Bool, Str, Button, on_trait_change
+from enthought.traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
 from enthought.traits.ui.api import View, Group, Item, Label, Handler
 from enthought.chaco.api import GridPlotContainer, HPlotContainer
 
@@ -15,6 +15,17 @@ from ui_results import TableViewController
 size = (850, 650)
 bg_color="white"
 #===============================================================================
+
+class FileEditor(HasTraits):
+    file_name = File()
+    traits_view = View(
+        Item('file_name'),
+        buttons = ['OK'],
+        title = 'Save png',
+        width = 400,
+        kind='modal',
+        )
+
 
 class TitleHandler(Handler):
     """ Change the title on the UI.
@@ -35,6 +46,7 @@ class SinglePlotWindow(HasTraits):
     eq_axis = Bool(False)
     show_x1 = Bool(True)
     view_table = Button('View result table')
+    save_plot = Button('Save plot image')
     title_text = Str("ConsumerCheck")
 
     @on_trait_change('show_x1')
@@ -51,6 +63,11 @@ class SinglePlotWindow(HasTraits):
         tvc = TableViewController(model=object.plot)
         tvc.configure_traits()
 
+    @on_trait_change('save_plot')
+    def render_plot(self, object, name, old, new):
+        fe = FileEditor()
+        fe.edit_traits()
+        object.plot.export_image(fe.file_name)
 
     traits_view = View(
         Group(
@@ -67,6 +84,7 @@ class SinglePlotWindow(HasTraits):
                 Item('eq_axis', label="Set equal axis"),
                 Item('show_x1', label="Show labels"),
                 Item('view_table', show_label=False),
+                Item('save_plot', show_label=False),
                 orientation="horizontal",
                 ),
             layout="normal",

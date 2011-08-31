@@ -17,7 +17,7 @@ import numpy as np
 
 # Enthought library imports
 #from enthought.traits.api import HasTraits, Instance, Array, Str, List, Bool
-from enthought.chaco.api import Plot, PlotGrid, DataLabel
+from enthought.chaco.api import Plot, PlotGrid, DataLabel, PlotGraphicsContext
 from enthought.chaco.tools.api import PanTool, ZoomTool
 
 
@@ -46,6 +46,11 @@ class CCBasePlot(Plot):
         for pt_name, pt_data in self.meta_plots.iteritems():
             pt_index, pt_color = pt_data
             self._add_plot(pt_name, pt_index, pt_color)
+
+    def export_image(self, fname):
+        gc = PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname)
 
 
 class CCBasePlotScatter(CCBasePlot):
@@ -425,3 +430,4 @@ if __name__ == '__main__':
     plot.addDataLabels(labels1, 'x1')
     spw = SinglePlotWindow(plot=plot)
     spw.configure_traits()
+    # spw.edit_traits()
