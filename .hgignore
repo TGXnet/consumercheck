@@ -3,6 +3,11 @@ syntax: glob
 TAGS
 analyse
 docs/_build
-glob:R-2*
-glob:*.log
-glob:consumercheck-*
+R-2*
+*.log
+consumercheck-*
+eggs
+bin
+parts
+.installed.cfg
+develop-eggs
