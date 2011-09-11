@@ -16,9 +16,9 @@ index, pc_sigma
 import numpy as np
 
 # Enthought library imports
-#from enthought.traits.api import HasTraits, Instance, Array, Str, List, Bool
-from enthought.chaco.api import Plot, PlotGrid, DataLabel, PlotGraphicsContext
-from enthought.chaco.tools.api import PanTool, ZoomTool
+#from traits.api import HasTraits, Instance, Array, Str, List, Bool
+from chaco.api import Plot, PlotGrid, DataLabel, PlotGraphicsContext
+from chaco.tools.api import PanTool, ZoomTool
 
 
 class CCBasePlot(Plot):
@@ -414,7 +414,7 @@ class CCPlotLPLS(CCBasePlotScatter):
 
 
 if __name__ == '__main__':
-    from enthought.chaco.api import ArrayPlotData
+    from chaco.api import ArrayPlotData
     from plot_windows import SinglePlotWindow
     
     x1 = [-0.2, 0.4, 0.4]

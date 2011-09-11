@@ -1,19 +1,18 @@
-#!/usr/bin/python
 # stdlib imports
 # import os
 import logging
 import optparse
 
 # Enthought imports
-from enthought.etsconfig.api import ETSConfig
-ETSConfig.toolkit = 'wx'
+## from traits.etsconfig.api import ETSConfig
+## ETSConfig.toolkit = 'wx'
 # ETSConfig.toolkit = 'qt4'
-#from enthought.pyface.api import GUI
+#from pyface.api import GUI
 
 # Local imports
 # Set path to local R distribution
-import rpyLocate
-rpyLocate.set_rpy_env()
+import rpy_locate
+rpy_locate.set_rpy_env()
 
 from main_ui import MainUi
 from ui_tab_pca import PcaModel, PcaModelViewHandler

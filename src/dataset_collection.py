@@ -8,7 +8,7 @@ Datasets can be imported or genrated.
 import logging
 
 # Enthought traits imports
-from enthought.traits.api import \
+from traits.api import \
     HasTraits, Dict, Str, List, Event, \
     Bool, Property, on_trait_change, property_depends_on
 

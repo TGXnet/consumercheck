@@ -3,13 +3,13 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api \
+from traits.api \
     import HasTraits, Instance, Button, Str, Int,\
     File, Bool, List, on_trait_change
-from enthought.traits.ui.api \
+from traitsui.api \
     import View, Item, Group, ListStrEditor, Handler, FileEditor,\
     InstanceEditor, ButtonEditor
-from enthought.traits.ui.menu \
+from traitsui.menu \
     import Action, Menu, MenuBar
 
 

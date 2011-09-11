@@ -3,8 +3,8 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api import Str, List, DelegatesTo
-from enthought.traits.ui.api import View, Group, Item, Handler, EnumEditor, Controller
+from traits.api import Str, List, DelegatesTo
+from traitsui.api import View, Group, Item, Handler, EnumEditor, Controller
 
 
 # Define the demo class:

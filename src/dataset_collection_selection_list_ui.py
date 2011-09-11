@@ -7,13 +7,13 @@ data columns.
 import logging
 
 # Enthoughg imports
-from enthought.traits.api \
+from traits.api \
     import HasStrictTraits, Str, List, Bool, Event
-from enthought.traits.ui.api \
+from traitsui.api \
     import View, Handler, Item, TableEditor
-from enthought.traits.ui.table_column \
+from traitsui.table_column \
     import ObjectColumn
-from enthought.traits.ui.extras.checkbox_column \
+from traitsui.extras.checkbox_column \
     import CheckboxColumn
 
 

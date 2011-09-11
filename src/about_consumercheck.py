@@ -1,5 +1,5 @@
-from enthought.traits.api import HasTraits, HTML
-from enthought.traits.ui.api import View, Item
+from traits.api import HasTraits, HTML
+from traitsui.api import View, Item
 
 class ConsumerCheckAbout(HasTraits):
     about_html = '''

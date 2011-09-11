@@ -13,10 +13,10 @@ from numpy import array, loadtxt
 import xlrd
 
 # Enthought imports
-from enthought.traits.api import HasTraits, File, Str, Bool, Enum, Array, List, Button
-from enthought.traits.ui.api import View, Item, UItem, Custom, UCustom, Label, Heading, FileEditor
-from enthought.traits.ui.menu import OKButton, CancelButton
-from enthought.pyface.api import FileDialog, OK
+from traits.api import HasTraits, File, Str, Bool, Enum, Array, List, Button
+from traitsui.api import View, Item, UItem, Custom, UCustom, Label, Heading, FileEditor
+from traitsui.menu import OKButton, CancelButton
+from pyface.api import FileDialog, OK
 
 # Local imports
 from dataset import DataSet

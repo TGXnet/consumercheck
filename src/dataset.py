@@ -3,7 +3,7 @@
 """
 
 # Enthought imports
-from enthought.traits.api import \
+from traits.api import \
     HasTraits, Array, Str, Enum, File, ListStr, Bool, Property
 
 

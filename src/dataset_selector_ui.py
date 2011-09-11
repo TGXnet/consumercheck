@@ -3,10 +3,10 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api \
+from traits.api \
     import List, Str, Bool
 
-from enthought.traits.ui.api \
+from traitsui.api \
     import EnumEditor, Handler, Item, View
 
 

@@ -3,9 +3,9 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api \
+from traits.api \
     import HasTraits, Str, Regex, List, Dict, Instance
-from enthought.traits.ui.api \
+from traitsui.api \
     import Item, View, TreeEditor, TreeNode, Handler
 
 # Local imports
