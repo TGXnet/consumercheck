@@ -76,21 +76,14 @@ prefmap_selector_view = View(
 
 if __name__ == '__main__':
     """Test run the View"""
-    print("Interactive start")
-    from dataset_collection import DatasetCollection
-    from file_importer import FileImporter
+    from tests.tools import TestContainer
+    container = TestContainer()
+    container.dsl.print_traits()
+    ## print("Interactive start")
+    ## from dataset_collection import DatasetCollection
+    ## from file_importer import FileImporter
     
-    dsl = DatasetCollection()
-    fi = FileImporter()
-    dsl.addDataset(fi.noninteractiveImport('datasets/A_labels.txt'))
-    dsl.addDataset(fi.noninteractiveImport('datasets/C_labels.txt'))
-    dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
-    dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
-    dsl._dataDict['a_labels']._ds_name = 'Set A tull'
-    dsl._dataDict['c_labels']._ds_name = 'Set C tull'
-    dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker'
-    dsl._dataDict['ost_forbruker']._datasetType = 'Consumer liking'
-    dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk'
-    dsl._dataDict['ost_sensorikk']._datasetType = 'Sensory profiling'
-    selector = PrefmapSelectorController(model=dsl)
-    selector.configure_traits(view=prefmap_selector_view)
+    ## dsl = DatasetCollection()
+    ## fi = FileImporter()
+    ## selector = PrefmapSelectorController(model=dsl)
+    ## selector.configure_traits(view=prefmap_selector_view)
