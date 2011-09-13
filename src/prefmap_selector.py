@@ -14,7 +14,6 @@ class PrefmapSelectorController(Controller):
     The model attribute have to be set to the dataset collection (dsl)
     object in this object constructor.
     """
-    # sel_list = DelegatesTo('model', prefix='indexNameList')
     dsChoices = List(trait = Str)
     xyMappings = List()
     xName = Str(
@@ -95,4 +94,3 @@ if __name__ == '__main__':
     dsl._dataDict['ost_sensorikk']._datasetType = 'Sensory profiling'
     selector = PrefmapSelectorController(model=dsl)
     selector.configure_traits(view=prefmap_selector_view)
-    
