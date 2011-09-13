@@ -42,13 +42,6 @@ class PrefmapModel(HasTraits):
     name = Str( 'Options' )
     selector = Instance(PrefmapSelectorController)
 
-    # List of selected (X, Y) tuples
-    selectedXYlist = List([
-        ('ost_forbruker', 'ost_sensorikk'),
-        ('ost_sensorikk', 'ost_forbruker'),
-        ('a_labels', 'a_labels'),
-        ])
-
     ## @on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
     ## def datasetsChanged(self, object, name, old, new):
     ##      self.datasetsAltered = True
