@@ -4,14 +4,14 @@ import sys
 import logging
 
 # Enthought imports
-from enthought.etsconfig.api import ETSConfig
+# from enthought.etsconfig.api import ETSConfig
 # ETSConfig.toolkit = 'wx'
 # ETSConfig.toolkit = 'qt4'
 from enthought.traits.api import HasTraits, Instance
 
 def setConsumerCheckIncludePath():
 #    consumerBase = findApplicationBasePath();
-    consumerBase = '../src'
+    consumerBase = '..'
     addLoadPath(consumerBase)
 
 def findApplicationBasePath():
@@ -37,8 +37,18 @@ from file_importer import FileImporter
 def make_dsl_mock():
     dsl = DatasetCollection()
     ds_importer = FileImporter()
-    dsl.addDataset(ds_importer.noninteractiveImport('../src/datasets/Ost.txt'))
-    dsl.addDataset(ds_importer.noninteractiveImport('../src/datasets/Polser.txt', True, True))
+    dsl.addDataset(ds_importer.noninteractiveImport('datasets/Ost.txt'))
+    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/Polser.txt', True, True))
+    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/A_labels.txt'))
+    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/C_labels.txt'))
+    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/Ost_forbruker.txt'))
+    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/Ost_sensorikk.txt'))
+    dsl._dataDict['a_labels']._ds_name = 'Set A tull'
+    dsl._dataDict['c_labels']._ds_name = 'Set C tull'
+    dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker'
+    dsl._dataDict['ost_forbruker']._datasetType = 'Consumer liking'
+    dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk'
+    dsl._dataDict['ost_sensorikk']._datasetType = 'Sensory profiling'
     return dsl
 
 class TestContainer(HasTraits):
