@@ -38,11 +38,11 @@ def make_dsl_mock():
     dsl = DatasetCollection()
     ds_importer = FileImporter()
     dsl.addDataset(ds_importer.noninteractiveImport('datasets/Ost.txt'))
-    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/Polser.txt', True, True))
-    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/A_labels.txt'))
-    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/C_labels.txt'))
-    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/Ost_forbruker.txt'))
-    dsl.addDataset(ds_importer.noninteractiveImport('../datasets/Ost_sensorikk.txt'))
+    dsl.addDataset(ds_importer.noninteractiveImport('datasets/Polser.txt', True, True))
+    dsl.addDataset(ds_importer.noninteractiveImport('datasets/A_labels.txt'))
+    dsl.addDataset(ds_importer.noninteractiveImport('datasets/C_labels.txt'))
+    dsl.addDataset(ds_importer.noninteractiveImport('datasets/Ost_forbruker.txt'))
+    dsl.addDataset(ds_importer.noninteractiveImport('datasets/Ost_sensorikk.txt'))
     dsl._dataDict['a_labels']._ds_name = 'Set A tull'
     dsl._dataDict['c_labels']._ds_name = 'Set C tull'
     dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker'
@@ -60,11 +60,11 @@ class TestContainer(HasTraits):
     def _dsl_default(self):
         return make_dsl_mock()
 
-    def _test_subject_changed(self, old, new):
-        if old is not None:
-            old.main_ui_ptr = None
-        if new is not None:
-            new.main_ui_ptr = self
+    ## def _test_subject_changed(self, old, new):
+    ##     if old is not None:
+    ##         old.main_ui_ptr = None
+    ##     if new is not None:
+    ##         new.main_ui_ptr = self
 
 
 if __name__== '__main__':
