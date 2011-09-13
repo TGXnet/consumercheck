@@ -5,12 +5,13 @@ import logging
 
 # Enthought imports
 from enthought.etsconfig.api import ETSConfig
-ETSConfig.toolkit = 'wx'
+# ETSConfig.toolkit = 'wx'
 # ETSConfig.toolkit = 'qt4'
 from enthought.traits.api import HasTraits, Instance
 
 def setConsumerCheckIncludePath():
-    consumerBase = findApplicationBasePath();
+#    consumerBase = findApplicationBasePath();
+    consumerBase = '../src'
     addLoadPath(consumerBase)
 
 def findApplicationBasePath():
@@ -30,23 +31,26 @@ setConsumerCheckIncludePath()
 
 from dataset_collection import DatasetCollection
 from dataset import DataSet
+from file_importer import FileImporter
 
-class TestMain(HasTraits):
+
+def make_dsl_mock():
+    dsl = DatasetCollection()
+    ds_importer = FileImporter()
+    dsl.addDataset(ds_importer.noninteractiveImport('../src/datasets/Ost.txt'))
+    dsl.addDataset(ds_importer.noninteractiveImport('../src/datasets/Polser.txt', True, True))
+    return dsl
+
+class TestContainer(HasTraits):
     """Main frame for testing method tabs
     """
-    to_be_tested = Instance(HasTraits)
-    dsl = DatasetCollection()
+    test_subject = Instance(HasTraits)
+    dsl = Instance(DatasetCollection)
 
-    def __init__(self, *args, **kwargs):
-        super(TestMain, self).__init__(*args, **kwargs)
-        ds1 = DataSet()
-        ds1.importDataset('../datasets/Ost.txt')
-        ds2 = DataSet()
-        ds2.importDataset('../datasets/Polser.txt', True, True)
-        self.dsl.addDataset(ds1)
-        self.dsl.addDataset(ds2)
+    def _dsl_default(self):
+        return make_dsl_mock()
 
-    def _to_be_tested_changed(self, old, new):
+    def _test_subject_changed(self, old, new):
         if old is not None:
             old.main_ui_ptr = None
         if new is not None:
@@ -54,4 +58,4 @@ class TestMain(HasTraits):
 
 
 if __name__== '__main__':
-    container = TestMain()
+    container = TestContainer()
