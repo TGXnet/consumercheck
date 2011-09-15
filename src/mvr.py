@@ -19,6 +19,7 @@ This version returns:
     - Xloadings P
     - fitted Y, that is Yhat:
 
+FIXME: Works with rpy2 ver: 2.1.9, not with ver: 2.2.2
 """
 
 # Import necessary modules to make analysis work.
@@ -39,6 +40,8 @@ ro.r('library(pls)')
 
 
 # Define partial least square (PLSR) method
+# FIXME: Define sane default values
+# FIXME: centre: True, False
 def plsr(X, Y, centre, fncomp, fmethod, fvalidation):
     """
     INPUT:
@@ -52,30 +55,31 @@ def plsr(X, Y, centre, fncomp, fmethod, fvalidation):
         choices:
             - "yes"
             -" no"
-    
+
     fncomp: type <integer> representing number of components to be computed
-    
-    fmethod: type <string>; 
+
+     fmethod: type <string>; 
         choices: 
             - "oscorespls"
             - "simpls"
             - "svdpc"
             - "widekernelpls"
-    
+
+
     fvalidation: type <string>; 
         choices:
             - "LOO"
             - "none"
-            
+
     """
     # Check whether number of components to be computed provided by user is
     # possible to compute. If not, set to maximum possible number of components.
     # --------------------------------------------------------------------------
     maxCompList = []    
-    
+
     # Determine variable dimension in X    
     numVarX = np.shape(X)[1]
-    maxCompList.append(numVarX)    
+    maxCompList.append(numVarX)
     
     # Determine variable dimension in Y
     numVarY = np.shape(Y)[1]
@@ -88,6 +92,9 @@ def plsr(X, Y, centre, fncomp, fmethod, fvalidation):
     
     # Now set to maximum possible number of components if user has provided
     # a too large number
+    # FIXME: Let user choos to autoset max number or explisit set number
+    # if explisit set, throw exception if set to high
+    # principle of least suprise
     if fncomp > min(maxCompList):
         fncomp = min(maxCompList)
     
@@ -108,6 +115,7 @@ def plsr(X, Y, centre, fncomp, fmethod, fvalidation):
     
     # Definition of the regression equation for mvr commando. 
     # Use .getenvironment to link R arrays to R formula.
+    # FIXME: Sane defalut version handling here
     if rpy2.__version__ == '2.0.8':
         fmla = ro.RFormula('Y ~ X')
         globalenv = ro.globalEnv
