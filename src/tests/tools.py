@@ -10,12 +10,12 @@ import logging
 from enthought.traits.api import HasTraits, Instance
 
 def setConsumerCheckIncludePath():
-#    consumerBase = findApplicationBasePath();
-    consumerBase = '..'
+    consumerBase = findApplicationBasePath();
+#     consumerBase = '..'
     addLoadPath(consumerBase)
 
 def findApplicationBasePath():
-    basePath = os.getcwd()
+    basePath = __file__
     while os.path.basename(basePath) != 'tests':
         basePath = os.path.dirname(basePath)
     basePath = os.path.dirname(basePath)
@@ -25,7 +25,7 @@ def addLoadPath(baseFolderPath):
     sys.path.append(baseFolderPath)
 
 logging.basicConfig(level=logging.DEBUG)
-logging.info('Starts unittest')
+logging.info('Starts testing')
 
 setConsumerCheckIncludePath()
 
@@ -45,6 +45,8 @@ def make_dsl_mock():
     dsl.addDataset(ds_importer.noninteractiveImport('datasets/Ost_sensorikk.txt'))
     dsl._dataDict['a_labels']._ds_name = 'Set A tull'
     dsl._dataDict['c_labels']._ds_name = 'Set C tull'
+    dsl._dataDict['a_labels']._datasetType = 'Consumer liking'
+    dsl._dataDict['c_labels']._datasetType = 'Sensory profiling'
     dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker'
     dsl._dataDict['ost_forbruker']._datasetType = 'Consumer liking'
     dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk'
