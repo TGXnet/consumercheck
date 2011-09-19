@@ -3,7 +3,7 @@ import shutil
 
 from bbfreeze import Freezer
 
-FREEZE_VERSION = '0.5.2'
+FREEZE_VERSION = '0.5.0'
 R_VERSION = '2.11.1'
 # freeze folder
 ff = "consumercheck-" + FREEZE_VERSION
