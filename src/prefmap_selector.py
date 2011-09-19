@@ -3,87 +3,110 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api import Str, List, DelegatesTo
-from enthought.traits.ui.api import View, Group, Item, Handler, EnumEditor, Controller
+from enthought.traits.api import Str, List, Enum, DelegatesTo, Event, on_trait_change
+from enthought.traits.ui.api import View, Group, Item, Custom, UCustom, Label, Heading, CheckListEditor, EnumEditor, Controller
 
 
-# Define the demo class:
-class PrefmapSelectorController(Controller):
+class PrefmapUIController(Controller):
     """ Preference mapping selection tool
 
     The model attribute have to be set to the dataset collection (dsl)
     object in this object constructor.
     """
-    dsChoices = List(trait = Str)
-    xyMappings = List()
-    xName = Str(
-        label = 'Sensory profiling (X)',
-        editor = EnumEditor(name = 'dsChoices'),
+    _sens = List()
+    _cons = List()
+    sel_sens = List(
+        label = 'Sensory profiling',
+        editor = CheckListEditor(name='_sens',),
         )
-    yName = Str(
-        label = 'Consumer (Y)',
-        editor = EnumEditor(name = 'dsChoices'),
+    sel_cons = List(
+        label = 'Consumer',
+        editor = CheckListEditor(name='_cons'),
         )
+    mapping = Enum('Int mapping', 'Ext mapping')
+    ## method = Enum('PLSR', 'PCR')
+
+    sel_updated = Event
+
+    def get_cross_mappings(self):
+        if self.mapping == 'Int mapping':
+            return [(c, s) for c in self.sel_cons for s in self.sel_sens if c != s]
+        elif self.mapping == 'Ext mapping':
+            return [(s, c) for c in self.sel_cons for s in self.sel_sens if c != s]
 
     def init(self, info):
-        self._buildSelectionList()
-        # self._initChoices(info.object)
+        self._build_sel_list()
 
-    ## def object_datasetsAltered_changed(self, info):
-    ##     self._buildSelectionList(info.object.dsl)
-    ##     self._initChoices(info.object)
+    def _build_sel_list(self):
+        datasets = self.model.getDatasetList()
+        self._sens =  [(ds._ds_id, ds._ds_name) for ds in datasets if ds._datasetType == 'Sensory profiling']
+        self._cons = [(ds._ds_id, ds._ds_name) for ds in datasets if ds._datasetType == 'Consumer liking']
 
-    def _buildSelectionList(self):
-        self.dsChoices = []
-        for ds in self.model.getDatasetList():
-            if ds._datasetType in ['Sensory profiling', 'Consumer liking']:
-                self.dsChoices.append(ds._ds_name)
+    @on_trait_change('sel_cons, sel_sens, mapping')
+    def _choice_updated(self, object, name, old, new):
+        self.sel_updated = True
 
-    ## def _initChoices(self, obj):
-    ##     if (len(self.dsChoices) > 0) and (not self.nameSetX or not self.nameSetY):
-    ##         if obj.setX:
-    ##             self.nameSetX = obj.setX._ds_name
-    ##         else:
-    ##             self.nameSetX = self.dsChoices[0]
-    ##         if obj.setY:
-    ##             self.nameSetY = obj.setY._ds_name
-    ##         else:
-    ##             self.nameSetY = self.dsChoices[0]
 
-    def _xName_changed(self, name, old, new):
-        self._update_mappings()
+prefmap_ui_controller = PrefmapUIController()
 
-    def _yName_changed(self, name, old, new):
-        self._update_mappings()
-
-    def _update_mappings(self):
-        dsx_id = ''
-        dsy_id = ''
-        if self.xName:
-            dsx_id = self.model.idByName(self.xName)
-        if self.yName:
-            dsy_id = self.model.idByName(self.yName)
-        self.xyMappings = [(dsx_id, dsy_id)]
-
-# The view includes one group per column formation.      These will be displayed
-# on separate tabbed panels.
-prefmap_selector_view = View(
-    Item('handler.xName'),
-    Item('handler.yName'),
-    resizable = True
+prefmap_ui_view = View(
+    Group(
+        Group(
+            Group(
+                Label('Sensory profiling'),
+                UCustom('handler.sel_sens'),
+                show_border=True,
+                orientation='vertical',
+                ),
+            Group(
+                Label('Consumer'),
+                UCustom('handler.sel_cons'),
+                show_border=True,
+                orientation='vertical',
+                ),
+            orientation='horizontal',
+            ),
+        Group(
+            Group(
+                Label('Mapping'),
+                UCustom('handler.mapping',
+                        editor=EnumEditor(values=('Int mapping', 'Ext mapping')),
+                        ),
+                show_border=True,
+                orientation='vertical',
+                ),
+            ## Group(
+            ##     Label('Method'),
+            ##     UCustom('handler.method',
+            ##             editor=EnumEditor(values=('PLSR', 'PCR')),
+            ##             ),
+            ##     show_border=True,
+            ##     orientation='vertical',
+            ##     ),
+            orientation='horizontal',
+            ),
+        orientation='vertical'
+        ),
+    resizable = True,
+    handler = prefmap_ui_controller,
 )
+
+
+def show_change():
+    xl = container.test_subject.get_cross_mappings()
+    print("Show change run\nValues {}".format(xl))
 
 
 if __name__ == '__main__':
     """Test run the View"""
+    print("Interactive start")
     from tests.tools import TestContainer
     container = TestContainer()
-    container.dsl.print_traits()
-    ## print("Interactive start")
-    ## from dataset_collection import DatasetCollection
-    ## from file_importer import FileImporter
-    
-    ## dsl = DatasetCollection()
-    ## fi = FileImporter()
-    ## selector = PrefmapSelectorController(model=dsl)
-    ## selector.configure_traits(view=prefmap_selector_view)
+    prefmap_ui_controller.model = container.dsl
+    container.test_subject = prefmap_ui_controller
+    container.test_subject.on_trait_event(show_change, name='sel_updated')
+    container.test_subject.configure_traits(
+        view=prefmap_ui_view,
+        ## kind='nonmodal',
+        )
+    print("GUI started")

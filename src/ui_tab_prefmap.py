@@ -16,7 +16,7 @@ from enthought.chaco.api import ArrayPlotData
 from plots import CCPlotScatter, CCPlotLine, CCPlotCalValExplVariance, CCPlotCorrLoad, CCPlotXYCorrLoad
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from mvr import plsr
-from prefmap_selector import PrefmapSelectorController, prefmap_selector_view
+from prefmap_selector import PrefmapUIController, prefmap_ui_controller, prefmap_ui_view
 
 
 class PrefmapModel(HasTraits):
@@ -36,15 +36,8 @@ class PrefmapModel(HasTraits):
     # Hold calculated prefmap results
     results = Dict(unicode, Any)
 
-    # To notify dataset selector
-    # datasetsAltered = Event
-
     name = Str( 'Options' )
-    selector = Instance(PrefmapSelectorController)
-
-    ## @on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
-    ## def datasetsChanged(self, object, name, old, new):
-    ##      self.datasetsAltered = True
+    selector = Instance(PrefmapUIController)
 
     def get_res(self, xId, yId):
         resId = self._makeResId(xId, yId)
@@ -83,9 +76,8 @@ class PrefmapModelViewHandler(ModelView):
         # info.ui.context: model, handler, object
         # info.ui.control: wx._windows.Frame
         self.model.main_ui_ptr = self.main_ui_ptr
-        # FIXME: Replace with Prefmap controller
-        self.model.selector = PrefmapSelectorController( model=self.model.dsl )
-        prefmap_selector_view.handler = self.model.selector
+        prefmap_ui_controller.model = self.model.dsl
+        self.model.selector = prefmap_ui_controller
 
     def closed(self, info, is_ok):
         while self.plot_uis:
@@ -95,8 +87,14 @@ class PrefmapModelViewHandler(ModelView):
     def _model_changed(self, old, new):
         if old is not None:
             old.controller = None
+            ## new.main_ui_ptr = None
         if new is not None:
             new.controller = self
+            ## new.main_ui_ptr = self.main_ui_ptr
+
+    def get_mappings(self):
+        return self.model.selector.get_cross_mappings()
+
 
     def plot_overview(self, show = True):
         """Make Prefmap overview plot.
@@ -105,7 +103,7 @@ class PrefmapModelViewHandler(ModelView):
         for each of the datasets.
         """
         # self.show = show
-        for xId, yId in self.model.selector.xyMappings:
+        for xId, yId in self.get_mappings():
             ds_plots = [[self._make_scores_plot(xId, yId, False), self._make_corr_load_plot(xId, yId, False)],
                         [self._make_expl_var_plot_x(xId, yId), self._make_expl_var_plot_y(xId, yId)]]
             mpw = MultiPlotWindow(title_text=self._wind_title(xId, yId))
@@ -115,7 +113,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_scores(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selector.xyMappings:
+        for xId, yId in self.get_mappings():
             s_plot = self._make_scores_plot(xId, yId)
             spw = SinglePlotWindow(
                 plot=s_plot,
@@ -142,7 +140,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_loadings_x(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selector.xyMappings:
+        for xId, yId in self.get_mappings():
             l_plot = self._make_loadings_plot_x(xId, yId)
             spw = SinglePlotWindow(
                 plot=l_plot,
@@ -167,7 +165,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_loadings_y(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selector.xyMappings:
+        for xId, yId in self.get_mappings():
             l_plot = self._make_loadings_plot_y(xId, yId)
             spw = SinglePlotWindow(
                 plot=l_plot,
@@ -192,7 +190,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_corr_loading(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selector.xyMappings:
+        for xId, yId in self.get_mappings():
             cl_plot = self._make_corr_load_plot(xId, yId)
             spw = SinglePlotWindow(
                 plot=cl_plot,
@@ -228,7 +226,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_expl_var_x(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selector.xyMappings:
+        for xId, yId in self.get_mappings():
             ev_plot = self._make_expl_var_plot_x(xId, yId)
             spw = LinePlotWindow(
                 plot=ev_plot,
@@ -250,7 +248,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def plot_expl_var_y(self, show = True):
         # self.show = show
-        for xId, yId in self.model.selector.xyMappings:
+        for xId, yId in self.get_mappings():
             ev_plot = self._make_expl_var_plot_y(xId, yId)
             spw = LinePlotWindow(
                 plot=ev_plot,
@@ -339,37 +337,37 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Overview plot',
                   on_dclick = clkOverview,
-                  view = prefmap_selector_view,
+                  view = prefmap_ui_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Scores',
                   on_dclick = clkScores,
-                  view = prefmap_selector_view,
+                  view = prefmap_ui_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=X & Y correlation loadings',
                   on_dclick = clkCorrLoad,
-                  view = prefmap_selector_view,
+                  view = prefmap_ui_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Explained variance X',
                   on_dclick = clkExplResVarX,
-                  view = prefmap_selector_view,
+                  view = prefmap_ui_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Explained variance Y',
                   on_dclick = clkExplResVarY,
-                  view = prefmap_selector_view,
+                  view = prefmap_ui_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=X loadings',
                   on_dclick = clkLoadingsX,
-                  view = prefmap_selector_view,
+                  view = prefmap_ui_view,
                   ),
         TreeNode( node_for = [ PrefmapModel ],
                   label = '=Y loadings',
                   on_dclick = clkLoadingsY,
-                  view = prefmap_selector_view,
+                  view = prefmap_ui_view,
                   ),
         ],
     hide_root = False,
@@ -392,26 +390,33 @@ prefmap_tree_view = View(
 if __name__ == '__main__':
     """Test run the View"""
     print("Interactive start")
+    from tests.tools import TestContainer
+
     from dataset_collection import DatasetCollection
     from file_importer import FileImporter
-    
-    class FakeMain(HasTraits):
-        dsl = DatasetCollection()
-        prefmap = Instance(PrefmapModelViewHandler)
+    # FIXME: How can i make the object instansiating
+    # ordering more robust
+    container = TestContainer(test_subject = PrefmapModelViewHandler(PrefmapModel()))
+    ## container.test_subject = PrefmapModelViewHandler()
+    ## container.test_subject.model = PrefmapModel()
+    container.configure_traits(view=prefmap_tree_view)
+    ## class FakeMain(HasTraits):
+    ##     dsl = DatasetCollection()
+    ##     prefmap = Instance(PrefmapModelViewHandler)
 
-        def _prefmap_changed(self, old, new):
-            logging.info("Setting prefmap mother")
-            if old is not None:
-                old.main_ui_ptr = None
-            if new is not None:
-                new.main_ui_ptr = self
+    ##     def _prefmap_changed(self, old, new):
+    ##         logging.info("Setting prefmap mother")
+    ##         if old is not None:
+    ##             old.main_ui_ptr = None
+    ##         if new is not None:
+    ##             new.main_ui_ptr = self
 
-    main = FakeMain(prefmap = PrefmapModelViewHandler(PrefmapModel()))
-    fi = FileImporter()
-    main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
-    main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
-    main.dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker ost'
-    main.dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
-    main.dsl._dataDict['ost_forbruker']._datasetType = 'Consumer liking'
-    main.dsl._dataDict['ost_sensorikk']._datasetType = 'Sensory profiling'
-    main.prefmap.configure_traits(view=prefmap_tree_view)
+    ## main = FakeMain(prefmap = PrefmapModelViewHandler(PrefmapModel()))
+    ## fi = FileImporter()
+    ## main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
+    ## main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
+    ## main.dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker ost'
+    ## main.dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
+    ## main.dsl._dataDict['ost_forbruker']._datasetType = 'Consumer liking'
+    ## main.dsl._dataDict['ost_sensorikk']._datasetType = 'Sensory profiling'
+    ## main.prefmap.configure_traits(view=prefmap_tree_view)
