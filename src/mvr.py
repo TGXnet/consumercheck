@@ -115,13 +115,14 @@ def plsr(X, Y, centre, fncomp, fmethod, fvalidation):
     
     # Definition of the regression equation for mvr commando. 
     # Use .getenvironment to link R arrays to R formula.
-    # FIXME: Sane defalut version handling here
     if rpy2.__version__ == '2.0.8':
-        fmla = ro.RFormula('Y ~ X')
         globalenv = ro.globalEnv
     elif rpy2.__version__ == '2.1.9':
-        fmla = ro.Formula('Y ~ X')
         globalenv = ro.globalenv
+    else:
+        globalenv = ro.globalenv
+
+    fmla = ro.RFormula('Y ~ X')
     env = fmla.getenvironment()
     env['X'] = r_X
     env['Y'] = r_Y
