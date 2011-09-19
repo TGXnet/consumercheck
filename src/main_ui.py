@@ -4,18 +4,17 @@ import logging
 
 # Enthought imports
 from enthought.traits.api \
-    import HasTraits, Instance, Button, Str, Int,\
-    File, Bool, List, on_trait_change
+    import HasTraits, Instance
+
 from enthought.traits.ui.api \
-    import View, Item, Group, ListStrEditor, Handler, FileEditor,\
-    InstanceEditor, ButtonEditor
+    import View, Item, Group, Handler,\
+    InstanceEditor
 from enthought.traits.ui.menu \
     import Action, Menu, MenuBar
 
 
 # Local imports
 from dataset_collection import DatasetCollection
-from dataset import DataSet
 from file_importer import FileImporter
 from ui_datasets_tree import tree_view
 from ui_tab_pca import PcaModelViewHandler, pca_tree_view
@@ -43,6 +42,9 @@ class MainViewHandler(Handler):
 
     def view_about(self, info):
         ConsumerCheckAbout().edit_traits()
+        
+    def init(self, info):
+        info.object.splash.close()
 
     # end MainViewHandler
 
@@ -53,6 +55,8 @@ class MainUi(HasTraits):
     # Singular dataset list for the application
     # or not?
     dsl = DatasetCollection()
+    
+    splash = None
 
     # Object representing the PCA and the GUI tab
     pca = Instance(PcaModelViewHandler)

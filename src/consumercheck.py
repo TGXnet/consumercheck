@@ -15,6 +15,7 @@ ETSConfig.toolkit = 'wx'
 import rpyLocate
 rpyLocate.set_rpy_env()
 
+from splash_screen import splash
 from main_ui import MainUi
 from ui_tab_pca import PcaModel, PcaModelViewHandler
 from ui_tab_prefmap import PrefmapModel, PrefmapModelViewHandler
@@ -40,7 +41,9 @@ def main():
         datefmt='%Y-%m-%d %H:%M:%S'
         )
     logging.info('Starting ConsumerCheck')
+    splash.open()
     mother = MainUi(
+        splash = splash,
         pca = PcaModelViewHandler(PcaModel()),
         prefmap = PrefmapModelViewHandler(PrefmapModel()),
         )

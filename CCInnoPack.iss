@@ -5,14 +5,14 @@
 
 [Setup]
 AppName=ConsumerCheck
-AppVersion=0.4.1
+AppVersion=0.5.2
 DefaultDirName={pf}\ConsumerCheck
 DefaultGroupName=ConsumerCheck
 UninstallDisplayIcon={app}\consumercheck.exe
 Compression=lzma2
 SolidCompression=yes
 OutputDir=userdocs:ConsumerCheck
-SourceDir=consumercheck-0.4.1
+SourceDir=consumercheck-0.5.2
 
 [Files]
 Source: "*"; DestDir: "{app}"; Flags: recursesubdirs
