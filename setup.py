@@ -2,6 +2,13 @@
 Created on Mon Sep 20 15:02:41 2010
 
 @author: Thomas Graff
+
+http://guide.python-distribute.org/creation.html
+http://packages.python.org/distribute/setuptools.html
+
+run:
+ + python setup.py sdist
+   to create source distribution
 """
 
 from distutils.core import setup
@@ -11,26 +18,32 @@ import py2exe
 
 #msvc_files = [("Microsoft.VC90.CRT", glob(r'c:\dev\ms-vc-runtime\*.*'))]
 
-excludes = ["pywin", "pywin.debugger", "pywin.debugger.dbgcon",
-            "pywin.dialogs", "pywin.dialogs.list",
-            "Tkconstants","Tkinter","tcl",
-            "encodings"
-            ]
+excludes = [
+    "pywin", "pywin.debugger", "pywin.debugger.dbgcon",
+    "pywin.dialogs", "pywin.dialogs.list",
+    "Tkconstants","Tkinter","tcl",
+    "encodings"
+    ]
 
 
-includes = ["encodings",
-            "encodings.latin_1",]
+includes = [
+    "encodings",
+    "encodings.latin_1"
+    ]
 
 
-options = {"py2exe": {
-    "compressed": 1,
-    "optimize": 2,
-    "excludes": excludes,
-    "includes": includes,
-}}
+options = {
+    "py2exe": {
+        "compressed": 1,
+        "optimize": 2,
+        "excludes": excludes,
+        "includes": includes,
+        }
+    }
 
 
-setup(windows = ['run.py'],
+setup(
+    windows = ['run.py'],
     options = options,
     name = 'ConsumerCheck',
     version = '0.5',
@@ -41,7 +54,7 @@ setup(windows = ['run.py'],
     maintainer = 'Oliver Tomic',
     maintainer_email = 'oiver@matforsk.no',
     description = 'Nofima Software',
-    long_description = 'Statistical analysis',
+    long_description = open('README.txt').read(),
     classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: End Users/Desktop',
