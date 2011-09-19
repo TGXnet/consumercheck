@@ -62,11 +62,13 @@ class TestContainer(HasTraits):
     def _dsl_default(self):
         return make_dsl_mock()
 
-    ## def _test_subject_changed(self, old, new):
-    ##     if old is not None:
-    ##         old.main_ui_ptr = None
-    ##     if new is not None:
-    ##         new.main_ui_ptr = self
+    def _test_subject_changed(self, old, new):
+        if old is not None:
+            if hasattr(old, 'main_ui_ptr'):
+                old.main_ui_ptr = None
+        if new is not None:
+            if hasattr(new, 'main_ui_ptr'):
+                new.main_ui_ptr = self
 
 
 if __name__== '__main__':
