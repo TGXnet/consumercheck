@@ -83,7 +83,7 @@ class SinglePlotWindow(HasTraits):
             Group(
                 Item('eq_axis', label="Set equal axis"),
                 Item('show_x1', label="Show labels"),
-                Item('view_table', show_label=False),
+#                Item('view_table', show_label=False),
                 Item('save_plot', show_label=False),
                 orientation="horizontal",
                 ),
