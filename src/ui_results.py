@@ -1,18 +1,15 @@
 
 # Std libs import
 import tempfile
-from numpy import array, arange, savetxt
+from numpy import array, savetxt
 
 # Enthough imports
-from enthought.traits.api import HasTraits, Instance, Array, List, Button, DelegatesTo, Property
-from enthought.traits.ui.api import ModelView, View, Group, Item, TabularEditor
+from enthought.traits.api import Array, List, Button, Property
+from enthought.traits.ui.api import ModelView, View, Group, Item
+from enthought.traits.ui.editors.tabular_editor import TabularEditor
 from enthought.traits.ui.tabular_adapter import TabularAdapter
 from enthought.traits.ui.menu import OKButton
 from enthought.pyface.clipboard import clipboard
-
-# Local imports
-from dataset import DataSet
-
 
 class ArrayAdapter(TabularAdapter):
     index = List()
