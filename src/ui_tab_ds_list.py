@@ -32,8 +32,8 @@ class DsViewHandler(Handler):
 
 
     # Called when some value in object changes
-    def setattr(self, info, object, name, value):
-        super(DsViewHandler, self).setattr(info, object, name, value)
+    def setattr(self, info, obj, name, value):
+        super(DsViewHandler, self).setattr(info, obj, name, value)
         logging.info("setattr: %s change to %s", name, value)
 
 
@@ -133,7 +133,6 @@ datasets_view = View(
 
 
 if __name__ == '__main__':
-    """Run the application. """
     ds1 = DataSet(_ds_id = 'test1', _ds_name = 'Test 1')
     ds1.importDataset('./datasets/Ost.txt', True)
     ds1._ds_name = 'Oste test'

@@ -22,8 +22,6 @@ from enthought.chaco.tools.api import PanTool, ZoomTool
 
 
 class CCBasePlot(Plot):
-    label_refs = {}
-    meta_plots = {}
     """Plot configuration.
 
     Dictionary where key is pt_name and value is pt_data.
@@ -33,6 +31,10 @@ class CCBasePlot(Plot):
     (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
 
     """
+
+    label_refs = {}
+    meta_plots = {}
+
     def __init__(self, *args, **kw):
         super(CCBasePlot, self).__init__(*args, **kw)
         self._customize_settings()
@@ -105,8 +107,10 @@ class CCBasePlotScatter(CCBasePlot):
         # FIXME: check self.plot.aspect_ratio
         # /usr/share/doc/python-chaco/examples/aspect_ratio.py
         xlim, ylim = self._calcBoundsLimits()
-        self.x_mapper.range.set_bounds(*xlim)
-        self.y_mapper.range.set_bounds(*ylim)
+        xMin, xMax = xlim
+        self.x_mapper.range.set_bounds(xMin, xMax)
+        yMin, yMax = ylim
+        self.y_mapper.range.set_bounds(yMin, yMax)
 
     def _calcBoundsLimits(self, marginFactor=0.15):
         """Calc bounding box for orthonormal plotting.

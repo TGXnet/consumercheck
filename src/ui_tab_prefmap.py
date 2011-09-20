@@ -388,7 +388,6 @@ prefmap_tree_view = View(
 
 
 if __name__ == '__main__':
-    """Test run the View"""
     print("Interactive start")
     from tests.tools import TestContainer
 

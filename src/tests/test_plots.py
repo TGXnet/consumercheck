@@ -1,6 +1,6 @@
 
 def setConsumerCheckIncludePath():
-    consumerBase = findApplicationBasePath();
+    consumerBase = findApplicationBasePath()
     addLoadPath(consumerBase)
 
 

@@ -16,9 +16,9 @@ class DatasetSelectorHandler( Handler ):
 
 
     # Called when some value in object changes
-    def setattr(self, info, object, name, value):
+    def setattr(self, info, obj, name, value):
         super(DatasetSelectorHandler, self).setattr(
-            info, object, name, value)
+            info, obj, name, value)
         logging.info("setattr: %s change to %s", name, value)
 
 

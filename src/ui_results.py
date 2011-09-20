@@ -69,8 +69,8 @@ class TableViewController(ModelView):
             # needs redesign
             if name in ['ell_full_x', 'ell_full_y', 'ell_half_x', 'ell_half_y', 'pcy1', 'pcy2']:
                 continue
-            set = self.model.data.get_data(name)
-            la.append(set)
+            vec = self.model.data.get_data(name)
+            la.append(vec)
         self.table = array(la)
         rows, cols = self.table.shape
         # self.ad.columns = [('i', 'index')]

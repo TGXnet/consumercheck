@@ -86,7 +86,7 @@ class DatasetCollection(HasTraits):
         return nameDict
 
     @on_trait_change('_dataDict:_ds_id')
-    def dictNameChanged(self, object, name, old, new):
+    def dictNameChanged(self, obj, name, old, new):
         """Update dictionary name"""
         toMove = self._dataDict.pop(old)
         self.addDataset(toMove)
@@ -94,13 +94,12 @@ class DatasetCollection(HasTraits):
         logging.info("dictNameChange: %s change from %s to %s", name, old, new)
 
     @on_trait_change('_dataDict:_ds_name')
-    def displayNameChanged(self, object, name, old, new):
+    def displayNameChanged(self, obj, name, old, new):
         self.datasetNameChanged = True
         logging.info("displayNameChange: %s changed from %s to %s", name, old, new)
 
 
 if __name__ == '__main__':
-    """Test run the View"""
     print("Interactive start")
     from file_importer import FileImporter
     

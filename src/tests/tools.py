@@ -10,7 +10,7 @@ import logging
 from enthought.traits.api import HasTraits, Instance
 
 def setConsumerCheckIncludePath():
-    consumerBase = findApplicationBasePath();
+    consumerBase = findApplicationBasePath()
 #     consumerBase = '..'
     addLoadPath(consumerBase)
 

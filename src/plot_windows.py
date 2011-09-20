@@ -50,24 +50,24 @@ class SinglePlotWindow(HasTraits):
     title_text = Str("ConsumerCheck")
 
     @on_trait_change('show_x1')
-    def switch_labels(self, object, name, new):
+    def switch_labels(self, obj, name, new):
         ds_id = name.partition('_')[2]
-        object.plot.switchLabellVisibility(ds_id, new)
+        obj.plot.switchLabellVisibility(ds_id, new)
 
     @on_trait_change('eq_axis')
-    def switch_axis(self, object, name, new):
-        object.plot.toggleEqAxis(new)
+    def switch_axis(self, obj, name, new):
+        obj.plot.toggleEqAxis(new)
 
     @on_trait_change('view_table')
-    def show_table(self, object, name, new):
-        tvc = TableViewController(model=object.plot)
+    def show_table(self, obj, name, new):
+        tvc = TableViewController(model=obj.plot)
         tvc.configure_traits()
 
     @on_trait_change('save_plot')
-    def render_plot(self, object, name, old, new):
+    def render_plot(self, obj, name, old, new):
         fe = FileEditor()
         fe.edit_traits()
-        object.plot.export_image(fe.file_name)
+        obj.plot.export_image(fe.file_name)
 
     traits_view = View(
         Group(
@@ -107,17 +107,17 @@ class LinePlotWindow(HasTraits):
     title_text = Str("ConsumerCheck")
 
     @on_trait_change('show_x1')
-    def switch_labels(self, object, name, new):
+    def switch_labels(self, obj, name, new):
         ds_id = name.partition('_')[2]
-        object.plot.switchLabellVisibility(ds_id, new)
+        obj.plot.switchLabellVisibility(ds_id, new)
 
     @on_trait_change('eq_axis')
-    def switch_axis(self, object, name, new):
-        object.plot.toggleEqAxis(new)
+    def switch_axis(self, obj, name, new):
+        obj.plot.toggleEqAxis(new)
 
     @on_trait_change('view_table')
-    def show_table(self, object, name, new):
-        tvc = TableViewController(model=object.plot)
+    def show_table(self, obj, name, new):
+        tvc = TableViewController(model=obj.plot)
         tvc.configure_traits()
 
     traits_view = View(

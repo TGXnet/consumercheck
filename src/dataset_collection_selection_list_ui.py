@@ -21,8 +21,8 @@ class DatasetColumn ( ObjectColumn ):
     width                = 0.08
     horizontal_alignment = 'center'
 
-    def get_text_color ( self, object ):
-        return [ 'light grey', 'black' ][ object.isSelected ]
+    def get_text_color ( self, obj ):
+        return [ 'light grey', 'black' ][ obj.isSelected ]
 
 
 # The 'datasets' trait table editor:

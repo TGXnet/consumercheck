@@ -27,8 +27,8 @@ class DatasetsTreeHandler(Handler):
 
 
     # Called when some value in object changes
-    def setattr(self, info, object, name, value):
-        super(DatasetsTreeHandler, self).setattr(info, object, name, value)
+    def setattr(self, info, obj, name, value):
+        super(DatasetsTreeHandler, self).setattr(info, obj, name, value)
         logging.info("setattr: %s change to %s", name, value)
 
 

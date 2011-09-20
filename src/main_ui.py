@@ -20,8 +20,8 @@ from about_consumercheck import ConsumerCheckAbout
 class MainViewHandler(Handler):
     """Handler for dataset view"""
     # Called when some value in object changes
-    def setattr(self, info, object, name, value):
-        super(MainViewHandler, self).setattr(info, object, name, value)
+    def setattr(self, info, obj, name, value):
+        super(MainViewHandler, self).setattr(info, obj, name, value)
         logging.info('setattr: Variables %s set to %s', name, value)
 
     # Event handler signature
@@ -104,7 +104,6 @@ class MainUi(HasTraits):
 
 
 if __name__ == '__main__':
-    """Run the application. """
     # dsl = DatasetCollection()
     mother = MainUi()
     ui = mother.edit_traits()

@@ -3,6 +3,8 @@
 from enthought.traits.ui.api import View, Item
 from enthought.traits.ui.menu import OKButton, CancelButton
 
+# Local imports
+from dataset import DataSet
 
 dsview = View(
     Item(name = '_ds_id'),

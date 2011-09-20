@@ -43,7 +43,7 @@ class PcaModel(HasTraits):
     list_control = Instance(CheckListController)
 
     ## @on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
-    ## def datasetsChanged(self, object, name, old, new):
+    ## def datasetsChanged(self, obj, name, old, new):
     ##      self.datasetsAltered = True
 
     def get_res(self, ds_id):
@@ -301,7 +301,6 @@ pca_tree_view = View(
 
 
 if __name__ == '__main__':
-    """Test run the View"""
     print("Interactive start")
     from dataset_collection import DatasetCollection
     from file_importer import FileImporter

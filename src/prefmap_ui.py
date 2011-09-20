@@ -40,11 +40,11 @@ class PrefmapUIController(Controller):
         self._cons = [(ds._ds_id, ds._ds_name) for ds in datasets if ds._datasetType == 'Consumer liking']
 
     @on_trait_change('sel_cons, sel_sens, mapping')
-    def _choice_updated(self, object, name, old, new):
+    def _choice_updated(self, obj, name, old, new):
         self.sel_updated = True
 
     @on_trait_change('model:[datasetNameChanged,dataDictContentChanged],model:_dataDict:_datasetType')
-    def _dsl_altered(self, object, name, new):
+    def _dsl_altered(self, obj, name, new):
         self._build_sel_list()
 
 
@@ -99,7 +99,6 @@ def show_change():
 
 
 if __name__ == '__main__':
-    """Test run the View"""
     print("Interactive start")
     from tests.tools import TestContainer
     container = TestContainer()
