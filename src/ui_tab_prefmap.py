@@ -16,7 +16,7 @@ from enthought.chaco.api import ArrayPlotData
 from plots import CCPlotScatter, CCPlotLine, CCPlotCalValExplVariance, CCPlotCorrLoad, CCPlotXYCorrLoad
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from mvr import plsr
-from prefmap_selector import PrefmapUIController, prefmap_ui_controller, prefmap_ui_view
+from prefmap_ui import PrefmapUIController, prefmap_ui_controller, prefmap_ui_view
 
 
 class PrefmapModel(HasTraits):
