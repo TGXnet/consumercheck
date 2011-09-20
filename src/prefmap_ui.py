@@ -46,6 +46,10 @@ class PrefmapUIController(Controller):
     def _choice_updated(self, object, name, old, new):
         self.sel_updated = True
 
+    @on_trait_change('model:[datasetNameChanged,dataDictContentChanged],model:_dataDict:_datasetType')
+    def _dsl_altered(self, object, name, new):
+        self._build_sel_list()
+
 
 prefmap_ui_controller = PrefmapUIController()
 

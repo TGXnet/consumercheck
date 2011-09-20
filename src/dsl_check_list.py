@@ -2,7 +2,7 @@
 # stdlib imports
 import logging
 
-from enthought.traits.api import List, DelegatesTo
+from enthought.traits.api import List, DelegatesTo, on_trait_change
 from enthought.traits.ui.api import Item, View, CheckListEditor, Controller
 
 
@@ -14,7 +14,8 @@ class CheckListController(Controller):
     object in this object constructor.
     FIXME: Compare with prefmapUIController to equalize API for dataset collection
     """
-    sel_list = DelegatesTo('model', prefix='indexNameList')
+#    sel_list = DelegatesTo('model', prefix='indexNameList')
+    sel_list = List()
 
     # Define a trait for each of three formations:
     selected = List(
@@ -22,6 +23,13 @@ class CheckListController(Controller):
             name = 'sel_list',
             cols = 1 )
         )
+
+    @on_trait_change('model.[datasetNameChanged,dataDictContentChanged]')
+    def _update_selection(self, object, name, new):
+        datasets = self.model.getDatasetList()
+        self.sel_list =  [(ds._ds_id, ds._ds_name) for ds in datasets]
+
+
 
     def _selected_changed(self, old, new):
         logging.info("Selection list changed from {0} to {1}".format(old, new))
