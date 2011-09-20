@@ -5,15 +5,8 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api \
-    import HasTraits, Instance, DelegatesTo, Button, Str, Int,\
-    File, Bool, List, on_trait_change
-from enthought.traits.ui.api \
-    import View, Item, Group, HGroup, ListStrEditor, Handler, FileEditor,\
-    InstanceEditor, ButtonEditor
-from enthought.traits.ui.menu \
-    import Action, Menu, MenuBar
-
+from enthought.traits.api import Instance, Int, List
+from enthought.traits.ui.api import View, Item, Group, HGroup, ListStrEditor, Handler, InstanceEditor
 
 
 # Local imports

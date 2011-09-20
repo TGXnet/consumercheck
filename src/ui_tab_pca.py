@@ -8,8 +8,8 @@ import sys
 import logging
 
 # Enthought imports
-from enthought.traits.api import HasTraits, Instance, Event, Str, List, on_trait_change, DelegatesTo, Dict, Any
-from enthought.traits.ui.api import View, Item, UItem, Group, Handler, ModelView, TreeEditor, TreeNode
+from enthought.traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any
+from enthought.traits.ui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
 from enthought.chaco.api import ArrayPlotData
 
 # Local imports

@@ -280,4 +280,3 @@ class PCA:
         ellipses['y100perc'] = ycords100perc
         
         return ellipses
-

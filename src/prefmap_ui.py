@@ -1,10 +1,7 @@
 
-# stdlib imports
-import logging
-
 # Enthought imports
-from enthought.traits.api import Str, List, Enum, DelegatesTo, Event, on_trait_change
-from enthought.traits.ui.api import View, Group, Item, Custom, UCustom, Label, Heading, CheckListEditor, EnumEditor, Controller
+from enthought.traits.api import List, Enum, Event, on_trait_change
+from enthought.traits.ui.api import View, Group, UCustom, Label, CheckListEditor, EnumEditor, Controller
 
 
 class PrefmapUIController(Controller):

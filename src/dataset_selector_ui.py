@@ -3,11 +3,9 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api \
-    import List, Str, Bool
+from enthought.traits.api import List, Str
 
-from enthought.traits.ui.api \
-    import EnumEditor, Handler, Item, View
+from enthought.traits.ui.api import EnumEditor, Handler, Item, View
 
 
 class DatasetSelectorHandler( Handler ):

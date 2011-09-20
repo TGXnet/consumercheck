@@ -7,14 +7,10 @@ data columns.
 import logging
 
 # Enthoughg imports
-from enthought.traits.api \
-    import HasStrictTraits, Str, List, Bool, Event
-from enthought.traits.ui.api \
-    import View, Handler, Item, TableEditor
-from enthought.traits.ui.table_column \
-    import ObjectColumn
-from enthought.traits.ui.extras.checkbox_column \
-    import CheckboxColumn
+from enthought.traits.api import HasStrictTraits, Str, List, Bool, Event
+from enthought.traits.ui.api import View, Handler, Item, TableEditor
+from enthought.traits.ui.table_column import ObjectColumn
+from enthought.traits.ui.extras.checkbox_column import CheckboxColumn
 
 
 # Create a specialized column to set the text color differently based upon

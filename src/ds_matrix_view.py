@@ -4,7 +4,7 @@ import tempfile
 from numpy import savetxt
 
 # Enthough imports
-from enthought.traits.api import HasTraits, Instance, Array, Button, DelegatesTo, Property
+from enthought.traits.api import Instance, Button, Property
 from enthought.traits.ui.api import Controller, View, Item, TabularEditor
 from enthought.traits.ui.tabular_adapter import TabularAdapter
 from enthought.traits.ui.menu import OKButton

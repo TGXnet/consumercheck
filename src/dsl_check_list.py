@@ -2,7 +2,7 @@
 # stdlib imports
 import logging
 
-from enthought.traits.api import List, DelegatesTo, on_trait_change
+from enthought.traits.api import List, on_trait_change
 from enthought.traits.ui.api import Item, View, CheckListEditor, Controller
 
 

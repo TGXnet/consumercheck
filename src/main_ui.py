@@ -3,14 +3,9 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api \
-    import HasTraits, Instance
-
-from enthought.traits.ui.api \
-    import View, Item, Group, Handler,\
-    InstanceEditor
-from enthought.traits.ui.menu \
-    import Action, Menu, MenuBar
+from enthought.traits.api import HasTraits, Instance
+from enthought.traits.ui.api import View, Item, Group, Handler, InstanceEditor
+from enthought.traits.ui.menu import Action, Menu, MenuBar
 
 
 # Local imports

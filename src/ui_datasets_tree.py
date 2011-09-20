@@ -3,10 +3,8 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api \
-    import HasTraits, Str, Regex, List, Dict, Instance
-from enthought.traits.ui.api \
-    import Item, View, TreeEditor, TreeNode, Handler
+from enthought.traits.api import HasTraits, Str, List, Instance
+from enthought.traits.ui.api import Item, View, TreeEditor, TreeNode, Handler
 
 # Local imports
 from ds_ui import DataSet, ds_list_tab
@@ -30,7 +28,7 @@ class DatasetsTreeHandler(Handler):
 
     # Called when some value in object changes
     def setattr(self, info, object, name, value):
-        super(DsViewHandler, self).setattr(info, object, name, value)
+        super(DatasetsTreeHandler, self).setattr(info, object, name, value)
         logging.info("setattr: %s change to %s", name, value)
 
 

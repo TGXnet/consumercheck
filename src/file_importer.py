@@ -14,7 +14,7 @@ import xlrd
 
 # Enthought imports
 from enthought.traits.api import HasTraits, File, Str, Bool, Enum, Array, List, Button
-from enthought.traits.ui.api import View, Item, UItem, Custom, UCustom, Label, Heading, FileEditor
+from enthought.traits.ui.api import View, Item, UCustom, FileEditor
 from enthought.traits.ui.menu import OKButton, CancelButton
 from enthought.pyface.api import FileDialog, OK
 
@@ -234,7 +234,6 @@ class FileImporter(HasTraits):
                 nested_list.append(values)
         self._dataset = array(nested_list, dtype=float)
         self._objectNames = [unicode(x).encode('ascii', 'ignore') for x in sh.col_values(0, 1)]
-        varName = sh.row_values(0, 1)
         self._variableNames = [unicode(x).encode('ascii', 'ignore') for x in sh.row_values(0, 1)]
 
     def _getWorkDir(self):

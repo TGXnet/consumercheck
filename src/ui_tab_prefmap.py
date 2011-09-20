@@ -8,12 +8,12 @@ import sys
 import logging
 
 # Enthought imports
-from enthought.traits.api import HasTraits, Instance, Event, Str, List, on_trait_change, DelegatesTo, Dict, Any
-from enthought.traits.ui.api import View, Item, UItem, Group, Handler, ModelView, CheckListEditor, TreeEditor, TreeNode
+from enthought.traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any
+from enthought.traits.ui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
 from enthought.chaco.api import ArrayPlotData
 
 # Local imports
-from plots import CCPlotScatter, CCPlotLine, CCPlotCalValExplVariance, CCPlotCorrLoad, CCPlotXYCorrLoad
+from plots import CCPlotScatter, CCPlotLine, CCPlotCalValExplVariance, CCPlotXYCorrLoad
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from mvr import plsr
 from prefmap_ui import PrefmapUIController, prefmap_ui_controller, prefmap_ui_view

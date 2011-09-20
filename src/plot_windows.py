@@ -5,7 +5,7 @@
 from enthought.enable.api import Component, ComponentEditor
 from enthought.traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
 from enthought.traits.ui.api import View, Group, Item, Label, Handler
-from enthought.chaco.api import GridPlotContainer, HPlotContainer
+from enthought.chaco.api import GridPlotContainer
 
 #Local imports
 from ui_results import TableViewController
