@@ -9,15 +9,15 @@ python bbfreeze-cc.py>bbfreeze-cc.log
 rem pause "freezed"
 
 rem *** Remove not used libaries
-del /Q consumercheck-0.5.0\QtWebKit4.dll
-del /Q consumercheck-0.5.0\QtGui4.dll
-del /Q consumercheck-0.5.0\PyQt4.QtGui.pyd
-del /Q consumercheck-0.5.0\QtCore4.dll
-del /Q consumercheck-0.5.0\PyQt4.QtCore.pyd
-del /Q consumercheck-0.5.0\QtNetwork4.dll
-del /Q consumercheck-0.5.0\_ssl.pyd
-del /Q consumercheck-0.5.0\PIL._imaging.pyd
-del /Q consumercheck-0.5.0\PyQt4.QtWebKit.pyd
+rem del /Q consumercheck-0.5.0\QtWebKit4.dll
+rem del /Q consumercheck-0.5.0\QtGui4.dll
+rem del /Q consumercheck-0.5.0\PyQt4.QtGui.pyd
+rem del /Q consumercheck-0.5.0\QtCore4.dll
+rem del /Q consumercheck-0.5.0\PyQt4.QtCore.pyd
+rem del /Q consumercheck-0.5.0\QtNetwork4.dll
+rem del /Q consumercheck-0.5.0\_ssl.pyd
+rem del /Q consumercheck-0.5.0\PIL._imaging.pyd
+rem del /Q consumercheck-0.5.0\PyQt4.QtWebKit.pyd
 
 rem rd /S /Q consumercheck-0.5.0\traitsbackendqt-3.5.0-py2.6.egg
 
