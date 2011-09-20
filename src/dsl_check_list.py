@@ -12,6 +12,7 @@ class CheckListController(Controller):
 
     The model attribute have to be set to the dataset collection (dsl)
     object in this object constructor.
+    FIXME: Compare with prefmapUIController to equalize API for dataset collection
     """
     sel_list = DelegatesTo('model', prefix='indexNameList')
 
