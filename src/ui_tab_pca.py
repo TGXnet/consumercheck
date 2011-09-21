@@ -42,7 +42,7 @@ class PcaModel(HasTraits):
     name = Str( 'Options' )
     list_control = Instance(CheckListController)
 
-    ## @on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
+    ## @on_trait_change('mother:dsl:[datasets_event,ds_name_event]')
     ## def datasetsChanged(self, obj, name, old, new):
     ##      self.datasetsAltered = True
 

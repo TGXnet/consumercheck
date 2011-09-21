@@ -26,3 +26,4 @@ Module name: short lowercase
 Things to fix
 
 ds._ds_id -> ds._id
+_changed -> on_trait_change

@@ -37,7 +37,7 @@ class DatasetsTreeHandler(Handler):
         self._updateDatasetsList(uiInfo)
 
 
-    def object_dataDictContentChanged_changed(self, uiInfo):
+    def object_datasets_event_changed(self, uiInfo):
         self._updateDatasetsList(uiInfo)
 
 

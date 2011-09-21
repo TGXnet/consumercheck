@@ -37,13 +37,13 @@ class DsViewHandler(Handler):
         logging.info("setattr: %s change to %s", name, value)
 
 
-    def object_datasetNameChanged_changed(self, uiInfo):
+    def object_ds_name_event_changed(self, uiInfo):
         """Reacts to changes in dataset names"""
         self._buildIndexList(uiInfo.object)
-        logging.info("datasetNameChanged_changed: activated")
+        logging.info("ds_name_event_changed: activated")
 
 
-    def object_dataDictContentChanged_changed(self, uiInfo):
+    def object_datasets_event_changed(self, uiInfo):
         if uiInfo.initialized:
             self._buildIndexList(uiInfo.object)
             self._activateLastAddedDataset()
