@@ -414,8 +414,8 @@ if __name__ == '__main__':
     ## fi = FileImporter()
     ## main.dsl.add_dataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
     ## main.dsl.add_dataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
-    ## main.dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker ost'
-    ## main.dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
-    ## main.dsl._dataDict['ost_forbruker']._dataset_type = 'Consumer liking'
-    ## main.dsl._dataDict['ost_sensorikk']._dataset_type = 'Sensory profiling'
+    ## main.dsl._datasets['ost_forbruker']._ds_name = 'Forbruker ost'
+    ## main.dsl._datasets['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
+    ## main.dsl._datasets['ost_forbruker']._dataset_type = 'Consumer liking'
+    ## main.dsl._datasets['ost_sensorikk']._dataset_type = 'Sensory profiling'
     ## main.prefmap.configure_traits(view=prefmap_tree_view)
