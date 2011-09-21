@@ -14,7 +14,7 @@ class CheckListController(Controller):
     object in this object constructor.
     FIXME: Compare with prefmapUIController to equalize API for dataset collection
     """
-#    sel_list = DelegatesTo('model', prefix='indexNameList')
+#    sel_list = DelegatesTo('model', prefix='id_name_list')
     sel_list = List()
 
     # Define a trait for each of three formations:

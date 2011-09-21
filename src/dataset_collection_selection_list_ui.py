@@ -66,7 +66,7 @@ class SelectionListHandler( Handler ):
 
     def _populateSelectionList(self, dsl):
         self.datasets = []
-        for kName, dName in dsl.indexNameList:
+        for kName, dName in dsl.id_name_list:
             isSelected = False
             for isHere in dsl.selectedSet:
                 if isHere == kName:

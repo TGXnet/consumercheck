@@ -41,7 +41,7 @@ class DatasetSelectorHandler( Handler ):
 
     def _buildSelectionList(self, dsl):
         self.dsChoices = []
-        for kName, dName in dsl.indexNameList:
+        for kName, dName in dsl.id_name_list:
             self.dsChoices.append(dName)
         self._initChoices(dsl)
 

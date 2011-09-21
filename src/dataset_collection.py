@@ -19,8 +19,9 @@ class DatasetCollection(HasTraits):
 
     Members
     =======
-      * dataDict
-      * indexNameList
+      * _datasets
+      * id_name_list
+      * name_id_mapping
 
     Description
     ===========
@@ -37,16 +38,16 @@ class DatasetCollection(HasTraits):
     dataDictContentChanged = Event
 
     # Dataset index list
-    indexNameList = Property()
-    # indexNameList = Property( depends_on = '_datasets' )
-    nameMap = Property()
+    id_name_list = Property()
+    # id_name_list = Property( depends_on = '_datasets' )
+    name_id_mapping = Property()
 
     def get_by_id(self, ds_id):
         """Return DataSet object specified by internal name"""
         return self._datasets[ds_id]
 
     def id_by_name(self, name):
-        return self.nameMap[name]
+        return self.name_id_mapping[name]
 
     def get_by_name(self, name):
         return self.get_by_id(self.id_by_name(name))
@@ -70,8 +71,8 @@ class DatasetCollection(HasTraits):
         return self._datasets.values()
 
     @property_depends_on( '_datasets' )
-    def _get_id_list(self):
-        logging.info("Update indexNameList")
+    def _get_id_name_list(self):
+        logging.info("Update id_name_list")
         ids = []
         for sn, so in self._datasets.iteritems():
             tu = (sn, so._ds_name)
@@ -79,8 +80,8 @@ class DatasetCollection(HasTraits):
         return ids
 
     # @property_depends_on( '_datasets' )
-    def _get_id_name(self):
-        logging.info("Update nameMap")
+    def _get_name_id_mapping(self):
+        logging.info("Update name_id_mapping")
         id_names = {}
         for si, so in self._datasets.iteritems():
             id_names[so._ds_name] = si

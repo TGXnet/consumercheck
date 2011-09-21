@@ -58,7 +58,7 @@ class DsViewHandler(Handler):
 
     # Generate indexList
     def _buildIndexList(self, datasetCollectionObject):
-        self._indexList = datasetCollectionObject.indexNameList
+        self._indexList = datasetCollectionObject.id_name_list
         self._nameList = []
         for kName, dName in self._indexList:
             self._nameList.append(dName)

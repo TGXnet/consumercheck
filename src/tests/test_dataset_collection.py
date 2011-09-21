@@ -52,13 +52,13 @@ class TestDatasetCollection(unittest.TestCase):
 
     def _getKeyNames(self):
         keys = []
-        for kname, dname in self.testSetsCollection.indexNameList:
+        for kname, dname in self.testSetsCollection.id_name_list:
             keys.append(kname)
         return keys
 
     def _getDispNames(self):
         disp = []
-        for kname, dname in self.testSetsCollection.indexNameList:
+        for kname, dname in self.testSetsCollection.id_name_list:
             disp.append(dname)
         return disp
 
