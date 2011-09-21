@@ -3,14 +3,14 @@
 import logging
 
 # Enthought imports
-from enthought.traits.api import HasTraits, Str, List, Instance
+from enthought.traits.api import HasTraits, Str, List, Instance, on_trait_change
 from enthought.traits.ui.api import Item, View, TreeEditor, TreeNode, Handler
 
 # Local imports
 from ds_ui import DataSet, ds_list_tab
 
 
-class Datasets ( HasTraits ):
+class Datasets(HasTraits):
     """ Defines a company with datasets and employees. """
     name     = Str( 'FIXME: Datasets default name' )
     imported = List( DataSet )
@@ -34,15 +34,15 @@ class DatasetsTreeHandler(Handler):
 
     # Called when the the window is created
     def init(self, uiInfo):
-        self._updateDatasetsList(uiInfo)
+        self._updateDatasetsList(uiInfo.object)
 
 
     def object_datasets_event_changed(self, uiInfo):
-        self._updateDatasetsList(uiInfo)
+        self._updateDatasetsList(uiInfo.object)
 
 
-    def _updateDatasetsList(self, uiInfo):
-        self.collection.updateList(uiInfo.object)
+    def _updateDatasetsList(self, obj):
+        self.collection.updateList(obj)
 
 # end DatasetTreeHandler
 
@@ -88,3 +88,9 @@ tree_view = View(
     height = .3,
     handler = DatasetsTreeHandler(),
     )
+
+
+if __name__ == '__main__':
+    from tests.tools import make_dsl_mock
+    dsl = make_dsl_mock()
+    ui = dsl.configure_traits(view=tree_view)
