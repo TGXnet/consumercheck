@@ -16,7 +16,7 @@ class Datasets ( HasTraits ):
     imported = List( DataSet )
 
     def updateList(self, dcObj):
-        self.imported = dcObj.getDatasetList()
+        self.imported = dcObj.get_dataset_list()
 
 # end Datasets
 

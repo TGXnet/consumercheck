@@ -51,8 +51,8 @@ class PrefmapModel(HasTraits):
     def _run_prefmap(self, xId, yId):
         logging.info("Run plsr for: X: {0} ,Y: {1}".format(xId, yId))
         return plsr(
-            self.dsl.getById(xId).matrix,
-            self.dsl.getById(yId).matrix,
+            self.dsl.get_by_id(xId).matrix,
+            self.dsl.get_by_id(yId).matrix,
             centre="yes",
             fncomp=5,
             fmethod="oscorespls",
@@ -134,7 +134,7 @@ class PrefmapModelViewHandler(ModelView):
         plot.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[0], expl_vars_y[0])
         plot.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[1], expl_vars_y[1])
         if add_labels:
-            labels = self.model.dsl.getById(xId).object_names
+            labels = self.model.dsl.get_by_id(xId).object_names
             plot.addDataLabels(labels)
         return plot
 
@@ -159,7 +159,7 @@ class PrefmapModelViewHandler(ModelView):
         expl_vars = self.model.get_res(xId, yId)['calExplVarX']
         plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
         plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
-        labels = self.model.dsl.getById(xId).variable_names
+        labels = self.model.dsl.get_by_id(xId).variable_names
         plot.addDataLabels(labels)
         return plot
 
@@ -184,7 +184,7 @@ class PrefmapModelViewHandler(ModelView):
         expl_vars = self.model.get_res(xId, yId)['calExplVarY']
         plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
         plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
-        labels = self.model.dsl.getById(yId).variable_names
+        labels = self.model.dsl.get_by_id(yId).variable_names
         plot.addDataLabels(labels)
         return plot
 
@@ -218,8 +218,8 @@ class PrefmapModelViewHandler(ModelView):
         pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
         pcl.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(cevx[1], cevy[1])
         if add_labels:
-            vnx = self.model.dsl.getById(xId).variable_names
-            vny = self.model.dsl.getById(yId).variable_names
+            vnx = self.model.dsl.get_by_id(xId).variable_names
+            vny = self.model.dsl.get_by_id(yId).variable_names
             pcl.addDataLabels(vnx, 'x1')
             pcl.addDataLabels(vny, 'y1')
         return pcl
@@ -282,8 +282,8 @@ class PrefmapModelViewHandler(ModelView):
                     )
 
     def _wind_title(self, dsx_id, dsy_id):
-        dsx_name = self.model.dsl.getById(dsx_id)._ds_name
-        dsy_name = self.model.dsl.getById(dsy_id)._ds_name
+        dsx_name = self.model.dsl.get_by_id(dsx_id)._ds_name
+        dsy_name = self.model.dsl.get_by_id(dsy_id)._ds_name
         return "ConsumerCheck Prefmap - ({0}) X ~ Y ({1})".format(dsx_name, dsy_name)
 
 
@@ -412,8 +412,8 @@ if __name__ == '__main__':
 
     ## main = FakeMain(prefmap = PrefmapModelViewHandler(PrefmapModel()))
     ## fi = FileImporter()
-    ## main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
-    ## main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
+    ## main.dsl.add_dataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
+    ## main.dsl.add_dataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
     ## main.dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker ost'
     ## main.dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
     ## main.dsl._dataDict['ost_forbruker']._dataset_type = 'Consumer liking'

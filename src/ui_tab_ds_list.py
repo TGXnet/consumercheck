@@ -68,7 +68,7 @@ class DsViewHandler(Handler):
     def handler__selIndex_changed(self, uiInfo):
         if (uiInfo.initialized) and (uiInfo.handler._selIndex >= 0):
             name = self._indexToName(uiInfo.handler._selIndex)
-            self.vs = uiInfo.object.getById(name)
+            self.vs = uiInfo.object.get_by_id(name)
             logging.info(
                 "selIndex_changed: index is %s and selected dataset is %s",
                 uiInfo.handler._selIndex, name)
@@ -138,6 +138,6 @@ if __name__ == '__main__':
     ds1._ds_name = 'Oste test'
     ds2 = DataSet(_ds_id = 'test2', _ds_name = 'Test 2')
     dc = DatasetCollection()
-    dc.addDataset(ds1)
-    dc.addDataset(ds2)
+    dc.add_dataset(ds1)
+    dc.add_dataset(ds2)
     ui = dc.edit_traits(datasets_view)

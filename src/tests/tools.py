@@ -37,12 +37,12 @@ from file_importer import FileImporter
 def make_dsl_mock():
     dsl = DatasetCollection()
     ds_importer = FileImporter()
-    dsl.addDataset(ds_importer.noninteractiveImport('datasets/Ost.txt'))
-    dsl.addDataset(ds_importer.noninteractiveImport('datasets/Polser.txt', True, True))
-    dsl.addDataset(ds_importer.noninteractiveImport('datasets/A_labels.txt'))
-    dsl.addDataset(ds_importer.noninteractiveImport('datasets/C_labels.txt'))
-    dsl.addDataset(ds_importer.noninteractiveImport('datasets/Ost_forbruker.txt'))
-    dsl.addDataset(ds_importer.noninteractiveImport('datasets/Ost_sensorikk.txt'))
+    dsl.add_dataset(ds_importer.noninteractiveImport('datasets/Ost.txt'))
+    dsl.add_dataset(ds_importer.noninteractiveImport('datasets/Polser.txt', True, True))
+    dsl.add_dataset(ds_importer.noninteractiveImport('datasets/A_labels.txt'))
+    dsl.add_dataset(ds_importer.noninteractiveImport('datasets/C_labels.txt'))
+    dsl.add_dataset(ds_importer.noninteractiveImport('datasets/Ost_forbruker.txt'))
+    dsl.add_dataset(ds_importer.noninteractiveImport('datasets/Ost_sensorikk.txt'))
     dsl._dataDict['a_labels']._ds_name = 'Set A tull'
     dsl._dataDict['c_labels']._ds_name = 'Set C tull'
     dsl._dataDict['a_labels']._dataset_type = 'Consumer liking'

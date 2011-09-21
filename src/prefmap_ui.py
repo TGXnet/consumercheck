@@ -35,7 +35,7 @@ class PrefmapUIController(Controller):
         self._build_sel_list()
 
     def _build_sel_list(self):
-        datasets = self.model.getDatasetList()
+        datasets = self.model.get_dataset_list()
         self._sens =  [(ds._ds_id, ds._ds_name) for ds in datasets if ds._dataset_type == 'Sensory profiling']
         self._cons = [(ds._ds_id, ds._ds_name) for ds in datasets if ds._dataset_type == 'Consumer liking']
 

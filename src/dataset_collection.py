@@ -8,7 +8,8 @@ Datasets can be imported or genrated.
 import logging
 
 # Enthought traits imports
-from enthought.traits.api import HasTraits, Dict, Str, Event, Property, on_trait_change, property_depends_on
+from enthought.traits.api import HasTraits, Dict, Str, Event, Property, \
+     on_trait_change, property_depends_on
 
 # Local imports
 from dataset import DataSet
@@ -40,72 +41,66 @@ class DatasetCollection(HasTraits):
     # indexNameList = Property( depends_on = '_dataDict' )
     nameMap = Property()
 
-    def getById(self, ds_id):
+    def get_by_id(self, ds_id):
         """Return DataSet object specified by internal name"""
         return self._dataDict[ds_id]
 
-    def idByName(self, name):
+    def id_by_name(self, name):
         return self.nameMap[name]
 
-    def getByName(self, name):
-        return self.getById(self.idByName(name))
+    def get_by_name(self, name):
+        return self.get_by_id(self.id_by_name(name))
 
-    def addDataset(self, dataSet):
+    def add_dataset(self, ds):
         """Add or update dataset"""
-        name = dataSet._ds_id
+        name = ds._ds_id
         if self._dataDict.__contains__(name):
             raise Exception("Key ({0}) already exists".format(name))
-        self._dataDict[name] = dataSet
+        self._dataDict[name] = ds
         self.dataDictContentChanged = True
-        logging.info("addDataset: %s", name)
+        logging.info("add_dataset: %s", name)
 
-    def deleteDataset(self, internalName):
+    def delete_dataset(self, ds_id):
         """Remove dataset from collection"""
-        del self._dataDict[internalName]
+        del self._dataDict[ds_id]
         self.dataDictContentChanged = True
-        logging.info("deleteDataset: %s", internalName)
+        logging.info("delete_dataset: %s", ds_id)
 
-    def getDatasetList(self):
+    def get_dataset_list(self):
         return self._dataDict.values()
 
     @property_depends_on( '_dataDict' )
-    def _get_indexNameList(self):
+    def _get_id_list(self):
         logging.info("Update indexNameList")
-        indexList = []
+        ids = []
         for sn, so in self._dataDict.iteritems():
             tu = (sn, so._ds_name)
-            indexList.append(tu)
-        return indexList
+            ids.append(tu)
+        return ids
 
     # @property_depends_on( '_dataDict' )
-    def _get_nameMap(self):
+    def _get_id_name(self):
         logging.info("Update nameMap")
-        nameDict = {}
+        id_names = {}
         for si, so in self._dataDict.iteritems():
-            nameDict[so._ds_name] = si
-        return nameDict
+            id_names[so._ds_name] = si
+        return id_names
 
     @on_trait_change('_dataDict:_ds_id')
-    def dictNameChanged(self, obj, name, old, new):
+    def _id_change(self, obj, name, old, new):
         """Update dictionary name"""
-        toMove = self._dataDict.pop(old)
-        self.addDataset(toMove)
+        moving = self._dataDict.pop(old)
+        self.add_dataset(moving)
         self.dataDictContentChanged = True
         logging.info("dictNameChange: %s change from %s to %s", name, old, new)
 
     @on_trait_change('_dataDict:_ds_name')
-    def displayNameChanged(self, obj, name, old, new):
+    def _name_change(self, obj, name, old, new):
         self.datasetNameChanged = True
-        logging.info("displayNameChange: %s changed from %s to %s", name, old, new)
+        logging.info("displayNameChange: %s changed: %s to %s", name, old, new)
 
 
 if __name__ == '__main__':
     print("Interactive start")
-    from file_importer import FileImporter
-    
-    dsl = DatasetCollection()
-    fi = FileImporter()
-    dsl.addDataset(fi.noninteractiveImport('datasets/A_labels.txt'))
-    dsl.addDataset(fi.noninteractiveImport('datasets/C_labels.txt'))
-    dsl._dataDict['a_labels']._ds_name = 'Set A tull'
-    dsl._dataDict['c_labels']._ds_name = 'Set C tull'
+    from tests.tools import make_dsl_mock
+    dsl = make_dsl_mock()

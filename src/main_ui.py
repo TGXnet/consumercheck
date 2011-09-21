@@ -32,14 +32,17 @@ class MainViewHandler(Handler):
         importer = FileImporter()
         dsl = importer.interactiveMultiImport()
         for ds in dsl:
-            uiInfo.object.dsl.addDataset(ds)
+            uiInfo.object.dsl.add_dataset(ds)
             logging.info("importDataset: internal name = %s", ds._ds_id)
 
     def view_about(self, info):
         ConsumerCheckAbout().edit_traits()
         
     def init(self, info):
-        info.object.splash.close()
+        try:
+            info.object.splash.close()
+        except AttributeError:
+            pass
 
     # end MainViewHandler
 
@@ -104,7 +107,8 @@ class MainUi(HasTraits):
 
 
 if __name__ == '__main__':
-    # dsl = DatasetCollection()
-    mother = MainUi()
-    ui = mother.edit_traits()
+    from tests.tools import make_dsl_mock
+    dsl = make_dsl_mock()
+    mother = MainUi(dsl=dsl)
+    ui = mother.configure_traits()
     # ui = MainViewHandler().edit_traits( context = dsl )

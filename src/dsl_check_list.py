@@ -26,7 +26,7 @@ class CheckListController(Controller):
 
     @on_trait_change('model.[datasetNameChanged,dataDictContentChanged]')
     def _update_selection(self, obj, name, new):
-        datasets = self.model.getDatasetList()
+        datasets = self.model.get_dataset_list()
         self.sel_list =  [(ds._ds_id, ds._ds_name) for ds in datasets]
 
 
