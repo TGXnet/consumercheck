@@ -112,7 +112,7 @@ class PcaModelViewHandler(ModelView):
         res = self.model.get_res(ds_id)
         pc_tab = res.getScores()
         if add_labels:
-            labels = self.model.dsl.getById(ds_id).objectNames
+            labels = self.model.dsl.getById(ds_id).object_names
             plot = self._make_plot(pc_tab, ds_id, "Scores", labels)
         else:
             plot = self._make_plot(pc_tab, ds_id, "Scores")
@@ -132,7 +132,7 @@ class PcaModelViewHandler(ModelView):
         res = self.model.get_res(ds_id)
         pc_tab = res.getLoadings()
         if add_labels:
-            labels = self.model.dsl.getById(ds_id).variableNames
+            labels = self.model.dsl.getById(ds_id).variable_names
             plot = self._make_plot(pc_tab, ds_id, "Loadings", labels)
         else:
             plot = self._make_plot(pc_tab, ds_id, "Loadings")
@@ -173,7 +173,7 @@ class PcaModelViewHandler(ModelView):
         pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         if add_labels:
-            labels = self.model.dsl.getById(ds_id).variableNames
+            labels = self.model.dsl.getById(ds_id).variable_names
             pcl.addDataLabels(labels)
         return pcl
 

@@ -133,12 +133,12 @@ class FileImporter(HasTraits):
     def _makeDataset(self):
         return DataSet(
             matrix=self._dataset,
-            _sourceFile=self._filePath,
-            variableNames=self._variableNames,
-            objectNames=self._objectNames,
+            _source_file=self._filePath,
+            variable_names=self._variableNames,
+            object_names=self._objectNames,
             _ds_id=self._ds_id,
             _ds_name=self._ds_name,
-            _datasetType=self._datasetType,
+            _dataset_type=self._datasetType,
             )
 
     def _makeName(self):

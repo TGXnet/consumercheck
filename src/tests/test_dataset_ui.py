@@ -15,8 +15,8 @@ class TestDatasetModel(unittest.TestCase):
         path = test_tools.findApplicationBasePath() + '/datasets/test.txt'
         self.testSet.importDataset(path, True)
         self.assertEqual('test', self.testSet._ds_name)
-        self.assertEqual(11, self.testSet.nRows)
-        self.assertEqual(5, self.testSet.nCols)
+        self.assertEqual(11, self.testSet.n_rows)
+        self.assertEqual(5, self.testSet.n_cols)
         self.testSet.configure_traits( view=ds_list_tab )
 
 

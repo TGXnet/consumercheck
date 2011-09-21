@@ -36,14 +36,14 @@ class PrefmapUIController(Controller):
 
     def _build_sel_list(self):
         datasets = self.model.getDatasetList()
-        self._sens =  [(ds._ds_id, ds._ds_name) for ds in datasets if ds._datasetType == 'Sensory profiling']
-        self._cons = [(ds._ds_id, ds._ds_name) for ds in datasets if ds._datasetType == 'Consumer liking']
+        self._sens =  [(ds._ds_id, ds._ds_name) for ds in datasets if ds._dataset_type == 'Sensory profiling']
+        self._cons = [(ds._ds_id, ds._ds_name) for ds in datasets if ds._dataset_type == 'Consumer liking']
 
     @on_trait_change('sel_cons, sel_sens, mapping')
     def _choice_updated(self, obj, name, old, new):
         self.sel_updated = True
 
-    @on_trait_change('model:[datasetNameChanged,dataDictContentChanged],model:_dataDict:_datasetType')
+    @on_trait_change('model:[datasetNameChanged,dataDictContentChanged],model:_dataDict:_dataset_type')
     def _dsl_altered(self, obj, name, new):
         self._build_sel_list()
 

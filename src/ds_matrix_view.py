@@ -32,14 +32,14 @@ class ArrayAdapter(TabularAdapter):
         self.columns = [('Index', 'index')]
         rows, cols = self.model_ptr.matrix.shape
         for i in xrange(cols):
-            if self.model_ptr.variableNames:
-                self.columns.append((self.model_ptr.variableNames[i], i))
+            if self.model_ptr.variable_names:
+                self.columns.append((self.model_ptr.variable_names[i], i))
             else:
                 self.columns.append((str(i), i))
 
     def _get_index_text(self, name):
-        if self.model_ptr.objectNames:
-            return self.model_ptr.objectNames[self.row]
+        if self.model_ptr.object_names:
+            return self.model_ptr.object_names[self.row]
         else:
             return str(self.row)
 

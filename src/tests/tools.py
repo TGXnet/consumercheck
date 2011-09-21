@@ -45,12 +45,12 @@ def make_dsl_mock():
     dsl.addDataset(ds_importer.noninteractiveImport('datasets/Ost_sensorikk.txt'))
     dsl._dataDict['a_labels']._ds_name = 'Set A tull'
     dsl._dataDict['c_labels']._ds_name = 'Set C tull'
-    dsl._dataDict['a_labels']._datasetType = 'Consumer liking'
-    dsl._dataDict['c_labels']._datasetType = 'Sensory profiling'
+    dsl._dataDict['a_labels']._dataset_type = 'Consumer liking'
+    dsl._dataDict['c_labels']._dataset_type = 'Sensory profiling'
     dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker'
-    dsl._dataDict['ost_forbruker']._datasetType = 'Consumer liking'
+    dsl._dataDict['ost_forbruker']._dataset_type = 'Consumer liking'
     dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk'
-    dsl._dataDict['ost_sensorikk']._datasetType = 'Sensory profiling'
+    dsl._dataDict['ost_sensorikk']._dataset_type = 'Sensory profiling'
     return dsl
 
 class TestContainer(HasTraits):
