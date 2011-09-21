@@ -6,14 +6,15 @@ import logging
 
 # Enthought imports
 from enthought.traits.api import Instance, Int, List
-from enthought.traits.ui.api import View, Item, Group, HGroup, ListStrEditor, Handler, InstanceEditor
+from enthought.traits.ui.api import View, Item, Group, HGroup, ListStrEditor, \
+     Handler, InstanceEditor
 
 
 # Local imports
 from dataset_collection import DatasetCollection
 from dataset import DataSet
 from ds_ui import ds_list_tab
-from table_ui import MatrixView
+# from table_ui import MatrixView
 
 
 class DsViewHandler(Handler):
@@ -133,11 +134,6 @@ datasets_view = View(
 
 
 if __name__ == '__main__':
-    ds1 = DataSet(_ds_id = 'test1', _ds_name = 'Test 1')
-    ds1.importDataset('./datasets/Ost.txt', True)
-    ds1._ds_name = 'Oste test'
-    ds2 = DataSet(_ds_id = 'test2', _ds_name = 'Test 2')
-    dc = DatasetCollection()
-    dc.add_dataset(ds1)
-    dc.add_dataset(ds2)
-    ui = dc.edit_traits(datasets_view)
+    from tests.tools import make_dsl_mock
+    dsl = make_dsl_mock()
+    ui = dsl.configure_traits(view=datasets_view)
