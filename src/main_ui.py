@@ -30,7 +30,7 @@ class MainViewHandler(Handler):
     def import_data(self, ui_info):
         """Action called when activating importing of new dataset"""
         importer = FileImporter()
-        imported = importer.interactiveMultiImport()
+        imported = importer.dialog_multi_import()
         for ds in imported:
             ui_info.object.dsl.add_dataset(ds)
             logging.info("importDataset: internal name = %s", ds._ds_id)

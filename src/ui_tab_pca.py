@@ -318,8 +318,8 @@ if __name__ == '__main__':
 
     main = FakeMain(pca = PcaModelViewHandler(PcaModel()))
     fi = FileImporter()
-    main.dsl.add_dataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
-    main.dsl.add_dataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
+    main.dsl.add_dataset(fi.import_data('datasets/Ost_forbruker.txt'))
+    main.dsl.add_dataset(fi.import_data('datasets/Ost_sensorikk.txt'))
     main.dsl._datasets['ost_forbruker']._ds_name = 'Forbruker ost'
     main.dsl._datasets['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
     main.pca.configure_traits(view=pca_tree_view)

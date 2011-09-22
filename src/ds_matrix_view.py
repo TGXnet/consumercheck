@@ -91,6 +91,6 @@ if __name__ == '__main__':
     
     from file_importer import FileImporter
     fi = FileImporter()
-    ds = fi.noninteractiveImport('./datasets/A_labels.txt', True, True)
+    ds = fi.import_data('./datasets/A_labels.txt', True, True)
     mvc = MatrixViewController(model=ds)
     mvc.configure_traits()
