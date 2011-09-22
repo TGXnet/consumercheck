@@ -27,20 +27,20 @@ class MainViewHandler(Handler):
     # Event handler signature
     # extended_traitname_changed(info)
     # default context is object
-    def importDataset(self, uiInfo):
+    def import_data(self, ui_info):
         """Action called when activating importing of new dataset"""
         importer = FileImporter()
-        dsl = importer.interactiveMultiImport()
-        for ds in dsl:
-            uiInfo.object.dsl.add_dataset(ds)
+        imported = importer.interactiveMultiImport()
+        for ds in imported:
+            ui_info.object.dsl.add_dataset(ds)
             logging.info("importDataset: internal name = %s", ds._ds_id)
 
-    def view_about(self, info):
+    def view_about(self, ui_info):
         ConsumerCheckAbout().edit_traits()
         
-    def init(self, info):
+    def init(self, ui_info):
         try:
-            info.object.splash.close()
+            ui_info.object.splash.close()
         except AttributeError:
             pass
 
@@ -63,11 +63,10 @@ class MainUi(HasTraits):
     prefmap = Instance(PrefmapModelViewHandler)
 
     # Create an action that open dialog for dataimport
-    setImport = Action(name = 'Add &Dataset',
-                       action = 'importDataset')
+    import_action = Action(name = 'Add &Dataset', action = 'import_data')
     # Create an action that exits the application.
-    exitAction = Action(name='E&xit', action='_on_close')
-    show_about = Action(name='&About', action='view_about')
+    exit_action = Action(name='E&xit', action='_on_close')
+    about_action = Action(name='&About', action='view_about')
 
     def _pca_changed(self, old, new):
         logging.info("Setting pca mother")
@@ -99,8 +98,8 @@ class MainUi(HasTraits):
         height = .3,
         title = 'Consumer Check',
         menubar = MenuBar(
-            Menu(setImport, exitAction, name = '&File'),
-            Menu(show_about, name='&Help'),
+            Menu(import_action, exit_action, name = '&File'),
+            Menu(about_action, name='&Help'),
             ),
         handler = MainViewHandler
         )
