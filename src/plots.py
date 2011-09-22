@@ -60,7 +60,7 @@ class CCBasePlotScatter(CCBasePlot):
         super(CCBasePlotScatter, self).__init__(*args, **kw)
         self._add_zero_axis()
         self._add_tools()
-        self._calcBox()
+        self._calc_box()
 
     # FIXME: Move to base and rename to scatterplot
     def _add_plot(self, pt_name, pt_index, pt_color):
@@ -106,40 +106,46 @@ class CCBasePlotScatter(CCBasePlot):
         """
         # FIXME: check self.plot.aspect_ratio
         # /usr/share/doc/python-chaco/examples/aspect_ratio.py
-        xlim, ylim = self._calcBoundsLimits()
-        xMin, xMax = xlim
-        self.x_mapper.range.set_bounds(xMin, xMax)
-        yMin, yMax = ylim
-        self.y_mapper.range.set_bounds(yMin, yMax)
+        xlim, ylim = self._calc_bounds_limits()
+        xmin, xmax = xlim
+        self.x_mapper.range.set_bounds(xmin, xmax)
+        ymin, ymax = ylim
+        self.y_mapper.range.set_bounds(ymin, ymax)
 
-    def _calcBoundsLimits(self, marginFactor=0.15):
+    def _calc_bounds_limits(self, margin_factor=0.15):
         """Calc bounding box for orthonormal plotting.
         """
         for pt_index, pt_color in self.meta_plots.itervalues():
             pt_xdata, pt_ydata = pt_index
-            xMinMax = (min(self.data.get_data(pt_xdata)), max(self.data.get_data(pt_xdata)))
-            yMinMax = (min(self.data.get_data(pt_ydata)), max(self.data.get_data(pt_ydata)))
-            xDelta = xMinMax[1] - xMinMax[0]
-            yDelta = yMinMax[1] - yMinMax[0]
-            delta = max(xDelta, yDelta)
-            margin = delta*marginFactor
+            xminmax = (
+                min(self.data.get_data(pt_xdata)),
+                max(self.data.get_data(pt_xdata)))
+            yminmax = (
+                min(self.data.get_data(pt_ydata)),
+                max(self.data.get_data(pt_ydata)))
+            xdelta = xminmax[1] - xminmax[0]
+            ydelta = yminmax[1] - yminmax[0]
+            delta = max(xdelta, ydelta)
+            margin = delta*margin_factor
             delta += margin
-            center = (xMinMax[0]+xDelta/2, yMinMax[0]+yDelta/2)
-            xMin = center[0]-delta/2
-            xMax = center[0]+delta/2
-            yMin = center[1]-delta/2
-            yMax = center[1]+delta/2
-        return ((xMin, xMax), (yMin, yMax))
+            center = (xminmax[0]+xdelta/2, yminmax[0]+ydelta/2)
+            xmin = center[0]-delta/2
+            xmax = center[0]+delta/2
+            ymin = center[1]-delta/2
+            ymax = center[1]+delta/2
+        return ((xmin, xmax), (ymin, ymax))
 
-    def _calcBox(self, margin_factor=0.15):
+    def _calc_box(self, margin_factor=0.15):
         index_min, index_max = self.index_range.low, self.index_range.high
         value_min, value_max = self.value_range.low, self.value_range.high
         index_range = index_max - index_min
         value_range = value_max - value_min
         index_margin = index_range * margin_factor
         value_margin = value_range * margin_factor
-        self.value_range.set_bounds(value_min-value_margin/2, value_max+value_margin/2)
-        self.index_range.set_bounds(index_min-index_margin/2, index_max+index_margin/2)
+        self.value_range.set_bounds(
+            value_min-value_margin/2, value_max+value_margin/2)
+        self.index_range.set_bounds(
+            index_min-index_margin/2, index_max+index_margin/2)
 
     def reset_axis(self):
         """Reset axix to default
@@ -147,7 +153,7 @@ class CCBasePlotScatter(CCBasePlot):
         self.x_mapper.range.reset()
         self.y_mapper.range.reset()
 
-    def addDataLabels(self, labels, ds_id='x1'):
+    def add_data_labels(self, labels, ds_id='x1'):
         """Add labels to datapoints
 
         Datapoint set names:
@@ -160,9 +166,11 @@ class CCBasePlotScatter(CCBasePlot):
         for i, label in enumerate(labels):
             # label attributes: text_color, border_visible, overlay_border,
             # marker_visible, invisible_layout, bgcolor
-            labelObj = DataLabel(
+            label_obj = DataLabel(
                 component = self,
-                data_point = (self.data.get_data(xname)[i], self.data.get_data(yname)[i]),
+                data_point = (
+                    self.data.get_data(xname)[i],
+                    self.data.get_data(yname)[i]),
                 label_format = label,
 #                marker_color = pt_color,
                 text_color = pt_color,
@@ -171,20 +179,20 @@ class CCBasePlotScatter(CCBasePlot):
                 bgcolor = (0.5, 0.5, 0.5, 0.2),
 #                bgcolor = 'transparent',
                 )
-            ref.append(labelObj)
-            self.overlays.append(labelObj)
+            ref.append(label_obj)
+            self.overlays.append(label_obj)
 
-    def switchLabellVisibility(self, ds_id, isVisible):
+    def switch_labels_visibility(self, ds_id, is_visible):
         sel_set = self.label_refs[ds_id]
         for label in sel_set:
-            label.visible = isVisible
+            label.visible = is_visible
         self.request_redraw()
 
-    def toggleEqAxis(self, axisEq):
-        if axisEq:
+    def toggle_eq_axis(self, is_eq_axis):
+        if is_eq_axis:
             self.set_eq_axis()
         else:
-            self._calcBox()
+            self._calc_box()
             # self.reset_axis()
         self.request_redraw()
 
@@ -206,7 +214,7 @@ class CCPlotScatter(CCBasePlotScatter):
 
 
 class CCPlotCorrLoad(CCBasePlotScatter):
-    """Specialization of the PlotScatter class customized for convenient correlation loading plotting
+    """Convenient correlation loading plotting
 
     This plots takes data for ploting 2 ellipses.
 
@@ -227,18 +235,18 @@ class CCPlotCorrLoad(CCBasePlotScatter):
     def __init__(self, *args, **kw):
         super(CCPlotCorrLoad, self).__init__(*args, **kw)
         self._add_circle(True)
-        self._calcBox()
+        self._calc_box()
         # self.set_eq_axis()
 
     def _add_circle(self, show_half=False):
         # Create range for ellipses
-        t = np.arange(0.0, 2*np.pi, 0.01)
+        vec = np.arange(0.0, 2*np.pi, 0.01)
         # Computing the outer circle (100 % expl. variance)
-        xcords100perc = np.cos(t)
-        ycords100perc = np.sin(t)
+        xcords100perc = np.cos(vec)
+        ycords100perc = np.sin(vec)
         # Computing inner circle
-        xcords50perc = 0.707 * np.cos(t)
-        ycords50perc = 0.707 * np.sin(t)
+        xcords50perc = 0.707 * np.cos(vec)
+        ycords50perc = 0.707 * np.sin(vec)
         self.data.set_data('ell_full_x', xcords100perc)
         self.data.set_data('ell_full_y', ycords100perc)
         self.data.set_data('ell_half_x', xcords50perc)
@@ -258,7 +266,7 @@ class CCPlotCorrLoad(CCBasePlotScatter):
 
 
 class CCPlotXYCorrLoad(CCPlotCorrLoad):
-    """Specialization of the PlotScatter class customized for convenient correlation loading plotting
+    """Convenient correlation loading plotting
 
     This plots takes data for ploting 2 ellipses.
 
@@ -277,9 +285,9 @@ class CCPlotXYCorrLoad(CCPlotCorrLoad):
         'y1': (('pcy1', 'pcy2'), 'red'),
         }
 
-    def switchLabellVisibility(self, ds_id, isVisible):
-        super(CCPlotXYCorrLoad, self).switchLabellVisibility('x1', isVisible)
-        super(CCPlotXYCorrLoad, self).switchLabellVisibility('y1', isVisible)
+    def switch_labels_visibility(self, ds_id, is_visible):
+        super(CCPlotXYCorrLoad, self).switch_labels_visibility('x1', is_visible)
+        super(CCPlotXYCorrLoad, self).switch_labels_visibility('y1', is_visible)
 
 
 class CCPlotLine(CCBasePlot):
@@ -333,89 +341,6 @@ class CCPlotCalValExplVariance(CCBasePlot):
             color=pt_color, bgcolor="white")
 
 
-class CCPlotLPLS(CCBasePlotScatter):
-    """This is a specialization of the Plot class for convenience
-
-    This have to be instantiated with an ArrayPlotData object.
-    Where data key names is *pc_x* and *pc_y*.
-    Other values to set:
-    title
-    [x|y]_axis.title
-
-    The intended use of this plots is PC scatter plot.
-    """
-    meta_plots = {
-        'x1': (('x1PC1', 'x1PC2'), (0.451, 0.137, 0.459, 1)),
-        'x2': (('x2PC1', 'x2PC2'), (0.706, 0.345, 0.212, 1)),
-        'x3': (('x3PC1', 'x3PC2'), (0.396, 0.631, 0.188, 1)),
-        'y2': (('x2PC1scores', 'x2PC2scores'), 'black'),
-        }
-
-    def __init__(self, *args, **kw):
-        super(CCPlotLPLS, self).__init__(*args, **kw)
-
-    ## def addDataLabels(self, ds_id, labels):
-    ##     if ds_id == 'x3':
-    ##         self._addValueQCategory(ds_id, labels)
-    ##     else:
-    ##         super(CCPlotLPLS, self).addDataLabels(ds_id, labels)
-
-    def _addValueQCategory(self, ds_id, labels):
-        if len(labels) != 21:
-            raise Exception('Wrong number of question i value question set', len(labels), 21)
-        
-        category_color = {
-            'green': (0, 1, 0, 0.3),
-            'blue': (0, 0, 1, 0.3),
-            'yellow': (1, 1, 0, 0.3),
-            'mangenta': (1, 0, 1, 0.3),
-            }
-
-        quest_cat = [
-            # color, category_text, short_consept_text, full_consept_text
-            ('green', 'Openness to change', 'Sdr', 'Self direction'),  # 1
-            ('blue', 'Self enhancement', 'Pow', 'Power'),              # 2
-            ('yellow', 'Selftranscendense', 'Univ', 'Universalism'),   # 3
-            ('blue', 'Self enhancement', 'Pow', 'Power'),              # 4
-            ('mangenta', 'Conservation', 'Sec', 'Security'),           # 5
-            ('green', 'Openness to change', 'Stim', 'Self direction'), # 6
-            ('mangenta', 'Conservation', 'Conf', 'Conformity'),        # 7
-            ('yellow', 'Selftranscendense', 'Univ', 'Universalism'),   # 8
-            ('yellow', 'Selftranscendense', 'Ben', 'Benevolence'),     # 9
-            ('green', 'Openness to change', 'Hed', 'Hedonism'),        # 10
-            ('green', 'Openness to change', 'Sdr', 'Self direction'),  # 11
-            ('yellow', 'Selftranscendense', 'Ben', 'Benevolence'),     # 12
-            ('blue', 'Self enhancement', 'Ach', 'Achievement'),        # 13
-            ('mangenta', 'Conservation', 'Sec', 'Security'),           # 14
-            ('green', 'Openness to change', 'Stim', 'Self direction'), # 15
-            ('mangenta', 'Conservation', 'Conf', 'Conformity'),        # 16
-            ('mangenta', 'Conservation', 'Conf', 'Conformity'),        # 17
-            ('yellow', 'Selftranscendense', 'Ben', 'Benevolence'),     # 18
-            ('yellow', 'Selftranscendense', 'Univ', 'Universalism'),   # 19
-            ('mangenta', 'Conservation', 'Trad', 'Tradition'),         # 20
-            ('green', 'Openness to change', 'Stim', 'Self direction'), # 21
-            ]
-
-        pt_index, pt_color = self.meta_plots[ds_id]
-        xname, yname = pt_index
-        ref = self.label_refs[ds_id] = []
-        for i, quest in enumerate(quest_cat):
-            # label attributes: text_color, border_visible, overlay_border,
-            # marker_visible, invisible_layout, bgcolor
-            labelObj = DataLabel(
-                component = self,
-                data_point = (self.data.get_data(xname)[i], self.data.get_data(yname)[i]),
-                label_format = "{0}-{1}".format(i+1, quest[2]),
-                tooltip = quest[3],
-                text_color = 'black',
-                border_visible = False,
-                marker_visible = False,
-                bgcolor = category_color[quest[0]]
-                )
-            ref.append(labelObj)
-            self.overlays.append(labelObj)
-
-
 
 if __name__ == '__main__':
     from enthought.chaco.api import ArrayPlotData
@@ -431,7 +356,7 @@ if __name__ == '__main__':
         )
     plot = CCPlotScatter(pd)
     labels1 = ['x11', 'x12', 'x13']
-    plot.addDataLabels(labels1, 'x1')
+    plot.add_data_labels(labels1, 'x1')
     spw = SinglePlotWindow(plot=plot)
     spw.configure_traits()
     # spw.edit_traits()

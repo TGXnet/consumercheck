@@ -148,7 +148,7 @@ class PcaModelViewHandler(ModelView):
         ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         if labels:
-            ps.addDataLabels(labels)
+            ps.add_data_labels(labels)
         return ps
 
     def plot_corr_loading(self, show = True):
@@ -174,7 +174,7 @@ class PcaModelViewHandler(ModelView):
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         if add_labels:
             labels = self.model.dsl.get_by_id(ds_id).variable_names
-            pcl.addDataLabels(labels)
+            pcl.add_data_labels(labels)
         return pcl
 
     def plot_expl_var(self, show = True):

@@ -52,11 +52,11 @@ class SinglePlotWindow(HasTraits):
     @on_trait_change('show_x1')
     def switch_labels(self, obj, name, new):
         ds_id = name.partition('_')[2]
-        obj.plot.switchLabellVisibility(ds_id, new)
+        obj.plot.switch_labels_visibility(ds_id, new)
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
-        obj.plot.toggleEqAxis(new)
+        obj.plot.toggle_eq_axis(new)
 
     @on_trait_change('view_table')
     def show_table(self, obj, name, new):
@@ -109,11 +109,11 @@ class LinePlotWindow(HasTraits):
     @on_trait_change('show_x1')
     def switch_labels(self, obj, name, new):
         ds_id = name.partition('_')[2]
-        obj.plot.switchLabellVisibility(ds_id, new)
+        obj.plot.switch_labels_visibility(ds_id, new)
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
-        obj.plot.toggleEqAxis(new)
+        obj.plot.toggle_eq_axis(new)
 
     @on_trait_change('view_table')
     def show_table(self, obj, name, new):

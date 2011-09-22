@@ -135,7 +135,7 @@ class PrefmapModelViewHandler(ModelView):
         plot.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[1], expl_vars_y[1])
         if add_labels:
             labels = self.model.dsl.get_by_id(xId).object_names
-            plot.addDataLabels(labels)
+            plot.add_data_labels(labels)
         return plot
 
     def plot_loadings_x(self, show = True):
@@ -160,7 +160,7 @@ class PrefmapModelViewHandler(ModelView):
         plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
         plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
         labels = self.model.dsl.get_by_id(xId).variable_names
-        plot.addDataLabels(labels)
+        plot.add_data_labels(labels)
         return plot
 
     def plot_loadings_y(self, show = True):
@@ -185,7 +185,7 @@ class PrefmapModelViewHandler(ModelView):
         plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
         plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
         labels = self.model.dsl.get_by_id(yId).variable_names
-        plot.addDataLabels(labels)
+        plot.add_data_labels(labels)
         return plot
 
     def plot_corr_loading(self, show = True):
@@ -220,8 +220,8 @@ class PrefmapModelViewHandler(ModelView):
         if add_labels:
             vnx = self.model.dsl.get_by_id(xId).variable_names
             vny = self.model.dsl.get_by_id(yId).variable_names
-            pcl.addDataLabels(vnx, 'x1')
-            pcl.addDataLabels(vny, 'y1')
+            pcl.add_data_labels(vnx, 'x1')
+            pcl.add_data_labels(vny, 'y1')
         return pcl
 
     def plot_expl_var_x(self, show = True):
