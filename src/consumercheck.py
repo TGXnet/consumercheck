@@ -12,8 +12,8 @@ ETSConfig.toolkit = 'wx'
 
 # Local imports
 # Set path to local R distribution
-import rpyLocate
-rpyLocate.set_rpy_env()
+import rpy_locate
+rpy_locate.set_rpy_env()
 
 from splash_screen import splash
 from main_ui import MainUi
