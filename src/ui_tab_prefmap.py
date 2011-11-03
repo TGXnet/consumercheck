@@ -2,6 +2,11 @@
 
 Adds statistical methods, user inteface and plots for Prefmap
 
+FIXME: Idea: Make this control the creation of prefmap plot_config
+model object's that specify the plot setings for each prefmap plotting.
+Separate out the plot generation function for each of the plot models.
+One model will typicaly hold the result or a result property of prefma and setting
+for internal or external ploting and other plot settings.
 """
 # stdlib imports
 import sys
@@ -124,6 +129,7 @@ class PrefmapModelViewHandler(ModelView):
     def _make_scores_plot(self, xId, yId, add_labels=True):
         res = self.model.get_res(xId, yId)
         pc_tab = res['Scores T']
+        # FIXME: This is unnecessary, look two lines up
         expl_vars_x = self.model.get_res(xId, yId)['calExplVarX']
         expl_vars_y = self.model.get_res(xId, yId)['calExplVarY']
         pd = ArrayPlotData()
