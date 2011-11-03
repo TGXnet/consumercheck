@@ -1,18 +1,15 @@
 
 # Std libs import
 import tempfile
-from numpy import array, arange, savetxt
+from numpy import array, savetxt
 
 # Enthough imports
-from traits.api import HasTraits, Instance, Array, List, Button, DelegatesTo, Property
-from traitsui.api import ModelView, View, Group, Item, TabularEditor
-from traitsui.tabular_adapter import TabularAdapter
-from traitsui.menu import OKButton
+from traits.api import Array, List, Button, Property
+from traits.ui.api import ModelView, View, Group, Item
+from traits.ui.editors.tabular_editor import TabularEditor
+from traits.ui.tabular_adapter import TabularAdapter
+from traits.ui.menu import OKButton
 from pyface.clipboard import clipboard
-
-# Local imports
-from dataset import DataSet
-
 
 class ArrayAdapter(TabularAdapter):
     index = List()
@@ -72,8 +69,8 @@ class TableViewController(ModelView):
             # needs redesign
             if name in ['ell_full_x', 'ell_full_y', 'ell_half_x', 'ell_half_y', 'pcy1', 'pcy2']:
                 continue
-            set = self.model.data.get_data(name)
-            la.append(set)
+            vec = self.model.data.get_data(name)
+            la.append(vec)
         self.table = array(la)
         rows, cols = self.table.shape
         # self.ad.columns = [('i', 'index')]
@@ -94,7 +91,7 @@ class TableViewController(ModelView):
 
 
 if __name__ == '__main__':
-    from chaco.api import ArrayPlotData
+    from enthought.chaco.api import ArrayPlotData
     from plots import CCPlotScatter
 
     pd = ArrayPlotData()

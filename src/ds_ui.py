@@ -1,25 +1,24 @@
 
 # Enthought imports
-from traitsui.api import View, Group, Item
-from traitsui.menu import OKButton, CancelButton
+from traits.ui.api import View, Item
+from traits.ui.menu import OKButton, CancelButton
 
 # Local imports
 from dataset import DataSet
 
-
 dsview = View(
     Item(name = '_ds_id'),
     Item(name = '_ds_name'),
-    Item(name = '_datasetType'),
-    Item(name = 'variableNames'),
-    Item(name = 'objectNames'),
-    Item(name = '_isCalculated'),
+    Item(name = '_dataset_type'),
+    Item(name = 'variable_names'),
+    Item(name = 'object_names'),
+    Item(name = '_is_calculated'),
     buttons = [OKButton, CancelButton])
 
 
 ds_list_tab = View(
     Item(name = '_ds_name'),
-    Item(name = '_datasetType'),
-    Item(name = 'nRows', style = 'readonly'),
-    Item(name = 'nCols', style = 'readonly'),
+    Item(name = '_dataset_type'),
+    Item(name = 'n_rows', style = 'readonly'),
+    Item(name = 'n_cols', style = 'readonly'),
     )

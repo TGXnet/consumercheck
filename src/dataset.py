@@ -23,17 +23,17 @@ class DataSet(HasTraits):
       Userfriendly display name
     datasetType
       Type of data classification
-    isCalculated
+    is_calculated
       Is this dataset calculated in this application
-    sourceFile
+    source_file
       Data source (file name)
-    variableNames
+    variable_names
       Column headers
-    objectNames
+    object_names
       Row headers
-    nRows
+    n_rows
       Number of objects
-    nCols
+    n_cols
       Number of variables
 
     """
@@ -45,7 +45,7 @@ class DataSet(HasTraits):
         'Unnamed dataset',
         desc = 'User friendly display name',
         label = 'Dataset name')
-    _datasetType = Enum(
+    _dataset_type = Enum(
         ('Design variable',
          'Sensory profiling',
          'Consumer liking',
@@ -53,26 +53,23 @@ class DataSet(HasTraits):
          'Hedonic attributes',),
         desc = 'Classify dataset',
         label = 'Dataset type')
-    _sourceFile = File(label = 'Source file')
-    variableNames = ListStr(desc = 'Variable names')
-    objectNames = ListStr(desc = 'Object names')
-    _isCalculated = Bool(False, lable='Calculated?')
-    nRows = Property(label = 'Rows', desc = 'Number of objects')
-    nCols = Property(label = 'Cols', desc = 'Number of variables')
+    _source_file = File(label = 'Source file')
+    variable_names = ListStr(desc = 'Variable names')
+    object_names = ListStr(desc = 'Object names')
+    _is_calculated = Bool(False, lable='Calculated?')
+    n_rows = Property(label = 'Rows', desc = 'Number of objects')
+    n_cols = Property(label = 'Cols', desc = 'Number of variables')
 
-    def _get_nRows(self):
-        if self.matrix.shape[0]>0:
+    def _get_n_rows(self):
+        if self.matrix.shape[0] > 0:
             return self.matrix.shape[0]
         else:
             return 0
 
-    def _get_nCols(self):
-        if self.matrix.shape[0]>0:
+    def _get_n_cols(self):
+        if self.matrix.shape[0] > 0:
             return self.matrix.shape[1]
         else:
             return 0
-
-    def isEqDisplayName(self, name):
-        return name == self._ds_name
 
 #end DataSet

@@ -21,3 +21,13 @@ Module name: short lowercase
 
       Use the function naming rules: lowercase with words separated by
       underscores as necessary to improve readability.
+
+
+Things to fix
+
+ds._ds_id -> ds._id
+_changed -> on_trait_change
+file_importer: separate conf file handling as separate module
+file_importer: plugin module for text file reader and xls reader
+file_importer: settings for comma and dot, utf-8 and other encodings, tab or comma separated
+dataset_collection_selection_list_ui: remove?

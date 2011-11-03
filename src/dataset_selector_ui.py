@@ -3,11 +3,9 @@
 import logging
 
 # Enthought imports
-from traits.api \
-    import List, Str, Bool
+from traits.api import List, Str
 
-from traitsui.api \
-    import EnumEditor, Handler, Item, View
+from traits.ui.api import EnumEditor, Handler, Item, View
 
 
 class DatasetSelectorHandler( Handler ):
@@ -18,15 +16,15 @@ class DatasetSelectorHandler( Handler ):
 
 
     # Called when some value in object changes
-    def setattr(self, info, object, name, value):
+    def setattr(self, info, obj, name, value):
         super(DatasetSelectorHandler, self).setattr(
-            info, object, name, value)
+            info, obj, name, value)
         logging.info("setattr: %s change to %s", name, value)
 
 
     def handler_nameSetX_changed(self, info):
         info.object.mother.dsl.selectedSet = []
-        selSet = info.object.mother.dsl.getByName(self.nameSetX)
+        selSet = info.object.mother.dsl.get_by_name(self.nameSetX)
         if selSet:
             info.object.mother.dsl.selectedSet.append(selSet._ds_id)
         logging.info("Selection list updated: %s", info.object.mother.dsl.selectedSet)
@@ -43,7 +41,7 @@ class DatasetSelectorHandler( Handler ):
 
     def _buildSelectionList(self, dsl):
         self.dsChoices = []
-        for kName, dName in dsl.indexNameList:
+        for kName, dName in dsl.id_name_list:
             self.dsChoices.append(dName)
         self._initChoices(dsl)
 

@@ -4,10 +4,10 @@ import tempfile
 from numpy import savetxt
 
 # Enthough imports
-from traits.api import HasTraits, Instance, Array, Button, DelegatesTo, Property
-from traitsui.api import Controller, View, Item, TabularEditor
-from traitsui.tabular_adapter import TabularAdapter
-from traitsui.menu import OKButton
+from traits.api import Instance, Button, Property
+from traits.ui.api import Controller, View, Item, TabularEditor
+from traits.ui.tabular_adapter import TabularAdapter
+from traits.ui.menu import OKButton
 from pyface.clipboard import clipboard
 
 # Local imports
@@ -32,14 +32,14 @@ class ArrayAdapter(TabularAdapter):
         self.columns = [('Index', 'index')]
         rows, cols = self.model_ptr.matrix.shape
         for i in xrange(cols):
-            if self.model_ptr.variableNames:
-                self.columns.append((self.model_ptr.variableNames[i], i))
+            if self.model_ptr.variable_names:
+                self.columns.append((self.model_ptr.variable_names[i], i))
             else:
                 self.columns.append((str(i), i))
 
     def _get_index_text(self, name):
-        if self.model_ptr.objectNames:
-            return self.model_ptr.objectNames[self.row]
+        if self.model_ptr.object_names:
+            return self.model_ptr.object_names[self.row]
         else:
             return str(self.row)
 
@@ -91,6 +91,6 @@ if __name__ == '__main__':
     
     from file_importer import FileImporter
     fi = FileImporter()
-    ds = fi.noninteractiveImport('./datasets/A_labels.txt', True, True)
+    ds = fi.import_data('./datasets/A_labels.txt', True, True)
     mvc = MatrixViewController(model=ds)
     mvc.configure_traits()

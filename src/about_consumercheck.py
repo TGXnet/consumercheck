@@ -8,6 +8,7 @@ class ConsumerCheckAbout(HasTraits):
     <p align="center">ConsumerCheck is a program statistical analysis and visualization.</p>
     <p align="center">ConsumerCheck development:<br />Thomas Graff, <a href="http://www.tgxnet.no">TGXnet</a></p>
     <p align="center">Python wrapping of R code and software development management:<br /><a href="http://www.nofima.no/en/person/oliver.tomic">Oliver Tomic</a>, <a href="http://www.nofima.no">Nofima</a></p>
+    <p align="center">Version: 0.5.0</p>
     </body>
     '''
     about_render = HTML(about_html)

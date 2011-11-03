@@ -7,14 +7,10 @@ data columns.
 import logging
 
 # Enthoughg imports
-from traits.api \
-    import HasStrictTraits, Str, List, Bool, Event
-from traitsui.api \
-    import View, Handler, Item, TableEditor
-from traitsui.table_column \
-    import ObjectColumn
-from traitsui.extras.checkbox_column \
-    import CheckboxColumn
+from traits.api import HasStrictTraits, Str, List, Bool, Event
+from traits.ui.api import View, Handler, Item, TableEditor
+from traits.ui.table_column import ObjectColumn
+from traits.ui.extras.checkbox_column import CheckboxColumn
 
 
 # Create a specialized column to set the text color differently based upon
@@ -25,8 +21,8 @@ class DatasetColumn ( ObjectColumn ):
     width                = 0.08
     horizontal_alignment = 'center'
 
-    def get_text_color ( self, object ):
-        return [ 'light grey', 'black' ][ object.isSelected ]
+    def get_text_color ( self, obj ):
+        return [ 'light grey', 'black' ][ obj.isSelected ]
 
 
 # The 'datasets' trait table editor:
@@ -70,7 +66,7 @@ class SelectionListHandler( Handler ):
 
     def _populateSelectionList(self, dsl):
         self.datasets = []
-        for kName, dName in dsl.indexNameList:
+        for kName, dName in dsl.id_name_list:
             isSelected = False
             for isHere in dsl.selectedSet:
                 if isHere == kName:

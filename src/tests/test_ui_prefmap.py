@@ -24,8 +24,8 @@ class TestUiPrefmap(unittest.TestCase):
         ds2.importDataset(baseFolder + '/datasets/C_lables.txt', True, True)
         dc = DatasetCollection()
         prefmap = PrefmapModel(dsl=dc)
-        dc.addDataset(ds1)
-        dc.addDataset(ds2)
+        dc.add_dataset(ds1)
+        dc.add_dataset(ds2)
         prefmapUi = prefmap.configure_traits(view = prefmap_tree_view)
 
 

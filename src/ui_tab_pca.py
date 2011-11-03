@@ -8,9 +8,9 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Event, Str, List, on_trait_change, DelegatesTo, Dict, Any
-from traitsui.api import View, Item, UItem, Group, Handler, ModelView, TreeEditor, TreeNode
-from chaco.api import ArrayPlotData
+from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any
+from traits.ui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
+from enthought.chaco.api import ArrayPlotData
 
 # Local imports
 from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
@@ -42,8 +42,8 @@ class PcaModel(HasTraits):
     name = Str( 'Options' )
     list_control = Instance(CheckListController)
 
-    ## @on_trait_change('mother:dsl:[dataDictContentChanged,datasetNameChanged]')
-    ## def datasetsChanged(self, object, name, old, new):
+    ## @on_trait_change('mother:dsl:[datasets_event,ds_name_event]')
+    ## def datasetsChanged(self, obj, name, old, new):
     ##      self.datasetsAltered = True
 
     def get_res(self, ds_id):
@@ -53,7 +53,7 @@ class PcaModel(HasTraits):
             return self._run_pca(ds_id)
 
     def _run_pca(self, ds_id):
-        res = PCA(self.dsl.getById(ds_id).matrix)
+        res = PCA(self.dsl.get_by_id(ds_id).matrix)
         self.results[ds_id] = res
         return res
 
@@ -112,7 +112,7 @@ class PcaModelViewHandler(ModelView):
         res = self.model.get_res(ds_id)
         pc_tab = res.getScores()
         if add_labels:
-            labels = self.model.dsl.getById(ds_id).objectNames
+            labels = self.model.dsl.get_by_id(ds_id).object_names
             plot = self._make_plot(pc_tab, ds_id, "Scores", labels)
         else:
             plot = self._make_plot(pc_tab, ds_id, "Scores")
@@ -132,7 +132,7 @@ class PcaModelViewHandler(ModelView):
         res = self.model.get_res(ds_id)
         pc_tab = res.getLoadings()
         if add_labels:
-            labels = self.model.dsl.getById(ds_id).variableNames
+            labels = self.model.dsl.get_by_id(ds_id).variable_names
             plot = self._make_plot(pc_tab, ds_id, "Loadings", labels)
         else:
             plot = self._make_plot(pc_tab, ds_id, "Loadings")
@@ -148,7 +148,7 @@ class PcaModelViewHandler(ModelView):
         ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         if labels:
-            ps.addDataLabels(labels)
+            ps.add_data_labels(labels)
         return ps
 
     def plot_corr_loading(self, show = True):
@@ -173,8 +173,8 @@ class PcaModelViewHandler(ModelView):
         pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         if add_labels:
-            labels = self.model.dsl.getById(ds_id).variableNames
-            pcl.addDataLabels(labels)
+            labels = self.model.dsl.get_by_id(ds_id).variable_names
+            pcl.add_data_labels(labels)
         return pcl
 
     def plot_expl_var(self, show = True):
@@ -214,7 +214,7 @@ class PcaModelViewHandler(ModelView):
                     )
 
     def _wind_title(self, ds_id):
-        ds_name = self.model.dsl.getById(ds_id)._ds_name
+        ds_name = self.model.dsl.get_by_id(ds_id)._ds_name
         return "ConsumerCheck PCA - {0}".format(ds_name)
 
 
@@ -301,7 +301,6 @@ pca_tree_view = View(
 
 
 if __name__ == '__main__':
-    """Test run the View"""
     print("Interactive start")
     from dataset_collection import DatasetCollection
     from file_importer import FileImporter
@@ -319,8 +318,8 @@ if __name__ == '__main__':
 
     main = FakeMain(pca = PcaModelViewHandler(PcaModel()))
     fi = FileImporter()
-    main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_forbruker.txt'))
-    main.dsl.addDataset(fi.noninteractiveImport('datasets/Ost_sensorikk.txt'))
-    main.dsl._dataDict['ost_forbruker']._ds_name = 'Forbruker ost'
-    main.dsl._dataDict['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
+    main.dsl.add_dataset(fi.import_data('datasets/Ost_forbruker.txt'))
+    main.dsl.add_dataset(fi.import_data('datasets/Ost_sensorikk.txt'))
+    main.dsl._datasets['ost_forbruker']._ds_name = 'Forbruker ost'
+    main.dsl._datasets['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
     main.pca.configure_traits(view=pca_tree_view)

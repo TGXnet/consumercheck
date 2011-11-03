@@ -3,19 +3,13 @@
 import logging
 
 # Enthought imports
-from traits.api \
-    import HasTraits, Instance, Button, Str, Int,\
-    File, Bool, List, on_trait_change
-from traitsui.api \
-    import View, Item, Group, ListStrEditor, Handler, FileEditor,\
-    InstanceEditor, ButtonEditor
-from traitsui.menu \
-    import Action, Menu, MenuBar
+from traits.api import HasTraits, Instance
+from traits.ui.api import View, Item, Group, Handler, InstanceEditor
+from traits.ui.menu import Action, Menu, MenuBar
 
 
 # Local imports
 from dataset_collection import DatasetCollection
-from dataset import DataSet
 from file_importer import FileImporter
 from ui_datasets_tree import tree_view
 from ui_tab_pca import PcaModelViewHandler, pca_tree_view
@@ -26,23 +20,29 @@ from about_consumercheck import ConsumerCheckAbout
 class MainViewHandler(Handler):
     """Handler for dataset view"""
     # Called when some value in object changes
-    def setattr(self, info, object, name, value):
-        super(MainViewHandler, self).setattr(info, object, name, value)
+    def setattr(self, info, obj, name, value):
+        super(MainViewHandler, self).setattr(info, obj, name, value)
         logging.info('setattr: Variables %s set to %s', name, value)
 
     # Event handler signature
     # extended_traitname_changed(info)
     # default context is object
-    def importDataset(self, uiInfo):
+    def import_data(self, ui_info):
         """Action called when activating importing of new dataset"""
         importer = FileImporter()
-        dsl = importer.interactiveMultiImport()
-        for ds in dsl:
-            uiInfo.object.dsl.addDataset(ds)
+        imported = importer.dialog_multi_import()
+        for ds in imported:
+            ui_info.object.dsl.add_dataset(ds)
             logging.info("importDataset: internal name = %s", ds._ds_id)
 
-    def view_about(self, info):
+    def view_about(self, ui_info):
         ConsumerCheckAbout().edit_traits()
+        
+    def init(self, ui_info):
+        try:
+            ui_info.object.splash.close()
+        except AttributeError:
+            pass
 
     # end MainViewHandler
 
@@ -53,6 +53,8 @@ class MainUi(HasTraits):
     # Singular dataset list for the application
     # or not?
     dsl = DatasetCollection()
+    
+    splash = None
 
     # Object representing the PCA and the GUI tab
     pca = Instance(PcaModelViewHandler)
@@ -61,11 +63,10 @@ class MainUi(HasTraits):
     prefmap = Instance(PrefmapModelViewHandler)
 
     # Create an action that open dialog for dataimport
-    setImport = Action(name = 'Add &Dataset',
-                       action = 'importDataset')
+    import_action = Action(name = 'Add &Dataset', action = 'import_data')
     # Create an action that exits the application.
-    exitAction = Action(name='E&xit', action='_on_close')
-    show_about = Action(name='&About', action='view_about')
+    exit_action = Action(name='E&xit', action='_on_close')
+    about_action = Action(name='&About', action='view_about')
 
     def _pca_changed(self, old, new):
         logging.info("Setting pca mother")
@@ -97,16 +98,16 @@ class MainUi(HasTraits):
         height = .3,
         title = 'Consumer Check',
         menubar = MenuBar(
-            Menu(setImport, exitAction, name = '&File'),
-            Menu(show_about, name='&Help'),
+            Menu(import_action, exit_action, name = '&File'),
+            Menu(about_action, name='&Help'),
             ),
         handler = MainViewHandler
         )
 
 
 if __name__ == '__main__':
-    """Run the application. """
-    # dsl = DatasetCollection()
-    mother = MainUi()
-    ui = mother.edit_traits()
+    from tests.tools import make_dsl_mock
+    dsl = make_dsl_mock()
+    mother = MainUi(dsl=dsl)
+    ui = mother.configure_traits()
     # ui = MainViewHandler().edit_traits( context = dsl )

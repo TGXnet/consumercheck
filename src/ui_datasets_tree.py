@@ -3,22 +3,20 @@
 import logging
 
 # Enthought imports
-from traits.api \
-    import HasTraits, Str, Regex, List, Dict, Instance
-from traitsui.api \
-    import Item, View, TreeEditor, TreeNode, Handler
+from traits.api import HasTraits, Str, List, Instance, on_trait_change
+from traits.ui.api import Item, View, TreeEditor, TreeNode, Handler
 
 # Local imports
 from ds_ui import DataSet, ds_list_tab
 
 
-class Datasets ( HasTraits ):
+class Datasets(HasTraits):
     """ Defines a company with datasets and employees. """
     name     = Str( 'FIXME: Datasets default name' )
     imported = List( DataSet )
 
     def updateList(self, dcObj):
-        self.imported = dcObj.getDatasetList()
+        self.imported = dcObj.get_dataset_list()
 
 # end Datasets
 
@@ -29,22 +27,22 @@ class DatasetsTreeHandler(Handler):
 
 
     # Called when some value in object changes
-    def setattr(self, info, object, name, value):
-        super(DsViewHandler, self).setattr(info, object, name, value)
+    def setattr(self, info, obj, name, value):
+        super(DatasetsTreeHandler, self).setattr(info, obj, name, value)
         logging.info("setattr: %s change to %s", name, value)
 
 
     # Called when the the window is created
     def init(self, uiInfo):
-        self._updateDatasetsList(uiInfo)
+        self._updateDatasetsList(uiInfo.object)
 
 
-    def object_dataDictContentChanged_changed(self, uiInfo):
-        self._updateDatasetsList(uiInfo)
+    def object_datasets_event_changed(self, uiInfo):
+        self._updateDatasetsList(uiInfo.object)
 
 
-    def _updateDatasetsList(self, uiInfo):
-        self.collection.updateList(uiInfo.object)
+    def _updateDatasetsList(self, obj):
+        self.collection.updateList(obj)
 
 # end DatasetTreeHandler
 
@@ -90,3 +88,9 @@ tree_view = View(
     height = .3,
     handler = DatasetsTreeHandler(),
     )
+
+
+if __name__ == '__main__':
+    from tests.tools import make_dsl_mock
+    dsl = make_dsl_mock()
+    ui = dsl.configure_traits(view=tree_view)
