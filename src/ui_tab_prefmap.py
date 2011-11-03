@@ -14,7 +14,7 @@ import logging
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any
-from traits.ui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
+from traitsui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
 from chaco.api import ArrayPlotData
 
 # Local imports

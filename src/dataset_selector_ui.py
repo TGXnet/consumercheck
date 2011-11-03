@@ -5,7 +5,7 @@ import logging
 # Enthought imports
 from traits.api import List, Str
 
-from traits.ui.api import EnumEditor, Handler, Item, View
+from traitsui.api import EnumEditor, Handler, Item, View
 
 
 class DatasetSelectorHandler( Handler ):

@@ -15,8 +15,8 @@ import xlrd
 # Enthought imports
 from traits.api import HasTraits, File, Str, Bool, Enum, Array, \
      List, Button
-from traits.ui.api import View, Item, UCustom, FileEditor
-from traits.ui.menu import OKButton, CancelButton
+from traitsui.api import View, Item, UCustom, FileEditor
+from traitsui.menu import OKButton, CancelButton
 from pyface.api import FileDialog, OK
 
 # Local imports

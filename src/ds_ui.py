@@ -1,7 +1,7 @@
 
 # Enthought imports
-from traits.ui.api import View, Item
-from traits.ui.menu import OKButton, CancelButton
+from traitsui.api import View, Item
+from traitsui.menu import OKButton, CancelButton
 
 # Local imports
 from dataset import DataSet

@@ -4,7 +4,7 @@
 # Enthought library imports
 from enable.api import Component, ComponentEditor
 from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
-from traits.ui.api import View, Group, Item, Label, Handler
+from traitsui.api import View, Group, Item, Label, Handler
 from chaco.api import GridPlotContainer
 
 #Local imports

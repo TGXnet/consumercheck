@@ -1,7 +1,7 @@
 
 # Enthought imports
 from traits.api import List, Enum, Event, on_trait_change
-from traits.ui.api import View, Group, UCustom, Label, CheckListEditor, EnumEditor, Controller
+from traitsui.api import View, Group, UCustom, Label, CheckListEditor, EnumEditor, Controller
 
 
 class PrefmapUIController(Controller):

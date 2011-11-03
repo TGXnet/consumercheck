@@ -21,7 +21,7 @@ import os
 import sys
 from numpy import array, ndarray, zeros, sort
 from numpy.random import random
-from enthought.chaco.api import ArrayPlotData
+from chaco.api import ArrayPlotData
 
 class TestDatasetModel(unittest.TestCase):
 

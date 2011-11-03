@@ -4,7 +4,7 @@ import logging
 
 # Enthought imports
 from traits.api import HasTraits, Str, List, Instance, on_trait_change
-from traits.ui.api import Item, View, TreeEditor, TreeNode, Handler
+from traitsui.api import Item, View, TreeEditor, TreeNode, Handler
 
 # Local imports
 from ds_ui import DataSet, ds_list_tab

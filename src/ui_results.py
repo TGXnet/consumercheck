@@ -5,10 +5,10 @@ from numpy import array, savetxt
 
 # Enthough imports
 from traits.api import Array, List, Button, Property
-from traits.ui.api import ModelView, View, Group, Item
-from traits.ui.editors.tabular_editor import TabularEditor
-from traits.ui.tabular_adapter import TabularAdapter
-from traits.ui.menu import OKButton
+from traitsui.api import ModelView, View, Group, Item
+from traitsui.editors.tabular_editor import TabularEditor
+from traitsui.tabular_adapter import TabularAdapter
+from traitsui.menu import OKButton
 from pyface.clipboard import clipboard
 
 class ArrayAdapter(TabularAdapter):
@@ -91,7 +91,7 @@ class TableViewController(ModelView):
 
 
 if __name__ == '__main__':
-    from enthought.chaco.api import ArrayPlotData
+    from chaco.api import ArrayPlotData
     from plots import CCPlotScatter
 
     pd = ArrayPlotData()

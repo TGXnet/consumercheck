@@ -8,9 +8,9 @@ import logging
 
 # Enthoughg imports
 from traits.api import HasStrictTraits, Str, List, Bool, Event
-from traits.ui.api import View, Handler, Item, TableEditor
-from traits.ui.table_column import ObjectColumn
-from traits.ui.extras.checkbox_column import CheckboxColumn
+from traitsui.api import View, Handler, Item, TableEditor
+from traitsui.table_column import ObjectColumn
+from traitsui.extras.checkbox_column import CheckboxColumn
 
 
 # Create a specialized column to set the text color differently based upon

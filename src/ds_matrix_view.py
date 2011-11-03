@@ -5,9 +5,9 @@ from numpy import savetxt
 
 # Enthough imports
 from traits.api import Instance, Button, Property
-from traits.ui.api import Controller, View, Item, TabularEditor
-from traits.ui.tabular_adapter import TabularAdapter
-from traits.ui.menu import OKButton
+from traitsui.api import Controller, View, Item, TabularEditor
+from traitsui.tabular_adapter import TabularAdapter
+from traitsui.menu import OKButton
 from pyface.clipboard import clipboard
 
 # Local imports

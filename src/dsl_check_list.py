@@ -3,7 +3,7 @@
 import logging
 
 from traits.api import List, on_trait_change
-from traits.ui.api import Item, View, CheckListEditor, Controller
+from traitsui.api import Item, View, CheckListEditor, Controller
 
 
 # Define the demo class:

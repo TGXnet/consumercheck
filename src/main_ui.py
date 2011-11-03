@@ -4,8 +4,8 @@ import logging
 
 # Enthought imports
 from traits.api import HasTraits, Instance
-from traits.ui.api import View, Item, Group, Handler, InstanceEditor
-from traits.ui.menu import Action, Menu, MenuBar
+from traitsui.api import View, Item, Group, Handler, InstanceEditor
+from traitsui.menu import Action, Menu, MenuBar
 
 
 # Local imports

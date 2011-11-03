@@ -1,8 +1,8 @@
 
 from os.path import abspath, dirname
 
-from enthought.pyface.image_resource import ImageResource
-from enthought.pyface.api import SplashScreen
+from pyface.image_resource import ImageResource
+from pyface.api import SplashScreen
 
 path = [ abspath(dirname(__file__ ))]
 img = ImageResource(

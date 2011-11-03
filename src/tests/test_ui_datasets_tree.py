@@ -3,7 +3,7 @@ import unittest
 import test_tools
 
 from enthought.traits.api import HasTraits, Str, Instance
-from enthought.traits.ui.api import View, Item
+from enthought.traitsui.api import View, Item
 
 # ConsumerCheck imports
 from dataset import DataSet
