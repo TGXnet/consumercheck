@@ -5,8 +5,13 @@ Read a file and make a dataset object.
 """
 # Stdlib imports
 import os.path
-import sys
-from os import getcwd, environ
+
+# stdlib imports
+import logging
+# Log everything, and send it to stderr.
+# http://docs.python.org/howto/logging-cookbook.html
+logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.WARNING)
 
 # Scipy imports
 from numpy import array, loadtxt
@@ -14,21 +19,25 @@ import xlrd
 
 # Enthought imports
 from traits.api import HasTraits, File, Str, Bool, Enum, Array, \
-     List, Button
+     List, Button, Instance
 from traitsui.api import View, Item, UCustom, FileEditor
 from traitsui.menu import OKButton, CancelButton
 from pyface.api import FileDialog, OK
 
 # Local imports
 from dataset import DataSet
+from config import AppConf
 
-APPNAME = "ConsumerCheck"
+__all__ = ['FileImporter']
 
 
 class FileImporter(HasTraits):
     """Importer class"""
+
+    _conf = Instance(AppConf, AppConf('QPCPrefmap'))
     _file_path = File()
     _files_path = List(File)
+    _raw_lines = List(Str)
     _have_variable_names = Bool(True)
     _have_object_names = Bool(True)
 
@@ -92,16 +101,16 @@ class FileImporter(HasTraits):
 
     def dialog_import_data(self):
         """Open dialog for selecting a file, import and return the DataSet"""
-        self._read_work_dir()
+        self._file_path = self._conf.read_work_dir()
         self.configure_traits(view='one_view')
         self._do_import()
-        self._save_work_dir()
+        self._conf.save_work_dir(self._file_path)
         self._make_ds_name()
         return self._make_dataset()
 
     def dialog_multi_import(self):
         """Open dialog for selecting multiple files and return a list of DataSet's"""
-        self._read_work_dir()
+        self._file_path = self._conf.read_work_dir()
         # For stand alone testing
         # self.configure_traits(view='many_view')
         self._open_files_changed()
@@ -111,7 +120,7 @@ class FileImporter(HasTraits):
             self.configure_traits(view='ds_options_view')
             self._do_import()
             self._datasets.append(self._make_dataset())
-        self._save_work_dir()
+        self._conf.save_work_dir(self._file_path)
         return self._datasets
 
     def _open_files_changed(self):
@@ -220,6 +229,20 @@ class FileImporter(HasTraits):
         self._object_names = obj_names
         self._dataset = array(data)
 
+
+    def _probe_read(self, no_lines=7, length=35):
+        lines = []
+        with open(self._file_path, 'rU') as fp:
+            for i in range(no_lines):
+                line = fp.readline(length)
+                if not ('\r' in line or '\n' in line):
+                    fp.readline()
+                logging.debug("linje {}: {}".format(i, line.rstrip('\n')))
+                lines.append(line.rstrip('\n'))
+        self._raw_lines = lines
+
+
+
     def _read_xls_file(self):
         wb = xlrd.open_workbook(self._file_path, encoding_override=None)
         # wb.sheet_names()
@@ -241,43 +264,11 @@ class FileImporter(HasTraits):
         self._variable_names = [
             unicode(x).encode('ascii', 'ignore') for x in sh.row_values(0, 1)]
 
-    def _read_work_dir(self):
-        try:
-            fp = open(self._get_conf_file_name(), 'r')
-            uri = fp.readline()
-            fp.close()
-        except IOError:
-            self._file_path = getcwd()
-        else:
-            self._file_path = uri.strip()
-
-    def _save_work_dir(self):
-        dir_path = os.path.dirname(self._file_path) + '\n'
-        fp = open(self._get_conf_file_name(), 'w')
-        fp.write(dir_path)
-        fp.close()
-
-    def _get_conf_file_name(self):
-        if sys.platform == 'darwin':
-            from AppKit import NSSearchPathForDirectoriesInDomains
-            # http://developer.apple.com
-            # /DOCUMENTATION/Cocoa/Reference/Foundation/Miscellaneous
-            # /Foundation_Functions/Reference/reference.html#
-            # //apple_ref/c/func/NSSearchPathForDirectoriesInDomains
-            # NSApplicationSupportDirectory = 14
-            # NSUserDomainMask = 1
-            # True for expanding the tilde into a fully qualified path
-            appdata = os.path.join(NSSearchPathForDirectoriesInDomains(
-                14, 1, True)[0], APPNAME + '.cfg')
-        elif sys.platform == 'win32':
-            appdata = os.path.join(environ['APPDATA'], APPNAME + '.cfg')
-        else:
-            appdata = os.path.expanduser(os.path.join("~", ".config", APPNAME + '.cfg'))
-        return appdata
-
 
 if __name__ == '__main__':
     fi = FileImporter()
-    dsl = fi.dialog_multi_import()
-    for ds in dsl:
-        ds.print_traits()
+    ## dsl = fi.dialog_multi_import()
+    ## for ds in dsl:
+    ##     ds.print_traits()
+    fi._file_path = 'datasets/set_plain.txt'
+    fi._probe_read()
