@@ -35,9 +35,9 @@ class FileImporter(HasTraits):
     """Importer class"""
 
     _conf = Instance(AppConf, AppConf('QPCPrefmap'))
+    # FIXME: This will be moved into a DataImportSettings object
     _file_path = File()
     _files_path = List(File)
-    _raw_lines = List(Str)
     _have_variable_names = Bool(True)
     _have_object_names = Bool(True)
 
@@ -55,6 +55,7 @@ class FileImporter(HasTraits):
          'Hedonic attributes',)
         )
 
+    # FileSelectorView
     one_view = View(
         UCustom(
             name='_file_path',
@@ -77,6 +78,7 @@ class FileImporter(HasTraits):
         Item('open_files'),
         )
 
+    # FIXME: Part of DataPreviewer
     ds_options_view = View(
         Item('_ds_id', style='readonly', label='File name'),
         Item('_ds_name', label='Dataset name'),
@@ -89,7 +91,7 @@ class FileImporter(HasTraits):
         buttons=[OKButton]
         )
 
-
+    # FIXME: Will be part of an DataImporterTextFile class
     def import_data(self, file_path, have_variable_names = True, have_object_names = True):
         """Read file and return DataSet objekt"""
         self._file_path = file_path
@@ -229,20 +231,6 @@ class FileImporter(HasTraits):
         self._object_names = obj_names
         self._dataset = array(data)
 
-
-    def _probe_read(self, no_lines=7, length=35):
-        lines = []
-        with open(self._file_path, 'rU') as fp:
-            for i in range(no_lines):
-                line = fp.readline(length)
-                if not ('\r' in line or '\n' in line):
-                    fp.readline()
-                logging.debug("linje {}: {}".format(i, line.rstrip('\n')))
-                lines.append(line.rstrip('\n'))
-        self._raw_lines = lines
-
-
-
     def _read_xls_file(self):
         wb = xlrd.open_workbook(self._file_path, encoding_override=None)
         # wb.sheet_names()
@@ -267,8 +255,6 @@ class FileImporter(HasTraits):
 
 if __name__ == '__main__':
     fi = FileImporter()
-    ## dsl = fi.dialog_multi_import()
-    ## for ds in dsl:
-    ##     ds.print_traits()
-    fi._file_path = 'datasets/set_plain.txt'
-    fi._probe_read()
+    dsl = fi.dialog_multi_import()
+    for ds in dsl:
+        ds.print_traits()

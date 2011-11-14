@@ -1,5 +1,13 @@
+
+# stdlib imports
+import logging
+# Log everything, and send it to stderr.
+# http://docs.python.org/howto/logging-cookbook.html
+logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.WARNING)
+
 from traits.api \
-    import HasTraits, Str, Int, List, Instance, Property, Bool, Color, Enum, on_trait_change
+    import HasTraits, Str, Int, Bool, File, List, Enum, on_trait_change
 
 from traitsui.api \
     import View, Group, Item, TabularEditor, EnumEditor, ModelView
@@ -8,6 +16,23 @@ from traitsui.tabular_adapter \
     import TabularAdapter
 
 #-- Tabular Adapter Definition -------------------------------------------------
+
+
+class ImportFileParameters(HasTraits):
+    file_path = File()
+    separator = Enum(' ', '\t', ',')
+    decimal_mark = Enum('period', 'comma')
+    transpose = Bool()
+    have_var_names = Bool(True)
+    have_obj_names = Bool(True)
+    ds_name = Str()
+    ds_type = Enum(
+        ('Design variable',
+         'Sensory profiling',
+         'Consumer liking',
+         'Consumer attributes',
+         'Hedonic attributes',)
+        )
 
 
 class RawLineAdapter(TabularAdapter):
@@ -20,14 +45,8 @@ class RawLineAdapter(TabularAdapter):
 
 
 class FilePreviewer(ModelView):
-
-    parsed_data = List()
-    separator = Enum(' ', '\t', ',')
-    decimal_mark = Enum('period', 'comma')
-    var_names = Bool()
-    obj_names = Bool()
-    transpose = Bool()
-
+    _raw_lines = List(Str)
+    _parsed_data = List()
     adapter=RawLineAdapter()
     preview_table = TabularEditor(
         adapter=adapter,
@@ -36,19 +55,32 @@ class FilePreviewer(ModelView):
 
 
     def init(self, info):
-        self._parse(self, 'no', self.separator)
+        self._probe_read()
+        self._parse(self, 'no', self.model.separator)
 
-    @on_trait_change('separator')
+    @on_trait_change('model:separator')
     def _parse(self, obj, name, new):
-        obj.parsed_data = [line.split(new) for line in obj.model._raw_lines]
-        obj.adapter.ncols = len(obj.parsed_data[1])
+        self._parsed_data = [line.split(new) for line in self._raw_lines]
+        self.adapter.ncols = len(self._parsed_data[1])
+
+    def _probe_read(self, no_lines=7, length=35):
+        lines = []
+        with open(self.model.file_path, 'rU') as fp:
+            for i in range(no_lines):
+                line = fp.readline(length)
+                if not ('\r' in line or '\n' in line):
+                    fp.readline()
+                logging.debug("linje {}: {}".format(i, line.rstrip('\n')))
+                lines.append(line.rstrip('\n'))
+        self._raw_lines = lines
+
 
     pre_view = View(
         Group(
-            Item('parsed_data',
+            Item('_parsed_data',
                  id='table',
                  editor=preview_table),
-            Item('separator',
+            Item('model.separator',
                  editor=EnumEditor(
                      values={
                          ' ' : '1:Space',
@@ -57,10 +89,10 @@ class FilePreviewer(ModelView):
                          }),
                  style='custom',
                  ),
-            Item('decimal_mark'),
-            Item('var_names'),
-            Item('obj_names'),
-            Item('transpose'),
+            Item('model.decimal_mark'),
+            Item('model.have_var_names'),
+            Item('model.have_obj_names'),
+            Item('model.transpose'),
             show_labels=True,
             ),
         title='Raw data preview',
@@ -70,21 +102,10 @@ class FilePreviewer(ModelView):
         )
 
 
-class TestDummy(HasTraits):
-    _raw_lines = List(Str)
-
-
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
-    test = TestDummy()
-    test._raw_lines = [
-        'KIDEN\tREPOS1\tREPOS2\tREPOS3\tREPOS4\tR',
-        '2EL\t3.07\t3.00\t2.71\t2.28\t1.96',
-        '1CHA\t2.96\t2.82\t2.38\t2.28\t1.68',
-        '1FON\t2.86\t2.93\t2.56\t1.96\t2.08',
-        '1VAU\t2.81\t2.59\t2.42\t1.91\t2.16',
-        '1DAM\t3.61\t3.43\t3.15\t2.15\t2.04',
-        '2BOU\t2.86\t3.11\t2.58\t2.04\t2.08'
-        ]
-    demo = FilePreviewer(model=test)
+    test = ImportFileParameters()
+    test.file_path = 'datasets/A_labels.txt'
+    demo = FilePreviewer()
+    demo.model = test
     demo.configure_traits()
