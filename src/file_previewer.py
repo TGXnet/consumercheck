@@ -1,5 +1,6 @@
 
 # stdlib imports
+import os.path
 import logging
 # Log everything, and send it to stderr.
 # http://docs.python.org/howto/logging-cookbook.html
@@ -52,15 +53,16 @@ class FilePreviewer(Handler):
     _parsed_data = List()
 
     def init(self, info):
-        self._probe_read(info.object.file_path)
+        self._make_ds_name(info.object)
+        self._probe_read(info.object)
 
     def object_separator_changed(self, info):
         self._parsed_data = [line.split(info.object.separator) for line in self._raw_lines]
         preview_table.adapter.ncols = len(self._parsed_data[1])
  
-    def _probe_read(self, file_path, no_lines=7, length=35):
+    def _probe_read(self, obj, no_lines=7, length=35):
         lines = []
-        with open(file_path, 'rU') as fp:
+        with open(obj.file_path, 'rU') as fp:
             for i in range(no_lines):
                 line = fp.readline(length)
                 if not ('\r' in line or '\n' in line):
@@ -68,6 +70,14 @@ class FilePreviewer(Handler):
                 logging.debug("linje {}: {}".format(i, line.rstrip('\n')))
                 lines.append(line.rstrip('\n'))
         self._raw_lines = lines
+
+    def _make_ds_name(self, obj):
+        # FIXME: Find a better more general solution
+        fn = os.path.basename(obj.file_path)
+        fn = fn.partition('.')[0]
+        fn = fn.lower()
+        obj.ds_id = obj.ds_name = fn
+
 
 
 pre_view = View(
@@ -85,8 +95,6 @@ pre_view = View(
              style='custom',
              ),
         Item('decimal_mark'),
-        Item('have_var_names'),
-        Item('have_obj_names'),
         Item('transpose'),
         Item('ds_id', style='readonly', label='File name'),
         Item('ds_name', label='Dataset name'),

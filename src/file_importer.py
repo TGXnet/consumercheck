@@ -37,25 +37,11 @@ class FileImporter(HasTraits):
 
     _conf = Instance(AppConf, AppConf('QPCPrefmap'))
     _import_settings = ImportFileParameters()
-    # FIXME: This will be moved into a DataImportSettings object
-    _file_path = File()
     _files_path = List(File)
-    _have_variable_names = Bool(True)
-    _have_object_names = Bool(True)
-
     _dataset = Array()
     _datasets = List(DataSet)
     _variable_names = List()
     _object_names = List()
-    _ds_id = Str()
-    _ds_name = Str()
-    _ds_type = Enum(
-        ('Design variable',
-         'Sensory profiling',
-         'Consumer liking',
-         'Consumer attributes',
-         'Hedonic attributes',)
-        )
 
     # FileSelectorView
     one_view = View(
@@ -80,25 +66,12 @@ class FileImporter(HasTraits):
         Item('open_files'),
         )
 
-    # FIXME: Part of DataPreviewer
-    ds_options_view = View(
-        Item('_ds_id', style='readonly', label='File name'),
-        Item('_ds_name', label='Dataset name'),
-        Item('_ds_type', label='Dataset type'),
-        Item('_have_variable_names', label='Have variables names?',
-             tooltip='Is first row variables names?'),
-        Item('_have_object_names', label='Have object names?',
-             tooltip='Is first column object names?'),
-        kind='modal',
-        buttons=[OKButton]
-        )
-
     # FIXME: Will be part of an DataImporterTextFile class
     def import_data(self, file_path, have_variable_names = True, have_object_names = True):
         """Read file and return DataSet objekt"""
-        self._file_path = file_path
-        self._have_variable_names = have_variable_names
-        self._have_object_names = have_object_names
+        self._import_settings.file_path = file_path
+        self._import_settings.have_var_names = have_variable_names
+        self._import_settings.have_obj_names = have_object_names
         self._do_import()
         self._make_ds_name()
         return self._make_dataset()
@@ -110,24 +83,24 @@ class FileImporter(HasTraits):
         self._import_settings.file_path = self._file_path
         self._import_settings.configure_traits(view=pre_view)
         self._do_import()
-        self._conf.save_work_dir(self._file_path)
+        self._conf.save_work_dir(self._import_settings.file_path)
         self._make_ds_name()
         return self._make_dataset()
 
-    def dialog_multi_import(self):
-        """Open dialog for selecting multiple files and return a list of DataSet's"""
-        self._file_path = self._conf.read_work_dir()
-        # For stand alone testing
-        # self.configure_traits(view='many_view')
-        self._open_files_changed()
-        for filen in self._files_path:
-            self._file_path = filen
-            self._make_ds_name()
-            self.configure_traits(view='ds_options_view')
-            self._do_import()
-            self._datasets.append(self._make_dataset())
-        self._conf.save_work_dir(self._file_path)
-        return self._datasets
+    ## def dialog_multi_import(self):
+    ##     """Open dialog for selecting multiple files and return a list of DataSet's"""
+    ##     self._file_path = self._conf.read_work_dir()
+    ##     # For stand alone testing
+    ##     # self.configure_traits(view='many_view')
+    ##     self._open_files_changed()
+    ##     for filen in self._files_path:
+    ##         self._file_path = filen
+    ##         self._make_ds_name()
+    ##         self.configure_traits(view='ds_options_view')
+    ##         self._do_import()
+    ##         self._datasets.append(self._make_dataset())
+    ##     self._conf.save_work_dir(self._file_path)
+    ##     return self._datasets
 
     def _open_files_changed(self):
         dlg = FileDialog(
@@ -151,12 +124,12 @@ class FileImporter(HasTraits):
     def _make_dataset(self):
         return DataSet(
             matrix=self._dataset,
-            _source_file=self._file_path,
+            _source_file=self._import_settings.file_path,
             variable_names=self._variable_names,
             object_names=self._object_names,
-            _ds_id=self._ds_id,
-            _ds_name=self._ds_name,
-            _dataset_type=self._ds_type,
+            _ds_id=self._import_settings.ds_id,
+            _ds_name=self._import_settings.ds_name,
+            _dataset_type=self._import_settings.ds_type,
             )
 
     def _make_ds_name(self):
@@ -167,13 +140,13 @@ class FileImporter(HasTraits):
         self._ds_id = self._ds_name = fn
 
     def _read_txt_file(self):
-        if self._have_object_names:
+        if self._import_settings.have_obj_names:
             self._read_matrix_with_obj_names()
         else:
             # FIXME: May fail if file not foud
             # No, supose to fail if file not found
             skips = 0
-            if self._have_variable_names:
+            if self._import_settings.have_var_names:
                 skips = 1
                 self._read_variable_names()
             # FIXME: Except open file error and dataformat error
