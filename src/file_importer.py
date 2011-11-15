@@ -18,8 +18,7 @@ from numpy import array, loadtxt
 import xlrd
 
 # Enthought imports
-from traits.api import HasTraits, File, Str, Bool, Enum, Array, \
-     List, Button, Instance
+from traits.api import HasTraits, File, Array, List, Button, Instance
 from traitsui.api import View, Item, UCustom, FileEditor
 from traitsui.menu import OKButton, CancelButton
 from pyface.api import FileDialog, OK
