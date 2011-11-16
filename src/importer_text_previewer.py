@@ -20,7 +20,7 @@ class ImportFileParameters(HasTraits):
     file_path = File()
     separator = Enum('\t', ',', ' ')
     decimal_mark = Enum('period', 'comma')
-    transpose = Bool()
+    transpose = Bool(False)
     have_var_names = Bool(True)
     have_obj_names = Bool(True)
     ds_id = Str()
