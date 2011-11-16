@@ -44,3 +44,14 @@ class TestTextfileImport(object):
             )
         ds = self.tfi.import_data(ifp)
         assert array_equal(self.ref, ds.matrix)
+
+
+    def test_comma_decimal_mark(self):
+        ifp = ImportFileParameters(
+            file_path='../datasets/Variants/CommaDecimalMark.txt',
+            decimal_mark='comma',
+            have_var_names=False,
+            have_obj_names=False,
+            )
+        ds = self.tfi.import_data(ifp)
+        assert array_equal(self.ref, ds.matrix)
