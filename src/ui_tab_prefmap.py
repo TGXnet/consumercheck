@@ -398,7 +398,7 @@ if __name__ == '__main__':
     from tests.tools import TestContainer
 
     from dataset_collection import DatasetCollection
-    from file_importer import FileImporter
+    from importer_main import ImporterMain
     # FIXME: How can i make the object instansiating
     # ordering more robust
     container = TestContainer(test_subject = PrefmapModelViewHandler(PrefmapModel()))
@@ -417,7 +417,7 @@ if __name__ == '__main__':
     ##             new.main_ui_ptr = self
 
     ## main = FakeMain(prefmap = PrefmapModelViewHandler(PrefmapModel()))
-    ## fi = FileImporter()
+    ## fi = ImporterMain()
     ## main.dsl.add_dataset(fi.import_data('datasets/Ost_forbruker.txt'))
     ## main.dsl.add_dataset(fi.import_data('datasets/Ost_sensorikk.txt'))
     ## main.dsl._datasets['ost_forbruker']._ds_name = 'Forbruker ost'

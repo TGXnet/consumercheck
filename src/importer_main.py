@@ -22,7 +22,7 @@ from pyface.api import FileDialog, OK
 # Local imports
 from dataset import DataSet
 from config import AppConf
-from file_previewer import ImportFileParameters, pre_view
+from importer_text_previewer import ImportFileParameters, pre_view
 from importer_text_file import TextFileImporter
 from importer_xls_file import XlsFileImporter
 
@@ -64,7 +64,6 @@ class ImporterMain(HasTraits):
         Item('open_files'),
         )
 
-    # FIXME: Will be part of an DataImporterTextFile class
     def import_data(self, file_path, have_variable_names = True, have_object_names = True):
         """Read file and return DataSet objekt"""
         self._import_settings.file_path = file_path
@@ -81,26 +80,26 @@ class ImporterMain(HasTraits):
         self._import_settings.configure_traits(view=pre_view)
         return self._do_import()
 
-    ## def dialog_multi_import(self):
-    ##     """Open dialog for selecting multiple files and return a list of DataSet's"""
-    ##     self._file_path = self._conf.read_work_dir()
-    ##     # For stand alone testing
-    ##     # self.configure_traits(view='many_view')
-    ##     self._open_files_changed()
-    ##     for filen in self._files_path:
-    ##         self._file_path = filen
-    ##         self._make_ds_name()
-    ##         self.configure_traits(view='ds_options_view')
-    ##         self._do_import()
-    ##         self._datasets.append(self._make_dataset())
-    ##     self._conf.save_work_dir(self._file_path)
-    ##     return self._datasets
+    def dialog_multi_import(self):
+        """Open dialog for selecting multiple files and return a list of DataSet's"""
+        self._file_path = self._conf.read_work_dir()
+        # For stand alone testing
+        # self.configure_traits(view='many_view')
+        self._import_settings.file_path = self._file_path
+        print(self._file_path)
+        self._open_files_changed()
+        for filen in self._files_path:
+            self._import_settings.file_path = filen
+            self._import_settings.configure_traits(view=pre_view)
+            self._datasets.append(self._do_import())
+        self._conf.save_work_dir(self._import_settings.file_path)
+        return self._datasets
 
     # For select multi file dialog
     def _open_files_changed(self):
         dlg = FileDialog(
             action='open files',
-            default_directory=self._import_settings.file_path,
+            default_directory=self._file_path,
             title='Import data')
         if dlg.open() == OK:
             self._files_path = dlg.paths
@@ -119,5 +118,6 @@ class ImporterMain(HasTraits):
 
 if __name__ == '__main__':
     fi = ImporterMain()
-    ds = fi.dialog_import_data()
-    ds.print_traits()
+    dsl = fi.dialog_multi_import()
+    for ds in dsl:
+        ds.print_traits()

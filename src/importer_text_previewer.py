@@ -18,7 +18,7 @@ from traitsui.tabular_adapter import TabularAdapter
 
 class ImportFileParameters(HasTraits):
     file_path = File()
-    separator = Enum(' ', '\t', ',')
+    separator = Enum('\t', ',', ' ')
     decimal_mark = Enum('period', 'comma')
     transpose = Bool()
     have_var_names = Bool(True)
@@ -90,9 +90,9 @@ pre_view = View(
         Item('separator',
              editor=EnumEditor(
                  values={
-                     ' ' : '1:Space',
-                     '\t': '2:Tab',
-                     ',' : '3:Comma',
+                     '\t': '1:Tab',
+                     ',' : '2:Comma',
+                     ' ' : '3:Space',
                      }),
              style='custom',
              ),

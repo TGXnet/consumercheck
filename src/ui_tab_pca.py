@@ -303,7 +303,7 @@ pca_tree_view = View(
 if __name__ == '__main__':
     print("Interactive start")
     from dataset_collection import DatasetCollection
-    from file_importer import FileImporter
+    from importer_main import ImporterMain
     
     class FakeMain(HasTraits):
         dsl = DatasetCollection()
@@ -317,7 +317,7 @@ if __name__ == '__main__':
                 new.main_ui_ptr = self
 
     main = FakeMain(pca = PcaModelViewHandler(PcaModel()))
-    fi = FileImporter()
+    fi = ImporterMain()
     main.dsl.add_dataset(fi.import_data('datasets/Ost_forbruker.txt'))
     main.dsl.add_dataset(fi.import_data('datasets/Ost_sensorikk.txt'))
     main.dsl._datasets['ost_forbruker']._ds_name = 'Forbruker ost'

@@ -10,7 +10,7 @@ from traitsui.menu import Action, Menu, MenuBar
 
 # Local imports
 from dataset_collection import DatasetCollection
-from file_importer import FileImporter
+from importer_main import ImporterMain
 from ui_datasets_tree import tree_view
 from ui_tab_pca import PcaModelViewHandler, pca_tree_view
 from ui_tab_prefmap import PrefmapModelViewHandler, prefmap_tree_view
@@ -29,7 +29,7 @@ class MainViewHandler(Handler):
     # default context is object
     def import_data(self, ui_info):
         """Action called when activating importing of new dataset"""
-        importer = FileImporter()
+        importer = ImporterMain()
         imported = importer.dialog_multi_import()
         for ds in imported:
             ui_info.object.dsl.add_dataset(ds)
