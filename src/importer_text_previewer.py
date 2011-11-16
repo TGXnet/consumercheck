@@ -1,5 +1,5 @@
 
-# stdlib imports
+# StdLib imports
 import os.path
 import logging
 # Log everything, and send it to stderr.
@@ -7,12 +7,14 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
 
+# Enthought imports
 from traits.api import HasTraits, Str, Int, Bool, File, List, Enum
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
 
-#-- Tabular Adapter Definition -------------------------------------------------
+# Local imports
+
 
 class ImportFileParameters(HasTraits):
     file_path = File()
@@ -59,7 +61,7 @@ class FilePreviewer(Handler):
     def object_separator_changed(self, info):
         self._parsed_data = [line.split(info.object.separator) for line in self._raw_lines]
         preview_table.adapter.ncols = len(self._parsed_data[1])
- 
+
     def _probe_read(self, obj, no_lines=7, length=35):
         lines = []
         with open(obj.file_path, 'rU') as fp:

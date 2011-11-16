@@ -1,17 +1,19 @@
-
+# StdLib imports
 import xlrd
 
+# Enthought imports
+from traits.api import implements
 
+# Local imports
+from importer_interfaces import IDataImporter
 from dataset import DataSet
 
 
 class XlsFileImporter(object):
-
+    implements(IDataImporter)
 
     def import_data(self, import_settings):
         return dataset
-
-
 
     def _make_dataset(self):
         return DataSet(
@@ -23,9 +25,6 @@ class XlsFileImporter(object):
             _ds_name=self._import_settings.ds_name,
             _dataset_type=self._import_settings.ds_type,
             )
-
-
-
 
     def _read_xls_file(self):
         wb = xlrd.open_workbook(self._file_path, encoding_override=None)

@@ -1,12 +1,18 @@
+# StdLib imports
 
+# SciPy imports
 from numpy import array, loadtxt
 
+# Enthought imports
+from traits.api import implements
+
+# Local imports
+from importer_interfaces import IDataImporter
 from dataset import DataSet
 
 
-
 class TextFileImporter(object):
-
+    implements(IDataImporter)
 
     def import_data(self, import_settings):
         self.imp_s = import_settings
