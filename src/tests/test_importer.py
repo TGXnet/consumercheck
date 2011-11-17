@@ -34,6 +34,8 @@ class TestTextfileImport(object):
              [ 4.2,   4.15,  1.45,  2.3,   1.55,],
              [ 4.05,  2.4,   2.25,  1.3,   1.25,],
              [ 4.75,  4.5,   3.5,   2.05,  1.,  ]])
+        self.var_names = ['Var1','Var2','Var3','Var4','Var5']
+        self.obj_names = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10', 'O11', 'O12']
         self.tfi = TextFileImporter()
 
     def test_simple_tab_sep(self):
@@ -55,3 +57,26 @@ class TestTextfileImport(object):
             )
         ds = self.tfi.import_data(ifp)
         assert array_equal(self.ref, ds.matrix)
+
+
+    def test_var_names(self):
+        ifp = ImportFileParameters(
+            file_path='../datasets/Variants/VariableNames.txt',
+            have_var_names=True,
+            have_obj_names=False,
+            )
+        ds = self.tfi.import_data(ifp)
+        assert array_equal(self.ref, ds.matrix)
+        assert self.var_names == ds.variable_names
+
+
+    def test_obj_var_names(self):
+        ifp = ImportFileParameters(
+            file_path='../datasets/Variants/ObjVarNames.txt',
+            have_var_names=True,
+            have_obj_names=True,
+            )
+        ds = self.tfi.import_data(ifp)
+        assert array_equal(self.ref, ds.matrix)
+        assert self.var_names == ds.variable_names
+        assert self.obj_names == ds.object_names
