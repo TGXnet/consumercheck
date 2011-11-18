@@ -20,7 +20,8 @@ from chaco.api import ArrayPlotData
 # Local imports
 from plots import CCPlotScatter, CCPlotLine, CCPlotCalValExplVariance, CCPlotXYCorrLoad
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
-from mvr import plsr
+# from mvr import plsr
+from plsr import nipalsPLS2 as pls
 from prefmap_ui import PrefmapUIController, prefmap_ui_controller, prefmap_ui_view
 
 
@@ -54,14 +55,12 @@ class PrefmapModel(HasTraits):
             return res
 
     def _run_prefmap(self, xId, yId):
-        logging.info("Run plsr for: X: {0} ,Y: {1}".format(xId, yId))
-        return plsr(
+        logging.info("Run pls for: X: {0} ,Y: {1}".format(xId, yId))
+        return pls(
             self.dsl.get_by_id(xId).matrix,
             self.dsl.get_by_id(yId).matrix,
-            centre="yes",
-            fncomp=5,
-            fmethod="oscorespls",
-            fvalidation="LOO")
+            numPC=8,
+            cvType=["loo"])
 
     def _makeResId(self, *inputIds):
         resId = ''
@@ -128,10 +127,10 @@ class PrefmapModelViewHandler(ModelView):
 
     def _make_scores_plot(self, xId, yId, add_labels=True):
         res = self.model.get_res(xId, yId)
-        pc_tab = res['Scores T']
+        pc_tab = res.Xscores()
         # FIXME: This is unnecessary, look two lines up
-        expl_vars_x = self.model.get_res(xId, yId)['calExplVarX']
-        expl_vars_y = self.model.get_res(xId, yId)['calExplVarY']
+        expl_vars_x = self.model.get_res(xId, yId).XcalExplVar_tot_list()
+        expl_vars_y = self.model.get_res(xId, yId).YcalExplVar_tot_list()
         pd = ArrayPlotData()
         pd.set_data('pc1', pc_tab[:,0])
         pd.set_data('pc2', pc_tab[:,1])
@@ -156,13 +155,13 @@ class PrefmapModelViewHandler(ModelView):
 
     def _make_loadings_plot_x(self, xId, yId):
         res = self.model.get_res(xId, yId)
-        xLP = res['Xloadings P']
+        xLP = res.Xloadings()
         pd = ArrayPlotData()
         pd.set_data('pc1', xLP[:,0])
         pd.set_data('pc2', xLP[:,1])
         plot = CCPlotScatter(pd)
         plot.title = "X Loadings"
-        expl_vars = self.model.get_res(xId, yId)['calExplVarX']
+        expl_vars = self.model.get_res(xId, yId).XcalExplVar_tot_list()
         plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
         plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
         labels = self.model.dsl.get_by_id(xId).variable_names
@@ -181,13 +180,13 @@ class PrefmapModelViewHandler(ModelView):
 
     def _make_loadings_plot_y(self, xId, yId):
         res = self.model.get_res(xId, yId)
-        yLP = res['Yloadings Q']
+        yLP = res.Yloadings()
         pd = ArrayPlotData()
         pd.set_data('pc1', yLP[:,0])
         pd.set_data('pc2', yLP[:,1])
         plot = CCPlotScatter(pd)
         plot.title = "Y Loadings"
-        expl_vars = self.model.get_res(xId, yId)['calExplVarY']
+        expl_vars = self.model.get_res(xId, yId).YcalExplVar_tot_list()
         plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
         plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
         labels = self.model.dsl.get_by_id(yId).variable_names
@@ -209,11 +208,11 @@ class PrefmapModelViewHandler(ModelView):
         # labels
         res = self.model.get_res(xId, yId)
         # pc_tab = res.getCorrLoadings()
-        clx = res['corrLoadX']
-        cly = res['corrLoadY']
+        clx = res.XcorrLoadings()
+        cly = res.YcorrLoadings()
         # calExplVarX
-        cevx = res['calExplVarX']
-        cevy = res['calExplVarY']
+        cevx = res.XcalExplVar_tot_list()
+        cevy = res.YcalExplVar_tot_list()
         pd = ArrayPlotData()
         pd.set_data('pc1', clx[0,:])
         pd.set_data('pc2', clx[1,:])
@@ -242,7 +241,7 @@ class PrefmapModelViewHandler(ModelView):
 
     def _make_expl_var_plot_x(self, xId, yId):
         res = self.model.get_res(xId, yId)
-        sumCalX = res['cumCalExplVarX']
+        sumCalX = res.XcumCalExplVar_tot_list()
         expl_index = range(len(sumCalX))
         pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalX)
         pl = CCPlotLine(pd)
@@ -264,8 +263,8 @@ class PrefmapModelViewHandler(ModelView):
 
     def _make_expl_var_plot_y(self, xId, yId):
         res = self.model.get_res(xId, yId)
-        sumCalY = res['cumCalExplVarY']
-        sumValY = res['cumValExplVarY']
+        sumCalY = res.YcumCalExplVar_tot_list()
+        sumValY = res.YcumValExplVar_tot_list()
         expl_index = range(len(sumCalY))
         pd = ArrayPlotData()
         pd.set_data('index', expl_index)
