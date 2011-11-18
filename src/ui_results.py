@@ -9,7 +9,7 @@ from traitsui.api import ModelView, View, Group, Item
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton
-from pyface.clipboard import clipboard
+from pyface.api import clipboard
 
 class ArrayAdapter(TabularAdapter):
     index = List()

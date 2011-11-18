@@ -8,7 +8,7 @@ from traits.api import Instance, Button, Property
 from traitsui.api import Controller, View, Item, TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton
-from pyface.clipboard import clipboard
+from pyface.api import clipboard
 
 # Local imports
 from dataset import DataSet
