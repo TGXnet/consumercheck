@@ -49,7 +49,6 @@ preview_table = TabularEditor(
     )
 
 
-# class FilePreviewer(ModelView):
 class FilePreviewer(Handler):
     _raw_lines = List(Str)
     _parsed_data = List()
@@ -59,8 +58,18 @@ class FilePreviewer(Handler):
         self._probe_read(info.object)
 
     def object_separator_changed(self, info):
-        self._parsed_data = [line.split(info.object.separator) for line in self._raw_lines]
-        preview_table.adapter.ncols = len(self._parsed_data[1])
+        preview_matrix = [line.split(info.object.separator) for line in self._raw_lines]
+        longest = 0
+        for row in preview_matrix:
+            longest = max(longest, len(row))
+        self._parsed_data = self._fix_preview_matrix(preview_matrix, longest)
+        preview_table.adapter.ncols = longest
+
+    def _fix_preview_matrix(self, preview_matrix, length):
+        for i, row in enumerate(preview_matrix):
+            if len(row) < length:
+                preview_matrix[i] += ['']*(length-len(row))
+        return preview_matrix
 
     def _probe_read(self, obj, no_lines=7, length=35):
         lines = []
@@ -84,6 +93,7 @@ class FilePreviewer(Handler):
 
 pre_view = View(
     Group(
+        Item('file_path', style='readonly'),
         Item('handler._parsed_data',
              id='table',
              editor=preview_table),
@@ -97,7 +107,7 @@ pre_view = View(
              style='custom',
              ),
         Item('decimal_mark'),
-        Item('transpose'),
+        ## Item('transpose'),
         Item('ds_id', style='readonly', label='File name'),
         Item('ds_name', label='Dataset name'),
         Item('ds_type', label='Dataset type'),
@@ -113,6 +123,7 @@ pre_view = View(
     resizable=True,
     buttons=[CancelButton, OKButton],
     handler=FilePreviewer(),
+    kind='livemodal',
     )
 
 

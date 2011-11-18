@@ -45,7 +45,7 @@ class ImporterMain(HasTraits):
         UCustom(
             name='_file_path',
             editor=FileEditor(
-                filter=['*.csv;*.txt;*.xls'],
+                filter=['*.csv;*.txt;*.xls;*.xlsx'],
                 ),
             resizable=True,
             full_size=True,
@@ -106,9 +106,9 @@ class ImporterMain(HasTraits):
 
     def _do_import(self):
         fext = self._identify_filetype()
-        if fext == 'txt':
+        if fext in ['txt', 'csv']:
             return self._text_file_reader.import_data(self._import_settings)
-        elif fext == 'xls':
+        elif fext in [ 'xls', 'xlsx']:
             return self._xls_file_reader.import_data(self._import_settings)
 
     def _identify_filetype(self):
