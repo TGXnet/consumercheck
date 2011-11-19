@@ -8,8 +8,8 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any
-from traitsui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
+from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Enum
+from traitsui.api import View, Item, UItem, Handler, ModelView, TreeEditor, TreeNode, InstanceEditor, Group
 from chaco.api import ArrayPlotData
 
 # Local imports
@@ -33,6 +33,8 @@ class PcaModel(HasTraits):
     main_ui_ptr = Instance(HasTraits)
     dsl = DelegatesTo('main_ui_ptr')
 
+    max_n_pc = Enum(2,3,4,5,6)
+
     # Hold calculated pca results
     results = Dict(unicode, Any)
 
@@ -47,15 +49,22 @@ class PcaModel(HasTraits):
     ##      self.datasetsAltered = True
 
     def get_res(self, ds_id):
+        resId = self._makeResId(ds_id, self.max_n_pc)
         try:
-            return self.results[ds_id]
+            return self.results[resId]
         except KeyError:
-            return self._run_pca(ds_id)
+            res = self._run_pca(ds_id)
+            self.results[resId] = res
+            return res
 
     def _run_pca(self, ds_id):
-        res = PCA(self.dsl.get_by_id(ds_id).matrix)
-        self.results[ds_id] = res
-        return res
+        return PCA(self.dsl.get_by_id(ds_id).matrix, numPC=self.max_n_pc)
+
+    def _makeResId(self, *inputIds):
+        resId = ''
+        for iid in inputIds:
+            resId += str(iid)
+        return resId
 
 
 class PcaModelViewHandler(ModelView):
@@ -243,6 +252,22 @@ def clkExplResVar(obj):
 # Views
 no_view = View()
 
+pca_view = View(
+    Group(
+        Group(
+            Item('max_n_pc', show_label=False),
+            show_border=True,
+            label='Max PC to calculate',
+            ),
+        Group(
+            Item('dsl', editor=InstanceEditor(view=check_view),
+                 style='custom', show_label=False),
+            show_border=True,
+            label='Select dataset(s) to analyze',
+            ),
+        )
+    )
+
 options_tree = TreeEditor(
     nodes = [
         TreeNode( node_for = [ PcaModel ],
@@ -260,27 +285,27 @@ options_tree = TreeEditor(
         TreeNode( node_for = [ PcaModel ],
                   label = '=Overview',
                   on_dclick = clkOverview,
-                  view = check_view,
+                  view = pca_view,
                   ),
         TreeNode( node_for = [ PcaModel ],
                   label = '=Scores',
                   on_dclick = clkScores,
-                  view = check_view,
+                  view = pca_view,
                   ),
         TreeNode( node_for = [ PcaModel ],
                   label = '=Loadings',
                   on_dclick = clkLoadings,
-                  view = check_view,
+                  view = pca_view,
                   ),
         TreeNode( node_for = [ PcaModel ],
                   label = '=Correlation loadings',
                   on_dclick = clkCorrLoad,
-                  view = check_view,
+                  view = pca_view,
                   ),
         TreeNode( node_for = [ PcaModel ],
                   label = '=Explained variance',
                   on_dclick = clkExplResVar,
-                  view = check_view,
+                  view = pca_view,
                   ),
         ],
     hide_root = False,
@@ -304,7 +329,7 @@ if __name__ == '__main__':
     print("Interactive start")
     from dataset_collection import DatasetCollection
     from importer_main import ImporterMain
-    
+
     class FakeMain(HasTraits):
         dsl = DatasetCollection()
         pca = Instance(PcaModelViewHandler)

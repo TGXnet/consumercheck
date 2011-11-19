@@ -14,7 +14,6 @@ class CheckListController(Controller):
     object in this object constructor.
     FIXME: Compare with prefmapUIController to equalize API for dataset collection
     """
-#    sel_list = DelegatesTo('model', prefix='id_name_list')
     sel_list = List()
 
     # Define a trait for each of three formations:
@@ -29,11 +28,8 @@ class CheckListController(Controller):
         datasets = self.model.get_dataset_list()
         self.sel_list =  [(ds._ds_id, ds._ds_name) for ds in datasets]
 
-
-
     def _selected_changed(self, old, new):
         logging.info("Selection list changed from {0} to {1}".format(old, new))
-
 
 # The view includes one group per column formation.      These will be displayed
 # on separate tabbed panels.
