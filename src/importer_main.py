@@ -67,6 +67,7 @@ class ImporterMain(HasTraits):
     def import_data(self, file_path, have_variable_names = True, have_object_names = True):
         """Read file and return DataSet objekt"""
         self._import_settings.file_path = file_path
+        self._import_settings.make_ds_name()
         self._import_settings.have_var_names = have_variable_names
         self._import_settings.have_obj_names = have_object_names
         return self._do_import()
@@ -86,7 +87,6 @@ class ImporterMain(HasTraits):
         # For stand alone testing
         # self.configure_traits(view='many_view')
         self._import_settings.file_path = self._file_path
-        print(self._file_path)
         self._open_files_changed()
         for filen in self._files_path:
             self._import_settings.file_path = filen

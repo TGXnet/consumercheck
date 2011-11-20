@@ -33,6 +33,13 @@ class ImportFileParameters(HasTraits):
          'Hedonic attributes',)
         )
 
+    def make_ds_name(self):
+        # FIXME: Find a better more general solution
+        fn = os.path.basename(self.file_path)
+        fn = fn.partition('.')[0]
+        fn = fn.lower()
+        self.ds_id = self.ds_name = fn
+
 
 class RawLineAdapter(TabularAdapter):
     columns = []
@@ -54,7 +61,7 @@ class FilePreviewer(Handler):
     _parsed_data = List()
 
     def init(self, info):
-        self._make_ds_name(info.object)
+        info.object.make_ds_name()
         self._probe_read(info.object)
 
     def object_separator_changed(self, info):
@@ -81,14 +88,6 @@ class FilePreviewer(Handler):
                 logging.debug("linje {}: {}".format(i, line.rstrip('\n')))
                 lines.append(line.rstrip('\n'))
         self._raw_lines = lines
-
-    def _make_ds_name(self, obj):
-        # FIXME: Find a better more general solution
-        fn = os.path.basename(obj.file_path)
-        fn = fn.partition('.')[0]
-        fn = fn.lower()
-        obj.ds_id = obj.ds_name = fn
-
 
 
 pre_view = View(
@@ -130,5 +129,5 @@ pre_view = View(
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
     test = ImportFileParameters()
-    test.file_path = 'datasets/A_labels.txt'
+    test.file_path = 'datasets/Vine/A_labels.txt'
     test.configure_traits(view=pre_view)
