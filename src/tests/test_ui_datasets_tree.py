@@ -2,8 +2,8 @@
 import unittest
 import test_tools
 
-from enthought.traits.api import HasTraits, Str, Instance
-from enthought.traitsui.api import View, Item
+from traits.api import HasTraits, Str, Instance
+from traitsui.api import View, Item
 
 # ConsumerCheck imports
 from dataset import DataSet

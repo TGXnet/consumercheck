@@ -19,9 +19,9 @@ class TestDatasetModel(unittest.TestCase):
         self.assertEqual(5, self.testSet.n_cols)
 
     def testVarnameObjectnameImport(self):
-        path = test_tools.findApplicationBasePath() + '/datasets/A_lables.txt'
+        path = test_tools.findApplicationBasePath() + '/datasets/A_labels.txt'
         self.testSet.importDataset(path, True, True)
-        self.assertEqual('a_lables', self.testSet._ds_name)
+        self.assertEqual('a_labels', self.testSet._ds_name)
         self.assertEqual(21, self.testSet.n_rows)
         self.assertEqual(5, self.testSet.n_cols)
 

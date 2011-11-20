@@ -2,8 +2,8 @@
 import unittest
 import test_tools
 
-from enthought.traits.api import HasTraits, Str, Instance
-from enthought.traitsui.api import View, Item
+from traits.api import HasTraits, Str, Instance
+from traitsui.api import View, Item
 
 # ConsumerCheck imports
 from dataset import DataSet
@@ -19,9 +19,9 @@ class TestUiPrefmap(unittest.TestCase):
     def testImport(self):
         baseFolder = test_tools.findApplicationBasePath()
         ds1 = DataSet()
-        ds1.importDataset(baseFolder + '/datasets/A_lables.txt', True, True)
+        ds1.importDataset(baseFolder + '/datasets/A_labels.txt', True, True)
         ds2 = DataSet()
-        ds2.importDataset(baseFolder + '/datasets/C_lables.txt', True, True)
+        ds2.importDataset(baseFolder + '/datasets/C_labels.txt', True, True)
         dc = DatasetCollection()
         prefmap = PrefmapModel(dsl=dc)
         dc.add_dataset(ds1)

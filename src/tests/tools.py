@@ -4,10 +4,10 @@ import sys
 import logging
 
 # Enthought imports
-# from enthought.etsconfig.api import ETSConfig
+# from etsconfig.api import ETSConfig
 # ETSConfig.toolkit = 'wx'
 # ETSConfig.toolkit = 'qt4'
-from enthought.traits.api import HasTraits, Instance
+from traits.api import HasTraits, Instance
 
 def setConsumerCheckIncludePath():
     consumerBase = findApplicationBasePath()
@@ -31,26 +31,26 @@ setConsumerCheckIncludePath()
 
 from dataset_collection import DatasetCollection
 from dataset import DataSet
-from file_importer import FileImporter
+from importer_main import ImporterMain
 
 
 def make_dsl_mock():
     dsl = DatasetCollection()
-    ds_importer = FileImporter()
-    dsl.add_dataset(ds_importer.import_data('datasets/Ost.txt'))
-    dsl.add_dataset(ds_importer.import_data('datasets/Polser.txt', True, True))
-    dsl.add_dataset(ds_importer.import_data('datasets/A_labels.txt'))
-    dsl.add_dataset(ds_importer.import_data('datasets/C_labels.txt'))
-    dsl.add_dataset(ds_importer.import_data('datasets/Ost_forbruker.txt'))
-    dsl.add_dataset(ds_importer.import_data('datasets/Ost_sensorikk.txt'))
+    ds_importer = ImporterMain()
+#    dsl.add_dataset(ds_importer.import_data('datasets/CheeseSensoryData.txt'))
+#    dsl.add_dataset(ds_importer.import_data('datasets/SausageSensoryData.txt', True, True))
+    dsl.add_dataset(ds_importer.import_data('datasets/Vine/A_labels.txt'))
+    dsl.add_dataset(ds_importer.import_data('datasets/Vine/C_labels.txt'))
+    dsl.add_dataset(ds_importer.import_data('datasets/Cheese/ConsumerLiking.txt'))
+    dsl.add_dataset(ds_importer.import_data('datasets/Cheese/SensoryData.txt'))
     dsl._datasets['a_labels']._ds_name = 'Set A tull'
     dsl._datasets['c_labels']._ds_name = 'Set C tull'
     dsl._datasets['a_labels']._dataset_type = 'Consumer liking'
     dsl._datasets['c_labels']._dataset_type = 'Sensory profiling'
-    dsl._datasets['ost_forbruker']._ds_name = 'Forbruker'
-    dsl._datasets['ost_forbruker']._dataset_type = 'Consumer liking'
-    dsl._datasets['ost_sensorikk']._ds_name = 'Sensorikk'
-    dsl._datasets['ost_sensorikk']._dataset_type = 'Sensory profiling'
+    dsl._datasets['consumerliking']._ds_name = 'Forbruker'
+    dsl._datasets['consumerliking']._dataset_type = 'Consumer liking'
+    dsl._datasets['sensorydata']._ds_name = 'Sensorikk'
+    dsl._datasets['sensorydata']._dataset_type = 'Sensory profiling'
     return dsl
 
 class TestContainer(HasTraits):
