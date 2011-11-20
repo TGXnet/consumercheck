@@ -2,6 +2,7 @@
 # stdlib imports
 import logging
 
+# Enthought imports
 from traits.api import List, on_trait_change
 from traitsui.api import Item, View, CheckListEditor, Controller
 

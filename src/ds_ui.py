@@ -7,13 +7,18 @@ from traitsui.menu import OKButton, CancelButton
 # Local imports
 from dataset import DataSet
 from ds_matrix_view import matrix_view
+from ds_slicer_view import ds_slicer_view
 
 
 class DSListTabHandler(Handler):
     show_matrix = Button('Show data matrix')
+    show_slicer = Button('Variables and objects selection')
 
     def handler_show_matrix_changed(self, info):
         info.object.edit_traits(view=matrix_view)
+
+    def handler_show_slicer_changed(self, info):
+        info.object.edit_traits(view=ds_slicer_view)
 
 
 ds_list_tab = View(
@@ -22,6 +27,7 @@ ds_list_tab = View(
     Item('n_rows', style='readonly'),
     Item('n_cols', style='readonly'),
     Item('handler.show_matrix'),
+    Item('handler.show_slicer'),
     handler=DSListTabHandler(),
     )
 

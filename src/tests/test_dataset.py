@@ -1,30 +1,45 @@
+"""Test to be used with py.test.
+"""
 
-import unittest
-import test_tools
+import sys
+from os.path import dirname, abspath
+# add directory containing the package to sys.path
+# or put it on PYTHONPATH
+# or put a appropriate *.pth on PYTHONPATH
+home = dirname(dirname(abspath(__file__)))
+sys.path.append(home)
 
-# ConsumerCheck imports
+from numpy import array, array_equal, allclose
+
+import py
+
+# Local imports
+## from importer_text_file import TextFileImporter
+## from importer_text_previewer import ImportFileParameters
 from dataset import DataSet
 
 
-class TestDatasetModel(unittest.TestCase):
+class TestTextfileImport(object):
 
-    def setUp(self):
-        self.testSet = DataSet()
+    def setup_method(self, method):
+        self.ref = array(
+            [[ 1.1, 1.2, 1.3],
+             [ 2.1, 2.2, 2.3],
+             [ 3.1, 3.2, 3.3]])
+        self.ds = DataSet()
+        self.ds.matrix = self.ref
 
-    def testSimpleImport(self):
-        path = test_tools.findApplicationBasePath() + '/datasets/test.txt'
-        self.testSet.importDataset(path, True)
-        self.assertEqual('test', self.testSet._ds_name)
-        self.assertEqual(11, self.testSet.n_rows)
-        self.assertEqual(5, self.testSet.n_cols)
+    def test_setting_matrix(self):
+        assert array_equal(self.ref, self.ds.matrix)
 
-    def testVarnameObjectnameImport(self):
-        path = test_tools.findApplicationBasePath() + '/datasets/A_labels.txt'
-        self.testSet.importDataset(path, True, True)
-        self.assertEqual('a_labels', self.testSet._ds_name)
-        self.assertEqual(21, self.testSet.n_rows)
-        self.assertEqual(5, self.testSet.n_cols)
-
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_subset_matrix(self):
+        ref = array(
+            [[ 1.2, 1.3],
+             [ 3.2, 3.3]])
+        self.ds.active_variables = [1,2]
+        self.ds.active_objects = [0,2]
+        subset = self.ds.subset()
+        print('\n')
+        subset.print_traits()
+        print(subset.matrix)
+        assert array_equal(ref, subset.matrix)
