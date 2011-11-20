@@ -11,7 +11,6 @@ from ds_ui import DataSet, ds_list_tab
 
 
 class Datasets(HasTraits):
-    """ Defines a company with datasets and employees. """
     name     = Str( 'FIXME: Datasets default name' )
     imported = List( DataSet )
 

@@ -79,9 +79,6 @@ class TableViewController(ModelView):
             self.ad.columns.append((str(i), i))
         # self.ad.columns=[('en', 0), ('to', 1), ('tre', 2)]
 
-    ## def init(self, info):
-    ##     print("init runt")
-
     def object_cp_clip_changed(self, info):
         tf = tempfile.TemporaryFile()
         savetxt(tf, self.table, fmt='%.2f', delimiter='\t', newline='\n')
