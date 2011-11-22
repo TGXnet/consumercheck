@@ -68,11 +68,11 @@ class DataSet(HasTraits):
         self.active_variables = range(self.n_cols)
         self.active_objects = range(self.n_rows)
 
-    @on_trait_change('active_variables,active_objects')
-    def active_changed(self):
-        print("update_shadow run")
-        print(self.active_variables)
-        print(self.active_objects)
+    ## @on_trait_change('active_variables,active_objects')
+    ## def active_changed(self):
+    ##     print("update_shadow run")
+    ##     print(self.active_variables)
+    ##     print(self.active_objects)
 
     def _get_n_rows(self):
         if self.matrix.shape[0] > 0:
