@@ -64,10 +64,15 @@ class DataSet(HasTraits):
 
 
     @on_trait_change('matrix')
-    def init_active(self):
-        print("Init active run")
+    def all_active(self):
         self.active_variables = range(self.n_cols)
         self.active_objects = range(self.n_rows)
+
+    @on_trait_change('active_variables,active_objects')
+    def active_changed(self):
+        print("update_shadow run")
+        print(self.active_variables)
+        print(self.active_objects)
 
     def _get_n_rows(self):
         if self.matrix.shape[0] > 0:
@@ -90,3 +95,9 @@ class DataSet(HasTraits):
 
 
 #end DataSet
+
+
+if __name__ == '__main__':
+    from importer_main import ImporterMain
+    fi = ImporterMain()
+    ds = fi.import_data('./datasets/Vine/A_labels.txt', True, True)
