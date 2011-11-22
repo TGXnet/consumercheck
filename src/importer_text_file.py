@@ -52,7 +52,8 @@ class TextFileImporter(object):
                 objnames = pd[corner].view().reshape(len(pd),-1)
                 objnames = objnames[:,0].tolist()
                 self.ds.object_names = objnames
-            pd = pd[varnames].view(float).reshape(len(pd),-1)
+            dt = pd[varnames[0]].dtype
+            pd = pd[varnames].view(dt).reshape(len(pd),-1)
             self.ds.variable_names = varnames
 
         self.ds.matrix = pd
