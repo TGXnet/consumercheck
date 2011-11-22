@@ -49,16 +49,26 @@ class PcaModel(HasTraits):
     ##      self.datasetsAltered = True
 
     def get_res(self, ds_id):
-        resId = self._makeResId(ds_id, self.max_n_pc)
-        try:
-            return self.results[resId]
-        except KeyError:
-            res = self._run_pca(ds_id)
-            self.results[resId] = res
-            return res
+        # FIXME: I hawe to figur out if i should cache
+        # the different calculated results, or if it should
+        # rerunn the calculation each time. Or if i can find som
+        # kind of middle ground
+        # Optimize memory usage versus cpu time.
+
+        ## resId = self._makeResId(ds_id, self.max_n_pc)
+        ## try:
+        ##     return self.results[resId]
+        ## except KeyError:
+        ##     res = self._run_pca(ds_id)
+        ##     self.results[resId] = res
+        ##     return res
+        return self._run_pca(ds_id)
+
 
     def _run_pca(self, ds_id):
-        return PCA(self.dsl.get_by_id(ds_id).matrix, numPC=self.max_n_pc)
+        ds = self.dsl.get_by_id(ds_id)
+        sds = ds.subset()
+        return PCA(sds.matrix, numPC=self.max_n_pc)
 
     def _makeResId(self, *inputIds):
         resId = ''
@@ -121,7 +131,9 @@ class PcaModelViewHandler(ModelView):
         res = self.model.get_res(ds_id)
         pc_tab = res.getScores()
         if add_labels:
-            labels = self.model.dsl.get_by_id(ds_id).object_names
+            ds = self.model.dsl.get_by_id(ds_id)
+            sds = ds.subset()
+            labels = sds.object_names
             plot = self._make_plot(pc_tab, ds_id, "Scores", labels)
         else:
             plot = self._make_plot(pc_tab, ds_id, "Scores")
@@ -141,7 +153,9 @@ class PcaModelViewHandler(ModelView):
         res = self.model.get_res(ds_id)
         pc_tab = res.getLoadings()
         if add_labels:
-            labels = self.model.dsl.get_by_id(ds_id).variable_names
+            ds = self.model.dsl.get_by_id(ds_id)
+            sds = ds.subset()
+            labels = sds.variable_names
             plot = self._make_plot(pc_tab, ds_id, "Loadings", labels)
         else:
             plot = self._make_plot(pc_tab, ds_id, "Loadings")
@@ -182,7 +196,9 @@ class PcaModelViewHandler(ModelView):
         pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         if add_labels:
-            labels = self.model.dsl.get_by_id(ds_id).variable_names
+            ds = self.model.dsl.get_by_id(ds_id)
+            sds = ds.subset()
+            labels = sds.variable_names
             pcl.add_data_labels(labels)
         return pcl
 
@@ -343,8 +359,8 @@ if __name__ == '__main__':
 
     main = FakeMain(pca = PcaModelViewHandler(PcaModel()))
     fi = ImporterMain()
-    main.dsl.add_dataset(fi.import_data('datasets/Ost_forbruker.txt'))
-    main.dsl.add_dataset(fi.import_data('datasets/Ost_sensorikk.txt'))
-    main.dsl._datasets['ost_forbruker']._ds_name = 'Forbruker ost'
-    main.dsl._datasets['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
+    main.dsl.add_dataset(fi.import_data('datasets/Cheese/ConsumerLiking.txt'))
+    main.dsl.add_dataset(fi.import_data('datasets/Cheese/SensoryData.txt'))
+    main.dsl._datasets['consumerliking']._ds_name = 'Forbruker ost'
+    main.dsl._datasets['sensorydata']._ds_name = 'Sensorikk og yse anna'
     main.pca.configure_traits(view=pca_tree_view)
