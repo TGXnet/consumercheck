@@ -214,10 +214,10 @@ class PrefmapModelViewHandler(ModelView):
         cevx = res.XcalExplVar_tot_list()
         cevy = res.YcalExplVar_tot_list()
         pd = ArrayPlotData()
-        pd.set_data('pc1', clx[0,:])
-        pd.set_data('pc2', clx[1,:])
-        pd.set_data('pcy1', cly[0,:])
-        pd.set_data('pcy2', cly[1,:])
+        pd.set_data('pc1', clx[:,0])
+        pd.set_data('pc2', clx[:,1])
+        pd.set_data('pcy1', cly[:,0])
+        pd.set_data('pcy2', cly[:,1])
         pcl = CCPlotXYCorrLoad(pd)
         pcl.title = "X & Y correlation loadings"
         pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
@@ -395,32 +395,7 @@ prefmap_tree_view = View(
 if __name__ == '__main__':
     print("Interactive start")
     from tests.tools import TestContainer
-
-    from dataset_collection import DatasetCollection
-    from importer_main import ImporterMain
     # FIXME: How can i make the object instansiating
     # ordering more robust
     container = TestContainer(test_subject = PrefmapModelViewHandler(PrefmapModel()))
-    ## container.test_subject = PrefmapModelViewHandler()
-    ## container.test_subject.model = PrefmapModel()
     container.configure_traits(view=prefmap_tree_view)
-    ## class FakeMain(HasTraits):
-    ##     dsl = DatasetCollection()
-    ##     prefmap = Instance(PrefmapModelViewHandler)
-
-    ##     def _prefmap_changed(self, old, new):
-    ##         logging.info("Setting prefmap mother")
-    ##         if old is not None:
-    ##             old.main_ui_ptr = None
-    ##         if new is not None:
-    ##             new.main_ui_ptr = self
-
-    ## main = FakeMain(prefmap = PrefmapModelViewHandler(PrefmapModel()))
-    ## fi = ImporterMain()
-    ## main.dsl.add_dataset(fi.import_data('datasets/Ost_forbruker.txt'))
-    ## main.dsl.add_dataset(fi.import_data('datasets/Ost_sensorikk.txt'))
-    ## main.dsl._datasets['ost_forbruker']._ds_name = 'Forbruker ost'
-    ## main.dsl._datasets['ost_sensorikk']._ds_name = 'Sensorikk og yse anna'
-    ## main.dsl._datasets['ost_forbruker']._dataset_type = 'Consumer liking'
-    ## main.dsl._datasets['ost_sensorikk']._dataset_type = 'Sensory profiling'
-    ## main.prefmap.configure_traits(view=prefmap_tree_view)
