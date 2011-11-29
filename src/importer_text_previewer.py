@@ -4,7 +4,7 @@ import os.path
 import logging
 # Log everything, and send it to stderr.
 # http://docs.python.org/howto/logging-cookbook.html
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
 
 # Enthought imports
