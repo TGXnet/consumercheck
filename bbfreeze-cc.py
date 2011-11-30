@@ -29,6 +29,15 @@ ds_source = os.path.abspath(os.path.join('src', 'datasets'))
 ds_dest = os.path.abspath(os.path.join(ff, 'datasets'))
 shutil.copytree(ds_source, ds_dest)
 
+# Image hack de la grande
+old = os.path.abspath(os.path.join(ff, 'pyface-4.0.0-py2.7.egg', 'pyface', 'images', 'image_not_found.png'))
+new = os.path.abspath(os.path.join(ff, 'pyface-4.0.0-py2.7.egg', 'pyface', 'images', 'image_not_found.orgi'))
+shutil.move(old, new)
+
+frimg = os.path.abspath(os.path.join('src', 'ConsumerCheckLogo.png'))
+toimg = os.path.abspath(os.path.join(ff, 'pyface-4.0.0-py2.7.egg', 'pyface', 'images', 'image_not_found.png'))
+shutil.copy2(frimg, toimg)
+
 # xcopy src\R-2.11.1 consumercheck-0.5.2\R-2.11.1\ /S /Q
 #r_source = os.path.abspath(os.path.join('src', rf))
 #r_dest = os.path.abspath(os.path.join(ff, rf))
