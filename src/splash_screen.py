@@ -7,7 +7,7 @@ from pyface.api import SplashScreen
 path = [ abspath(dirname(__file__ ))]
 img = ImageResource(
     'ConsumerCheckLogo.png',
-    search_path=path
+#    search_path=path
     )
 splash = SplashScreen(image=img)
 
