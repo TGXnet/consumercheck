@@ -6,6 +6,7 @@ docs/_build
 R-2*
 *.log
 consumercheck-*
+CCWinPack
 eggs
 bin
 parts
