@@ -28,9 +28,7 @@ class ImportFileParameters(HasTraits):
     ds_type = Enum(
         ('Design variable',
          'Sensory profiling',
-         'Consumer liking',
-         'Consumer attributes',
-         'Hedonic attributes',)
+         'Consumer liking',)
         )
 
     def make_ds_name(self):

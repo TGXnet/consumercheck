@@ -48,9 +48,7 @@ class DataSet(HasTraits):
     _dataset_type = Enum(
         ('Design variable',
          'Sensory profiling',
-         'Consumer liking',
-         'Consumer attributes',
-         'Hedonic attributes',),
+         'Consumer liking',),
         desc = 'Classify dataset',
         label = 'Dataset type')
     _source_file = File(label = 'Source file')
