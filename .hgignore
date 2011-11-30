@@ -13,3 +13,5 @@ parts
 .installed.cfg
 develop-eggs
 .ropeproject
+.project
+.pydevproject

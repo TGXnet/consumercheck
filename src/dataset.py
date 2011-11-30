@@ -8,7 +8,7 @@ from traits.api import (HasTraits, Array, Str, Int, Enum, File,
 
 
 class DataSet(HasTraits):
-    """One data matirx
+    """One data matrix
 
     Consist of matrix and metadata
 
