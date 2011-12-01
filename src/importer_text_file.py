@@ -126,11 +126,15 @@ class ImporterTextFile(HasTraits):
         else:
             names = None
 
+        print data
+
         pd = genfromtxt(
             StringIO(data),
             dtype=None,
             delimiter=self.separator,
             names=names)
+
+        print pd
 
         if self.have_var_names:
             varnames = list(pd.dtype.names)
@@ -139,10 +143,12 @@ class ImporterTextFile(HasTraits):
                 objnames = pd[corner].view().reshape(len(pd),-1)
                 objnames = objnames[:,0].tolist()
                 self.ds.object_names = objnames
+                print objnames
             dt = pd[varnames[0]].dtype
             pd = pd[varnames].view(dt).reshape(len(pd),-1)
             self.ds.variable_names = varnames
-
+            print varnames
+        print pd
         self.ds.matrix = pd
         return self.ds
 
