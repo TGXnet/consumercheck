@@ -23,8 +23,6 @@ from pyface.api import FileDialog, OK
 from dataset import DataSet
 from config import AppConf
 from importer_text_file import ImporterTextFile
-from importer_text_file import pre_view as text_view
-
 
 __all__ = ['ImporterMain']
 
@@ -87,7 +85,7 @@ class ImporterMain(HasTraits):
         self._open_files_changed()
         for filen in self._files_path:
             importer = self._make_importer(filen)
-            importer.configure_traits(view=text_view)
+            importer.configure_traits()
             ds = importer.import_data()
             self._datasets.append(ds)
         self._conf.save_work_dir(filen)
