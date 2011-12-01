@@ -7,13 +7,24 @@ import logging
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
 
+# StdLib imports
+from StringIO import StringIO
+
+# SciPy imports
+from numpy import array, loadtxt, genfromtxt
+
+
 # Enthought imports
 from traits.api import HasTraits, Str, Int, Bool, File, List, Enum
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
 
+
 # Local imports
+from dataset import DataSet
+
+
 
 
 class ImportFileParameters(HasTraits):
@@ -37,6 +48,51 @@ class ImportFileParameters(HasTraits):
         fn = fn.partition('.')[0]
         fn = fn.lower()
         self.ds_id = self.ds_name = fn
+
+    def do_import(self):
+        self.ds = DataSet(
+            _dataset_type=self.ds_type,
+            _ds_id=self.ds_id,
+            _ds_name=self.ds_name,
+            _source_file=self.file_path)
+
+        # Read data from file
+        with open(self.file_path, 'rU') as fp:
+            data = fp.read()
+
+        # Preprocess file data
+        if self.decimal_mark == 'comma':
+            if self.separator == ',':
+                raise Exception('Ambiguous fileformat')
+            data = data.replace(',', '.')
+
+        # Do we have variable names
+        if self.have_var_names:
+            names = True
+        else:
+            names = None
+
+        pd = genfromtxt(
+            StringIO(data),
+            dtype=None,
+            delimiter=self.separator,
+            names=names)
+
+        if self.have_var_names:
+            varnames = list(pd.dtype.names)
+            if self.have_obj_names:
+                corner = varnames.pop(0)
+                objnames = pd[corner].view().reshape(len(pd),-1)
+                objnames = objnames[:,0].tolist()
+                self.ds.object_names = objnames
+            dt = pd[varnames[0]].dtype
+            pd = pd[varnames].view(dt).reshape(len(pd),-1)
+            self.ds.variable_names = varnames
+
+        self.ds.matrix = pd
+        return self.ds
+
+
 
 
 class RawLineAdapter(TabularAdapter):

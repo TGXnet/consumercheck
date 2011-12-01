@@ -87,12 +87,14 @@ class ImporterMain(HasTraits):
         # For stand alone testing
         # self.configure_traits(view='many_view')
         self._import_settings.file_path = self._file_path
+        # Open multipe file selection dialog
         self._open_files_changed()
         for filen in self._files_path:
-            self._import_settings.file_path = filen
-            self._import_settings.configure_traits(view=pre_view)
-            self._datasets.append(self._do_import())
-        self._conf.save_work_dir(self._import_settings.file_path)
+            importer = self._make_importer(filen)
+            importer.configure_traits(view=pre_view)
+            ds = importer.do_import()
+            self._datasets.append(ds)
+        self._conf.save_work_dir(filen)
         return self._datasets
 
     # For select multi file dialog
@@ -103,6 +105,14 @@ class ImporterMain(HasTraits):
             title='Import data')
         if dlg.open() == OK:
             self._files_path = dlg.paths
+
+    def _make_importer(self, path):
+        fext = self._identify_filetype()
+        if fext in ['txt', 'csv']:
+            return ImportFileParameters(file_path=path)
+        elif fext in [ 'xls', 'xlsx']:
+            return self._xls_file_reader.import_data(self._import_settings)
+
 
     def _do_import(self):
         fext = self._identify_filetype()
