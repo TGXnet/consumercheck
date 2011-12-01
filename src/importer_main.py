@@ -23,8 +23,6 @@ from pyface.api import FileDialog, OK
 from dataset import DataSet
 from config import AppConf
 from importer_text_previewer import ImportFileParameters, pre_view
-from importer_text_file import TextFileImporter
-from importer_xls_file import XlsFileImporter
 
 __all__ = ['ImporterMain']
 
@@ -33,9 +31,6 @@ class ImporterMain(HasTraits):
     """Importer class"""
 
     _conf = Instance(AppConf, AppConf('QPCPrefmap'))
-    _import_settings = ImportFileParameters()
-    _text_file_reader = TextFileImporter()
-    _xls_file_reader = XlsFileImporter()
     _file_path = File()
     _files_path = List(File)
     _datasets = List(DataSet)
@@ -86,13 +81,12 @@ class ImporterMain(HasTraits):
         self._file_path = self._conf.read_work_dir()
         # For stand alone testing
         # self.configure_traits(view='many_view')
-        self._import_settings.file_path = self._file_path
         # Open multipe file selection dialog
         self._open_files_changed()
         for filen in self._files_path:
             importer = self._make_importer(filen)
             importer.configure_traits(view=pre_view)
-            ds = importer.do_import()
+            ds = importer.import_data()
             self._datasets.append(ds)
         self._conf.save_work_dir(filen)
         return self._datasets
@@ -107,22 +101,14 @@ class ImporterMain(HasTraits):
             self._files_path = dlg.paths
 
     def _make_importer(self, path):
-        fext = self._identify_filetype()
+        fext = self._identify_filetype(path)
         if fext in ['txt', 'csv']:
             return ImportFileParameters(file_path=path)
         elif fext in [ 'xls', 'xlsx']:
             return self._xls_file_reader.import_data(self._import_settings)
 
-
-    def _do_import(self):
-        fext = self._identify_filetype()
-        if fext in ['txt', 'csv']:
-            return self._text_file_reader.import_data(self._import_settings)
-        elif fext in [ 'xls', 'xlsx']:
-            return self._xls_file_reader.import_data(self._import_settings)
-
-    def _identify_filetype(self):
-        fn = os.path.basename(self._import_settings.file_path)
+    def _identify_filetype(self, path):
+        fn = os.path.basename(path)
         return fn.partition('.')[2].lower()
 
 

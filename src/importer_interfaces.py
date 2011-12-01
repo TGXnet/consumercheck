@@ -7,5 +7,9 @@ traits.has_traits.CHECK_INTERFACES = 1
 class IDataImporter(Interface):
     """Interface for dataimporting objects"""
     
-    def import_data(self, import_settings):
+    def import_data(self):
         """Takes an data import settings object and returns a imported dataset"""
+
+    def configure_traits(self):
+        """Show dialog for configuring data import"""
+        

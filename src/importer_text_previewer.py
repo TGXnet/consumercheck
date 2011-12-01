@@ -1,33 +1,33 @@
 
 # StdLib imports
 import os.path
+from StringIO import StringIO
 import logging
 # Log everything, and send it to stderr.
 # http://docs.python.org/howto/logging-cookbook.html
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
 
-# StdLib imports
-from StringIO import StringIO
-
 # SciPy imports
 from numpy import array, loadtxt, genfromtxt
-
 
 # Enthought imports
 from traits.api import HasTraits, Str, Int, Bool, File, List, Enum
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
+from traits.api import implements
+
 
 
 # Local imports
 from dataset import DataSet
-
-
+from importer_interfaces import IDataImporter
 
 
 class ImportFileParameters(HasTraits):
+    implements(IDataImporter)
+
     file_path = File()
     separator = Enum('\t', ',', ' ')
     decimal_mark = Enum('period', 'comma')
@@ -49,7 +49,7 @@ class ImportFileParameters(HasTraits):
         fn = fn.lower()
         self.ds_id = self.ds_name = fn
 
-    def do_import(self):
+    def import_data(self):
         self.ds = DataSet(
             _dataset_type=self.ds_type,
             _ds_id=self.ds_id,
