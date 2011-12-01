@@ -22,7 +22,9 @@ from pyface.api import FileDialog, OK
 # Local imports
 from dataset import DataSet
 from config import AppConf
-from importer_text_previewer import ImportFileParameters, pre_view
+from importer_text_file import ImporterTextFile
+from importer_text_file import pre_view as text_view
+
 
 __all__ = ['ImporterMain']
 
@@ -85,7 +87,7 @@ class ImporterMain(HasTraits):
         self._open_files_changed()
         for filen in self._files_path:
             importer = self._make_importer(filen)
-            importer.configure_traits(view=pre_view)
+            importer.configure_traits(view=text_view)
             ds = importer.import_data()
             self._datasets.append(ds)
         self._conf.save_work_dir(filen)
@@ -103,7 +105,7 @@ class ImporterMain(HasTraits):
     def _make_importer(self, path):
         fext = self._identify_filetype(path)
         if fext in ['txt', 'csv']:
-            return ImportFileParameters(file_path=path)
+            return ImporterTextFile(file_path=path)
         elif fext in [ 'xls', 'xlsx']:
             return self._xls_file_reader.import_data(self._import_settings)
 
