@@ -12,7 +12,7 @@ import logging
 from numpy import array, loadtxt, genfromtxt
 
 # Enthought imports
-from traits.api import HasTraits, Str, Int, Bool, File, List, Enum
+from traits.api import HasTraits, Str, Int, Bool, File, List, Enum, Property
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
@@ -27,10 +27,17 @@ from importer_interfaces import IDataImporter
 class RawLineAdapter(TabularAdapter):
     columns = []
     ncols = Int()
+    bg_color  = Property()
+    have_var_names = Bool(True)
     # font = 'Courier 10'
+    def _get_bg_color(self):
+        if self.have_var_names and self.row == 0:
+            return (230, 123, 123)
+        elif self.row == 0:
+            return (255, 255, 255)
 
     def _ncols_changed(self, info):
-        self.columns = ["col{}".format(i) for i in range(self.ncols)]
+        self.columns = [("col{}".format(i), i) for i in range(self.ncols)]
 
 
 preview_table = TabularEditor(
@@ -47,6 +54,9 @@ class FilePreviewer(Handler):
         info.object.make_ds_name()
         self._probe_read(info.object)
 
+    def object_have_var_names_changed(self, info):
+        preview_table.adapter.have_var_names = info.object.have_var_names
+
     def object_separator_changed(self, info):
         preview_matrix = [line.split(info.object.separator) for line in self._raw_lines]
         longest = 0
@@ -55,10 +65,13 @@ class FilePreviewer(Handler):
         self._parsed_data = self._fix_preview_matrix(preview_matrix, longest)
         preview_table.adapter.ncols = longest
 
+
     def _fix_preview_matrix(self, preview_matrix, length):
+
         for i, row in enumerate(preview_matrix):
             if len(row) < length:
                 preview_matrix[i] += ['']*(length-len(row))
+
         return preview_matrix
 
     def _probe_read(self, obj, no_lines=7, length=35):
@@ -126,15 +139,11 @@ class ImporterTextFile(HasTraits):
         else:
             names = None
 
-        print data
-
         pd = genfromtxt(
             StringIO(data),
             dtype=None,
             delimiter=self.separator,
             names=names)
-
-        print pd
 
         if self.have_var_names:
             varnames = list(pd.dtype.names)
@@ -143,12 +152,11 @@ class ImporterTextFile(HasTraits):
                 objnames = pd[corner].view().reshape(len(pd),-1)
                 objnames = objnames[:,0].tolist()
                 self.ds.object_names = objnames
-                print objnames
+
             dt = pd[varnames[0]].dtype
             pd = pd[varnames].view(dt).reshape(len(pd),-1)
             self.ds.variable_names = varnames
-            print varnames
-        print pd
+
         self.ds.matrix = pd
         return self.ds
 
@@ -173,14 +181,14 @@ class ImporterTextFile(HasTraits):
             Item('ds_name', label='Dataset name'),
             Item('ds_type', label='Dataset type'),
             Item('have_var_names', label='Have variables names?',
-                 tooltip='Is first row variables names?'),
+                 tooltip='Is first row variable names?'),
             Item('have_obj_names', label='Have object names?',
                  tooltip='Is first column object names?'),
             show_labels=True,
             ),
         title='Raw data preview',
-        width=0.60,
-        height=0.70,
+        width=0.45,
+        height=0.6,
         resizable=True,
         buttons=[CancelButton, OKButton],
         handler=preview_handler,
