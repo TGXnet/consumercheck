@@ -14,8 +14,7 @@ from numpy import array, array_equal, allclose
 import py
 
 # Local imports
-from importer_text_file import TextFileImporter
-from importer_text_previewer import ImportFileParameters
+from importer_text_file import ImporterTextFile
 
 
 class TestTextfileImport(object):
@@ -36,47 +35,59 @@ class TestTextfileImport(object):
              [ 4.75,  4.5,   3.5,   2.05,  1.,  ]])
         self.var_names = ['Var1','Var2','Var3','Var4','Var5']
         self.obj_names = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10', 'O11', 'O12']
-        self.tfi = TextFileImporter()
 
     def test_simple_tab_sep(self):
-        ifp = ImportFileParameters(
+        ifp = ImporterTextFile(
             file_path='../datasets/Variants/TabSep.txt',
             have_var_names=False,
             have_obj_names=False,
             )
-        ds = self.tfi.import_data(ifp)
+        ds = ifp.import_data()
         assert array_equal(self.ref, ds.matrix)
 
 
     def test_comma_decimal_mark(self):
-        ifp = ImportFileParameters(
+        ifp = ImporterTextFile(
             file_path='../datasets/Variants/CommaDecimalMark.txt',
             decimal_mark='comma',
             have_var_names=False,
             have_obj_names=False,
             )
-        ds = self.tfi.import_data(ifp)
+        ds = ifp.import_data()
         assert array_equal(self.ref, ds.matrix)
 
 
     def test_var_names(self):
-        ifp = ImportFileParameters(
+        ifp = ImporterTextFile(
             file_path='../datasets/Variants/VariableNames.txt',
             have_var_names=True,
             have_obj_names=False,
             )
-        ds = self.tfi.import_data(ifp)
+        ds = ifp.import_data()
         assert array_equal(self.ref, ds.matrix)
         assert self.var_names == ds.variable_names
 
 
     def test_obj_var_names(self):
-        ifp = ImportFileParameters(
+        ifp = ImporterTextFile(
             file_path='../datasets/Variants/ObjVarNames.txt',
             have_var_names=True,
             have_obj_names=True,
             )
-        ds = self.tfi.import_data(ifp)
+        ds = ifp.import_data()
+        assert array_equal(self.ref, ds.matrix)
+        assert self.var_names == ds.variable_names
+        assert self.obj_names == ds.object_names
+
+
+    def test_csv_empty_corner(self):
+        ifp = ImporterTextFile(
+            file_path='../datasets/Variants/CommaSeparated.csv',
+            separator=',',
+            have_var_names=True,
+            have_obj_names=True,
+            )
+        ds = ifp.import_data()
         assert array_equal(self.ref, ds.matrix)
         assert self.var_names == ds.variable_names
         assert self.obj_names == ds.object_names

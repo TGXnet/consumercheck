@@ -23,7 +23,6 @@ from dataset import DataSet
 from importer_interfaces import IDataImporter
 
 
-
 class RawLineAdapter(TabularAdapter):
     columns = []
     ncols = Int()
@@ -89,9 +88,6 @@ class FilePreviewer(Handler):
 preview_handler = FilePreviewer()
 
 
-
-
-
 class ImporterTextFile(HasTraits):
     implements(IDataImporter)
 
@@ -134,15 +130,19 @@ class ImporterTextFile(HasTraits):
             data = data.replace(',', '.')
 
         # Do we have variable names
+        names = None
+        skip_header = 0
         if self.have_var_names:
-            names = True
-        else:
-            names = None
+            # names = True
+            fl, rest = data.split('\n', 1)
+            names = fl.split(self.separator)
+            skip_header = 1
 
         pd = genfromtxt(
             StringIO(data),
             dtype=None,
             delimiter=self.separator,
+            skip_header = skip_header,
             names=names)
 
         if self.have_var_names:
@@ -199,5 +199,7 @@ class ImporterTextFile(HasTraits):
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
     test = ImporterTextFile()
-    test.file_path = 'datasets/Vine/A_labels.txt'
+    test.file_path = 'datasets/Variants/CommaSeparated.csv'
     test.configure_traits()
+    ds = test.import_data()
+    ds.print_traits()
