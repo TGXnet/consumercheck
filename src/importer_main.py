@@ -24,6 +24,7 @@ from dataset import DataSet
 from config import AppConf
 from importer_text_file import ImporterTextFile
 from importer_xls_file import ImporterXlsFile
+from importer_xlsx_file import ImporterXlsxFile
 
 __all__ = ['ImporterMain']
 
@@ -105,8 +106,10 @@ class ImporterMain(HasTraits):
         fext = self._identify_filetype(path)
         if fext in ['txt', 'csv']:
             return ImporterTextFile(file_path=path)
-        elif fext in [ 'xls', 'xlsx']:
+        elif fext in ['xls']:
             return ImporterXlsFile(file_path=path)
+        elif fext in ['xlsx', 'xlsm']:
+            return ImporterXlsxFile(file_path=path)
 
     def _identify_filetype(self, path):
         fn = os.path.basename(path)
