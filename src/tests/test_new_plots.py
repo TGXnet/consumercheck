@@ -15,7 +15,6 @@ import py
 
 # Local imports
 from new_plots import CCScatterPCPlot
-from plot_windows import SinglePlotWindow
 
 
 class TestCCScatterPCPlot(object):
@@ -39,5 +38,4 @@ class TestCCScatterPCPlot(object):
         plot = CCScatterPCPlot()
         # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
         plot.add_PC_set(self.set1, self.label1)
-        spw = SinglePlotWindow(plot=plot)
-        spw_ui = spw.configure_traits()
+        plot.new_window(True)
