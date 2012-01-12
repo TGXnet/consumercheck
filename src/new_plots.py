@@ -1,5 +1,7 @@
 # Enthought library imports
 from chaco.api import Plot, ArrayPlotData
+from numpy import array
+from traits.api import Int
 
 
 class PCPlotData(ArrayPlotData):
@@ -16,9 +18,20 @@ class PCPlotData(ArrayPlotData):
     # through this interface using set_data()?
     # from abstract_plot_data import AbstractPlotData
 
-    def add_PC_set(values_matrix, labels_list, set_id_name, style_color):
-        """Add a PC dataset with metadata"""
+    ds_counter = Int(0)
+    arrays = {}
 
+
+    def add_PC_set(self, values, labels_list=[], style_color=None):
+        """Add a PC dataset with metadata"""
+        
+        self.ds_counter += 1
+        
+        for row in range(len(values)):
+            dict_name = 's{}pc{}'.format(self.ds_counter,(row+1))
+            self.arrays[dict_name] = values[row]
+            
+        
     def list_PC_sets():
         """List the id of each added dataset"""
 
