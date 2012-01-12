@@ -26,16 +26,25 @@ class TestCCScatterPCPlot(object):
             [-0.1, 0.1, 0.1],
             ])
 
-        self.label1 = ['pt1', 'pt2', 'pt3']
+        self.set2 = array([
+            [-1.3, -0.4, -0.9],
+            [-1.1, -0.2, -0.7],
+            [-1.2, -0.1, -0.1],
+            ])
+
+        self.label1 = ['s1pt1', 's1pt2', 's1pt3']
+        self.label2 = ['s2pt1', 's2pt2', 's2pt3']
 
 
-    def test_data(self):
-        print(self.set1)
-        print(self.label1)
-
-
-    def test_plot1(self):
+    def test_plot_one_set(self):
         plot = CCScatterPCPlot()
         # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
         plot.add_PC_set(self.set1, self.label1)
+        plot.new_window(True)
+
+    def test_plot_two_sets(self):
+        plot = CCScatterPCPlot()
+        # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
+        plot.add_PC_set(self.set1, color=(0.8, 0.2, 0.1, 1.0))
+        plot.add_PC_set(self.set2, color=(0.2, 0.9, 0.1, 1.0))
         plot.new_window(True)

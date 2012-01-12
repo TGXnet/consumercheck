@@ -20,7 +20,7 @@ class PCPlotData(ArrayPlotData):
 
     ds_counter = Int(0)
 
-    def add_PC_set(self, values, labels=None, style_color=None):
+    def add_PC_set(self, values, labels=None, color=None):
         """Add a PC dataset with metadata"""
         
         self.ds_counter += 1
@@ -60,7 +60,7 @@ class CCScatterPCPlot(Plot):
         super(CCScatterPCPlot, self).__init__(data, **kwtraits)
 
 
-    def add_PC_set(self, matrix, labels=None):
+    def add_PC_set(self, matrix, labels=None, color=None):
         """Add a PC dataset with metadata"""
         set_id = self.data.add_PC_set(matrix, labels=None)
         plot_name = self.plot_PC(set_id)
