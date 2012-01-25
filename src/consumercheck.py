@@ -2,6 +2,7 @@
 # import os
 import logging
 import optparse
+import numpy as np
 
 # Enthought imports
 ## from traits.etsconfig.api import ETSConfig
@@ -50,6 +51,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    with np.errstate(invalid='ignore'):
+        main()
 
 #### EOF ######################################################################
