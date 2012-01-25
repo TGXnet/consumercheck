@@ -14,6 +14,7 @@ from chaco.api import ArrayPlotData
 
 # Local imports
 from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
+from new_plots import CCScatterPCPlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from nipals import PCA
 from dsl_check_list import CheckListController, check_view
@@ -110,8 +111,8 @@ class PcaModelViewHandler(ModelView):
         """
         # self.show = show
         for ds_id in self.model.list_control.selected:
-            ds_plots = [[self._make_scores_plot(ds_id, False), self._make_loadings_plot(ds_id, False)],
-                        [self._make_corr_load_plot(ds_id, False), self._make_expl_var_plot(ds_id)]]
+            ds_plots = [[self._make_scores_plot(ds_id, True), self._make_loadings_plot(ds_id, True)],
+                        [self._make_corr_load_plot(ds_id, True), self._make_expl_var_plot(ds_id)]]
             mpw = MultiPlotWindow(title_text=self._wind_title(ds_id))
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
@@ -163,15 +164,12 @@ class PcaModelViewHandler(ModelView):
 
     def _make_plot(self, pc_tab, ds_id, plot_title, labels=None):
         expl_vars = self.model.get_res(ds_id).getCalExplVar()
-        pd = ArrayPlotData()
-        pd.set_data('pc1', pc_tab[:,0])
-        pd.set_data('pc2', pc_tab[:,1])
-        ps = CCPlotScatter(pd)
+
+        ps = CCScatterPCPlot()
         ps.title = plot_title
+        ps.add_PC_set(pc_tab, labels=labels)
         ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-        if labels:
-            ps.add_data_labels(labels)
         return ps
 
     def plot_corr_loading(self, show = True):

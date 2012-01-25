@@ -51,8 +51,9 @@ class SinglePlotWindow(HasTraits):
 
     @on_trait_change('show_x1')
     def switch_labels(self, obj, name, new):
-        ds_id = name.partition('_')[2]
-        obj.plot.switch_labels_visibility(ds_id, new)
+        #ds_id = name.partition('_')[2]
+        for i in range(obj.plot.data.ds_counter):
+            obj.plot.show_labels(i+1, new)
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
@@ -109,7 +110,7 @@ class LinePlotWindow(HasTraits):
     @on_trait_change('show_x1')
     def switch_labels(self, obj, name, new):
         ds_id = name.partition('_')[2]
-        obj.plot.switch_labels_visibility(ds_id, new)
+        obj.plot.show_labels(ds_id, new)
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
@@ -153,6 +154,15 @@ class MultiPlotWindow(HasTraits):
     """
     plots = Instance(Component)
     title_text = Str("ConsumerCheck")
+    show_x1 = Bool(True)
+
+    @on_trait_change('show_x1')
+    def switch_labels(self, obj, name, new):
+        #ds_id = name.partition('_')[2]
+        #for i in range(obj.plots.component_grid[0][0].data.ds_counter):
+        obj.plots.component_grid[0][0].show_labels(1, new)
+        obj.plots.component_grid[0][1].show_labels(1, new)
+        obj.plots.component_grid[1][0].show_labels(1, new)
 
     traits_view = View(
         Group(
@@ -161,6 +171,7 @@ class MultiPlotWindow(HasTraits):
                      size = size,
                      bgcolor = bg_color),
                  show_label=False),
+            Item('show_x1', label="Show labels"),
             orientation = "vertical"),
         resizable=True,
         handler=TitleHandler(),

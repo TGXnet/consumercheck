@@ -73,9 +73,10 @@ class CCScatterPCPlot(Plot):
         super(CCScatterPCPlot, self).__init__(data, **kwtraits)
 
 
-    def add_PC_set(self, matrix, labels=None, color='blue'):
+    def add_PC_set(self, matrix, labels=None, color='cyan'):
         """Add a PC dataset with metadata"""
-        set_id = self.data.add_PC_set(matrix, labels)
+        matrix_t = matrix.transpose()
+        set_id = self.data.add_PC_set(matrix_t, labels)
         plot_name = self._plot_PC(set_id, color, labels)
 
 
@@ -110,14 +111,17 @@ class CCScatterPCPlot(Plot):
         xname, yname = point_data
         
         f = self.data.pc_ds[set_id-1].label_ref
+        x = self.data.get_data(xname)
+        y = self.data.get_data(yname)
         for i, label in enumerate(labels):
             # label attributes: text_color, border_visible, overlay_border,
             # marker_visible, invisible_layout, bgcolor
+
             label_obj = DataLabel(
                 component = self,
                 data_point = (
-                    self.data.get_data(xname)[i],
-                    self.data.get_data(yname)[i]),
+                    x[i],
+                    y[i]),
                 label_format = label,
 #                marker_color = pt_color,
                 text_color = 'black',
@@ -126,7 +130,7 @@ class CCScatterPCPlot(Plot):
                 bgcolor = bg_color,
 #                bgcolor = 'transparent',
                 )
-
+            
             f.append(label_obj)
             self.overlays.append(label_obj)
     
