@@ -77,7 +77,34 @@ class CCScatterPCPlot(Plot):
         """Add a PC dataset with metadata"""
         set_id = self.data.add_PC_set(matrix, labels)
         plot_name = self._plot_PC(set_id, color, labels)
+
+
+    def show_points(self, set_id, show=True):
+        """Shows or hide datapoints for selected PC set"""
+
+    def show_labels(self, set_id, show=True):
+        """Shows or hide datapoint labels for selected PC set"""
+        for i in self.data.pc_ds[set_id-1].label_ref:
+            i.visible = show
+        self.request_redraw()
         
+
+    def get_x_y_status(self):
+        """Which PC is ploted for X and Y axis
+
+        Returns a tuple (x_no, y_no, n_pc) with:
+        * PC no for X axis
+        * PC no for Y axis
+        * max no of PC's
+        """
+
+    def set_x_y_pc(self, x, y):
+        """Chang PC for X and Y axis
+
+        Parameters:
+        * PC index for X axis
+        * PC index for Y axis
+        """
 
     def _add_data_labels(self, labels, bg_color, point_data, set_id):
         xname, yname = point_data
@@ -122,17 +149,9 @@ class CCScatterPCPlot(Plot):
         return pn
 
 
-    def show_points(self, set_id, show=True):
-        """Shows or hide datapoints for selected PC set"""
-
-    def show_labels(self, set_id, show=True):
-        """Shows or hide datapoint labels for selected PC set"""
-        for i in self.data.pc_ds[set_id-1].label_ref:
-            i.visible = show
-        self.request_redraw()
-
 
 if __name__ == '__main__':
+    errset = np.seterr(all="ignore")
     plot = CCScatterPCPlot()
     
     set1 = array([
@@ -153,3 +172,4 @@ if __name__ == '__main__':
     plot.add_PC_set(set2, color=(0.2, 0.9, 0.1, 1.0), labels=label2)
     # plot.show_labels(2, show=False)
     plot.new_window(True)
+    np.seterr(**errset)
