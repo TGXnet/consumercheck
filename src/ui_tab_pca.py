@@ -80,8 +80,6 @@ class PcaModel(HasTraits):
 
 class PcaModelViewHandler(ModelView):
     """UI code that vil react to UI events for PCA tab"""
-    # Disable UI when unittesting
-    show = True
     main_ui_ptr = Instance(HasTraits)
     plot_uis = List()
 
@@ -103,13 +101,12 @@ class PcaModelViewHandler(ModelView):
         if new is not None:
             new.controller = self
 
-    def plot_overview(self, show = True):
+    def plot_overview(self):
         """Make PCA overview plot.
 
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
         for each of the datasets.
         """
-        # self.show = show
         for ds_id in self.model.list_control.selected:
             ds_plots = [[self._make_scores_plot(ds_id, True), self._make_loadings_plot(ds_id, True)],
                         [self._make_corr_load_plot(ds_id, True), self._make_expl_var_plot(ds_id)]]
@@ -118,8 +115,7 @@ class PcaModelViewHandler(ModelView):
             mpw.plots.shape = (2, 2)
             self._show_plot_window(mpw)
 
-    def plot_scores(self, show = True):
-        # self.show = show
+    def plot_scores(self):
         for ds_id in self.model.list_control.selected:
             s_plot = self._make_scores_plot(ds_id)
             spw = SinglePlotWindow(
@@ -140,8 +136,7 @@ class PcaModelViewHandler(ModelView):
             plot = self._make_plot(pc_tab, ds_id, "Scores")
         return plot
 
-    def plot_loadings(self, show = True):
-        # self.show = show
+    def plot_loadings(self):
         for ds_id in self.model.list_control.selected:
             l_plot = self._make_loadings_plot(ds_id)
             spw = SinglePlotWindow(
@@ -172,8 +167,7 @@ class PcaModelViewHandler(ModelView):
         ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         return ps
 
-    def plot_corr_loading(self, show = True):
-        # self.show = show
+    def plot_corr_loading(self):
         for ds_id in self.model.list_control.selected:
             cl_plot = self._make_corr_load_plot(ds_id)
             spw = SinglePlotWindow(
@@ -200,8 +194,7 @@ class PcaModelViewHandler(ModelView):
             pcl.add_data_labels(labels)
         return pcl
 
-    def plot_expl_var(self, show = True):
-        # self.show = show
+    def plot_expl_var(self):
         for ds_id in self.model.list_control.selected:
             ev_plot = self._make_expl_var_plot(ds_id)
             spw = LinePlotWindow(
@@ -227,14 +220,13 @@ class PcaModelViewHandler(ModelView):
         return pl
 
     def _show_plot_window(self, plot_window):
-        if self.show:
-            # FIXME: Setting parent forcing main ui to stay behind plot windows
-            if sys.platform == 'linux2':
-                self.plot_uis.append( plot_window.edit_traits(kind='live') )
-            else:
-                self.plot_uis.append(
-                    plot_window.edit_traits(parent=self.info.ui.control, kind='live')
-                    )
+        # FIXME: Setting parent forcing main ui to stay behind plot windows
+        if sys.platform == 'linux2':
+            self.plot_uis.append( plot_window.edit_traits(kind='live') )
+        else:
+            self.plot_uis.append(
+                plot_window.edit_traits(parent=self.info.ui.control, kind='live')
+                )
 
     def _wind_title(self, ds_id):
         ds_name = self.model.dsl.get_by_id(ds_id)._ds_name
