@@ -174,17 +174,15 @@ class PcaModelViewHandler(ModelView):
         res = self.model.get_res(ds_id)
         pc_tab = res.getCorrLoadings()
         expl_vars = res.getCalExplVar()
-        pd = ArrayPlotData()
-        pd.set_data('pc1', pc_tab[:,0])
-        pd.set_data('pc2', pc_tab[:,1])
-        pcl = CCPlotCorrLoad(pd)
-        pcl.title = "Correlation Loadings"
-        pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
-        pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         ds = self.model.dsl.get_by_id(ds_id)
         sds = ds.subset()
         labels = sds.variable_names
-        pcl.add_data_labels(labels)
+        pcl = CCScatterPCPlot()
+        pcl.add_PC_set(pc_tab, labels)
+        pcl.plot_circle(True)
+        pcl.title = "Correlation Loadings"
+        pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
+        pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         return pcl
 
     def plot_expl_var(self):
@@ -326,6 +324,8 @@ pca_tree_view = View(
 
 if __name__ == '__main__':
     print("Interactive start")
+    import numpy as np
+
     from dataset_collection import DatasetCollection
     from importer_main import ImporterMain
 
@@ -344,4 +344,5 @@ if __name__ == '__main__':
     fi = ImporterMain()
     main.dsl.add_dataset(fi.import_data('datasets/Cheese/ConsumerLiking.txt'))
     main.dsl.add_dataset(fi.import_data('datasets/test.txt', False, False))
-    main.pca.configure_traits(view=pca_tree_view)
+    with np.errstate(invalid='ignore'):
+        main.pca.configure_traits(view=pca_tree_view)

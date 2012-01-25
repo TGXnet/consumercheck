@@ -153,7 +153,7 @@ class CCScatterPCPlot(Plot):
         return pn
 
 
-    def _plot_circle(self, show_half=False):
+    def plot_circle(self, show_half=False):
         # Create range for ellipses
         vec = np.arange(0.0, 2*np.pi, 0.01)
         # Computing the outer circle (100 % expl. variance)
@@ -204,7 +204,7 @@ if __name__ == '__main__':
     label2 = ['s2pt1', 's2pt2', 's2pt3']
     plot.add_PC_set(set1, color=(0.8, 0.2, 0.1, 1.0), labels=label1)
     plot.add_PC_set(set2, color=(0.2, 0.9, 0.1, 1.0), labels=label2)
-    plot._plot_circle(True)
+    plot.plot_circle(True)
     # plot.show_labels(2, show=False)
     plot.new_window(True)
     np.seterr(**errset)
