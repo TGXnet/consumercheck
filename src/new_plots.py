@@ -153,6 +153,36 @@ class CCScatterPCPlot(Plot):
         return pn
 
 
+    def _plot_circle(self, show_half=False):
+        # Create range for ellipses
+        vec = np.arange(0.0, 2*np.pi, 0.01)
+        # Computing the outer circle (100 % expl. variance)
+        xcords100perc = np.cos(vec)
+        ycords100perc = np.sin(vec)
+        # Computing inner circle
+        xcords50perc = 0.707 * np.cos(vec)
+        ycords50perc = 0.707 * np.sin(vec)
+        self.data.set_data('ell_full_x', xcords100perc)
+        self.data.set_data('ell_full_y', ycords100perc)
+        self.data.set_data('ell_half_x', xcords50perc)
+        self.data.set_data('ell_half_y', ycords50perc)
+        # FIXME: Add to meta_plots instead and use that
+        self.plot(
+            ("ell_full_x", "ell_full_y"), name="ell_full",
+            type="line", index_sort="ascending",
+            marker="dot", marker_size=1,
+            color="blue", bgcolor="white")
+        if show_half:
+            self.plot(
+                ("ell_half_x", "ell_half_y"), name="ell_half",
+                type="line", index_sort="ascending",
+                marker="dot", marker_size=1,
+                color="blue", bgcolor="white")
+
+
+
+
+
 
 if __name__ == '__main__':
     errset = np.seterr(all="ignore")
@@ -174,6 +204,7 @@ if __name__ == '__main__':
     label2 = ['s2pt1', 's2pt2', 's2pt3']
     plot.add_PC_set(set1, color=(0.8, 0.2, 0.1, 1.0), labels=label1)
     plot.add_PC_set(set2, color=(0.2, 0.9, 0.1, 1.0), labels=label2)
+    plot._plot_circle(True)
     # plot.show_labels(2, show=False)
     plot.new_window(True)
     np.seterr(**errset)
