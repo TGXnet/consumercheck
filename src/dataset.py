@@ -87,8 +87,10 @@ class DataSet(HasTraits):
     def subset(self):
         mod_ds = super(DataSet, self).clone_traits()
         mod_ds.matrix = self.matrix[self.active_objects][:,self.active_variables]
-        mod_ds.variable_names = [self.variable_names[i] for i in self.active_variables]
-        mod_ds.object_names = [self.object_names[i] for i in self.active_objects]
+        if self.variable_names:
+            mod_ds.variable_names = [self.variable_names[i] for i in self.active_variables]
+        if self.object_names:
+            mod_ds.object_names = [self.object_names[i] for i in self.active_objects]
         return mod_ds
 
 
