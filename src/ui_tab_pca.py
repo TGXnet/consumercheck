@@ -108,8 +108,8 @@ class PcaModelViewHandler(ModelView):
         for each of the datasets.
         """
         for ds_id in self.model.list_control.selected:
-            ds_plots = [[self._make_scores_plot(ds_id, True), self._make_loadings_plot(ds_id, True)],
-                        [self._make_corr_load_plot(ds_id, True), self._make_expl_var_plot(ds_id)]]
+            ds_plots = [[self._make_scores_plot(ds_id), self._make_loadings_plot(ds_id)],
+                        [self._make_corr_load_plot(ds_id), self._make_expl_var_plot(ds_id)]]
             mpw = MultiPlotWindow(title_text=self._wind_title(ds_id))
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
@@ -124,16 +124,13 @@ class PcaModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_scores_plot(self, ds_id, add_labels = True):
+    def _make_scores_plot(self, ds_id):
         res = self.model.get_res(ds_id)
         pc_tab = res.getScores()
-        if add_labels:
-            ds = self.model.dsl.get_by_id(ds_id)
-            sds = ds.subset()
-            labels = sds.object_names
-            plot = self._make_plot(pc_tab, ds_id, "Scores", labels)
-        else:
-            plot = self._make_plot(pc_tab, ds_id, "Scores")
+        ds = self.model.dsl.get_by_id(ds_id)
+        sds = ds.subset()
+        labels = sds.object_names
+        plot = self._make_plot(pc_tab, ds_id, "Scores", labels)
         return plot
 
     def plot_loadings(self):
@@ -145,16 +142,13 @@ class PcaModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_loadings_plot(self, ds_id, add_labels=True):
+    def _make_loadings_plot(self, ds_id):
         res = self.model.get_res(ds_id)
         pc_tab = res.getLoadings()
-        if add_labels:
-            ds = self.model.dsl.get_by_id(ds_id)
-            sds = ds.subset()
-            labels = sds.variable_names
-            plot = self._make_plot(pc_tab, ds_id, "Loadings", labels)
-        else:
-            plot = self._make_plot(pc_tab, ds_id, "Loadings")
+        ds = self.model.dsl.get_by_id(ds_id)
+        sds = ds.subset()
+        labels = sds.variable_names
+        plot = self._make_plot(pc_tab, ds_id, "Loadings", labels)
         return plot
 
     def _make_plot(self, pc_tab, ds_id, plot_title, labels=None):
@@ -176,7 +170,7 @@ class PcaModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_corr_load_plot(self, ds_id, add_labels=True):
+    def _make_corr_load_plot(self, ds_id):
         res = self.model.get_res(ds_id)
         pc_tab = res.getCorrLoadings()
         expl_vars = res.getCalExplVar()
@@ -187,11 +181,10 @@ class PcaModelViewHandler(ModelView):
         pcl.title = "Correlation Loadings"
         pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
         pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
-        if add_labels:
-            ds = self.model.dsl.get_by_id(ds_id)
-            sds = ds.subset()
-            labels = sds.variable_names
-            pcl.add_data_labels(labels)
+        ds = self.model.dsl.get_by_id(ds_id)
+        sds = ds.subset()
+        labels = sds.variable_names
+        pcl.add_data_labels(labels)
         return pcl
 
     def plot_expl_var(self):
@@ -350,5 +343,5 @@ if __name__ == '__main__':
     main = FakeMain(pca = PcaModelViewHandler(PcaModel()))
     fi = ImporterMain()
     main.dsl.add_dataset(fi.import_data('datasets/Cheese/ConsumerLiking.txt'))
-    main.dsl.add_dataset(fi.import_data('datasets/Cheese/SensoryData.txt'))
+    main.dsl.add_dataset(fi.import_data('datasets/test.txt', False, False))
     main.pca.configure_traits(view=pca_tree_view)
