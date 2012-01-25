@@ -361,6 +361,4 @@ if __name__ == '__main__':
     fi = ImporterMain()
     main.dsl.add_dataset(fi.import_data('datasets/Cheese/ConsumerLiking.txt'))
     main.dsl.add_dataset(fi.import_data('datasets/Cheese/SensoryData.txt'))
-    main.dsl._datasets['consumerliking']._ds_name = 'Forbruker ost'
-    main.dsl._datasets['sensorydata']._ds_name = 'Sensorikk og yse anna'
     main.pca.configure_traits(view=pca_tree_view)
