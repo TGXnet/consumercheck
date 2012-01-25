@@ -63,11 +63,12 @@ class ImporterMain(HasTraits):
 
     def import_data(self, file_path, have_variable_names = True, have_object_names = True):
         """Read file and return DataSet objekt"""
-        self._import_settings.file_path = file_path
-        self._import_settings.make_ds_name()
-        self._import_settings.have_var_names = have_variable_names
-        self._import_settings.have_obj_names = have_object_names
-        return self._do_import()
+        importer = self._make_importer(file_path)
+        # importer.configure_traits()
+        importer.make_ds_name()
+        importer.have_var_names = have_variable_names
+        importer.have_obj_names = have_object_names
+        return importer.import_data()
 
     def dialog_import_data(self):
         """Open dialog for selecting a file, import and return the DataSet"""
@@ -118,6 +119,9 @@ class ImporterMain(HasTraits):
 
 if __name__ == '__main__':
     fi = ImporterMain()
-    dsl = fi.dialog_multi_import()
-    for ds in dsl:
-        ds.print_traits()
+    ## dsl = fi.dialog_multi_import()
+    ## for ds in dsl:
+    ##     ds.print_traits()
+    ds = fi.import_data('datasets/Cheese/ConsumerLiking.txt')
+    ds.print_traits()
+    

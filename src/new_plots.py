@@ -7,18 +7,21 @@ import numpy as np
 
 
 class PCDataSet(HasTraits):
-    
+    """Metadata for a PC array
+
+    * A list of labels for each datapoint
+    """
     labels = List()
     label_ref = List()
     selected = List()
+
 
 class PCPlotData(ArrayPlotData):
     """Container for Principal Component scatterplot type dataset.
 
     This container will be able to hold several sets of PC type datasets:
      * The actual matrix with PC1 to PCn
-     * A list of labels for each datapoint
-     * A color style specification for the dataset
+     * A list of PCDataSet objects that holds metadata for each PC matrix
     """
     # arrays:     {} Map of names to arrays.
     # selectable: True Can consumers (Plots) set selections?
@@ -27,21 +30,22 @@ class PCPlotData(ArrayPlotData):
     # from abstract_plot_data import AbstractPlotData
 
     ds_counter = Int(0)
-    pc_ds = []
-    def add_PC_set(self, values, labels=None, color=None):
+    pc_ds = List(PCDataSet)
+
+    def add_PC_set(self, values, labels=None):
         """Add a PC dataset with metadata"""
-        
+
         for row in range(len(values)):
             dict_name = 's{}pc{}'.format(self.ds_counter+1,(row+1))
             self.arrays[dict_name] = values[row]
 
         self.pc_ds.append(PCDataSet())
         self.pc_ds[self.ds_counter].labels = labels
-        
+
         self.ds_counter += 1
 
         return self.ds_counter
-    
+
     def list_PC_sets():
         """List the id of each added dataset"""
 
@@ -72,11 +76,10 @@ class CCScatterPCPlot(Plot):
     def add_PC_set(self, matrix, labels=None, color='blue'):
         """Add a PC dataset with metadata"""
         set_id = self.data.add_PC_set(matrix, labels)
-        plot_name = self.plot_PC(set_id, color, labels)
+        plot_name = self._plot_PC(set_id, color, labels)
         
 
-    def add_data_labels(self, labels, bg_color, point_data, set_id):
-        
+    def _add_data_labels(self, labels, bg_color, point_data, set_id):
         xname, yname = point_data
         
         f = self.data.pc_ds[set_id-1].label_ref
@@ -100,7 +103,7 @@ class CCScatterPCPlot(Plot):
             f.append(label_obj)
             self.overlays.append(label_obj)
     
-    def plot_PC(self, set_id, color='blue', labels=None, PCx=1, PCy=2):
+    def _plot_PC(self, set_id, color='blue', labels=None, PCx=1, PCy=2):
         """Draw the points for a selected dataset and selecte PC for x and y axis"""
         # Typical id: ('s1pc1', 's1pc2')
         x_id = 's{}pc{}'.format(set_id, PCx)
@@ -108,7 +111,7 @@ class CCScatterPCPlot(Plot):
         # plot definition
         pd = (x_id, y_id)
         #adding data labels
-        self.add_data_labels(labels, color, pd, set_id)
+        self._add_data_labels(labels, color, pd, set_id)
         
         # plot name
         pn = 'plot_{}'.format(set_id)
@@ -116,8 +119,6 @@ class CCScatterPCPlot(Plot):
                        type='scatter',
                        name=pn,
                        color=color)
-        if set_id == 2:
-            self.show_labels(2, show=False)
         return pn
 
 
@@ -128,6 +129,7 @@ class CCScatterPCPlot(Plot):
         """Shows or hide datapoint labels for selected PC set"""
         for i in self.data.pc_ds[set_id-1].label_ref:
             i.visible = show
+        self.request_redraw()
 
 
 if __name__ == '__main__':
@@ -149,4 +151,5 @@ if __name__ == '__main__':
     label2 = ['s2pt1', 's2pt2', 's2pt3']
     plot.add_PC_set(set1, color=(0.8, 0.2, 0.1, 1.0), labels=label1)
     plot.add_PC_set(set2, color=(0.2, 0.9, 0.1, 1.0), labels=label2)
+    # plot.show_labels(2, show=False)
     plot.new_window(True)
