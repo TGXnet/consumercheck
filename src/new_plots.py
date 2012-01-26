@@ -1,10 +1,12 @@
+
+from numpy import array
+import numpy as np
+
 # Enthought library imports
 from chaco.api import Plot, ArrayPlotData, DataLabel
 from chaco.tools.api import ZoomTool, PanTool
-from numpy import array
 from traits.api import Int, List, HasTraits
-import numpy as np
-
+from enable.api import ColorTrait
 
 
 class PCDataSet(HasTraits):
@@ -13,7 +15,7 @@ class PCDataSet(HasTraits):
     * A list of labels for each datapoint
     """
     labels = List()
-    label_ref = List()
+    color = ColorTrait()
     selected = List()
 
 
@@ -24,21 +26,18 @@ class PCPlotData(ArrayPlotData):
      * The actual matrix with PC1 to PCn
      * A list of PCDataSet objects that holds metadata for each PC matrix
     """
-    # arrays:     {} Map of names to arrays.
-    # selectable: True Can consumers (Plots) set selections?
-    # writable:   True Can consumers (Plots) write data back
-    # through this interface using set_data()?
-    # from abstract_plot_data import AbstractPlotData
-
-    pc_ds = List(PCDataSet)
-    pn = List()
     
+    pc_ds = List(PCDataSet)
+    # Number of PC in the datasets
+    # Lowest number if we have severals sets
     n_pc = Int()
+    # The PC for X the axis
     x_no = Int()
+    # The PC for the Y axis
     y_no = Int()
     
     
-    def add_PC_set(self, values, labels=None):
+    def add_PC_set(self, values, labels, color):
         """Add a PC dataset with metadata"""
 
         set_n = len(self.pc_ds)
@@ -49,48 +48,31 @@ class PCPlotData(ArrayPlotData):
             self.n_pc = min(self.n_pc, cols)
         
         for i,row in enumerate(values):
-            dict_name = 's{}pc{}'.format(set_n+1,(i+1))
+            dict_name = 's{}pc{}'.format(set_n+1, (i+1))
             self.arrays[dict_name] = row
 
         pcds = PCDataSet()
         pcds.labels = labels
+        pcds.color = color
         self.pc_ds.append(pcds)
         return set_n+1
 
 
-    def list_PC_sets():
-        """List the id of each added dataset"""
-
-
-    def len_PC_set(set_id):
-        """The number of datapoint for the selected dataset"""
-
-
 class CCScatterPCPlot(Plot):
     """A specialized class for plotting Principal Component scatterplot type plots"""
-    # data: The PlotData instance that drives this plot.
-    # plots = Dict(Str, List): Mapping of plot names to *lists* of plot renderers.
-    # title = Property(): The title of the plot.
-    # plot() -> list of renderers created in response to this call to plot()
-    # delplot(self, *names): Removes the named sub-plots.
-    # hideplot(self, *names): Convenience function to sets the named plots to be invisible.
-    # showplot(self, *names):
-    # new_window(self, configure=False):
-    # Convenience function that creates a window containing the Plot
-    # from data_view import DataView
-    # Default behaviour is to plot first and second PC for each added dataset
-    # The __init__ will take data for the first dataset as parameters
 
     def __init__(self, pc_matrix=None, pc_labels=None, **kwtraits):
         data = PCPlotData()
         super(CCScatterPCPlot, self).__init__(data, **kwtraits)
+        self.tools.append(PanTool(self))
+        self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
 
 
     def add_PC_set(self, matrix, labels=None, color='cyan'):
         """Add a PC dataset with metadata"""
         matrix_t = matrix.transpose()
-        set_id = self.data.add_PC_set(matrix_t, labels)
-        plot_name = self._plot_PC(set_id, color, labels)
+        set_id = self.data.add_PC_set(matrix_t, labels, color)
+        self._plot_PC(set_id)
 
 
     def show_points(self, set_id, show=True):
@@ -99,10 +81,12 @@ class CCScatterPCPlot(Plot):
 
     def show_labels(self, set_id, show=True):
         """Shows or hide datapoint labels for selected PC set"""
-        for i in self.data.pc_ds[set_id-1].label_ref:
-            i.visible = show
-        self.request_redraw()
-        
+        pn = 'plot_{}'.format(set_id+1)
+        plot = self.plots[pn][0]
+        for lab in plot.overlays:
+            lab.visible = show
+        plot.request_redraw()
+
 
     def get_x_y_status(self):
         """Which PC is ploted for X and Y axis
@@ -112,7 +96,6 @@ class CCScatterPCPlot(Plot):
         * PC no for Y axis
         * max no of PC's
         """
-
         return (self.data.x_no, self.data.y_no, self.data.n_pc)
 
 
@@ -124,84 +107,72 @@ class CCScatterPCPlot(Plot):
         * PC index for Y axis
         """
 
-        #FIXME: Currently deletes everything but the two first items in self.overlays.
-        #FIXME: Need a more general solution, only deleting labels and leaving the rest.
-        self.overlays = [self.overlays[0], self.overlays[1]]
-        
-        self.data.x_no, self.data.y_no = x,y
-        
-        for i,plot in enumerate(self.plots.values()):
-            labels = self.data.pc_ds[i].labels
-            self.data.pc_ds[i].label_ref = []
-            xn = 's{}pc{}'.format(i+1, x)
-            yn = 's{}pc{}'.format(i+1, y)
-            pd = (xn,yn)
-            color = self.plots[('plot_{}'.format(i+1))][0].color
-            self.delplot(self.data.pn[i])
-            self.plot(pd,
-                      type='scatter',
-                      name=self.data.pn[i],
-                      color=color)
-            self._add_data_labels(labels, color, pd, (i))
-        self.request_redraw()
-            
-        
+        n_ds = len(self.data.pc_ds)
 
-    def _plot_PC(self, set_id, color='blue', labels=None, PCx=1, PCy=2):
+        plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
+        print(plot_ids)
+        self.delplot(*plot_ids)
+
+        for i in range(n_ds):
+            self._plot_PC(i+1, PCx=x, PCy=y)
+
+        self.request_redraw()
+
+
+    def _plot_PC(self, set_id, PCx=1, PCy=2):
         """Draw the points for a selected dataset and selecte PC for x and y axis"""
+
         # Typical id: ('s1pc1', 's1pc2')
         x_id = 's{}pc{}'.format(set_id, PCx)
         y_id = 's{}pc{}'.format(set_id, PCy)
-        
+
+        # FIXME: Value validation
         #sending to metadata for get_x_y_status
+        if PCx < 1 or PCx > self.data.n_pc or PCy < 1 or PCy > self.data.n_pc:
+            raise Exception(
+                "Requested PC x:{}, y:{} for plot axis is out of range:{}".format(
+                    PCx, PCy, self.data.n_pc))
         self.data.x_no, self.data.y_no = PCx, PCy
         
         # plot definition
-        pd = (x_id, y_id)        
-        
-        #adding data labels
-        self._add_data_labels(labels, color, pd, set_id)
+        pd = (x_id, y_id)
         
         # plot name
-        a = 'plot_{}'.format(set_id)
-        self.data.pn.append(a)
-        
+        pn = 'plot_{}'.format(set_id)
+
         #plot
-        rl = self.plot(pd,
-                       type='scatter',
-                       name=a,
-                       color=color)
+        print(pd)
+        rl = self.plot(
+            pd,
+            type='scatter',
+            name=pn,
+            color=self.data.pc_ds[set_id-1].color)
 
-        self.tools.append(PanTool(self))
-        self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
-        return a
+        #adding data labels
+        self._add_plot_data_labels(rl[0], pd, set_id)
 
-    def _add_data_labels(self, labels, bg_color, point_data, set_id):
+        return pn
+
+
+    def _add_plot_data_labels(self, plot_render, point_data, set_id):
         xname, yname = point_data
-        
-        f = self.data.pc_ds[set_id-1].label_ref
         x = self.data.get_data(xname)
         y = self.data.get_data(yname)
+        labels = self.data.pc_ds[set_id-1].labels
+        bg_color = self.data.pc_ds[set_id-1].color
         for i, label in enumerate(labels):
-            # label attributes: text_color, border_visible, overlay_border,
-            # marker_visible, invisible_layout, bgcolor
-
             label_obj = DataLabel(
                 component = self,
-                data_point = (
-                    x[i],
-                    y[i]),
+                data_point = (x[i], y[i]),
                 label_format = label,
-#                marker_color = pt_color,
+                # marker_color = pt_color,
                 text_color = 'black',
                 border_visible = False,
                 marker_visible = False,
                 bgcolor = bg_color,
-#                bgcolor = 'transparent',
+                # bgcolor = 'transparent',
                 )
-
-            f.append(label_obj)
-            self.overlays.append(label_obj)
+            plot_render.overlays.append(label_obj)
 
 
     def plot_circle(self, show_half=False):
