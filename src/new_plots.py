@@ -33,12 +33,19 @@ class PCPlotData(ArrayPlotData):
     pc_ds = List(PCDataSet)
     pn = List()
     
+    #FIXME: If a matrix happens to have over 2147483647 rows, this will fail. Prettier solution?
+    n_pc = Int(2147483647)
+    x_no = Int()
+    y_no = Int()
+    
+    
     def add_PC_set(self, values, labels=None):
         """Add a PC dataset with metadata"""
 
-        for row in range(len(values)):
-            dict_name = 's{}pc{}'.format(self.ds_counter+1,(row+1))
-            self.arrays[dict_name] = values[row]
+        for i,row in enumerate(values):
+            self.n_pc = min(self.n_pc,len(values))
+            dict_name = 's{}pc{}'.format(self.ds_counter+1,(i+1))
+            self.arrays[dict_name] = row
 
         self.pc_ds.append(PCDataSet())
         self.pc_ds[self.ds_counter].labels = labels
@@ -100,6 +107,8 @@ class CCScatterPCPlot(Plot):
         * max no of PC's
         """
 
+        return (self.data.x_no, self.data.y_no, self.data.n_pc)
+
     def set_x_y_pc(self, x, y):
         """Change PC for X and Y axis
 
@@ -110,8 +119,10 @@ class CCScatterPCPlot(Plot):
 
         #FIXME: Currently deletes everything but the two first items in self.overlays.
         #FIXME: Need a more general solution, only deleting labels and leaving the rest.
-
         self.overlays = [self.overlays[0], self.overlays[1]]
+        
+        self.data.x_no, self.data.y_no = x,y
+        
         for i,plot in enumerate(self.plots.values()):
             labels = self.data.pc_ds[i].labels
             self.data.pc_ds[i].label_ref = []
@@ -134,8 +145,13 @@ class CCScatterPCPlot(Plot):
         # Typical id: ('s1pc1', 's1pc2')
         x_id = 's{}pc{}'.format(set_id, PCx)
         y_id = 's{}pc{}'.format(set_id, PCy)
+        
+        #sending to metadata for get_x_y_status
+        self.data.x_no, self.data.y_no = PCx, PCy
+        
         # plot definition
-        pd = (x_id, y_id)
+        pd = (x_id, y_id)        
+        
         #adding data labels
         self._add_data_labels(labels, color, pd, set_id)
         
@@ -143,6 +159,7 @@ class CCScatterPCPlot(Plot):
         a = 'plot_{}'.format(set_id)
         self.data.pn.append(a)
         
+        #plot
         rl = self.plot(pd,
                        type='scatter',
                        name=a,
