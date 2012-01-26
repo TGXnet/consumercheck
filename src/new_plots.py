@@ -30,12 +30,10 @@ class PCPlotData(ArrayPlotData):
     # through this interface using set_data()?
     # from abstract_plot_data import AbstractPlotData
 
-    ds_counter = Int(0)
     pc_ds = List(PCDataSet)
     pn = List()
     
-    #FIXME: If a matrix happens to have over 2147483647 rows, this will fail. Prettier solution?
-    n_pc = Int(2147483647)
+    n_pc = Int()
     x_no = Int()
     y_no = Int()
     
@@ -43,20 +41,26 @@ class PCPlotData(ArrayPlotData):
     def add_PC_set(self, values, labels=None):
         """Add a PC dataset with metadata"""
 
+        set_n = len(self.pc_ds)
+        rows, cols = values.shape
+        if set_n == 0:
+            self.n_pc = cols
+        else:
+            self.n_pc = min(self.n_pc, cols)
+        
         for i,row in enumerate(values):
-            self.n_pc = min(self.n_pc,len(values))
-            dict_name = 's{}pc{}'.format(self.ds_counter+1,(i+1))
+            dict_name = 's{}pc{}'.format(set_n+1,(i+1))
             self.arrays[dict_name] = row
 
-        self.pc_ds.append(PCDataSet())
-        self.pc_ds[self.ds_counter].labels = labels
+        pcds = PCDataSet()
+        pcds.labels = labels
+        self.pc_ds.append(pcds)
+        return set_n+1
 
-        self.ds_counter += 1
-
-        return self.ds_counter
 
     def list_PC_sets():
         """List the id of each added dataset"""
+
 
     def len_PC_set(set_id):
         """The number of datapoint for the selected dataset"""
@@ -92,6 +96,7 @@ class CCScatterPCPlot(Plot):
     def show_points(self, set_id, show=True):
         """Shows or hide datapoints for selected PC set"""
 
+
     def show_labels(self, set_id, show=True):
         """Shows or hide datapoint labels for selected PC set"""
         for i in self.data.pc_ds[set_id-1].label_ref:
@@ -109,6 +114,7 @@ class CCScatterPCPlot(Plot):
         """
 
         return (self.data.x_no, self.data.y_no, self.data.n_pc)
+
 
     def set_x_y_pc(self, x, y):
         """Change PC for X and Y axis
@@ -165,7 +171,7 @@ class CCScatterPCPlot(Plot):
                        type='scatter',
                        name=a,
                        color=color)
-        print rl
+
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
         return a
@@ -193,10 +199,11 @@ class CCScatterPCPlot(Plot):
                 bgcolor = bg_color,
 #                bgcolor = 'transparent',
                 )
-            
+
             f.append(label_obj)
             self.overlays.append(label_obj)
-    
+
+
     def plot_circle(self, show_half=False):
         # Create range for ellipses
         vec = np.arange(0.0, 2*np.pi, 0.01)
@@ -222,10 +229,6 @@ class CCScatterPCPlot(Plot):
                 type="line", index_sort="ascending",
                 marker="dot", marker_size=1,
                 color="blue", bgcolor="white")
-
-
-
-
 
 
 if __name__ == '__main__':
