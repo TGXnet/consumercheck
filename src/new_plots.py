@@ -1,5 +1,6 @@
 # Enthought library imports
 from chaco.api import Plot, ArrayPlotData, DataLabel
+from chaco.tools.api import ZoomTool, PanTool
 from numpy import array
 from traits.api import Int, List, HasTraits
 import numpy as np
@@ -164,7 +165,9 @@ class CCScatterPCPlot(Plot):
                        type='scatter',
                        name=a,
                        color=color)
-        
+        print rl
+        self.tools.append(PanTool(self))
+        self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
         return a
 
     def _add_data_labels(self, labels, bg_color, point_data, set_id):
