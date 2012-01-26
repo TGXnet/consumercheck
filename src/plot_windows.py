@@ -47,6 +47,13 @@ class SinglePlotWindow(HasTraits):
     show_x1 = Bool(True)
     view_table = Button('View result table')
     save_plot = Button('Save plot image')
+
+    x_up = Button('X+')
+    x_down = Button('X-')
+    y_up = Button('Y+')
+    y_down = Button('Y-')
+    reset_xy = Button('Reset axis')
+    
     title_text = Str("ConsumerCheck")
 
     @on_trait_change('show_x1')
@@ -58,6 +65,11 @@ class SinglePlotWindow(HasTraits):
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
         obj.plot.toggle_eq_axis(new)
+
+    @on_trait_change('x_up')
+    def pc_x_up(self):
+        print("x up: not implemented")
+
 
     @on_trait_change('view_table')
     def show_table(self, obj, name, new):
@@ -86,6 +98,11 @@ class SinglePlotWindow(HasTraits):
                 Item('show_x1', label="Show labels"),
 #                Item('view_table', show_label=False),
                 Item('save_plot', show_label=False),
+                Item('x_up', show_label=False),
+                Item('x_down', show_label=False),
+                Item('reset_xy', show_label=False),
+                Item('y_up', show_label=False),
+                Item('y_down', show_label=False),
                 orientation="horizontal",
                 ),
             layout="normal",
