@@ -31,7 +31,8 @@ class PCPlotData(ArrayPlotData):
 
     ds_counter = Int(0)
     pc_ds = List(PCDataSet)
-
+    pn = List()
+    
     def add_PC_set(self, values, labels=None):
         """Add a PC dataset with metadata"""
 
@@ -100,12 +101,54 @@ class CCScatterPCPlot(Plot):
         """
 
     def set_x_y_pc(self, x, y):
-        """Chang PC for X and Y axis
+        """Change PC for X and Y axis
 
         Parameters:
         * PC index for X axis
         * PC index for Y axis
         """
+
+        #FIXME: Currently deletes everything but the two first items in self.overlays.
+        #FIXME: Need a more general solution, only deleting labels and leaving the rest.
+
+        self.overlays = [self.overlays[0], self.overlays[1]]
+        for i,plot in enumerate(self.plots.values()):
+            labels = self.data.pc_ds[i].labels
+            self.data.pc_ds[i].label_ref = []
+            xn = 's{}pc{}'.format(i+1, x)
+            yn = 's{}pc{}'.format(i+1, y)
+            pd = (xn,yn)
+            color = self.plots[('plot_{}'.format(i+1))][0].color
+            self.delplot(self.data.pn[i])
+            self.plot(pd,
+                      type='scatter',
+                      name=self.data.pn[i],
+                      color=color)
+            self._add_data_labels(labels, color, pd, (i))
+        self.request_redraw()
+            
+        
+
+    def _plot_PC(self, set_id, color='blue', labels=None, PCx=1, PCy=2):
+        """Draw the points for a selected dataset and selecte PC for x and y axis"""
+        # Typical id: ('s1pc1', 's1pc2')
+        x_id = 's{}pc{}'.format(set_id, PCx)
+        y_id = 's{}pc{}'.format(set_id, PCy)
+        # plot definition
+        pd = (x_id, y_id)
+        #adding data labels
+        self._add_data_labels(labels, color, pd, set_id)
+        
+        # plot name
+        a = 'plot_{}'.format(set_id)
+        self.data.pn.append(a)
+        
+        rl = self.plot(pd,
+                       type='scatter',
+                       name=a,
+                       color=color)
+        
+        return a
 
     def _add_data_labels(self, labels, bg_color, point_data, set_id):
         xname, yname = point_data
@@ -134,25 +177,6 @@ class CCScatterPCPlot(Plot):
             f.append(label_obj)
             self.overlays.append(label_obj)
     
-    def _plot_PC(self, set_id, color='blue', labels=None, PCx=1, PCy=2):
-        """Draw the points for a selected dataset and selecte PC for x and y axis"""
-        # Typical id: ('s1pc1', 's1pc2')
-        x_id = 's{}pc{}'.format(set_id, PCx)
-        y_id = 's{}pc{}'.format(set_id, PCy)
-        # plot definition
-        pd = (x_id, y_id)
-        #adding data labels
-        self._add_data_labels(labels, color, pd, set_id)
-        
-        # plot name
-        pn = 'plot_{}'.format(set_id)
-        rl = self.plot(pd,
-                       type='scatter',
-                       name=pn,
-                       color=color)
-        return pn
-
-
 
 if __name__ == '__main__':
     errset = np.seterr(all="ignore")
