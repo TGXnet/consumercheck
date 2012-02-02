@@ -26,7 +26,7 @@ class PCPlotData(ArrayPlotData):
      * The actual matrix with PC1 to PCn
      * A list of PCDataSet objects that holds metadata for each PC matrix
     """
-    
+
     pc_ds = List(PCDataSet)
     # Number of PC in the datasets
     # Lowest number if we have severals sets
@@ -35,8 +35,8 @@ class PCPlotData(ArrayPlotData):
     x_no = Int()
     # The PC for the Y axis
     y_no = Int()
-    
-    
+
+
     def add_PC_set(self, values, labels, color):
         """Add a PC dataset with metadata"""
 
@@ -46,7 +46,7 @@ class PCPlotData(ArrayPlotData):
             self.n_pc = cols
         else:
             self.n_pc = min(self.n_pc, cols)
-        
+
         for i,row in enumerate(values):
             dict_name = 's{}pc{}'.format(set_n+1, (i+1))
             self.arrays[dict_name] = row
@@ -133,10 +133,10 @@ class CCScatterPCPlot(Plot):
                 "Requested PC x:{}, y:{} for plot axis is out of range:{}".format(
                     PCx, PCy, self.data.n_pc))
         self.data.x_no, self.data.y_no = PCx, PCy
-        
+
         # plot definition
         pd = (x_id, y_id)
-        
+
         # plot name
         pn = 'plot_{}'.format(set_id)
 
@@ -205,7 +205,7 @@ class CCScatterPCPlot(Plot):
 if __name__ == '__main__':
     errset = np.seterr(all="ignore")
     plot = CCScatterPCPlot()
-    
+
     set1 = array([
         [-0.3, 0.4, 0.9],
         [-0.1, 0.2, 0.7],
@@ -217,7 +217,7 @@ if __name__ == '__main__':
         [-1.1, -0.2, -0.7],
         [-1.2, -0.1, -0.1],
         ])
-    
+
     label1 = ['s1pt1', 's1pt2', 's1pt3']
     label2 = ['s2pt1', 's2pt2', 's2pt3']
     plot.add_PC_set(set1, color=(0.8, 0.2, 0.1, 1.0), labels=label1)
