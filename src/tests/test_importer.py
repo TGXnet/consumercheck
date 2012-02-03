@@ -1,17 +1,9 @@
 """Test to be used with py.test.
 """
 
-import sys
-from os.path import dirname, abspath
-# add directory containing the package to sys.path
-# or put it on PYTHONPATH
-# or put a appropriate *.pth on PYTHONPATH
-home = dirname(dirname(abspath(__file__)))
-sys.path.append(home)
-
+import pytest
+from os.path import join
 from numpy import array, array_equal, allclose
-
-import py
 
 # Local imports
 from importer_text_file import ImporterTextFile
@@ -36,9 +28,10 @@ class TestTextfileImport(object):
         self.var_names = ['Var1','Var2','Var3','Var4','Var5']
         self.obj_names = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10', 'O11', 'O12']
 
-    def test_simple_tab_sep(self):
+    def test_simple_tab_sep(self, datasets):
+        print(datasets)
         ifp = ImporterTextFile(
-            file_path='../datasets/Variants/TabSep.txt',
+            file_path=join(datasets, 'Variants', 'TabSep.txt'),
             have_var_names=False,
             have_obj_names=False,
             )
@@ -46,9 +39,9 @@ class TestTextfileImport(object):
         assert array_equal(self.ref, ds.matrix)
 
 
-    def test_comma_decimal_mark(self):
+    def test_comma_decimal_mark(self, datasets):
         ifp = ImporterTextFile(
-            file_path='../datasets/Variants/CommaDecimalMark.txt',
+            file_path=join(datasets, 'Variants', 'CommaDecimalMark.txt'),
             decimal_mark='comma',
             have_var_names=False,
             have_obj_names=False,
@@ -57,9 +50,9 @@ class TestTextfileImport(object):
         assert array_equal(self.ref, ds.matrix)
 
 
-    def test_var_names(self):
+    def test_var_names(self, datasets):
         ifp = ImporterTextFile(
-            file_path='../datasets/Variants/VariableNames.txt',
+            file_path=join(datasets, 'Variants', 'VariableNames.txt'),
             have_var_names=True,
             have_obj_names=False,
             )
@@ -68,9 +61,9 @@ class TestTextfileImport(object):
         assert self.var_names == ds.variable_names
 
 
-    def test_obj_var_names(self):
+    def test_obj_var_names(self, datasets):
         ifp = ImporterTextFile(
-            file_path='../datasets/Variants/ObjVarNames.txt',
+            file_path=join(datasets, 'Variants', 'ObjVarNames.txt'),
             have_var_names=True,
             have_obj_names=True,
             )
@@ -80,9 +73,9 @@ class TestTextfileImport(object):
         assert self.obj_names == ds.object_names
 
 
-    def test_csv_empty_corner(self):
+    def test_csv_empty_corner(self, datasets):
         ifp = ImporterTextFile(
-            file_path='../datasets/Variants/CommaSeparated.csv',
+            file_path=join(datasets, 'Variants', 'CommaSeparated.csv'),
             separator=',',
             have_var_names=True,
             have_obj_names=True,
