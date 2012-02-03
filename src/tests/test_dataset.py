@@ -1,45 +1,56 @@
-"""Test to be used with py.test.
+"""Test to be used with py.test
+
+What is the important aspects with dataset to test:
+ * Creation of an empty dataset
+ * Maintain conistency between number of object and variable names and shape of matrix
+ * Active var and objecs = matrix.shap
+ * Check that we get expected subset()
 """
 
-import sys
-from os.path import dirname, abspath
-# add directory containing the package to sys.path
-# or put it on PYTHONPATH
-# or put a appropriate *.pth on PYTHONPATH
-home = dirname(dirname(abspath(__file__)))
-sys.path.append(home)
-
+import pytest
 from numpy import array, array_equal, allclose
 
-import py
-
 # Local imports
-## from importer_text_file import TextFileImporter
-## from importer_text_previewer import ImportFileParameters
 from dataset import DataSet
 
 
-class TestTextfileImport(object):
+ref = array(
+    [[ 1.1, 1.2, 1.3],
+     [ 2.1, 2.2, 2.3],
+     [ 3.1, 3.2, 3.3],
+     [ 4.1, 4.2, 4.3]])
 
-    def setup_method(self, method):
-        self.ref = array(
-            [[ 1.1, 1.2, 1.3],
-             [ 2.1, 2.2, 2.3],
-             [ 3.1, 3.2, 3.3]])
-        self.ds = DataSet()
-        self.ds.matrix = self.ref
+refa = array(
+    [[ 1.1, 1.2],
+     [ 2.1, 2.2]])
 
-    def test_setting_matrix(self):
-        assert array_equal(self.ref, self.ds.matrix)
 
-    def test_subset_matrix(self):
-        ref = array(
-            [[ 1.2, 1.3],
-             [ 3.2, 3.3]])
-        self.ds.active_variables = [1,2]
-        self.ds.active_objects = [0,2]
-        subset = self.ds.subset()
-        print('\n')
-        subset.print_traits()
-        print(subset.matrix)
-        assert array_equal(ref, subset.matrix)
+def test_empty_ds():
+    ds = DataSet()
+    assert ds.n_rows == 0
+    assert ds.n_cols == 0
+
+
+def test_simple_ds():
+    ds = DataSet(matrix=ref)
+    assert ds.n_cols == 3
+    assert ds.n_rows == 4
+    assert len(ds.active_variables) == 3
+    assert len(ds.active_objects) == 4
+
+
+def test_mod_ds():
+    ds = DataSet(matrix=ref)
+    assert ds.n_rows == 4
+    assert len(ds.active_objects) == 4
+    ds.matrix = refa
+    assert ds.n_rows == 2
+    assert len(ds.active_objects) == 2
+
+
+def test_subset_ds():
+    ds = DataSet(matrix=ref)
+    ds.active_objects = [0,1]
+    ds.active_variables = [0,1]
+    out = ds.subset()
+    assert array_equal(out.matrix, refa)
