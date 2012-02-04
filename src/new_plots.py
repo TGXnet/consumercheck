@@ -5,7 +5,7 @@ import numpy as np
 # Enthought library imports
 from chaco.api import Plot, ArrayPlotData, DataLabel
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Int, List, HasTraits
+from traits.api import Bool, Dict, Int, List, HasTraits
 from enable.api import ColorTrait
 
 
@@ -27,7 +27,10 @@ class PCPlotData(ArrayPlotData):
      * A list of PCDataSet objects that holds metadata for each PC matrix
     """
 
+    # Metadata for each PC set
     pc_ds = List(PCDataSet)
+    # Explained variance for each PC
+    expl_vars = Dict()
     # Number of PC in the datasets
     # Lowest number if we have severals sets
     n_pc = Int()
@@ -65,9 +68,13 @@ class CCScatterPCPlot(Plot):
     visible_labels = Bool(True)
 
 
-    def __init__(self, pc_matrix=None, pc_labels=None, **kwtraits):
+    def __init__(self, pc_matrix=None, pc_labels=None, pc_color=None, expl_vars=None, **kwtraits):
         data = PCPlotData()
         super(CCScatterPCPlot, self).__init__(data, **kwtraits)
+        if expl_vars is not None:
+            self.data.expl_vars = expl_vars
+        if pc_matrix is not None:
+            self.add_PC_set(pc_matrix, pc_labels, pc_color)
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
 
@@ -81,6 +88,7 @@ class CCScatterPCPlot(Plot):
 
     def show_points(self, set_id, show=True):
         """Shows or hide datapoints for selected PC set"""
+        pass
 
 
     def show_labels(self, set_id, show=True):
@@ -152,13 +160,23 @@ class CCScatterPCPlot(Plot):
             color=self.data.pc_ds[set_id-1].color)
 
         # Set axis title
-        self.x_axis.title = 'PC{}'.format(PCx)
-        self.y_axis.title = 'PC{}'.format(PCy)
+        self._set_plot_axis_title()
 
         #adding data labels
         self._add_plot_data_labels(rl[0], pd, set_id)
 
         return pn
+
+
+    def _set_plot_axis_title(self):
+        try:
+            ev_x = self.data.expl_vars[self.data.x_no]
+            ev_y = self.data.expl_vars[self.data.y_no]
+            self.x_axis.title = 'PC{0} ({1:.0f}%)'.format(self.data.x_no, ev_x)
+            self.y_axis.title = 'PC{0} ({1:.0f}%)'.format(self.data.y_no, ev_y)
+        except KeyError:
+            self.x_axis.title = 'PC{0}'.format(self.data.x_no)
+            self.y_axis.title = 'PC{0}'.format(self.data.y_no)
 
 
     def _add_plot_data_labels(self, plot_render, point_data, set_id):
