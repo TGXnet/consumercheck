@@ -5,7 +5,7 @@ import numpy as np
 # Enthought library imports
 from chaco.api import Plot, ArrayPlotData, DataLabel
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Int, List, HasTraits
+from traits.api import Bool, Int, List, HasTraits
 from enable.api import ColorTrait
 
 
@@ -61,6 +61,10 @@ class PCPlotData(ArrayPlotData):
 class CCScatterPCPlot(Plot):
     """A specialized class for plotting Principal Component scatterplot type plots"""
 
+    # Is all the labels visible or not
+    visible_labels = Bool(True)
+
+
     def __init__(self, pc_matrix=None, pc_labels=None, **kwtraits):
         data = PCPlotData()
         super(CCScatterPCPlot, self).__init__(data, **kwtraits)
@@ -81,7 +85,8 @@ class CCScatterPCPlot(Plot):
 
     def show_labels(self, set_id, show=True):
         """Shows or hide datapoint labels for selected PC set"""
-        pn = 'plot_{}'.format(set_id+1)
+        self.visible_labels = show
+        pn = 'plot_{}'.format(set_id)
         plot = self.plots[pn][0]
         for lab in plot.overlays:
             lab.visible = show
@@ -110,7 +115,6 @@ class CCScatterPCPlot(Plot):
         n_ds = len(self.data.pc_ds)
 
         plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
-        print(plot_ids)
         self.delplot(*plot_ids)
 
         for i in range(n_ds):
@@ -141,12 +145,15 @@ class CCScatterPCPlot(Plot):
         pn = 'plot_{}'.format(set_id)
 
         #plot
-        print(pd)
         rl = self.plot(
             pd,
             type='scatter',
             name=pn,
             color=self.data.pc_ds[set_id-1].color)
+
+        # Set axis title
+        self.x_axis.title = 'PC{}'.format(PCx)
+        self.y_axis.title = 'PC{}'.format(PCy)
 
         #adding data labels
         self._add_plot_data_labels(rl[0], pd, set_id)
@@ -162,15 +169,17 @@ class CCScatterPCPlot(Plot):
         bg_color = self.data.pc_ds[set_id-1].color
         for i, label in enumerate(labels):
             label_obj = DataLabel(
-                component = self,
+                component = plot_render,
                 data_point = (x[i], y[i]),
                 label_format = label,
-                # marker_color = pt_color,
+                visible = self.visible_labels,
+                ## marker_color = pt_color,
                 text_color = 'black',
                 border_visible = False,
                 marker_visible = False,
                 bgcolor = bg_color,
-                # bgcolor = 'transparent',
+                ## label_position = 'bottom left',
+                ## bgcolor = 'transparent',
                 )
             plot_render.overlays.append(label_obj)
 

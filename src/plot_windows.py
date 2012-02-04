@@ -44,7 +44,7 @@ class SinglePlotWindow(HasTraits):
     """
     plot = Instance(Component)
     eq_axis = Bool(False)
-    show_x1 = Bool(True)
+    show_labels = Bool(True)
     view_table = Button('View result table')
     save_plot = Button('Save plot image')
 
@@ -56,20 +56,54 @@ class SinglePlotWindow(HasTraits):
     
     title_text = Str("ConsumerCheck")
 
-    @on_trait_change('show_x1')
+    @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
-        #ds_id = name.partition('_')[2]
-        for i in range(obj.plot.data.ds_counter):
+        for i in range(len(obj.plot.data.pc_ds)):
             obj.plot.show_labels(i+1, new)
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
         obj.plot.toggle_eq_axis(new)
 
-    @on_trait_change('x_up')
-    def pc_x_up(self):
-        print("x up: not implemented")
+    @on_trait_change('reset_xy')
+    def pc_axis_reset(self, obj, name, new):
+        obj.plot.set_x_y_pc(1, 2)
 
+    @on_trait_change('x_up')
+    def pc_axis_x_up(self, obj, name, new):
+        x, y, n = obj.plot.get_x_y_status()
+        if x<n:
+            x += 1
+        else:
+            x = 1
+        obj.plot.set_x_y_pc(x, y)
+
+    @on_trait_change('x_down')
+    def pc_axis_x_down(self, obj, name, new):
+        x, y, n = obj.plot.get_x_y_status()
+        if x>1:
+            x -= 1
+        else:
+            x = n
+        obj.plot.set_x_y_pc(x, y)
+
+    @on_trait_change('y_up')
+    def pc_axis_y_up(self, obj, name, new):
+        x, y, n = obj.plot.get_x_y_status()
+        if y<n:
+            y += 1
+        else:
+            y = 1
+        obj.plot.set_x_y_pc(x, y)
+
+    @on_trait_change('y_down')
+    def pc_axis_y_down(self, obj, name, new):
+        x, y, n = obj.plot.get_x_y_status()
+        if y>1:
+            y -= 1
+        else:
+            y = n
+        obj.plot.set_x_y_pc(x, y)
 
     @on_trait_change('view_table')
     def show_table(self, obj, name, new):
@@ -95,7 +129,7 @@ class SinglePlotWindow(HasTraits):
             Label('Mouse scroll and drag to zoom and pan in plot'),
             Group(
                 Item('eq_axis', label="Set equal axis"),
-                Item('show_x1', label="Show labels"),
+                Item('show_labels', label="Show labels"),
 #                Item('view_table', show_label=False),
                 Item('save_plot', show_label=False),
                 Item('x_up', show_label=False),
@@ -120,11 +154,11 @@ class LinePlotWindow(HasTraits):
     """
     plot = Instance(Component)
     eq_axis = Bool(False)
-    show_x1 = Bool(True)
+    show_labels = Bool(True)
     view_table = Button('View result table')
     title_text = Str("ConsumerCheck")
 
-    @on_trait_change('show_x1')
+    @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
         ds_id = name.partition('_')[2]
         obj.plot.show_labels(ds_id, new)
@@ -171,9 +205,9 @@ class MultiPlotWindow(HasTraits):
     """
     plots = Instance(Component)
     title_text = Str("ConsumerCheck")
-    show_x1 = Bool(True)
+    show_labels = Bool(True)
 
-    @on_trait_change('show_x1')
+    @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
         #ds_id = name.partition('_')[2]
         #for i in range(obj.plots.component_grid[0][0].data.ds_counter):
@@ -188,7 +222,7 @@ class MultiPlotWindow(HasTraits):
                      size = size,
                      bgcolor = bg_color),
                  show_label=False),
-            Item('show_x1', label="Show labels"),
+            Item('show_labels', label="Show labels"),
             orientation = "vertical"),
         resizable=True,
         handler=TitleHandler(),
