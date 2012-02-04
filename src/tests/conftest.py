@@ -7,10 +7,13 @@
 # Provider of various objects
 # ds, dsl, mock-mother
 
+# Std lib imports
+import numpy as np
 from os.path import dirname, abspath, join
 
-
+# Local imports
 from dataset import DataSet
+from new_plots import CCScatterPCPlot
 
 
 def pytest_runtest_setup(item):
@@ -22,8 +25,23 @@ def pytest_funcarg__ds(request):
     return DataSet()
 
 
-def pytest_funcarg__datasets(request):
+def pytest_funcarg__test_ds_dir(request):
     """Yield a path to the test data directory"""
     here = dirname(__file__)
     basedir = dirname(here)
     return join(basedir, 'datasets')
+
+
+def pytest_funcarg__simple_plot(request):
+    """Yield a simple plot for testing plot windows"""
+    set1 = np.array([
+        [-0.3, 0.4, 0.9],
+        [-0.1, 0.2, 0.7],
+        [-0.1, 0.1, 0.1],
+        ])
+    label1 = ['s1pt1', 's1pt2', 's1pt3']
+
+    sp = CCScatterPCPlot()
+    sp.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
+
+    return sp
