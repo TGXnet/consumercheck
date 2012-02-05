@@ -12,12 +12,10 @@ Contents:
    :maxdepth: 2
    :numbered:
 
-   plotting
-   data-structures
-   statistical-methods
-   algorithms
-   event-driven
-   cc-coding-standard
+   user-documentation
+   developer-documentation
+   api-reference
+
 
 Indices and tables
 ==================

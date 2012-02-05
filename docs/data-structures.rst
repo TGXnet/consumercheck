@@ -1,15 +1,29 @@
 
+=================
+ Data structures
+=================
+
 Data aggreation hiearchy
 
 Dataset the "atoms"
 
-.. automodule:: dataset
-   :members:
-   :undoc-members:
+This is a list:
+  * datast
+  * dataset_collection
+  * importer_main
 
-.. automodule:: dataset_collection
-   :members:
+This is a table:
 
-.. automodule:: file_importer
-   :members:
+===  ===  ====
+Dag  Uke  År
+===  ===  ====
+man  4    2040
+ons  35   1934
+===  ===  ====
 
+.. Dette er en kommentar som ikke skal rendres
+
+Dette er en foreklet oversikt over object hiearki.
+
+.. warning::
+   Dette er ikke mamma.

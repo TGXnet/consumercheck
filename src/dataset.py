@@ -1,4 +1,11 @@
-"""Dataset matrix module.
+"""
+DataSet module
+--------------
+
+.. module:: dataset
+   :synopsis: Organization of matrice data
+
+.. moduleauthor:: Thomas Graff <graff.thomas@gmail.com>
 
 """
 
@@ -8,56 +15,62 @@ from traits.api import (HasTraits, Array, Str, Int, Enum, File,
 
 
 class DataSet(HasTraits):
-    """One data matrix
+    """Container for one array of related data.
 
     Consist of matrix and metadata
 
-    Members
-    =======
+    Attributes:
 
-    matrix
-      The data matrix
-    internalName
-      Internal technical name
-    displayName
-      Userfriendly display name
-    datasetType
-      Type of data classification
-    is_calculated
-      Is this dataset calculated in this application
-    source_file
-      Data source (file name)
-    variable_names
-      Column headers
-    object_names
-      Row headers
-    n_rows
-      Number of objects
-    n_cols
-      Number of variables
+    * matrix: The number array
+    * _ds_id: *Technical* identity for this dataset.
+    * _ds_name: Userfriendly name.
+    * _dataset_type: Selection among predefined types
+    * variable_names: List of column names
+    * object_names: List of row names
+    * active_variables: Index list of selected columns
+    * active_objects: Index list of selected rows
+    * n_rows: Number of rows in dataset
+    * n_cols: Number of cols in dataset
 
     """
     matrix = Array(desc = 'Data matrix')
+    """The number array"""
+    
     # FIXME: Public
     _ds_id = Str('unnamed', label = 'Dict key name')
+    """A *technical* identity for this dataset.
+
+    Should not be displayed to the user.
+
+    """
+
     # FIXME: Public
     _ds_name = Str(
         'Unnamed dataset',
         desc = 'User friendly display name',
         label = 'Dataset name')
+
     _dataset_type = Enum(
         ('Design variable',
          'Sensory profiling',
          'Consumer liking',),
         desc = 'Classify dataset',
         label = 'Dataset type')
+
     _source_file = File(label = 'Source file')
+
     variable_names = List(trait=Str, desc = 'Variable names')
+
     object_names = List(trait=Str, desc = 'Object names')
+
     active_variables = List(trait=Int)
+
     active_objects = List(trait=Int)
+
     _is_calculated = Bool(False, lable='Calculated?')
+
     n_rows = Property(label = 'Rows', desc = 'Number of objects')
+
     n_cols = Property(label = 'Cols', desc = 'Number of variables')
 
 
@@ -79,6 +92,14 @@ class DataSet(HasTraits):
             return 0
 
     def subset(self):
+        """Extract a subset of this dataset
+
+        The subset is determined by the **active_[variables|objects]**.
+
+        :returns: Object like this
+        :rtype: DataSet
+
+        """
         mod_ds = super(DataSet, self).clone_traits()
         mod_ds.matrix = self.matrix[self.active_objects][:,self.active_variables]
         if self.variable_names:

@@ -1,8 +1,16 @@
 
-H1 -- Top of Page Header
-************************
-There should only be one of these per page and this will also -- when
-converting to pdf -- be used for the chapters.
+===================
+Statistical methods
+===================
+
+Description of the statistical method library.
+
+Methods:
+ * PCA
+ * PLS
+ * SO-PLS
+ * ConJoint
+
 
 H2 -- Page Sections
 ===================

@@ -1,4 +1,6 @@
-"""Datasets container
+"""
+Datasets container
+------------------
 
 Dictionary to hold all datasets.
 Datasets can be imported or genrated.
@@ -8,23 +10,20 @@ Datasets can be imported or genrated.
 import logging
 
 # Enthought traits imports
-from traits.api import HasTraits, Dict, Str, Event, Property, \
-    on_trait_change, property_depends_on
+from traits.api import (HasTraits, Dict, Str, Event, Property,
+                        on_trait_change, property_depends_on)
 
 # Local imports
 from dataset import DataSet
 
+
 class DatasetCollection(HasTraits):
     """ Application wide collection of datasets
 
-    Members
-    =======
       * _datasets
       * id_name_list
       * name_id_mapping
 
-    Description
-    ===========
     Collection of all the data in the application.
 
     """
