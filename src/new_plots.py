@@ -22,7 +22,8 @@ class PCDataSet(HasTraits):
     * A list of labels for each datapoint
     """
     labels = List()
-    color = ColorTrait()
+    # (0.8, 0.2, 0.1, 1.0)
+    color = ColorTrait('cyan')
     selected = List()
 
 
@@ -62,8 +63,10 @@ class PCPlotData(ArrayPlotData):
             self.arrays[dict_name] = row
 
         pcds = PCDataSet()
-        pcds.labels = labels
-        pcds.color = color
+        if labels is not None:
+            pcds.labels = labels
+        if color is not None:
+            pcds.color = color
         self.pc_ds.append(pcds)
         return set_n+1
 
@@ -83,7 +86,7 @@ class CCScatterPCPlot(Plot):
     visible_labels = Bool(True)
 
 
-    def __init__(self, pc_matrix, labels=None, color=None, expl_vars=None):
+    def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -115,7 +118,7 @@ class CCScatterPCPlot(Plot):
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
 
 
-    def add_PC_set(self, matrix, labels=None, color='cyan'):
+    def add_PC_set(self, matrix, labels=None, color=None):
         """Add a PC dataset with metadata.
 
         Args:
@@ -277,10 +280,42 @@ class CCScatterPCPlot(Plot):
         self._set_axis_margin()
 
 
+    def toggle_eq_axis(self, set_equal):
+        if set_equal:
+            self._set_axis_equal()
+        else:
+            self._set_axis_margin()
+        ## self.request_redraw()
+
+
+    def _set_axis_equal(self, margin_factor=0.15):
+        """For orthonormal ploting"""
+        self._reset_axis()
+        index_tight_bounds = self.index_range.low, self.index_range.high
+        value_tight_bounds = self.value_range.low, self.index_range.high
+        xdelta = index_tight_bounds[1] - index_tight_bounds[0]
+        ydelta = value_tight_bounds[1] - value_tight_bounds[0]
+        delta = max(xdelta, ydelta)
+        xcenter = index_tight_bounds[0] + xdelta/2
+        ycenter = value_tight_bounds[0] + ydelta/2
+        xmin = xcenter - delta/2
+        xmax = xcenter + delta/2
+        ymin = ycenter - delta/2
+        ymax = ycenter + delta/2
+        index_eq_bounds = xmin, xmax
+        value_eq_bounds = ymin, ymax
+        index_bounds = self._calc_margin_bounds(*index_eq_bounds, margin_factor=margin_factor)
+        value_bounds = self._calc_margin_bounds(*value_eq_bounds, margin_factor=margin_factor)
+        self.index_range.set_bounds(*index_bounds)
+        self.value_range.set_bounds(*value_bounds)
+
+
     def _set_axis_margin(self, margin_factor=0.15):
-        self.reset_axis()
-        index_bounds = self._calc_margin_bounds(self.index_range.low, self.index_range.high)
-        value_bounds = self._calc_margin_bounds(self.value_range.low, self.value_range.high)
+        self._reset_axis()
+        index_tight_bounds = self.index_range.low, self.index_range.high
+        value_tight_bounds = self.value_range.low, self.index_range.high
+        index_bounds = self._calc_margin_bounds(*index_tight_bounds, margin_factor=margin_factor)
+        value_bounds = self._calc_margin_bounds(*value_tight_bounds, margin_factor=margin_factor)
         self.index_range.set_bounds(*index_bounds)
         self.value_range.set_bounds(*value_bounds)
 
@@ -293,9 +328,7 @@ class CCScatterPCPlot(Plot):
         return margin_low, margin_high
 
 
-    def reset_axis(self):
-        """Reset axix to default
-        """
+    def _reset_axis(self):
         self.index_range.reset()
         self.value_range.reset()
 
@@ -319,9 +352,10 @@ if __name__ == '__main__':
 
     label1 = ['s1pt1', 's1pt2', 's1pt3']
     label2 = ['s2pt1', 's2pt2', 's2pt3']
-    plot = CCScatterPCPlot(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
+    plot = CCScatterPCPlot()
+    ## plot = CCScatterPCPlot(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
+    plot.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
     plot.add_PC_set(set2, labels=label2, color=(0.2, 0.9, 0.1, 1.0))
     plot.plot_circle(True)
-    # plot.show_labels(2, show=False)
     plot.new_window(True)
     np.seterr(**errset)

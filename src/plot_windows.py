@@ -128,7 +128,7 @@ class SinglePlotWindow(HasTraits):
                 ),
             Label('Mouse scroll and drag to zoom and pan in plot'),
             Group(
-                Item('eq_axis', label="Set equal axis"),
+                Item('eq_axis', label="Orthonormal axis"),
                 Item('show_labels', label="Show labels"),
 #                Item('view_table', show_label=False),
                 Item('save_plot', show_label=False),
