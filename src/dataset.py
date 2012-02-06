@@ -2,9 +2,6 @@
 DataSet module
 --------------
 
-.. module:: dataset
-   :synopsis: Organization of matrice data
-
 .. moduleauthor:: Thomas Graff <graff.thomas@gmail.com>
 
 """

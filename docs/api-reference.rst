@@ -19,6 +19,22 @@ Organization of the data
    :show-inheritance:
 
 
+Ploting
+=======
+
+.. automodule:: new_plots
+
+.. autoclass:: CCScatterPCPlot
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+   .. automethod:: __init__
+
+.. autoclass:: PCDataSet
+   :members:
+
+
 Analysis methods
 ================
 
