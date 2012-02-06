@@ -1,3 +1,10 @@
+"""
+PC plot module
+--------------
+
+.. moduleauthor:: Thomas Graff <graff.thomas@gmail.com>
+
+"""
 
 from numpy import array
 import numpy as np
@@ -10,7 +17,7 @@ from enable.api import ColorTrait
 
 
 class PCDataSet(HasTraits):
-    """Metadata for a PC array
+    """Metadata for a PC plot set.
 
     * A list of labels for each datapoint
     """
@@ -62,37 +69,73 @@ class PCPlotData(ArrayPlotData):
 
 
 class CCScatterPCPlot(Plot):
-    """A specialized class for plotting Principal Component scatterplot type plots"""
+    """Scatter plot principal components.
+
+    Draw scatterplot for one or several sets of principal components.
+    *set_x_y_pc()* selects which PC to draw from each of the axis.
+
+    .. note::
+       This is a testnote in CCScatterPCPlot class
+
+    """
 
     # Is all the labels visible or not
     visible_labels = Bool(True)
 
 
-    def __init__(self, pc_matrix=None, pc_labels=None, pc_color=None, expl_vars=None, **kwtraits):
+    def __init__(self, pc_matrix, labels=None, color=None, expl_vars=None):
+        """Constructor signature.
+
+        :param pc_matrix: Array with PC datapoints
+        :type pc_matrix: array
+
+        Args:
+          1. pc_matrix: Array with PC datapoints
+          2. lables: Labels for the PC datapoints
+          3. color: Color used in plot for this PC set
+          4. expl_vars: Map with PC to explained variance contribution (%) for PC
+
+        Returns:
+          A new created plot object
+
+        """
         data = PCPlotData()
-        super(CCScatterPCPlot, self).__init__(data, **kwtraits)
+        super(CCScatterPCPlot, self).__init__(data)
+        ## self.index_range.margin = 0.1
+        ## self.value_range.margin = 0.1
+        ## self.index_range.tight_bounds = False
+        ## self.value_range.tight_bounds = False
+        ## scale_tracking_amount(self, multiplier):
+        ## set_bounds(self, low, high):
         if expl_vars is not None:
             self.data.expl_vars = expl_vars
         if pc_matrix is not None:
-            self.add_PC_set(pc_matrix, pc_labels, pc_color)
+            self.add_PC_set(pc_matrix, labels, color)
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
 
 
     def add_PC_set(self, matrix, labels=None, color='cyan'):
-        """Add a PC dataset with metadata"""
+        """Add a PC dataset with metadata.
+
+        Args:
+          1. matrix: Array with PC datapoints
+          2. lables: Labels for the PC datapoints
+          3. color: Color used in plot for this PC set
+
+        """
         matrix_t = matrix.transpose()
         set_id = self.data.add_PC_set(matrix_t, labels, color)
         self._plot_PC(set_id)
 
 
     def show_points(self, set_id, show=True):
-        """Shows or hide datapoints for selected PC set"""
+        """Shows or hide datapoints for selected PC set."""
         pass
 
 
     def show_labels(self, set_id, show=True):
-        """Shows or hide datapoint labels for selected PC set"""
+        """Shows or hide datapoint labels for selected PC set."""
         self.visible_labels = show
         pn = 'plot_{}'.format(set_id)
         plot = self.plots[pn][0]
@@ -102,24 +145,26 @@ class CCScatterPCPlot(Plot):
 
 
     def get_x_y_status(self):
-        """Which PC is ploted for X and Y axis
+        """Query which PC is ploted for X and Y axis.
 
-        Returns a tuple (x_no, y_no, n_pc) with:
-        * PC no for X axis
-        * PC no for Y axis
-        * max no of PC's
+        Returns:
+          A tuple (x_no, y_no, n_pc) with:
+          1. PC no for X axis
+          2. PC no for Y axis
+          3. max no of PC's
+
         """
         return (self.data.x_no, self.data.y_no, self.data.n_pc)
 
 
     def set_x_y_pc(self, x, y):
-        """Change PC for X and Y axis
+        """Set which PC to plot for X and Y axis.
 
-        Parameters:
-        * PC index for X axis
-        * PC index for Y axis
+        Args:
+          1. PC index for X axis
+          2. PC index for Y axis
+          
         """
-
         n_ds = len(self.data.pc_ds)
 
         plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
@@ -132,7 +177,7 @@ class CCScatterPCPlot(Plot):
 
 
     def _plot_PC(self, set_id, PCx=1, PCy=2):
-        """Draw the points for a selected dataset and selecte PC for x and y axis"""
+        # Adds a PC plot rendrer to the plot object
 
         # Typical id: ('s1pc1', 's1pc2')
         x_id = 's{}pc{}'.format(set_id, PCx)
@@ -153,11 +198,11 @@ class CCScatterPCPlot(Plot):
         pn = 'plot_{}'.format(set_id)
 
         #plot
-        rl = self.plot(
-            pd,
-            type='scatter',
-            name=pn,
-            color=self.data.pc_ds[set_id-1].color)
+        rl = self.plot(pd, type='scatter', name=pn,
+                       color=self.data.pc_ds[set_id-1].color)
+
+        # Give plot space
+        self._set_axis_margin()
 
         # Set axis title
         self._set_plot_axis_title()
@@ -203,6 +248,7 @@ class CCScatterPCPlot(Plot):
 
 
     def plot_circle(self, show_half=False):
+        """Add bounding circles to the plot."""
         # Create range for ellipses
         vec = np.arange(0.0, 2*np.pi, 0.01)
         # Computing the outer circle (100 % expl. variance)
@@ -228,10 +274,36 @@ class CCScatterPCPlot(Plot):
                 marker="dot", marker_size=1,
                 color="blue", bgcolor="white")
 
+        self._set_axis_margin()
+
+
+    def _set_axis_margin(self, margin_factor=0.15):
+        self.reset_axis()
+        index_bounds = self._calc_margin_bounds(self.index_range.low, self.index_range.high)
+        value_bounds = self._calc_margin_bounds(self.value_range.low, self.value_range.high)
+        self.index_range.set_bounds(*index_bounds)
+        self.value_range.set_bounds(*value_bounds)
+
+
+    def _calc_margin_bounds(self, low, high, margin_factor=0.15):
+        space = high - low
+        space_margin = space * margin_factor
+        margin_low = low - space_margin / 2
+        margin_high = high + space_margin / 2
+        return margin_low, margin_high
+
+
+    def reset_axis(self):
+        """Reset axix to default
+        """
+        self.index_range.reset()
+        self.value_range.reset()
+
+
+
 
 if __name__ == '__main__':
     errset = np.seterr(all="ignore")
-    plot = CCScatterPCPlot()
 
     set1 = array([
         [-0.3, 0.4, 0.9],
@@ -247,8 +319,8 @@ if __name__ == '__main__':
 
     label1 = ['s1pt1', 's1pt2', 's1pt3']
     label2 = ['s2pt1', 's2pt2', 's2pt3']
-    plot.add_PC_set(set1, color=(0.8, 0.2, 0.1, 1.0), labels=label1)
-    plot.add_PC_set(set2, color=(0.2, 0.9, 0.1, 1.0), labels=label2)
+    plot = CCScatterPCPlot(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
+    plot.add_PC_set(set2, labels=label2, color=(0.2, 0.9, 0.1, 1.0))
     plot.plot_circle(True)
     # plot.show_labels(2, show=False)
     plot.new_window(True)

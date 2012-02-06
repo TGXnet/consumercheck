@@ -10,12 +10,6 @@ from new_plots import CCScatterPCPlot
 from plot_windows import SinglePlotWindow
 
 
-def pytest_funcarg__plot(request):
-    print("\nHello")
-    print(request)
-    return CCScatterPCPlot()
-
-
 class TestPlotBase(object):
     pass
 
@@ -35,10 +29,9 @@ class TestPCPlotSingleSet(TestPlotBase):
         self.expl_vars = {1:37.34, 2:9.4, 3:0.3498}
 
     @pytest.mark.ui
-    def test_plot_one_set(self, plot):
+    def test_plot_one_set(self):
         # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
-        plot.data.expl_vars = self.expl_vars
-        plot.add_PC_set(self.set1, labels=self.label1, color=(0.8, 0.2, 0.1, 1.0))
+        plot = CCScatterPCPlot(self.set1, self.label1, (0.8, 0.2, 0.1, 1.0), self.expl_vars)
         plot.new_window(True)
 
 
@@ -56,11 +49,13 @@ class TestPCPlotMultipleSet(TestPCPlotSingleSet):
 
         self.label2 = ['s2pt1', 's2pt2', 's2pt3']
 
+    def test_plot_one_set(self):
+        pass
+
     @pytest.mark.two
     def test_plot_two_sets(self):
-        plot = CCScatterPCPlot()
         # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
-        plot.add_PC_set(self.set1, labels=self.label1, color=(0.8, 0.2, 0.1, 1.0))
+        plot = CCScatterPCPlot(self.set1, labels=self.label1, color=(0.8, 0.2, 0.1, 1.0))
         plot.add_PC_set(self.set2, labels=self.label2, color=(0.2, 0.9, 0.1, 1.0))
         plot.plot_circle(True)
         assert plot.plots.keys().sort() == [
@@ -69,7 +64,7 @@ class TestPCPlotMultipleSet(TestPCPlotSingleSet):
         # plot.new_window(True)
 
 
-@pytest.mark.window
+@pytest.mark.ui
 def test_plot_window(simple_plot):
     spw = SinglePlotWindow(plot=simple_plot)
     with np.errstate(invalid='ignore'):
