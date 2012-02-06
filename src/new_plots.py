@@ -10,7 +10,7 @@ from numpy import array
 import numpy as np
 
 # Enthought library imports
-from chaco.api import Plot, ArrayPlotData, DataLabel
+from chaco.api import Plot, ArrayPlotData, DataLabel, PlotGrid
 from chaco.tools.api import ZoomTool, PanTool
 from traits.api import Bool, Dict, Int, List, HasTraits
 from enable.api import ColorTrait
@@ -114,6 +114,7 @@ class CCScatterPCPlot(Plot):
             self.data.expl_vars = expl_vars
         if pc_matrix is not None:
             self.add_PC_set(pc_matrix, labels, color)
+        self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
 
@@ -281,11 +282,21 @@ class CCScatterPCPlot(Plot):
 
 
     def toggle_eq_axis(self, set_equal):
+        """Set orthonormal or normal plot range."""
         if set_equal:
             self._set_axis_equal()
         else:
             self._set_axis_margin()
         ## self.request_redraw()
+
+
+    def export_image(self, fname, size=(800,600)):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)
 
 
     def _set_axis_equal(self, margin_factor=0.15):
@@ -332,6 +343,32 @@ class CCScatterPCPlot(Plot):
         self.index_range.reset()
         self.value_range.reset()
 
+
+    def _add_zero_axis(self):
+        xgrid = PlotGrid(
+            mapper=self.x_mapper,
+            orientation='vertical',
+            line_weight=1,
+            grid_interval=10,
+            component=self,
+            ## data_min=6,
+            ## data_max=9,
+            ## transverse_bounds=(-0.4, 0),
+            ## transverse_mapper=self.y_mapper
+            )
+        self.underlays.append(xgrid)
+        ygrid = PlotGrid(
+            mapper=self.y_mapper,
+            orientation='horizontal',
+            line_weight=1,
+            grid_interval=10,
+            component=self,
+            ## data_min=-0.4,
+            ## data_max=0,
+            ## transverse_bounds=(6, 9),
+            ## transverse_mapper=self.x_mapper
+            )
+        self.underlays.append(ygrid)
 
 
 

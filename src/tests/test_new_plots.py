@@ -75,3 +75,9 @@ def test_plot_window(simple_plot):
     spw = SinglePlotWindow(plot=simple_plot)
     with np.errstate(invalid='ignore'):
         spw.configure_traits()
+
+
+# Test generating and exporting plot image
+# Use py.test tempdir facility
+# see https://svn.enthought.com/enthought/browser/Chaco/trunk/examples/noninteractive.py
+# for more info plot image export.
