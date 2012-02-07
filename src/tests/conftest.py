@@ -13,7 +13,7 @@ from os.path import dirname, abspath, join
 
 # Local imports
 from dataset import DataSet
-from new_plots import CCScatterPCPlot
+from plot_pc_scatter import PCScatterPlot
 
 
 def pytest_runtest_setup(item):
@@ -42,7 +42,7 @@ def pytest_funcarg__simple_plot(request):
     label1 = ['s1pt1', 's1pt2', 's1pt3']
     expl_vars = {1:37.34, 2:9.4, 3:0.3498}
     color = (0.8, 0.2, 0.1, 1.0)
-    sp = CCScatterPCPlot(set1, label1, color, expl_vars)
+    sp = PCScatterPlot(set1, label1, color, expl_vars)
     ## sp.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
 
     return sp

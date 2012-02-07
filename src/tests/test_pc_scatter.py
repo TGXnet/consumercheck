@@ -6,7 +6,7 @@ from numpy import array
 import pytest
 
 # Local imports
-from new_plots import CCScatterPCPlot
+from plot_pc_scatter import PCScatterPlot
 from plot_windows import SinglePlotWindow
 
 
@@ -30,7 +30,7 @@ class TestPCPlotSingleSet(TestPlotBase):
     @pytest.mark.ui
     def test_plot_one_set(self):
         # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
-        plot = CCScatterPCPlot(self.set1, self.label1, (0.8, 0.2, 0.1, 1.0), self.expl_vars)
+        plot = PCScatterPlot(self.set1, self.label1, (0.8, 0.2, 0.1, 1.0), self.expl_vars)
         plot.new_window(True)
 
 
@@ -53,7 +53,7 @@ class TestPCPlotMultipleSet(TestPCPlotSingleSet):
     @pytest.mark.two
     def test_plot_two_sets(self):
         # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
-        plot = CCScatterPCPlot(self.set1, labels=self.label1, color=(0.8, 0.2, 0.1, 1.0))
+        plot = PCScatterPlot(self.set1, labels=self.label1, color=(0.8, 0.2, 0.1, 1.0))
         plot.add_PC_set(self.set2, labels=self.label2, color=(0.2, 0.9, 0.1, 1.0))
         plot.plot_circle(True)
         assert plot.plots.keys().sort() == [
@@ -64,7 +64,7 @@ class TestPCPlotMultipleSet(TestPCPlotSingleSet):
     @pytest.mark.ui
     def test_plot_two_sets(self):
         # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
-        plot = CCScatterPCPlot(self.set1, labels=self.label1, color=(0.8, 0.2, 0.1, 1.0))
+        plot = PCScatterPlot(self.set1, labels=self.label1, color=(0.8, 0.2, 0.1, 1.0))
         plot.add_PC_set(self.set2, labels=self.label2, color=(0.2, 0.9, 0.1, 1.0))
         plot.plot_circle(True)
         plot.new_window(True)

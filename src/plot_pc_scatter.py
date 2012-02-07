@@ -71,14 +71,14 @@ class PCPlotData(ArrayPlotData):
         return set_n+1
 
 
-class CCScatterPCPlot(Plot):
-    """Scatter plot principal components.
+class PCScatterPlot(Plot):
+    """Principal Component scatter plot.
 
     Draw scatterplot for one or several sets of principal components.
     *set_x_y_pc()* selects which PC to draw from each of the axis.
 
     .. note::
-       This is a testnote in CCScatterPCPlot class
+       This is a testnote in PCScatterPlot class
 
     """
 
@@ -103,7 +103,7 @@ class CCScatterPCPlot(Plot):
 
         """
         data = PCPlotData()
-        super(CCScatterPCPlot, self).__init__(data)
+        super(PCScatterPlot, self).__init__(data)
         ## self.index_range.margin = 0.1
         ## self.value_range.margin = 0.1
         ## self.index_range.tight_bounds = False
@@ -206,7 +206,7 @@ class CCScatterPCPlot(Plot):
                        color=self.data.pc_ds[set_id-1].color)
 
         # Give plot space
-        self._set_axis_margin()
+        ## self._set_axis_margin()
 
         # Set axis title
         self._set_plot_axis_title()
@@ -278,7 +278,7 @@ class CCScatterPCPlot(Plot):
                 marker="dot", marker_size=1,
                 color="blue", bgcolor="white")
 
-        self._set_axis_margin()
+        ## self._set_axis_margin()
 
 
     def toggle_eq_axis(self, set_equal):
@@ -286,7 +286,8 @@ class CCScatterPCPlot(Plot):
         if set_equal:
             self._set_axis_equal()
         else:
-            self._set_axis_margin()
+            ## self._set_axis_margin()
+            self._reset_axis()
         ## self.request_redraw()
 
 
@@ -389,8 +390,8 @@ if __name__ == '__main__':
 
     label1 = ['s1pt1', 's1pt2', 's1pt3']
     label2 = ['s2pt1', 's2pt2', 's2pt3']
-    plot = CCScatterPCPlot()
-    ## plot = CCScatterPCPlot(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
+    plot = PCScatterPlot()
+    ## plot = PCScatterPlot(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
     plot.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
     plot.add_PC_set(set2, labels=label2, color=(0.2, 0.9, 0.1, 1.0))
     plot.plot_circle(True)

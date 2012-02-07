@@ -14,7 +14,7 @@ from chaco.api import ArrayPlotData
 
 # Local imports
 from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
-from new_plots import CCScatterPCPlot
+from plot_pc_scatter import PCScatterPlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from nipals import PCA
 from dsl_check_list import CheckListController, check_view
@@ -154,7 +154,7 @@ class PcaModelViewHandler(ModelView):
     def _make_plot(self, pc_tab, ds_id, plot_title, labels=None):
         expl_vars = self.model.get_res(ds_id).getCalExplVar()
 
-        ps = CCScatterPCPlot()
+        ps = PCScatterPlot()
         ps.title = plot_title
         ps.add_PC_set(pc_tab, labels=labels)
         ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
@@ -177,7 +177,7 @@ class PcaModelViewHandler(ModelView):
         ds = self.model.dsl.get_by_id(ds_id)
         sds = ds.subset()
         labels = sds.variable_names
-        pcl = CCScatterPCPlot()
+        pcl = PCScatterPlot()
         pcl.add_PC_set(pc_tab, labels)
         pcl.plot_circle(True)
         pcl.title = "Correlation Loadings"
