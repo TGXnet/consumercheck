@@ -53,11 +53,11 @@ class PCPlotData(ArrayPlotData):
         set_n = len(self.pc_ds)
         rows, cols = values.shape
         if set_n == 0:
-            self.n_pc = cols
+            self.n_pc = rows
         else:
-            self.n_pc = min(self.n_pc, cols)
+            self.n_pc = min(self.n_pc, rows)
 
-        for i,row in enumerate(values):
+        for i, row in enumerate(values):
             dict_name = 's{}pc{}'.format(set_n+1, (i+1))
             self.arrays[dict_name] = row
 
