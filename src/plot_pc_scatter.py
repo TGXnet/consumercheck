@@ -6,7 +6,6 @@ PC plot module
 
 """
 
-from numpy import array
 import numpy as np
 
 # Enthought library imports
@@ -376,13 +375,13 @@ class PCScatterPlot(Plot):
 if __name__ == '__main__':
     errset = np.seterr(all="ignore")
 
-    set1 = array([
+    set1 = np.array([
         [-0.3, 0.4, 0.9],
         [-0.1, 0.2, 0.7],
         [-0.1, 0.1, 0.1],
         ])
 
-    set2 = array([
+    set2 = np.array([
         [-1.3, -0.4, -0.9],
         [-1.1, -0.2, -0.7],
         [-1.2, -0.1, -0.1],
