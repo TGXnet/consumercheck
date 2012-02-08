@@ -1,13 +1,13 @@
 
+# SciPy imports
+import numpy as np
 
 # Enthought library imports
 from chaco.api import Plot, ArrayPlotData
 from traits.api import List, HasTraits
-from multiprocessing.managers import ArrayProxy
 from enable.api import ColorTrait
 from chaco.tools.api import ZoomTool, PanTool
 
-import numpy as np
 
 class EVDataSet(HasTraits):
     """Metadata for an Explained Variance line plot.
@@ -16,6 +16,7 @@ class EVDataSet(HasTraits):
     """
     # (0.8, 0.2, 0.1, 1.0)
     color = ColorTrait('cyan')
+
 
 class EVPlotData(ArrayPlotData):
     """Container for an Explained Variance line plot type dataset.
@@ -30,18 +31,17 @@ class EVPlotData(ArrayPlotData):
     
     #Plot name
     pn = List()
-    
+
+
     def add_line_ds(self, values, color):
         """Add dataset for a EV line plot"""
         
         set_n = len(self.l_ds)
         
         try:
-            self.arrays['index'] = range(max(len(self.arrays['index']),len(values)))
+            self.arrays['index'] = range(max(len(self.arrays['index']), len(values)))
         except KeyError:
             self.arrays['index'] = range(len(values))
-        
-        
         
         dict_name = 'line_{}'.format(set_n+1)
         self.arrays[dict_name] = values
@@ -52,12 +52,13 @@ class EVPlotData(ArrayPlotData):
         self.l_ds.append(lds)
         return set_n+1
 
+
 class EVLinePlot(Plot):
     """Explained variance line plot.
 
     """
 
-    def __init__(self, color=None):
+    def __init__(self, ev_vector=None, color=None, legend=None, **kwtraits):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -74,16 +75,18 @@ class EVLinePlot(Plot):
 
         """
         data = EVPlotData()
-        super(EVLinePlot, self).__init__(data)
-        ## self.index_range.margin = 0.1
-        ## self.value_range.margin = 0.1
-        ## self.index_range.tight_bounds = False
-        ## self.value_range.tight_bounds = False
-        ## scale_tracking_amount(self, multiplier):
-        ## set_bounds(self, low, high):
+        super(EVLinePlot, self).__init__(data, **kwtraits)
+
+        if ev_vector is not None:
+            self.add_EV_set(ev_vector, color, legend)
+
+        self.title = "Explained variance"
+        self.x_axis.title = "# of principal components"
+        self.y_axis.title = "Explained variance [%]"
 
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
+
 
     def add_EV_set(self, ev_vector, color=None, legend=None):
         """Add a PC dataset with metadata.
@@ -99,6 +102,7 @@ class EVLinePlot(Plot):
         
         set_id = self.data.add_line_ds(ev_vector, color)
         self._plot_EV(set_id,legend)
+
     
     def _plot_EV(self, set_id, legend):
         # Adds a EV line plot rendrer to the plot object
@@ -115,15 +119,13 @@ class EVLinePlot(Plot):
             pn = legend
             for i in self.data.pn:
                 if pn == i:
-                    raise Exception
-                    
-            
+                    raise Exception("The name: {} is already taken".format(pn))
+
         else:
             pn = 'Plot {}'.format(set_id)
         
         self.data.pn.append(pn)
-        
-        
+
         #plot
         rl = self.plot(pd, type='line', name=pn,
                        color=self.data.l_ds[set_id-1].color)
@@ -131,6 +133,7 @@ class EVLinePlot(Plot):
         self.plots.values()[0][0].index._data = self.data.arrays['index']
         
         return pn
+
 
 if __name__ == '__main__':
     line = np.array([56.4, 78.9, 96.0, 99.4])

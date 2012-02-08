@@ -7,14 +7,17 @@ Adds statistical methods, user inteface and plots for PCA
 import sys
 import logging
 
+# SciPy imports
+import numpy as np
+
 # Enthought imports
 from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Enum
 from traitsui.api import View, Item, UItem, Handler, ModelView, TreeEditor, TreeNode, InstanceEditor, Group
 from chaco.api import ArrayPlotData
 
 # Local imports
-from plots import CCPlotScatter, CCPlotLine, CCPlotCorrLoad
 from plot_pc_scatter import PCScatterPlot
+from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from nipals import PCA
 from dsl_check_list import CheckListController, check_view
@@ -153,12 +156,7 @@ class PcaModelViewHandler(ModelView):
 
     def _make_plot(self, pc_tab, ds_id, plot_title, labels=None):
         expl_vars = self.model.get_res(ds_id).getCalExplVar()
-
-        ps = PCScatterPlot()
-        ps.title = plot_title
-        ps.add_PC_set(pc_tab, labels=labels)
-        ps.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
-        ps.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
+        ps = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title=plot_title)
         return ps
 
     def plot_corr_loading(self):
@@ -177,12 +175,8 @@ class PcaModelViewHandler(ModelView):
         ds = self.model.dsl.get_by_id(ds_id)
         sds = ds.subset()
         labels = sds.variable_names
-        pcl = PCScatterPlot()
-        pcl.add_PC_set(pc_tab, labels)
+        pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
         pcl.plot_circle(True)
-        pcl.title = "Correlation Loadings"
-        pcl.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[1])
-        pcl.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[2])
         return pcl
 
     def plot_expl_var(self):
@@ -197,18 +191,21 @@ class PcaModelViewHandler(ModelView):
     def _make_expl_var_plot(self, ds_id):
         res = self.model.get_res(ds_id)
         expl_vars = res.getCalExplVar()
-        expl_index = [0]
-        expl_val = [0]
-        for index, value in expl_vars.iteritems():
-            expl_index.append(index)
-            expl_val.append(expl_val[index-1] + value)
-        pd = ArrayPlotData(index=expl_index, pc_sigma=expl_val)
-        pl = CCPlotLine(pd)
-        pl.title = "Explained variance"
-        pl.x_axis.title = "# f principal components"
-        pl.y_axis.title = "Explained variance [%]"
-        pl.y_mapper.range.set_bounds(0, 100)
+        ev = self._accumulate_expl_var_adapter(expl_vars)
+        pl = EVLinePlot(ev)
         return pl
+
+
+    def _accumulate_expl_var_adapter(self, nipals_ev_dict):
+        indexes = nipals_ev_dict.keys()
+        indexes.sort()
+        values = [0]
+        for i in indexes:
+            val = nipals_ev_dict[i]
+            values.append(values[i-1] + val)
+        values.pop(0)
+        return np.array(values)
+
 
     def _show_plot_window(self, plot_window):
         # FIXME: Setting parent forcing main ui to stay behind plot windows
@@ -324,7 +321,6 @@ pca_tree_view = View(
 
 if __name__ == '__main__':
     print("Interactive start")
-    import numpy as np
 
     from dataset_collection import DatasetCollection
     from importer_main import ImporterMain

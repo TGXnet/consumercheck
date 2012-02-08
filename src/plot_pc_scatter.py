@@ -85,7 +85,7 @@ class PCScatterPlot(Plot):
     visible_labels = Bool(True)
 
 
-    def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None):
+    def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None, **kwtraits):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -102,7 +102,7 @@ class PCScatterPlot(Plot):
 
         """
         data = PCPlotData()
-        super(PCScatterPlot, self).__init__(data)
+        super(PCScatterPlot, self).__init__(data, **kwtraits)
         ## self.index_range.margin = 0.1
         ## self.value_range.margin = 0.1
         ## self.index_range.tight_bounds = False
