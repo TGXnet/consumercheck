@@ -6,6 +6,7 @@ from enable.api import Component, ComponentEditor
 from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
 from chaco.api import GridPlotContainer
+from pyface.api import FileDialog, OK
 
 #Local imports
 from ui_results import TableViewController
@@ -17,14 +18,29 @@ bg_color="white"
 #===============================================================================
 
 class FileEditor(HasTraits):
+    
     file_name = File()
-    traits_view = View(
-        Item('file_name'),
-        buttons = ['OK'],
-        title = 'Save png',
-        width = 400,
-        kind='modal',
-        )
+    
+    def _save_img(self, obj):
+        """ Attaches a .png extension and exports the image.
+        """
+
+        a,b,c = self.file_name.rpartition('.')
+        if c == 'png':
+            obj.plot.export_image(self.file_name)
+        else:
+            self.file_name = '{}.png'.format(self.file_name)
+            obj.plot.export_image(self.file_name)
+
+    def _save_as_img(self, obj):
+        """ Used to browse to a destination folder, and specify a filename for the image.
+        """
+        fd = FileDialog(action='save as',default_path=self.file_name, default_filename='test.png',
+            wildcard = "PNG files (*.png)|*.png|")
+        if fd.open() == OK:
+            self.file_name = fd.path
+            if self.file_name != '':
+                self._save_img(obj)
 
 
 class TitleHandler(Handler):
@@ -113,8 +129,10 @@ class SinglePlotWindow(HasTraits):
     @on_trait_change('save_plot')
     def render_plot(self, obj, name, old, new):
         fe = FileEditor()
-        fe.edit_traits()
-        obj.plot.export_image(fe.file_name)
+        fe._save_as_img(obj)
+        
+
+    
 
     traits_view = View(
         Group(
@@ -233,3 +251,7 @@ class MultiPlotWindow(HasTraits):
     def _plots_default(self):
         container = GridPlotContainer(background=bg_color)
         return container
+
+if __name__ == '__main__':
+    a = FileEditor()
+    a.configure_traits()
