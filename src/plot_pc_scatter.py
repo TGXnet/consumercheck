@@ -9,7 +9,7 @@ PC plot module
 import numpy as np
 
 # Enthought library imports
-from chaco.api import Plot, ArrayPlotData, DataLabel, PlotGrid
+from chaco.api import Plot, ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
 from traits.api import Bool, Dict, Int, List, HasTraits
 from enable.api import ColorTrait
