@@ -2,8 +2,11 @@
 
 """
 
+# Stdlib imports
 import pytest
 import numpy as np
+
+# Local imports
 from ui_tab_pca import PcaModel, PcaModelViewHandler, pca_tree_view
 
 

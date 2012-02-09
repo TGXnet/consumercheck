@@ -213,7 +213,8 @@ class MultiPlotWindow(HasTraits):
         #for i in range(obj.plots.component_grid[0][0].data.ds_counter):
         obj.plots.component_grid[0][0].show_labels(1, new)
         obj.plots.component_grid[0][1].show_labels(1, new)
-        obj.plots.component_grid[1][0].show_labels(1, new)
+        obj.plots.component_grid[0][1].show_labels(2, new)
+        # obj.plots.component_grid[1][0].show_labels(1, new)
 
     traits_view = View(
         Group(

@@ -13,7 +13,6 @@ import numpy as np
 # Enthought imports
 from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Enum
 from traitsui.api import View, Item, UItem, Handler, ModelView, TreeEditor, TreeNode, InstanceEditor, Group
-from chaco.api import ArrayPlotData
 
 # Local imports
 from plot_pc_scatter import PCScatterPlot

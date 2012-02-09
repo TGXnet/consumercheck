@@ -15,10 +15,12 @@ import logging
 # Enthought imports
 from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any
 from traitsui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
-from chaco.api import ArrayPlotData
+# from chaco.api import ArrayPlotData
 
 # Local imports
-from plots import CCPlotScatter, CCPlotLine, CCPlotCalValExplVariance, CCPlotXYCorrLoad
+# from plots import CCPlotScatter, CCPlotLine, CCPlotCalValExplVariance, CCPlotXYCorrLoad
+from plot_pc_scatter import PCScatterPlot
+from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 # from mvr import plsr
 from plsr import nipalsPLS2 as pls
@@ -72,7 +74,6 @@ class PrefmapModel(HasTraits):
 class PrefmapModelViewHandler(ModelView):
     """UI code that vil react to UI events for Prefmap tab"""
     # Disable UI when unittesting
-    show = True
     main_ui_ptr = Instance(HasTraits)
     plot_uis = List()
 
@@ -100,23 +101,21 @@ class PrefmapModelViewHandler(ModelView):
         return self.model.selector.get_cross_mappings()
 
 
-    def plot_overview(self, show = True):
+    def plot_overview(self):
         """Make Prefmap overview plot.
 
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
         for each of the datasets.
         """
-        # self.show = show
         for xId, yId in self.get_mappings():
-            ds_plots = [[self._make_scores_plot(xId, yId, False), self._make_corr_load_plot(xId, yId, False)],
+            ds_plots = [[self._make_scores_plot(xId, yId), self._make_corr_load_plot(xId, yId)],
                         [self._make_expl_var_plot_x(xId, yId), self._make_expl_var_plot_y(xId, yId)]]
             mpw = MultiPlotWindow(title_text=self._wind_title(xId, yId))
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
             self._show_plot_window(mpw)
 
-    def plot_scores(self, show = True):
-        # self.show = show
+    def plot_scores(self):
         for xId, yId in self.get_mappings():
             s_plot = self._make_scores_plot(xId, yId)
             spw = SinglePlotWindow(
@@ -125,26 +124,31 @@ class PrefmapModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_scores_plot(self, xId, yId, add_labels=True):
+
+    def _make_scores_plot(self, xId, yId):
         res = self.model.get_res(xId, yId)
         pc_tab = res.Xscores()
-        # FIXME: This is unnecessary, look two lines up
-        expl_vars_x = self.model.get_res(xId, yId).XcalExplVar_tot_list()
-        expl_vars_y = self.model.get_res(xId, yId).YcalExplVar_tot_list()
-        pd = ArrayPlotData()
-        pd.set_data('pc1', pc_tab[:,0])
-        pd.set_data('pc2', pc_tab[:,1])
-        plot = CCPlotScatter(pd)
-        plot.title = "Scores"
-        plot.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[0], expl_vars_y[0])
-        plot.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[1], expl_vars_y[1])
-        if add_labels:
-            labels = self.model.dsl.get_by_id(xId).object_names
-            plot.add_data_labels(labels)
+        labels = self.model.dsl.get_by_id(xId).object_names
+        expl_vars_x = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
+        expl_vars_y = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
+        ## pd = ArrayPlotData()
+        ## pd.set_data('pc1', pc_tab[:,0])
+        ## pd.set_data('pc2', pc_tab[:,1])
+        ## plot = CCPlotScatter(pd)
+        ## plot.title = "Scores"
+        ## plot.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[0], expl_vars_y[0])
+        ## plot.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[1], expl_vars_y[1])
+        ## labels = self.model.dsl.get_by_id(xId).object_names
+        ## plot.add_data_labels(labels)
         return plot
 
-    def plot_loadings_x(self, show = True):
-        # self.show = show
+
+    def _ev_list_dict_adapter(self, ev_list):
+        return dict([kv for kv in enumerate(ev_list, 1)])
+
+
+    def plot_loadings_x(self):
         for xId, yId in self.get_mappings():
             l_plot = self._make_loadings_plot_x(xId, yId)
             spw = SinglePlotWindow(
@@ -156,20 +160,20 @@ class PrefmapModelViewHandler(ModelView):
     def _make_loadings_plot_x(self, xId, yId):
         res = self.model.get_res(xId, yId)
         xLP = res.Xloadings()
-        pd = ArrayPlotData()
-        pd.set_data('pc1', xLP[:,0])
-        pd.set_data('pc2', xLP[:,1])
-        plot = CCPlotScatter(pd)
-        plot.title = "X Loadings"
-        expl_vars = self.model.get_res(xId, yId).XcalExplVar_tot_list()
-        plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
-        plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
+        expl_vars = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
         labels = self.model.dsl.get_by_id(xId).variable_names
-        plot.add_data_labels(labels)
+        plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
+        ## pd = ArrayPlotData()
+        ## pd.set_data('pc1', xLP[:,0])
+        ## pd.set_data('pc2', xLP[:,1])
+        ## plot = CCPlotScatter(pd)
+        ## plot.title = "X Loadings"
+        ## plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
+        ## plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
+        ## plot.add_data_labels(labels)
         return plot
 
-    def plot_loadings_y(self, show = True):
-        # self.show = show
+    def plot_loadings_y(self):
         for xId, yId in self.get_mappings():
             l_plot = self._make_loadings_plot_y(xId, yId)
             spw = SinglePlotWindow(
@@ -181,20 +185,20 @@ class PrefmapModelViewHandler(ModelView):
     def _make_loadings_plot_y(self, xId, yId):
         res = self.model.get_res(xId, yId)
         yLP = res.Yloadings()
-        pd = ArrayPlotData()
-        pd.set_data('pc1', yLP[:,0])
-        pd.set_data('pc2', yLP[:,1])
-        plot = CCPlotScatter(pd)
-        plot.title = "Y Loadings"
-        expl_vars = self.model.get_res(xId, yId).YcalExplVar_tot_list()
-        plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
-        plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
+        expl_vars = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
         labels = self.model.dsl.get_by_id(yId).variable_names
-        plot.add_data_labels(labels)
+        plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings")
+        ## pd = ArrayPlotData()
+        ## pd.set_data('pc1', yLP[:,0])
+        ## pd.set_data('pc2', yLP[:,1])
+        ## plot = CCPlotScatter(pd)
+        ## plot.title = "Y Loadings"
+        ## plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
+        ## plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
+        ## plot.add_data_labels(labels)
         return plot
 
-    def plot_corr_loading(self, show = True):
-        # self.show = show
+    def plot_corr_loading(self):
         for xId, yId in self.get_mappings():
             cl_plot = self._make_corr_load_plot(xId, yId)
             spw = SinglePlotWindow(
@@ -203,7 +207,7 @@ class PrefmapModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
-    def _make_corr_load_plot(self, xId, yId, add_labels=True):
+    def _make_corr_load_plot(self, xId, yId):
         # VarNameX, CorrLoadX
         # labels
         res = self.model.get_res(xId, yId)
@@ -211,26 +215,27 @@ class PrefmapModelViewHandler(ModelView):
         clx = res.XcorrLoadings()
         cly = res.YcorrLoadings()
         # calExplVarX
-        cevx = res.XcalExplVar_tot_list()
-        cevy = res.YcalExplVar_tot_list()
-        pd = ArrayPlotData()
-        pd.set_data('pc1', clx[:,0])
-        pd.set_data('pc2', clx[:,1])
-        pd.set_data('pcy1', cly[:,0])
-        pd.set_data('pcy2', cly[:,1])
-        pcl = CCPlotXYCorrLoad(pd)
-        pcl.title = "X & Y correlation loadings"
-        pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
-        pcl.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(cevx[1], cevy[1])
-        if add_labels:
-            vnx = self.model.dsl.get_by_id(xId).variable_names
-            vny = self.model.dsl.get_by_id(yId).variable_names
-            pcl.add_data_labels(vnx, 'x1')
-            pcl.add_data_labels(vny, 'y1')
+        cevx = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
+        cevy = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        vnx = self.model.dsl.get_by_id(xId).variable_names
+        vny = self.model.dsl.get_by_id(yId).variable_names
+        pcl = PCScatterPlot(clx, vnx, 'red', cevx, title="X & Y correlation loadings")
+        pcl.add_PC_set(cly, vny, 'blue', cevy)
+        pcl.plot_circle(True)
+        ## pd = ArrayPlotData()
+        ## pd.set_data('pc1', clx[:,0])
+        ## pd.set_data('pc2', clx[:,1])
+        ## pd.set_data('pcy1', cly[:,0])
+        ## pd.set_data('pcy2', cly[:,1])
+        ## pcl = CCPlotXYCorrLoad(pd)
+        ## pcl.title = "X & Y correlation loadings"
+        ## pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
+        ## pcl.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(cevx[1], cevy[1])
+        ## pcl.add_data_labels(vnx, 'x1')
+        ## pcl.add_data_labels(vny, 'y1')
         return pcl
 
-    def plot_expl_var_x(self, show = True):
-        # self.show = show
+    def plot_expl_var_x(self):
         for xId, yId in self.get_mappings():
             ev_plot = self._make_expl_var_plot_x(xId, yId)
             spw = LinePlotWindow(
@@ -239,20 +244,26 @@ class PrefmapModelViewHandler(ModelView):
                 )
             self._show_plot_window(spw)
 
+
+    def _ev_rem_zero_adapter(self, ev_list):
+        ev_list.pop(0)
+        return ev_list
+
+
     def _make_expl_var_plot_x(self, xId, yId):
         res = self.model.get_res(xId, yId)
-        sumCalX = res.XcumCalExplVar_tot_list()
-        expl_index = range(len(sumCalX))
-        pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalX)
-        pl = CCPlotLine(pd)
-        pl.title = "Explained variance X"
-        pl.x_axis.title = "# f principal components"
-        pl.y_axis.title = "Explained variance [%]"
-        pl.y_mapper.range.set_bounds(0, 100)
+        sumCalX = self._ev_rem_zero_adapter(res.XcumCalExplVar_tot_list())
+        pl = EVLinePlot(sumCalX)
+        ## expl_index = range(len(sumCalX))
+        ## pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalX)
+        ## pl = CCPlotLine(pd)
+        ## pl.title = "Explained variance X"
+        ## pl.x_axis.title = "# f principal components"
+        ## pl.y_axis.title = "Explained variance [%]"
+        ## pl.y_mapper.range.set_bounds(0, 100)
         return pl
 
-    def plot_expl_var_y(self, show = True):
-        # self.show = show
+    def plot_expl_var_y(self):
         for xId, yId in self.get_mappings():
             ev_plot = self._make_expl_var_plot_y(xId, yId)
             spw = LinePlotWindow(
@@ -263,18 +274,20 @@ class PrefmapModelViewHandler(ModelView):
 
     def _make_expl_var_plot_y(self, xId, yId):
         res = self.model.get_res(xId, yId)
-        sumCalY = res.YcumCalExplVar_tot_list()
-        sumValY = res.YcumValExplVar_tot_list()
-        expl_index = range(len(sumCalY))
-        pd = ArrayPlotData()
-        pd.set_data('index', expl_index)
-        pd.set_data('pc_cal_sigma', sumCalY)
-        pd.set_data('pc_val_sigma', sumValY)
-        pl = CCPlotCalValExplVariance(pd)
-        pl.title = "Explained variance Y"
-        pl.x_axis.title = "# f principal components"
-        pl.y_axis.title = "Explained variance [%]"
-        pl.y_mapper.range.set_bounds(-50, 100)
+        sumCalY = self._ev_rem_zero_adapter(res.YcumCalExplVar_tot_list())
+        sumValY = self._ev_rem_zero_adapter(res.YcumValExplVar_tot_list())
+        pl = EVLinePlot(sumCalY, 'red', 'calibrated Y')
+        pl.add_EV_set(sumValY, 'blue', 'validated Y')
+        ## expl_index = range(len(sumCalY))
+        ## pd = ArrayPlotData()
+        ## pd.set_data('index', expl_index)
+        ## pd.set_data('pc_cal_sigma', sumCalY)
+        ## pd.set_data('pc_val_sigma', sumValY)
+        ## pl = CCPlotCalValExplVariance(pd)
+        ## pl.title = "Explained variance Y"
+        ## pl.x_axis.title = "# f principal components"
+        ## pl.y_axis.title = "Explained variance [%]"
+        ## pl.y_mapper.range.set_bounds(-50, 100)
         return pl
 
     def _show_plot_window(self, plot_window):
@@ -394,8 +407,10 @@ prefmap_tree_view = View(
 
 if __name__ == '__main__':
     print("Interactive start")
-    from tests.tools import TestContainer
+    import numpy as np
+    from tests.conftest import TestContainer
     # FIXME: How can i make the object instansiating
     # ordering more robust
     container = TestContainer(test_subject = PrefmapModelViewHandler(PrefmapModel()))
-    container.configure_traits(view=prefmap_tree_view)
+    with np.errstate(invalid='ignore'):
+        container.test_subject.configure_traits(view=prefmap_tree_view)

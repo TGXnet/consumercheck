@@ -21,8 +21,8 @@ class PCDataSet(HasTraits):
     * A list of labels for each datapoint
     """
     labels = List()
-    # (0.8, 0.2, 0.1, 1.0)
     color = ColorTrait('cyan')
+    expl_vars = Dict()
     selected = List()
 
 
@@ -36,8 +36,6 @@ class PCPlotData(ArrayPlotData):
 
     # Metadata for each PC set
     pc_ds = List(PCDataSet)
-    # Explained variance for each PC
-    expl_vars = Dict()
     # Number of PC in the datasets
     # Lowest number if we have severals sets
     n_pc = Int()
@@ -47,7 +45,7 @@ class PCPlotData(ArrayPlotData):
     y_no = Int()
 
 
-    def add_PC_set(self, values, labels, color):
+    def add_PC_set(self, values, labels, color, expl_vars):
         """Add a PC dataset with metadata"""
 
         set_n = len(self.pc_ds)
@@ -66,6 +64,8 @@ class PCPlotData(ArrayPlotData):
             pcds.labels = labels
         if color is not None:
             pcds.color = color
+        if expl_vars is not None:
+            pcds.expl_vars = expl_vars
         self.pc_ds.append(pcds)
         return set_n+1
 
@@ -109,16 +109,14 @@ class PCScatterPlot(Plot):
         ## self.value_range.tight_bounds = False
         ## scale_tracking_amount(self, multiplier):
         ## set_bounds(self, low, high):
-        if expl_vars is not None:
-            self.data.expl_vars = expl_vars
         if pc_matrix is not None:
-            self.add_PC_set(pc_matrix, labels, color)
+            self.add_PC_set(pc_matrix, labels, color, expl_vars)
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
 
 
-    def add_PC_set(self, matrix, labels=None, color=None):
+    def add_PC_set(self, matrix, labels=None, color=None, expl_vars=None):
         """Add a PC dataset with metadata.
 
         Args:
@@ -128,7 +126,7 @@ class PCScatterPlot(Plot):
 
         """
         matrix_t = matrix.transpose()
-        set_id = self.data.add_PC_set(matrix_t, labels, color)
+        set_id = self.data.add_PC_set(matrix_t, labels, color, expl_vars)
         self._plot_PC(set_id)
 
 
@@ -169,13 +167,10 @@ class PCScatterPlot(Plot):
           
         """
         n_ds = len(self.data.pc_ds)
-
         plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
         self.delplot(*plot_ids)
-
         for i in range(n_ds):
             self._plot_PC(i+1, PCx=x, PCy=y)
-
         self.request_redraw()
 
 
@@ -193,38 +188,35 @@ class PCScatterPlot(Plot):
                 "Requested PC x:{}, y:{} for plot axis is out of range:{}".format(
                     PCx, PCy, self.data.n_pc))
         self.data.x_no, self.data.y_no = PCx, PCy
-
         # plot definition
         pd = (x_id, y_id)
-
         # plot name
         pn = 'plot_{}'.format(set_id)
-
         #plot
         rl = self.plot(pd, type='scatter', name=pn,
                        color=self.data.pc_ds[set_id-1].color)
-
         # Give plot space
         ## self._set_axis_margin()
-
         # Set axis title
         self._set_plot_axis_title()
-
         #adding data labels
         self._add_plot_data_labels(rl[0], pd, set_id)
-
         return pn
 
 
     def _set_plot_axis_title(self):
-        try:
-            ev_x = self.data.expl_vars[self.data.x_no]
-            ev_y = self.data.expl_vars[self.data.y_no]
-            self.x_axis.title = 'PC{0} ({1:.0f}%)'.format(self.data.x_no, ev_x)
-            self.y_axis.title = 'PC{0} ({1:.0f}%)'.format(self.data.y_no, ev_y)
-        except KeyError:
-            self.x_axis.title = 'PC{0}'.format(self.data.x_no)
-            self.y_axis.title = 'PC{0}'.format(self.data.y_no)
+        tx = ['PC{0}'.format(self.data.x_no)]
+        ty = ['PC{0}'.format(self.data.y_no)]
+        for pcds in self.data.pc_ds:
+            try:
+                ev_x = pcds.expl_vars[self.data.x_no]
+                ev_y = pcds.expl_vars[self.data.y_no]
+                tx.append('({0:.0f}%)'.format(ev_x))
+                ty.append('({0:.0f}%)'.format(ev_y))
+            except KeyError:
+                pass
+        self.x_axis.title = ' '.join(tx)
+        self.y_axis.title = ' '.join(ty)
 
 
     def _add_plot_data_labels(self, plot_render, point_data, set_id):
