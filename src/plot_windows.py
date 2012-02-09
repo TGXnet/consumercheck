@@ -1,12 +1,15 @@
 """Plotting stand alone windows
 
 """
+import os.path
+
 # Enthought library imports
 from enable.api import Component, ComponentEditor
-from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
+from traits.api import HasTraits, Instance, Bool, Dict, Str, File,List, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
 from chaco.api import GridPlotContainer
 from pyface.api import FileDialog, OK
+from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 #Local imports
 from ui_results import TableViewController
@@ -130,9 +133,69 @@ class SinglePlotWindow(HasTraits):
     def render_plot(self, obj, name, old, new):
         fe = FileEditor()
         fe._save_as_img(obj)
-        
 
+#    #SVG Params
+#    width = 32
+#    height = 32
+
+#    def _make_svg_btn(self,name):
+#        d = SVGButton(
+#                      filename=os.path.join(os.path.dirname(__file__),
+#                                            '{}.svg'.format(name)),
+#                      width=self.width,
+#                      height=self.height)
+#        return d
+
+
+
+#    btn_list = ['save_plot','x_up','x_down','y_down','y_up','reset_xy']
+#    btn_dict = Dict()
+
+
+#    def _btn_dict_default(self):
+#        for i in self.btn_list:
+#            vars(self)[i] = self._make_svg_btn(i)
+
+
+    save_plot = SVGButton(
+                          filename=os.path.join(os.path.dirname(__file__),
+                                                'save.svg'),
+                          width=32,
+                          height=32)
+
+    y_down = SVGButton(
+                            filename=os.path.join(os.path.dirname(__file__),
+                                                  'y_down.svg'),
+                            width=32,
+                            height=32)
     
+    y_up = SVGButton(
+                            filename=os.path.join(os.path.dirname(__file__),
+                                                  'y_up.svg'),
+                            width=32,
+                            height=32)
+
+    x_down = SVGButton(
+                            filename=os.path.join(os.path.dirname(__file__),
+                                                  'x_down.svg'),
+                            width=32,
+                            height=32)
+
+    x_up = SVGButton(
+                            filename=os.path.join(os.path.dirname(__file__),
+                                                  'x_up.svg'),
+                            width=32,
+                            height=32)
+
+    reset_xy = SVGButton(
+                            filename=os.path.join(os.path.dirname(__file__),
+                                                  'reset_xy.svg'),
+                            width=32,
+                            height=32)
+
+
+
+
 
     traits_view = View(
         Group(
@@ -150,8 +213,8 @@ class SinglePlotWindow(HasTraits):
                 Item('show_labels', label="Show labels"),
 #                Item('view_table', show_label=False),
                 Item('save_plot', show_label=False),
-                Item('x_up', show_label=False),
                 Item('x_down', show_label=False),
+                Item('x_up', show_label=False),
                 Item('reset_xy', show_label=False),
                 Item('y_up', show_label=False),
                 Item('y_down', show_label=False),
