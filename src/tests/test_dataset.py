@@ -5,6 +5,7 @@ What is the important aspects with dataset to test:
  * Maintain conistency between number of object and variable names and shape of matrix
  * Active var and objecs = matrix.shap
  * Check that we get expected subset()
+ * Find a way to test the reactive (event) aspcet of the dataset
 """
 
 import pytest
