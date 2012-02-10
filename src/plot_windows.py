@@ -77,8 +77,7 @@ class SinglePlotWindow(HasTraits):
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
-        for i in range(len(obj.plot.data.pc_ds)):
-            obj.plot.show_labels(i+1, new)
+        obj.plot.show_labels(show= new)
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
@@ -241,8 +240,8 @@ class LinePlotWindow(HasTraits):
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
-        ds_id = name.partition('_')[2]
-        obj.plot.show_labels(ds_id, new)
+        # ds_id = name.partition('_')[2]
+        obj.plot.show_labels(show=new)
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
@@ -290,12 +289,10 @@ class MultiPlotWindow(HasTraits):
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
-        #ds_id = name.partition('_')[2]
-        #for i in range(obj.plots.component_grid[0][0].data.ds_counter):
-        obj.plots.component_grid[0][0].show_labels(1, new)
-        obj.plots.component_grid[0][1].show_labels(1, new)
-        obj.plots.component_grid[0][1].show_labels(2, new)
-        # obj.plots.component_grid[1][0].show_labels(1, new)
+        obj.plots.component_grid[0][0].show_labels(show=new)
+        obj.plots.component_grid[0][1].show_labels(show=new)
+        obj.plots.component_grid[1][0].show_labels(show=new)
+        obj.plots.component_grid[1][1].show_labels(show=new)
 
     traits_view = View(
         Group(
@@ -315,6 +312,7 @@ class MultiPlotWindow(HasTraits):
     def _plots_default(self):
         container = GridPlotContainer(background=bg_color)
         return container
+
 
 if __name__ == '__main__':
     a = FileEditor()

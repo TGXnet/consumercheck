@@ -11,8 +11,12 @@ import numpy as np
 # Enthought library imports
 from chaco.api import Plot, ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Dict, Int, List, HasTraits
+from traits.api import Bool, Dict, Int, List, HasTraits, implements
 from enable.api import ColorTrait
+
+
+# Local imports
+from plot_interface import IPCScatterPlot
 
 
 class PCDataSet(HasTraits):
@@ -81,8 +85,10 @@ class PCScatterPlot(Plot):
 
     """
 
-    # Is all the labels visible or not
-    visible_labels = Bool(True)
+    implements(IPCScatterPlot)
+
+    # Should new labels be visible?
+    visible_new_labels = Bool(True)
 
 
     def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None, **kwtraits):
@@ -135,9 +141,17 @@ class PCScatterPlot(Plot):
         pass
 
 
-    def show_labels(self, set_id, show=True):
+    def show_labels(self, set_id=None, show=True):
         """Shows or hide datapoint labels for selected PC set."""
-        self.visible_labels = show
+        self.visible_new_labels = show
+        if set_id is None:
+            for sid in range(1, len(self.data.pc_ds)+1):
+                self._show_set_labels(sid, show)
+        else:
+            self._show_set_labels(set_id, show)
+
+
+    def _show_set_labels(self, set_id, show):
         pn = 'plot_{}'.format(set_id)
         plot = self.plots[pn][0]
         for lab in plot.overlays:
@@ -230,7 +244,7 @@ class PCScatterPlot(Plot):
                 component = plot_render,
                 data_point = (x[i], y[i]),
                 label_format = label,
-                visible = self.visible_labels,
+                visible = self.visible_new_labels,
                 ## marker_color = pt_color,
                 text_color = 'black',
                 border_visible = False,
