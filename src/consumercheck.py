@@ -9,6 +9,10 @@ import numpy as np
 ## ETSConfig.toolkit = 'wx'
 # ETSConfig.toolkit = 'qt4'
 #from pyface.api import GUI
+import traits.has_traits
+
+# 0: no check, 1: warings, 2: error
+traits.has_traits.CHECK_INTERFACES = 1
 
 # Local imports
 # Set path to local R distribution

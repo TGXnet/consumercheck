@@ -4,9 +4,13 @@ import numpy as np
 
 # Enthought library imports
 from chaco.api import Plot, ArrayPlotData
-from traits.api import List, HasTraits
+from traits.api import List, HasTraits, implements
 from enable.api import ColorTrait
 from chaco.tools.api import ZoomTool, PanTool
+
+
+# Local imports
+from plot_interface import IEVLinePlot
 
 
 class EVDataSet(HasTraits):
@@ -57,6 +61,8 @@ class EVLinePlot(Plot):
     """Explained variance line plot.
 
     """
+    implements(IEVLinePlot)
+
 
     def __init__(self, ev_vector=None, color=None, legend=None, **kwtraits):
         """Constructor signature.
@@ -102,6 +108,10 @@ class EVLinePlot(Plot):
         
         set_id = self.data.add_line_ds(ev_vector, color)
         self._plot_EV(set_id,legend)
+
+
+    def show_labels(self, set_id=None, show=True):
+        pass
 
     
     def _plot_EV(self, set_id, legend):
