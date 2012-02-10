@@ -70,14 +70,14 @@ class ImporterMain(HasTraits):
         importer.have_obj_names = have_object_names
         return importer.import_data()
 
-    def dialog_import_data(self):
-        """Open dialog for selecting a file, import and return the DataSet"""
-        self._file_path = self._conf.read_work_dir()
-        self.configure_traits(view='one_view')
-        self._import_settings.file_path = self._file_path
-        self._conf.save_work_dir(self._import_settings.file_path)
-        self._import_settings.configure_traits(view=pre_view)
-        return self._do_import()
+    ## def dialog_import_data(self):
+    ##     """Open dialog for selecting a file, import and return the DataSet"""
+    ##     self._file_path = self._conf.read_work_dir()
+    ##     self.configure_traits(view='one_view')
+    ##     self._import_settings.file_path = self._file_path
+    ##     self._conf.save_work_dir(self._import_settings.file_path)
+    ##     self._import_settings.configure_traits(view=pre_view)
+    ##     return self._do_import()
 
     def dialog_multi_import(self):
         """Open dialog for selecting multiple files and return a list of DataSet's"""
