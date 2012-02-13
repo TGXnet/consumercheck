@@ -70,6 +70,24 @@ class ImporterMain(HasTraits):
         importer.have_obj_names = have_object_names
         return importer.import_data()
 
+    def add_generic_names(self,ds, importer):
+        if not importer.have_var_names:
+            for i in range(importer.ds.n_cols):
+                importer.ds.variable_names.append('V{}'.format(i+1))
+            importer.have_var_names = True
+        if not importer.have_obj_names:
+            for i in range(importer.ds.n_rows):
+                importer.ds.object_names.append('O{}'.format(i+1))
+            importer.have_obj_names = True
+            
+        if importer.have_var_names and importer.ds.n_cols > len(importer.ds.variable_names):
+            for i in range((importer.ds.n_cols-len(importer.ds.variable_names))):
+                importer.ds.variable_names.append('O{}'.format(len(importer.ds.variable_names)+i+1))
+                
+        if importer.have_obj_names and importer.ds.n_rows > len(importer.ds.object_names):
+            for i in range((importer.ds.n_rows-len(importer.ds.object_names))):
+                importer.ds.object_names.append('O{}'.format(len(importer.ds.object_names)+i+1))        
+
     def dialog_import_data(self):
         """Open dialog for selecting a file, import and return the DataSet"""
         self._file_path = self._conf.read_work_dir()
@@ -90,6 +108,7 @@ class ImporterMain(HasTraits):
             importer = self._make_importer(filen)
             importer.configure_traits()
             ds = importer.import_data()
+            self.add_generic_names(ds, importer)
             self._datasets.append(ds)
         self._conf.save_work_dir(filen)
         return self._datasets
@@ -123,5 +142,6 @@ if __name__ == '__main__':
     ## for ds in dsl:
     ##     ds.print_traits()
     ds = fi.import_data('datasets/Cheese/ConsumerLiking.txt')
-    ds.print_traits()
+    
+    
     
