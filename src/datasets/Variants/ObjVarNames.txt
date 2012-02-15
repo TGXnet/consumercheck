@@ -1,4 +1,4 @@
-Obj	Var1	Var2	Var3	Var4	Var5
+	Var1	Var2	Var3	Var4	Var5
 O1	7.1	2.7	4.95	5.35	1
 O2	6.75	1	4.65	3.1	2.6
 O3	6.35	4.55	2.65	1	1
