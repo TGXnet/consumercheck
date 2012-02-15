@@ -13,7 +13,7 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any
+from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Bool, on_trait_change
 from traitsui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
 # from chaco.api import ArrayPlotData
 
@@ -40,7 +40,11 @@ class PrefmapModel(HasTraits):
     # Access to datasets and parent window
     main_ui_ptr = Instance(HasTraits)
     dsl = DelegatesTo('main_ui_ptr')
-
+    
+    #checkbox bool for standarized results
+    st_ds = Bool(False)
+       
+    
     # Hold calculated prefmap results
     results = Dict(unicode, Any)
 
@@ -62,7 +66,9 @@ class PrefmapModel(HasTraits):
             self.dsl.get_by_id(xId).matrix,
             self.dsl.get_by_id(yId).matrix,
             numPC=8,
-            cvType=["loo"])
+            cvType=["loo"],
+            xstand=self.st_ds,
+            ystand=self.st_ds)
 
     def _makeResId(self, *inputIds):
         resId = ''

@@ -1,7 +1,7 @@
 
 # Enthought imports
-from traits.api import List, Enum, Event, on_trait_change
-from traitsui.api import View, Group, UCustom, Label, CheckListEditor, EnumEditor, Controller
+from traits.api import List, Enum, Event, on_trait_change, Bool
+from traitsui.api import View, Group, UCustom, Label, CheckListEditor, EnumEditor, Controller, Item
 
 
 class PrefmapUIController(Controller):
@@ -22,7 +22,7 @@ class PrefmapUIController(Controller):
         )
     mapping = Enum('Int mapping', 'Ext mapping')
     ## method = Enum('PLSR', 'PCR')
-
+    
     sel_updated = Event
 
     def get_cross_mappings(self):
@@ -67,6 +67,7 @@ prefmap_ui_view = View(
                 ),
             orientation='horizontal',
             ),
+          
         Group(
             Group(
                 Label('Mapping'),
@@ -74,6 +75,12 @@ prefmap_ui_view = View(
                         editor=EnumEditor(values=('Int mapping', 'Ext mapping')),
                         ),
                 show_border=True,
+                orientation='vertical',
+                ),              
+            Group(
+                Item('st_ds', label='Standarized'),
+                show_border=True,
+                label='Mode',
                 orientation='vertical',
                 ),
             ## Group(
