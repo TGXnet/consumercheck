@@ -1,9 +1,10 @@
 
-import tools
+# Stdlib imports
+import pytest
 
+# Local imports
 import statTools as st
 from mvr import plsr
-
 
 
 # Load data in numpy arrays
