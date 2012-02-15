@@ -87,6 +87,7 @@ preview_handler = FilePreviewer()
 
 class ImporterXlsFile(HasTraits):
     implements(IDataImporter)
+
     file_path = File()
     transpose = Bool(False)
     have_var_names = Bool(True)
@@ -175,7 +176,8 @@ class ImporterXlsFile(HasTraits):
         handler=preview_handler,
         kind='livemodal',
         )
-    
+
+
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
     test = ImporterXlsFile()

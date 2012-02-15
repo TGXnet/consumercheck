@@ -11,8 +11,8 @@ import numpy as np
 #from pyface.api import GUI
 import traits.has_traits
 
-# 0: no check, 1: warings, 2: error
-traits.has_traits.CHECK_INTERFACES = 1
+# 0: no check, 1: log warings, 2: error
+traits.has_traits.CHECK_INTERFACES = 0
 
 # Local imports
 # Set path to local R distribution

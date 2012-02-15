@@ -8,11 +8,19 @@
 # ds, dsl, mock-mother
 
 # Std lib imports
+import logging
+# Configure logging
+logging.basicConfig(leve=logging.INFO)
+logging.info("Test start")
+
 import numpy as np
 # from os.path import dirname, abspath, join
 import os.path as osp
 
 # Enthought Toolkit imports
+import traits.has_traits
+# 0: no check, 1: log warings, 2: error
+traits.has_traits.CHECK_INTERFACES = 1
 from traits.api import HasTraits, Instance
 
 # Local imports
@@ -22,8 +30,8 @@ from dataset_collection import DatasetCollection
 from importer_main import ImporterMain
 
 
-def pytest_runtest_setup(item):
-    print("hook in conftest: setting up", item)
+## def pytest_runtest_setup(item):
+##     print("hook in conftest: setting up", item)
 
 
 def pytest_funcarg__ds(request):

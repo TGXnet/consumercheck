@@ -69,9 +69,11 @@ class FilePreviewer(Handler):
     _raw_lines = List(Str)
     _parsed_data = List()
 
+
     def init(self, info):
         info.object.make_ds_name()
         self._probe_read(info.object)
+
 
     def object_have_var_names_changed(self, info):
         preview_table.adapter.have_var_names = info.object.have_var_names
