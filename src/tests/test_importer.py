@@ -1,12 +1,15 @@
 """Test to be used with py.test.
 """
 
+# Stdlib imports
 import pytest
 from os.path import join
 from numpy import array, array_equal, allclose
 
 # Local imports
 from importer_text_file import ImporterTextFile
+from importer_main import ImporterMain
+
 
 
 class TestTextfileImport(object):
@@ -84,3 +87,11 @@ class TestTextfileImport(object):
         assert array_equal(self.ref, ds.matrix)
         assert self.var_names == ds.variable_names
         assert self.obj_names == ds.object_names
+
+
+@pytest.mark.ui
+def test_excel_import(test_ds_dir):
+    di = ImporterMain()
+    dsl = di.dialog_multi_import()
+    for ds in dsl:
+        ds.print_traits()
