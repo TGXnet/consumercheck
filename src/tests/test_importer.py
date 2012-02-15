@@ -32,7 +32,6 @@ class TestTextfileImport(object):
         self.obj_names = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10', 'O11', 'O12']
 
     def test_simple_tab_sep(self, test_ds_dir):
-        print(test_ds_dir)
         ifp = ImporterTextFile(
             file_path=join(test_ds_dir, 'Variants', 'TabSep.txt'),
             have_var_names=False,
@@ -90,8 +89,16 @@ class TestTextfileImport(object):
 
 
 @pytest.mark.ui
-def test_excel_import(test_ds_dir):
+def test_ui_import(test_ds_dir):
     di = ImporterMain()
     dsl = di.dialog_multi_import()
     for ds in dsl:
         ds.print_traits()
+
+
+def test_add_name(test_ds_dir):
+    file_path=join(test_ds_dir, 'test.txt')
+    di = ImporterMain()
+    ds = di.import_data(file_path, False, False)
+    assert ds.n_cols == len(ds.variable_names)
+    assert ds.n_rows == len(ds.object_names)
