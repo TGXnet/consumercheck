@@ -12,7 +12,7 @@ import logging
 from numpy import array, loadtxt, genfromtxt
 
 # Enthought imports
-from traits.api import HasTraits, Str, Int, Bool, File, List, Enum, Property
+from traits.api import HasTraits, Event, Str, Int, Bool, File, List, Enum, Property
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
@@ -24,24 +24,44 @@ from importer_interfaces import IDataImporter
 
 
 class RawLineAdapter(TabularAdapter):
-    columns = []
+    # columns = []
     ncols = Int()
+    # can_edit = False
     bg_color  = Property()
     have_var_names = Bool(True)
     # font = 'Courier 10'
+
+
     def _get_bg_color(self):
         if self.have_var_names and self.row == 0:
             return (230, 123, 123)
         elif self.row == 0:
             return (255, 255, 255)
 
+
     def _ncols_changed(self, info):
         self.columns = [("col{}".format(i), i) for i in range(self.ncols)]
 
 
-preview_table = TabularEditor(
-    adapter=RawLineAdapter(),
-    operations=[],
+class PreviewTableEditor(TabularEditor):
+    update_cells = Event()
+
+
+preview_table = PreviewTableEditor(
+    adapter = RawLineAdapter(),
+    operations = [],
+    # Can the user edit the values?
+    editable = False,
+    # The optional extended name of the trait used to indicate that a complete
+    # table update is needed:
+    update = 'update_cells',
+    # Should the table update automatically when the table item's contents
+    # change? Note that in order for this feature to work correctly, the editor
+    # trait should be a list of objects derived from HasTraits. Also,
+    # performance can be affected when very long lists are used, since enabling
+    # this feature adds and removed Traits listeners to each item in the list.
+    # auto_update = Bool( False ),
+    # TabularEditorEvent
     )
 
 
@@ -55,29 +75,35 @@ class FilePreviewer(Handler):
 
     def object_have_var_names_changed(self, info):
         preview_table.adapter.have_var_names = info.object.have_var_names
+        preview_table.update_cells = True
+
 
     def object_separator_changed(self, info):
         preview_matrix = [line.split(info.object.separator) for line in self._raw_lines]
-        longest = 0
+        max_cols = 7
         for row in preview_matrix:
-            longest = max(longest, len(row))
-        self._parsed_data = self._fix_preview_matrix(preview_matrix, longest)
-        preview_table.adapter.ncols = longest
+            max_cols = min(max_cols, len(row))
+        self._parsed_data = self._fix_preview_matrix(preview_matrix, max_cols)
+        preview_table.adapter.ncols = max_cols
 
 
     def _fix_preview_matrix(self, preview_matrix, length):
-
         for i, row in enumerate(preview_matrix):
             if len(row) < length:
                 preview_matrix[i] += ['']*(length-len(row))
+            elif len(row) > length:
+                preview_matrix[i] = preview_matrix[i][0:length]
 
         return preview_matrix
 
-    def _probe_read(self, obj, no_lines=7, length=35):
+
+    def _probe_read(self, obj, no_lines=8, length=100):
         lines = []
         with open(obj.file_path, 'rU') as fp:
             for i in range(no_lines):
                 line = fp.readline(length)
+                if not line:
+                    break
                 if not ('\r' in line or '\n' in line):
                     fp.readline()
                 logging.debug("linje {}: {}".format(i, line.rstrip('\n')))
@@ -199,7 +225,7 @@ class ImporterTextFile(HasTraits):
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
     test = ImporterTextFile()
-    test.file_path = 'datasets/Variants/CommaSeparated.csv'
+    test.file_path = 'datasets/Variants/ObjVarNames.txt'
     test.configure_traits()
     ds = test.import_data()
     ds.print_traits()
