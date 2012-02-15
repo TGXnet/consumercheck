@@ -165,7 +165,7 @@ class ImporterXlsxFile(HasTraits):
             self.ds.variable_names = revised_list
         
         full_table = np.array(c_table)
-        print full_table
+        
         self.ds.matrix = full_table
         return self.ds
 

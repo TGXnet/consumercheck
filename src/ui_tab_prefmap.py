@@ -13,7 +13,7 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any
+from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Bool, on_trait_change
 from traitsui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
 # from chaco.api import ArrayPlotData
 
@@ -40,7 +40,11 @@ class PrefmapModel(HasTraits):
     # Access to datasets and parent window
     main_ui_ptr = Instance(HasTraits)
     dsl = DelegatesTo('main_ui_ptr')
-
+    
+    #checkbox bool for standarized results
+    st_ds = Bool(False)
+       
+    
     # Hold calculated prefmap results
     results = Dict(unicode, Any)
 
@@ -48,13 +52,15 @@ class PrefmapModel(HasTraits):
     selector = Instance(PrefmapUIController)
 
     def get_res(self, xId, yId):
-        resId = self._makeResId(xId, yId)
-        try:
-            return self.results[resId]
-        except KeyError:
-            res = self._run_prefmap(xId, yId)
-            self.results[resId] = res
-            return res
+        # FIXME: Disabled caching
+        ## resId = self._makeResId(xId, yId)
+        ## try:
+        ##     return self.results[resId]
+        ## except KeyError:
+        ##     res = self._run_prefmap(xId, yId)
+        ##     self.results[resId] = res
+        ##     return res
+        return self._run_prefmap(xId, yId)
 
     def _run_prefmap(self, xId, yId):
         logging.info("Run pls for: X: {0} ,Y: {1}".format(xId, yId))
@@ -62,7 +68,9 @@ class PrefmapModel(HasTraits):
             self.dsl.get_by_id(xId).matrix,
             self.dsl.get_by_id(yId).matrix,
             numPC=8,
-            cvType=["loo"])
+            cvType=["loo"],
+            Xstand=self.st_ds,
+            Ystand=self.st_ds)
 
     def _makeResId(self, *inputIds):
         resId = ''

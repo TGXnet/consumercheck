@@ -11,7 +11,7 @@ import logging
 import numpy as np
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Enum
+from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Enum, Bool, on_trait_change
 from traitsui.api import View, Item, UItem, Handler, ModelView, TreeEditor, TreeNode, InstanceEditor, Group
 
 # Local imports
@@ -35,6 +35,8 @@ class PcaModel(HasTraits):
     # Access to datasets and parent window
     main_ui_ptr = Instance(HasTraits)
     dsl = DelegatesTo('main_ui_ptr')
+
+    st_ds = Bool(True)
 
     max_n_pc = Enum(2,3,4,5,6)
 
@@ -71,7 +73,11 @@ class PcaModel(HasTraits):
     def _run_pca(self, ds_id):
         ds = self.dsl.get_by_id(ds_id)
         sds = ds.subset()
-        return PCA(sds.matrix, numPC=self.max_n_pc)
+        if self.st_ds:
+            st_ds = 2
+        else:
+            st_ds = 0
+        return PCA(sds.matrix, numPC=self.max_n_pc, mode=st_ds)
 
     def _makeResId(self, *inputIds):
         resId = ''
@@ -81,7 +87,7 @@ class PcaModel(HasTraits):
 
 
 class PcaModelViewHandler(ModelView):
-    """UI code that vil react to UI events for PCA tab"""
+    """UI code that will react to UI events for PCA tab"""
     main_ui_ptr = Instance(HasTraits)
     plot_uis = List()
 
@@ -218,6 +224,8 @@ class PcaModelViewHandler(ModelView):
     def _wind_title(self, ds_id):
         ds_name = self.model.dsl.get_by_id(ds_id)._ds_name
         return "ConsumerCheck PCA - {0}".format(ds_name)
+    
+
 
 
 # Double click handlers
@@ -257,6 +265,11 @@ pca_view = View(
                  style='custom', show_label=False),
             show_border=True,
             label='Select dataset(s) to analyze',
+            ),
+        Group(
+            Item('st_ds', show_label=False),
+            show_border=True,
+            label='Standarized',
             ),
         )
     )
