@@ -2,6 +2,7 @@
 # Enthought imports
 from traits.api import List, Enum, Event, on_trait_change, Bool
 from traitsui.api import View, Group, UCustom, Label, CheckListEditor, EnumEditor, Controller, Item
+from checkbox import checkbox_editor
 
 
 class PrefmapUIController(Controller):
@@ -38,6 +39,9 @@ class PrefmapUIController(Controller):
         datasets = self.model.get_dataset_list()
         self._sens =  [(ds._ds_id, ds._ds_name) for ds in datasets if ds._dataset_type == 'Sensory profiling']
         self._cons = [(ds._ds_id, ds._ds_name) for ds in datasets if ds._dataset_type == 'Consumer liking']
+        
+        #Used in checkbox creation.
+        return self._sens, self._cons
 
     @on_trait_change('sel_cons, sel_sens, mapping')
     def _choice_updated(self, obj, name, old, new):
@@ -52,6 +56,11 @@ prefmap_ui_controller = PrefmapUIController()
 
 prefmap_ui_view = View(
     Group(
+        Group(
+            Item( 'rows', show_label = False, editor = checkbox_editor),
+            show_border=True,
+            label='Max PC to calculate',
+              ),
         Group(
             Group(
                 Label('Sensory profiling'),

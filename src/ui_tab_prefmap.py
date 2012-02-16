@@ -25,6 +25,7 @@ from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 # from mvr import plsr
 from plsr import nipalsPLS2 as pls
 from prefmap_ui import PrefmapUIController, prefmap_ui_controller, prefmap_ui_view
+from checkbox import _dataset
 
 
 class PrefmapModel(HasTraits):
@@ -44,6 +45,9 @@ class PrefmapModel(HasTraits):
     #checkbox bool for standarized results
     st_ds = Bool(False)
        
+    #Info for checkboxes
+    rows = List( _dataset )
+    cols = List()
     
     # Hold calculated prefmap results
     results = Dict(unicode, Any)
@@ -91,6 +95,37 @@ class PrefmapModelViewHandler(ModelView):
         self.model.main_ui_ptr = self.main_ui_ptr
         prefmap_ui_controller.model = self.model.dsl
         self.model.selector = prefmap_ui_controller
+        
+        #Building selector list for use in checkbox creation
+        self.model.selector._build_sel_list()
+        
+        #Building checkbox
+        self.model.rows,self.model.cols = self._make_checkbox_axes()
+        
+        #Setting default values for checkboxes
+        self._make_checkbox_data()
+        
+        
+    def _make_checkbox_axes(self):
+        ds_rows = []
+        ds_cols = []
+        
+        for tuple in self.model.selector._cons:
+            for name in tuple:
+                dataset = _dataset(name=name)
+                ds_rows.append(dataset)
+            
+        for tuple in self.model.selector._sens:
+            for name in tuple:
+                dataset = name
+                ds_cols.append(dataset)
+
+        return ds_rows, ds_cols
+
+    def _make_checkbox_data(self):
+        for i in range(len(self.model.rows)):
+            for e in self.model.cols:
+                setattr(self.model.rows[i],e,False)
 
     def closed(self, info, is_ok):
         while self.plot_uis:
