@@ -18,13 +18,50 @@ from traitsui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
 # from chaco.api import ArrayPlotData
 
 # Local imports
-# from plots import CCPlotScatter, CCPlotLine, CCPlotCalValExplVariance, CCPlotXYCorrLoad
+from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 # from mvr import plsr
 from plsr import nipalsPLS2 as pls
 from prefmap_ui import PrefmapUIController, prefmap_ui_controller, prefmap_ui_view
+
+
+
+
+
+
+class APrefmapModel(HasTraits):
+    """Represent the Prefmap model between one X and Y dataset."""
+    dsX = DataSet()
+    dsY = DataSet()
+    # FIXME: To be replaced by groups
+    sel_var_X = List()
+    sel_var_Y = List()
+    sel_obj = List()
+    # depends_on
+    result = Property()
+
+
+
+class PrefmapsContainer(HasTraits):
+    """Prefmap plugin container."""
+    mappings = List(APrefmapModel)
+    # Instance(MainUi)?
+    # WeakRef?
+    mother_ref = Instance(HasTraits)
+    dsl = DelegatesTo('mother_ptr')
+
+
+
+
+
+
+
+
+
+
+
 
 
 class PrefmapModel(HasTraits):
