@@ -13,7 +13,7 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Bool, on_trait_change
+from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Bool, Property
 from traitsui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
 # from chaco.api import ArrayPlotData
 
@@ -34,7 +34,9 @@ from prefmap_ui import PrefmapUIController, prefmap_ui_controller, prefmap_ui_vi
 class APrefmapModel(HasTraits):
     """Represent the Prefmap model between one X and Y dataset."""
     name = Str()
-    mother_ref = Instance(PrefmapsContainer)
+    # Shoud be Instance(PrefmapsContainer)
+    # but who comes first?
+    mother_ref = Instance(HasTraits)
     dsX = DataSet()
     dsY = DataSet()
     # FIXME: To be replaced by groups
@@ -52,7 +54,7 @@ class PrefmapsContainer(HasTraits):
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
-    dsl = DelegatesTo('mother_ptr')
+    dsl = DelegatesTo('mother_ref')
     mappings = List(APrefmapModel)
 
 
@@ -178,7 +180,7 @@ class PrefmapModelViewHandler(ModelView):
         pc_tab = res.Xscores()
         labels = self.model.dsl.get_by_id(xId).object_names
         expl_vars_x = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
-        expl_vars_y = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        # expl_vars_y = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
         plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
         ## pd = ArrayPlotData()
         ## pd.set_data('pc1', pc_tab[:,0])
@@ -459,6 +461,6 @@ if __name__ == '__main__':
     from tests.conftest import TestContainer
     # FIXME: How can i make the object instansiating
     # ordering more robust
-    container = TestContainer(test_subject = PrefmapModelViewHandler(PrefmapModel()))
-    with np.errstate(invalid='ignore'):
-        container.test_subject.configure_traits(view=prefmap_tree_view)
+    container = TestContainer(test_subject = PrefmapsContainer())
+    ## with np.errstate(invalid='ignore'):
+    ##     container.test_subject.configure_traits(view=prefmap_tree_view)
