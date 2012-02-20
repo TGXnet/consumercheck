@@ -104,11 +104,11 @@ class TestContainer(HasTraits):
 
     def _test_subject_changed(self, old, new):
         if old is not None:
-            if hasattr(old, 'main_ui_ptr'):
-                old.main_ui_ptr = None
+            if hasattr(old, 'mother_ref'):
+                old.mother_ref = None
         if new is not None:
-            if hasattr(new, 'main_ui_ptr'):
-                new.main_ui_ptr = self
+            if hasattr(new, 'mother_ref'):
+                new.mother_ref = self
 
 
 def pytest_funcarg__test_container(request):

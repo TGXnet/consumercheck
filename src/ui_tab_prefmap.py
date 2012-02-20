@@ -33,6 +33,8 @@ from prefmap_ui import PrefmapUIController, prefmap_ui_controller, prefmap_ui_vi
 
 class APrefmapModel(HasTraits):
     """Represent the Prefmap model between one X and Y dataset."""
+    name = Str()
+    mother_ref = Instance(PrefmapsContainer)
     dsX = DataSet()
     dsY = DataSet()
     # FIXME: To be replaced by groups
@@ -46,19 +48,20 @@ class APrefmapModel(HasTraits):
 
 class PrefmapsContainer(HasTraits):
     """Prefmap plugin container."""
-    mappings = List(APrefmapModel)
+    name = Str()
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ptr')
+    mappings = List(APrefmapModel)
 
 
 
-
-
-
-
-
+    def add_mapping(self, id_x, id_y):
+        set_x = self.dsl.get_by_id(id_x)
+        set_y = self.dsl.get_by_id(id_y)
+        the_mapping = APrefmapModel(mother_ref=self, dsX=set_x, dsY=set_y)
+        self.mappings.append(the_mapping)
 
 
 
@@ -75,8 +78,8 @@ class PrefmapModel(HasTraits):
     controller = Instance(Handler)
 
     # Access to datasets and parent window
-    main_ui_ptr = Instance(HasTraits)
-    dsl = DelegatesTo('main_ui_ptr')
+    mother_ref = Instance(HasTraits)
+    dsl = DelegatesTo('mother_ref')
     
     #checkbox bool for standarized results
     st_ds = Bool(False)
@@ -119,13 +122,13 @@ class PrefmapModel(HasTraits):
 class PrefmapModelViewHandler(ModelView):
     """UI code that vil react to UI events for Prefmap tab"""
     # Disable UI when unittesting
-    main_ui_ptr = Instance(HasTraits)
+    mother_ref = Instance(HasTraits)
     plot_uis = List()
 
     def init(self, info):
         # info.ui.context: model, handler, object
         # info.ui.control: wx._windows.Frame
-        self.model.main_ui_ptr = self.main_ui_ptr
+        self.model.mother_ref = self.mother_ref
         prefmap_ui_controller.model = self.model.dsl
         self.model.selector = prefmap_ui_controller
 
@@ -137,10 +140,10 @@ class PrefmapModelViewHandler(ModelView):
     def _model_changed(self, old, new):
         if old is not None:
             old.controller = None
-            ## new.main_ui_ptr = None
+            ## new.mother_ref = None
         if new is not None:
             new.controller = self
-            ## new.main_ui_ptr = self.main_ui_ptr
+            ## new.mother_ref = self.mother_ref
 
     def get_mappings(self):
         return self.model.selector.get_cross_mappings()

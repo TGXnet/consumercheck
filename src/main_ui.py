@@ -71,16 +71,16 @@ class MainUi(HasTraits):
     def _pca_changed(self, old, new):
         logging.info("Setting pca mother")
         if old is not None:
-            old.main_ui_ptr = None
+            old.mother_ref = None
         if new is not None:
-            new.main_ui_ptr = self
+            new.mother_ref = self
 
     def _prefmap_changed(self, old, new):
         logging.info("Setting prefmap mother")
         if old is not None:
-            old.main_ui_ptr = None
+            old.mother_ref = None
         if new is not None:
-            new.main_ui_ptr = self
+            new.mother_ref = self
 
     # The main view
     traits_ui_view = View(

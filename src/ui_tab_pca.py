@@ -33,8 +33,8 @@ class PcaModel(HasTraits):
     controller = Instance(Handler)
 
     # Access to datasets and parent window
-    main_ui_ptr = Instance(HasTraits)
-    dsl = DelegatesTo('main_ui_ptr')
+    mother_ref = Instance(HasTraits)
+    dsl = DelegatesTo('mother_ref')
 
     st_ds = Bool(True)
 
@@ -88,13 +88,13 @@ class PcaModel(HasTraits):
 
 class PcaModelViewHandler(ModelView):
     """UI code that will react to UI events for PCA tab"""
-    main_ui_ptr = Instance(HasTraits)
+    mother_ref = Instance(HasTraits)
     plot_uis = List()
 
     def init(self, info):
         # info.ui.context: model, handler, object
         # info.ui.control: wx._windows.Frame
-        self.model.main_ui_ptr = self.main_ui_ptr
+        self.model.mother_ref = self.mother_ref
         self.model.list_control = CheckListController( model=self.model.dsl )
         check_view.handler = self.model.list_control
 
@@ -344,9 +344,9 @@ if __name__ == '__main__':
         def _pca_changed(self, old, new):
             logging.info("Setting pca mother")
             if old is not None:
-                old.main_ui_ptr = None
+                old.mother_ref = None
             if new is not None:
-                new.main_ui_ptr = self
+                new.mother_ref = self
 
     main = FakeMain(pca = PcaModelViewHandler(PcaModel()))
     fi = ImporterMain()
