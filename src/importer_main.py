@@ -114,7 +114,7 @@ class ImporterMain(HasTraits):
         if importer.have_var_names and ds.n_cols > len(ds.variable_names):
             raise Exception(
                 'Not variable names for all columns',
-                ds.n_cols, len(ds.var_names))
+                ds.n_cols, len(ds.variable_names))
         if importer.have_obj_names and ds.n_rows > len(ds.object_names):
             raise Exception(
                 'Not object names for all rows',
