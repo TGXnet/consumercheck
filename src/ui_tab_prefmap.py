@@ -15,6 +15,7 @@ import logging
 # Enthought imports
 from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Bool, on_trait_change
 from traitsui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
+from enable.api import BaseTool
 # from chaco.api import ArrayPlotData
 
 # Local imports
@@ -153,6 +154,9 @@ class PrefmapModelViewHandler(ModelView):
         for xId, yId in self.get_mappings():
             ds_plots = [[self._make_scores_plot(xId, yId), self._make_corr_load_plot(xId, yId)],
                         [self._make_expl_var_plot_x(xId, yId), self._make_expl_var_plot_y(xId, yId)]]
+            for plots in ds_plots:
+                for plot in plots:
+                    plot.tools.append(DClickTool(plot,ref = self))
             mpw = MultiPlotWindow(title_text=self._wind_title(xId, yId))
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
@@ -296,7 +300,7 @@ class PrefmapModelViewHandler(ModelView):
     def _make_expl_var_plot_x(self, xId, yId):
         res = self.model.get_res(xId, yId)
         sumCalX = self._ev_rem_zero_adapter(res.XcumCalExplVar_tot_list())
-        pl = EVLinePlot(sumCalX)
+        pl = EVLinePlot(sumCalX, title = "Explained Variance X")
         ## expl_index = range(len(sumCalX))
         ## pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalX)
         ## pl = CCPlotLine(pd)
@@ -319,7 +323,7 @@ class PrefmapModelViewHandler(ModelView):
         res = self.model.get_res(xId, yId)
         sumCalY = self._ev_rem_zero_adapter(res.YcumCalExplVar_tot_list())
         sumValY = self._ev_rem_zero_adapter(res.YcumValExplVar_tot_list())
-        pl = EVLinePlot(sumCalY, 'red', 'calibrated Y')
+        pl = EVLinePlot(sumCalY, 'red', 'calibrated Y', title = "Explained Variance Y")
         pl.add_EV_set(sumValY, 'blue', 'validated Y')
         ## expl_index = range(len(sumCalY))
         ## pd = ArrayPlotData()
@@ -347,6 +351,23 @@ class PrefmapModelViewHandler(ModelView):
         dsy_name = self.model.dsl.get_by_id(dsy_id)._ds_name
         return "ConsumerCheck Prefmap - ({0}) X ~ Y ({1})".format(dsx_name, dsy_name)
 
+#Double click tool
+class DClickTool(BaseTool):
+    
+    plot_dict = {}
+    
+    #List that holds the function names
+    func_list = ['plot_scores','plot_corr_loading', 'plot_expl_var_x', 'plot_expl_var_y']
+    
+    #Triggered on double click
+    def normal_left_dclick(self,event):
+        self._build_plot_list()
+        call_function = getattr(self.ref, self.plot_dict[self.component.title])()
+
+    #Builds a dictionary that holds the function names, based on func_list, with the window title as key
+    def _build_plot_list(self):
+        for e,i in enumerate(self.component.container.plot_components):
+            self.plot_dict[i.title] = self.func_list[e]
 
 # Double click handlers
 def clkOverview(obj):

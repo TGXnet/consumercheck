@@ -63,7 +63,6 @@ class EVLinePlot(Plot):
     """
     implements(IEVLinePlot)
 
-
     def __init__(self, ev_vector=None, color=None, legend=None, **kwtraits):
         """Constructor signature.
 
@@ -86,7 +85,6 @@ class EVLinePlot(Plot):
         if ev_vector is not None:
             self.add_EV_set(ev_vector, color, legend)
 
-        self.title = "Explained variance"
         self.x_axis.title = "# of principal components"
         self.y_axis.title = "Explained variance [%]"
 
