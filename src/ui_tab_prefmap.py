@@ -13,7 +13,7 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, Button, DelegatesTo, Dict, Any, Bool, Property, Set
+from traits.api import HasTraits, Instance, Enum, Str, List, Button, DelegatesTo, PrototypedFrom, Dict, Any, Bool, Property, Set
 from traitsui.api import View, Item, UItem, Handler, ModelView, TreeEditor, TreeNode, CheckListEditor
 
 
@@ -44,8 +44,9 @@ class APrefmapModel(HasTraits):
     sel_var_Y = List()
     sel_obj = List()
 
-    #checkbox bool for standarized results
-    st_ds = Bool(False)
+    #checkbox bool for standardized results
+    standardize = PrototypedFrom('mother_ref')
+    max_n_pc = PrototypedFrom('mother_ref')
 
     # depends_on
     result = Property()
@@ -58,8 +59,8 @@ class APrefmapModel(HasTraits):
             self.dsY.matrix,
             numPC=8,
             cvType=["loo"],
-            Xstand=self.st_ds,
-            Ystand=self.st_ds)
+            Xstand=self.standardize,
+            Ystand=self.standardize)
 
 
 
@@ -73,8 +74,6 @@ class APrefmapHandler(ModelView):
 
     def __ne__(self, other):
         return self.name != other
-
-
 
 
     def plot_overview(self):
@@ -226,10 +225,10 @@ class APrefmapHandler(ModelView):
                     )
 
 
-    def closed(self, info, is_ok):
-        while self.plot_uis:
-            plot_ui = self.plot_uis.pop()
-            plot_ui.dispose()
+    ## def closed(self, info, is_ok):
+    ##     while self.plot_uis:
+    ##         plot_ui = self.plot_uis.pop()
+    ##         plot_ui.dispose()
 
 
     def _wind_title(self):
@@ -239,7 +238,9 @@ class APrefmapHandler(ModelView):
 
 
 a_prefmap_view = View(
-    Item('name'),
+    Item('model.name'),
+    Item('model.standardize'),
+    Item('model.max_n_pc')
     )
 
 
@@ -253,6 +254,10 @@ class PrefmapsContainer(HasTraits):
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
     mappings = List(APrefmapHandler)
+
+    # Fitting parameters
+    standardize = Bool(False)
+    max_n_pc = Enum(2,3,4,5,6)
 
     def add_mapping(self, id_x, id_y):
         set_x = self.dsl.get_by_id(id_x)
@@ -304,10 +309,10 @@ class PrefmapsHandler(ModelView):
 
 
 prefmaps_view = View(
-    Item('test',
-         editor=CheckListEditor(
-             values=['a_labels', 'sensorydata'],),
+    Item('test', editor=CheckListEditor(values=['a_labels', 'sensorydata'],),
          style='custom'),
+    Item('model.standardize'),
+    Item('model.max_n_pc'),
     )
 
 
@@ -442,7 +447,7 @@ class PrefmapModel(HasTraits):
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
     
-    #checkbox bool for standarized results
+    #checkbox bool for standardized results
     st_ds = Bool(False)
        
     
