@@ -107,7 +107,7 @@ def show_change():
 
 if __name__ == '__main__':
     print("Interactive start")
-    from tests.tools import TestContainer
+    from tests.conftest import TestContainer
     container = TestContainer()
     prefmap_ui_controller.model = container.dsl
     container.test_subject = prefmap_ui_controller
