@@ -27,63 +27,8 @@ from plsr import nipalsPLS2 as pls
 from prefmap_ui import PrefmapUIController, prefmap_ui_controller, prefmap_ui_view
 
 
-class APrefmapHandler(ModelView):
-    plot_uis = List()
-    name = DelegatesTo('model')
-
-    def __eq__(self, other):
-        return self.name == other
-
-    def __ne__(self, other):
-        return self.name != other
-
-    def plot_scores(self):
-        s_plot = self._make_scores_plot()
-        spw = SinglePlotWindow(
-            plot=s_plot,
-            title_text=self._wind_title()
-            )
-        self._show_plot_window(spw)
 
 
-    def _make_scores_plot(self):
-        res = self.model.result
-        pc_tab = res.Xscores()
-        labels = self.model.dsX.object_names
-        expl_vars_x = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
-        # expl_vars_y = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
-        plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
-        return plot
-
-
-    def _ev_list_dict_adapter(self, ev_list):
-        return dict([kv for kv in enumerate(ev_list, 1)])
-
-
-    def _show_plot_window(self, plot_window):
-            # FIXME: Setting parent forcing main ui to stay behind plot windows
-            if sys.platform == 'linux2':
-                self.plot_uis.append( plot_window.edit_traits(kind='live') )
-            else:
-                self.plot_uis.append(
-                    plot_window.edit_traits(parent=self.info.ui.control, kind='live')
-                    )
-
-    def closed(self, info, is_ok):
-        while self.plot_uis:
-            plot_ui = self.plot_uis.pop()
-            plot_ui.dispose()
-
-
-    def _wind_title(self):
-        dsx_name = self.model.dsX._ds_name
-        dsy_name = self.model.dsY._ds_name
-        return "ConsumerCheck Prefmap - ({0}) X ~ Y ({1})".format(dsx_name, dsy_name)
-
-
-a_prefmap_view = View(
-    Item('name'),
-    )
 
 
 class APrefmapModel(HasTraits):
@@ -119,6 +64,187 @@ class APrefmapModel(HasTraits):
 
 
 
+class APrefmapHandler(ModelView):
+    plot_uis = List()
+    name = DelegatesTo('model')
+
+    def __eq__(self, other):
+        return self.name == other
+
+    def __ne__(self, other):
+        return self.name != other
+
+
+
+
+    def plot_overview(self):
+        """Make Prefmap overview plot.
+
+        Plot an array of plots where we plot scores, loadings, corr. load and expl. var
+        for each of the datasets.
+        """
+        ds_plots = [[self._make_scores_plot(), self._make_corr_load_plot()],
+                    [self._make_expl_var_plot_x(), self._make_expl_var_plot_y()]]
+        mpw = MultiPlotWindow(title_text=self._wind_title())
+        mpw.plots.component_grid = ds_plots
+        mpw.plots.shape = (2, 2)
+        self._show_plot_window(mpw)
+
+
+
+    def plot_scores(self):
+        s_plot = self._make_scores_plot()
+        spw = SinglePlotWindow(
+            plot=s_plot,
+            title_text=self._wind_title()
+            )
+        self._show_plot_window(spw)
+
+
+    def _make_scores_plot(self):
+        res = self.model.result
+        pc_tab = res.Xscores()
+        labels = self.model.dsX.object_names
+        expl_vars_x = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
+        # expl_vars_y = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
+        return plot
+
+
+    def _ev_list_dict_adapter(self, ev_list):
+        return dict([kv for kv in enumerate(ev_list, 1)])
+
+
+    def plot_loadings_x(self):
+        l_plot = self._make_loadings_plot_x()
+        spw = SinglePlotWindow(
+            plot=l_plot,
+            title_text=self._wind_title()
+            )
+        self._show_plot_window(spw)
+
+
+    def _make_loadings_plot_x(self):
+        res = self.model.result
+        xLP = res.Xloadings()
+        expl_vars = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
+        labels = self.model.dsX.variable_names
+        plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
+        return plot
+
+
+    def plot_loadings_y(self):
+        l_plot = self._make_loadings_plot_y()
+        spw = SinglePlotWindow(
+            plot=l_plot,
+            title_text=self._wind_title()
+            )
+        self._show_plot_window(spw)
+
+
+    def _make_loadings_plot_y(self):
+        res = self.model.result
+        yLP = res.Yloadings()
+        expl_vars = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        labels = self.model.dsY.variable_names
+        plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings")
+        return plot
+
+
+    def plot_corr_loading(self):
+        cl_plot = self._make_corr_load_plot()
+        spw = SinglePlotWindow(
+            plot=cl_plot,
+            title_text=self._wind_title()
+            )
+        self._show_plot_window(spw)
+
+
+    def _make_corr_load_plot(self):
+        # VarNameX, CorrLoadX
+        # labels
+        res = self.model.result
+        clx = res.XcorrLoadings()
+        cly = res.YcorrLoadings()
+        # calExplVarX
+        cevx = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
+        cevy = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        vnx = self.model.dsX.variable_names
+        vny = self.model.dsY.variable_names
+        pcl = PCScatterPlot(clx, vnx, 'red', cevx, title="X & Y correlation loadings")
+        pcl.add_PC_set(cly, vny, 'blue', cevy)
+        pcl.plot_circle(True)
+        return pcl
+
+
+    def plot_expl_var_x(self):
+        ev_plot = self._make_expl_var_plot_x()
+        spw = LinePlotWindow(
+            plot=ev_plot,
+            title_text=self._wind_title()
+            )
+        self._show_plot_window(spw)
+
+
+    def _ev_rem_zero_adapter(self, ev_list):
+        ev_list.pop(0)
+        return ev_list
+
+
+    def _make_expl_var_plot_x(self):
+        res = self.model.result
+        sumCalX = self._ev_rem_zero_adapter(res.XcumCalExplVar_tot_list())
+        pl = EVLinePlot(sumCalX)
+        return pl
+
+
+    def plot_expl_var_y(self):
+        ev_plot = self._make_expl_var_plot_y()
+        spw = LinePlotWindow(
+            plot=ev_plot,
+            title_text=self._wind_title()
+            )
+        self._show_plot_window(spw)
+
+
+    def _make_expl_var_plot_y(self):
+        res = self.model.result
+        sumCalY = self._ev_rem_zero_adapter(res.YcumCalExplVar_tot_list())
+        sumValY = self._ev_rem_zero_adapter(res.YcumValExplVar_tot_list())
+        pl = EVLinePlot(sumCalY, 'red', 'calibrated Y')
+        pl.add_EV_set(sumValY, 'blue', 'validated Y')
+        return pl
+
+
+    def _show_plot_window(self, plot_window):
+            # FIXME: Setting parent forcing main ui to stay behind plot windows
+            if sys.platform == 'linux2':
+                self.plot_uis.append( plot_window.edit_traits(kind='live') )
+            else:
+                self.plot_uis.append(
+                    plot_window.edit_traits(parent=self.info.ui.control, kind='live')
+                    )
+
+
+    def closed(self, info, is_ok):
+        while self.plot_uis:
+            plot_ui = self.plot_uis.pop()
+            plot_ui.dispose()
+
+
+    def _wind_title(self):
+        dsx_name = self.model.dsX._ds_name
+        dsy_name = self.model.dsY._ds_name
+        return "ConsumerCheck Prefmap - ({0}) X ~ Y ({1})".format(dsx_name, dsy_name)
+
+
+a_prefmap_view = View(
+    Item('name'),
+    )
+
+
+
+
 class PrefmapsContainer(HasTraits):
     """Prefmap plugin container."""
     name = Str('Define preference mapping')
@@ -143,7 +269,9 @@ class PrefmapsContainer(HasTraits):
 
 
 
-class PrefmapsController(Handler):
+class PrefmapsHandler(ModelView):
+    name = DelegatesTo('model')
+    mappings = DelegatesTo('model')
     test = List()
     # [('a_labels','c_labels'),('sensorydata','consumerliking')]
     last_selection = Set()
@@ -159,43 +287,63 @@ class PrefmapsController(Handler):
             self.last_selection = selection
             print("Added", added)
             if 'a_labels' in added:
-                info.ui.context['object'].add_mapping('a_labels','c_labels')
+                info.ui.context['model'].add_mapping('a_labels','c_labels')
             elif 'sensorydata' in added:
-                info.ui.context['object'].add_mapping('sensorydata','consumerliking')
+                info.ui.context['model'].add_mapping('sensorydata','consumerliking')
         else:
             removed = self.last_selection.difference(selection)
             print("Removed", removed)
             self.last_selection = selection
             if 'a_labels' in removed:
-                info.ui.context['object'].remove_mapping('a_labelsc_labels')
+                info.ui.context['model'].remove_mapping('a_labelsc_labels')
             elif 'sensorydata' in removed:
-                info.ui.context['object'].remove_mapping('sensorydataconsumerliking')
+                info.ui.context['model'].remove_mapping('sensorydataconsumerliking')
+
+
+
 
 
 prefmaps_view = View(
-    Item('handler.test',
+    Item('test',
          editor=CheckListEditor(
              values=['a_labels', 'sensorydata'],),
          style='custom'),
-    handler=PrefmapsController(),
     )
 
 
+def dclk_overview(obj):
+    obj.plot_overview()
 
 def dclk_scores(obj):
     obj.plot_scores()
 
+def dclk_corr_load(obj):
+    obj.plot_corr_loading()
+
+def dclk_expl_var_x(obj):
+    obj.plot_expl_var_x()
+
+def dclk_expl_var_y(obj):
+    obj.plot_expl_var_y()
+
+def dclk_loadings_x(obj):
+    obj.plot_loadings_x()
+
+def dclk_loadings_y(obj):
+    obj.plot_loadings_y()
+
+    
 
 new_prefmap_tree = TreeEditor(
     nodes = [
         TreeNode(
-            node_for = [PrefmapsContainer],
+            node_for = [PrefmapsHandler],
             children = '',
             label = 'name',
             view = prefmaps_view,
             ),
         TreeNode(
-            node_for = [PrefmapsContainer],
+            node_for = [PrefmapsHandler],
             children = 'mappings',
             label = 'name',
             view = prefmaps_view,
@@ -216,8 +364,44 @@ new_prefmap_tree = TreeEditor(
             ),
         TreeNode(
             node_for = [APrefmapHandler],
-            label = '=Scores',
+            label = '=Overview plot',
+            on_dclick = dclk_overview,
+            view = a_prefmap_view,
+            ),
+        TreeNode(
+            node_for = [APrefmapHandler],
+            label = '=Scores plot',
             on_dclick = dclk_scores,
+            view = a_prefmap_view,
+            ),
+        TreeNode(
+            node_for = [APrefmapHandler],
+            label = '=X ~ Y correlation loadings plot',
+            on_dclick = dclk_corr_load,
+            view = a_prefmap_view,
+            ),
+        TreeNode(
+            node_for = [APrefmapHandler],
+            label = '=Explained var X plot',
+            on_dclick = dclk_expl_var_x,
+            view = a_prefmap_view,
+            ),
+        TreeNode(
+            node_for = [APrefmapHandler],
+            label = '=Explained var Y plot',
+            on_dclick = dclk_expl_var_y,
+            view = a_prefmap_view,
+            ),
+        TreeNode(
+            node_for = [APrefmapHandler],
+            label = '=X loadings plot',
+            on_dclick = dclk_loadings_x,
+            view = a_prefmap_view,
+            ),
+        TreeNode(
+            node_for = [APrefmapHandler],
+            label = '=Y loadings plot',
+            on_dclick = dclk_loadings_y,
             view = a_prefmap_view,
             ),
         ],
@@ -228,18 +412,17 @@ new_prefmap_tree = TreeEditor(
 
 
 
-class TestDummy(HasTraits):
-    container = PrefmapsContainer()
+class PrefmapPlugin(HasTraits):
+    model_view = PrefmapsHandler()
 
-
-test_view = View(
-    Item(name='container',
-         editor=new_prefmap_tree,
-         show_label=False),
-    resizable=True,
-    height=400,
-    width=600,
-    )
+    test_view = View(
+        Item(name='model_view',
+             editor=new_prefmap_tree,
+             show_label=False),
+        resizable=True,
+        height=400,
+        width=600,
+        )
 
 
 ## Old version #################################################################
@@ -584,6 +767,6 @@ if __name__ == '__main__':
     from tests.conftest import TestContainer
 
     with np.errstate(invalid='ignore'):
-        td = TestDummy(container=PrefmapsContainer())
-        container = TestContainer(test_subject = td.container)
-        td.configure_traits(view=test_view)
+        td = PrefmapPlugin(model_view=PrefmapsHandler(PrefmapsContainer()))
+        container = TestContainer(test_subject = td.model_view.model)
+        td.configure_traits()
