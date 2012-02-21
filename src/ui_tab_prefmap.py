@@ -13,9 +13,9 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Bool, Property
-from traitsui.api import View, UItem, Handler, ModelView, TreeEditor, TreeNode
-# from chaco.api import ArrayPlotData
+from traits.api import HasTraits, Instance, Str, List, Button, DelegatesTo, Dict, Any, Bool, Property, Set
+from traitsui.api import View, Item, UItem, Handler, ModelView, TreeEditor, TreeNode, CheckListEditor
+
 
 # Local imports
 from dataset import DataSet
@@ -47,24 +47,132 @@ class APrefmapModel(HasTraits):
     result = Property()
 
 
+    def __eq__(self, other):
+        return self.name == other
+
+    
+    def __ne__(self, other):
+        return self.name != other
+
+
+a_prefmap_view = View(
+    Item('name'),
+    )
+
+
 
 class PrefmapsContainer(HasTraits):
     """Prefmap plugin container."""
-    name = Str()
+    name = Str('Define preference mapping')
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
     mappings = List(APrefmapModel)
 
-
-
     def add_mapping(self, id_x, id_y):
         set_x = self.dsl.get_by_id(id_x)
         set_y = self.dsl.get_by_id(id_y)
-        the_mapping = APrefmapModel(mother_ref=self, dsX=set_x, dsY=set_y)
+        map_name = id_x + id_y
+        the_mapping = APrefmapModel(mother_ref=self, name=map_name,  dsX=set_x, dsY=set_y)
         self.mappings.append(the_mapping)
+        return map_name
 
+
+    def remove_mapping(self, mapping_id):
+        del(self.mappings[self.mappings.index(mapping_id)])
+
+
+class PrefmapsController(Handler):
+    test = List()
+    # [('a_labels','c_labels'),('sensorydata','consumerliking')]
+    last_selection = Set()
+
+
+    def handler_test_changed(self, info):
+        if not info.initialized:
+            return
+
+        selection = set(info.ui.context['handler'].test)
+        if selection.difference(self.last_selection):
+            added = selection.difference(self.last_selection)
+            self.last_selection = selection
+            print("Added", added)
+            if 'a_labels' in added:
+                info.ui.context['object'].add_mapping('a_labels','c_labels')
+            elif 'sensorydata' in added:
+                info.ui.context['object'].add_mapping('sensorydata','consumerliking')
+        else:
+            removed = self.last_selection.difference(selection)
+            print("Removed", removed)
+            self.last_selection = selection
+            if 'a_labels' in removed:
+                info.ui.context['object'].remove_mapping('a_labelsc_labels')
+            elif 'sensorydata' in removed:
+                info.ui.context['object'].remove_mapping('sensorydataconsumerliking')
+
+
+prefmaps_view = View(
+    Item('handler.test',
+         editor=CheckListEditor(
+             values=['a_labels', 'sensorydata'],),
+         style='custom'),
+    handler=PrefmapsController(),
+    )
+
+
+
+
+
+new_prefmap_tree = TreeEditor(
+    nodes = [
+        TreeNode(
+            node_for = [PrefmapsContainer],
+            children = '',
+            label = 'name',
+            view = prefmaps_view,
+            ),
+        TreeNode(
+            node_for = [PrefmapsContainer],
+            children = 'mappings',
+            label = 'name',
+            view = prefmaps_view,
+            rename = False,
+            rename_me = False,
+            copy = False,
+            delete = False,
+            delete_me = False,
+            insert = False,
+            auto_open = True,
+            
+            ),
+        TreeNode(
+            node_for = [APrefmapModel],
+            children = '',
+            label = 'name',
+            view = a_prefmap_view,
+            ),
+        ],
+    hide_root = True,
+    # editable = False,
+    auto_open = 2,
+    )
+
+
+
+class TestDummy(HasTraits):
+    container = PrefmapsContainer()
+
+
+
+test_view = View(
+    Item(name='container',
+         editor=new_prefmap_tree,
+         show_label=False),
+    resizable=True,
+    height=400,
+    width=600,
+    )
 
 
 
@@ -457,10 +565,10 @@ prefmap_tree_view = View(
 
 if __name__ == '__main__':
     print("Interactive start")
-    import numpy as np
+    # import numpy as np
     from tests.conftest import TestContainer
-    # FIXME: How can i make the object instansiating
-    # ordering more robust
-    container = TestContainer(test_subject = PrefmapsContainer())
+    td = TestDummy(container=PrefmapsContainer())
+    container = TestContainer(test_subject = td.container)
+    td.configure_traits(view=test_view)
     ## with np.errstate(invalid='ignore'):
     ##     container.test_subject.configure_traits(view=prefmap_tree_view)
