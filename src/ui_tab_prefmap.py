@@ -27,8 +27,63 @@ from plsr import nipalsPLS2 as pls
 from prefmap_ui import PrefmapUIController, prefmap_ui_controller, prefmap_ui_view
 
 
+class APrefmapHandler(ModelView):
+    plot_uis = List()
+    name = DelegatesTo('model')
+
+    def __eq__(self, other):
+        return self.name == other
+
+    def __ne__(self, other):
+        return self.name != other
+
+    def plot_scores(self):
+        s_plot = self._make_scores_plot()
+        spw = SinglePlotWindow(
+            plot=s_plot,
+            title_text=self._wind_title()
+            )
+        self._show_plot_window(spw)
 
 
+    def _make_scores_plot(self):
+        res = self.model.result
+        pc_tab = res.Xscores()
+        labels = self.model.dsX.object_names
+        expl_vars_x = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
+        # expl_vars_y = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
+        return plot
+
+
+    def _ev_list_dict_adapter(self, ev_list):
+        return dict([kv for kv in enumerate(ev_list, 1)])
+
+
+    def _show_plot_window(self, plot_window):
+            # FIXME: Setting parent forcing main ui to stay behind plot windows
+            if sys.platform == 'linux2':
+                self.plot_uis.append( plot_window.edit_traits(kind='live') )
+            else:
+                self.plot_uis.append(
+                    plot_window.edit_traits(parent=self.info.ui.control, kind='live')
+                    )
+
+    def closed(self, info, is_ok):
+        while self.plot_uis:
+            plot_ui = self.plot_uis.pop()
+            plot_ui.dispose()
+
+
+    def _wind_title(self):
+        dsx_name = self.model.dsX._ds_name
+        dsy_name = self.model.dsY._ds_name
+        return "ConsumerCheck Prefmap - ({0}) X ~ Y ({1})".format(dsx_name, dsy_name)
+
+
+a_prefmap_view = View(
+    Item('name'),
+    )
 
 
 class APrefmapModel(HasTraits):
@@ -43,21 +98,24 @@ class APrefmapModel(HasTraits):
     sel_var_X = List()
     sel_var_Y = List()
     sel_obj = List()
+
+    #checkbox bool for standarized results
+    st_ds = Bool(False)
+
     # depends_on
     result = Property()
 
 
-    def __eq__(self, other):
-        return self.name == other
+    def _get_result(self):
+        logging.info("Run pls for: X: {0} ,Y: {1}".format(self.dsX._ds_id, self.dsY._ds_id))
+        return pls(
+            self.dsX.matrix,
+            self.dsY.matrix,
+            numPC=8,
+            cvType=["loo"],
+            Xstand=self.st_ds,
+            Ystand=self.st_ds)
 
-    
-    def __ne__(self, other):
-        return self.name != other
-
-
-a_prefmap_view = View(
-    Item('name'),
-    )
 
 
 
@@ -68,19 +126,21 @@ class PrefmapsContainer(HasTraits):
     # WeakRef?
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
-    mappings = List(APrefmapModel)
+    mappings = List(APrefmapHandler)
 
     def add_mapping(self, id_x, id_y):
         set_x = self.dsl.get_by_id(id_x)
         set_y = self.dsl.get_by_id(id_y)
         map_name = id_x + id_y
-        the_mapping = APrefmapModel(mother_ref=self, name=map_name,  dsX=set_x, dsY=set_y)
-        self.mappings.append(the_mapping)
+        mapping_model = APrefmapModel(mother_ref=self, name=map_name,  dsX=set_x, dsY=set_y)
+        mapping_handler = APrefmapHandler(mapping_model)
+        self.mappings.append(mapping_handler)
         return map_name
 
 
     def remove_mapping(self, mapping_id):
         del(self.mappings[self.mappings.index(mapping_id)])
+
 
 
 class PrefmapsController(Handler):
@@ -122,6 +182,8 @@ prefmaps_view = View(
 
 
 
+def dclk_scores(obj):
+    obj.plot_scores()
 
 
 new_prefmap_tree = TreeEditor(
@@ -147,9 +209,15 @@ new_prefmap_tree = TreeEditor(
             
             ),
         TreeNode(
-            node_for = [APrefmapModel],
+            node_for = [APrefmapHandler],
             children = '',
             label = 'name',
+            view = a_prefmap_view,
+            ),
+        TreeNode(
+            node_for = [APrefmapHandler],
+            label = '=Scores',
+            on_dclick = dclk_scores,
             view = a_prefmap_view,
             ),
         ],
@@ -164,7 +232,6 @@ class TestDummy(HasTraits):
     container = PrefmapsContainer()
 
 
-
 test_view = View(
     Item(name='container',
          editor=new_prefmap_tree,
@@ -175,6 +242,7 @@ test_view = View(
     )
 
 
+## Old version #################################################################
 
 
 class PrefmapModel(HasTraits):
@@ -290,15 +358,6 @@ class PrefmapModelViewHandler(ModelView):
         expl_vars_x = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
         # expl_vars_y = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
         plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
-        ## pd = ArrayPlotData()
-        ## pd.set_data('pc1', pc_tab[:,0])
-        ## pd.set_data('pc2', pc_tab[:,1])
-        ## plot = CCPlotScatter(pd)
-        ## plot.title = "Scores"
-        ## plot.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[0], expl_vars_y[0])
-        ## plot.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(expl_vars_x[1], expl_vars_y[1])
-        ## labels = self.model.dsl.get_by_id(xId).object_names
-        ## plot.add_data_labels(labels)
         return plot
 
 
@@ -321,14 +380,6 @@ class PrefmapModelViewHandler(ModelView):
         expl_vars = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
         labels = self.model.dsl.get_by_id(xId).variable_names
         plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
-        ## pd = ArrayPlotData()
-        ## pd.set_data('pc1', xLP[:,0])
-        ## pd.set_data('pc2', xLP[:,1])
-        ## plot = CCPlotScatter(pd)
-        ## plot.title = "X Loadings"
-        ## plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
-        ## plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
-        ## plot.add_data_labels(labels)
         return plot
 
     def plot_loadings_y(self):
@@ -346,14 +397,6 @@ class PrefmapModelViewHandler(ModelView):
         expl_vars = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
         labels = self.model.dsl.get_by_id(yId).variable_names
         plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings")
-        ## pd = ArrayPlotData()
-        ## pd.set_data('pc1', yLP[:,0])
-        ## pd.set_data('pc2', yLP[:,1])
-        ## plot = CCPlotScatter(pd)
-        ## plot.title = "Y Loadings"
-        ## plot.x_axis.title = "PC1 ({0:.0f}%)".format(expl_vars[0])
-        ## plot.y_axis.title = "PC2 ({0:.0f}%)".format(expl_vars[1])
-        ## plot.add_data_labels(labels)
         return plot
 
     def plot_corr_loading(self):
@@ -380,17 +423,6 @@ class PrefmapModelViewHandler(ModelView):
         pcl = PCScatterPlot(clx, vnx, 'red', cevx, title="X & Y correlation loadings")
         pcl.add_PC_set(cly, vny, 'blue', cevy)
         pcl.plot_circle(True)
-        ## pd = ArrayPlotData()
-        ## pd.set_data('pc1', clx[:,0])
-        ## pd.set_data('pc2', clx[:,1])
-        ## pd.set_data('pcy1', cly[:,0])
-        ## pd.set_data('pcy2', cly[:,1])
-        ## pcl = CCPlotXYCorrLoad(pd)
-        ## pcl.title = "X & Y correlation loadings"
-        ## pcl.x_axis.title = "PC1 ({0:.0f}%, {1:.0f}%)".format(cevx[0], cevy[0])
-        ## pcl.y_axis.title = "PC2 ({0:.0f}%, {1:.0f}%)".format(cevx[1], cevy[1])
-        ## pcl.add_data_labels(vnx, 'x1')
-        ## pcl.add_data_labels(vny, 'y1')
         return pcl
 
     def plot_expl_var_x(self):
@@ -412,13 +444,6 @@ class PrefmapModelViewHandler(ModelView):
         res = self.model.get_res(xId, yId)
         sumCalX = self._ev_rem_zero_adapter(res.XcumCalExplVar_tot_list())
         pl = EVLinePlot(sumCalX)
-        ## expl_index = range(len(sumCalX))
-        ## pd = ArrayPlotData(index=expl_index, pc_sigma=sumCalX)
-        ## pl = CCPlotLine(pd)
-        ## pl.title = "Explained variance X"
-        ## pl.x_axis.title = "# f principal components"
-        ## pl.y_axis.title = "Explained variance [%]"
-        ## pl.y_mapper.range.set_bounds(0, 100)
         return pl
 
     def plot_expl_var_y(self):
@@ -436,16 +461,6 @@ class PrefmapModelViewHandler(ModelView):
         sumValY = self._ev_rem_zero_adapter(res.YcumValExplVar_tot_list())
         pl = EVLinePlot(sumCalY, 'red', 'calibrated Y')
         pl.add_EV_set(sumValY, 'blue', 'validated Y')
-        ## expl_index = range(len(sumCalY))
-        ## pd = ArrayPlotData()
-        ## pd.set_data('index', expl_index)
-        ## pd.set_data('pc_cal_sigma', sumCalY)
-        ## pd.set_data('pc_val_sigma', sumValY)
-        ## pl = CCPlotCalValExplVariance(pd)
-        ## pl.title = "Explained variance Y"
-        ## pl.x_axis.title = "# f principal components"
-        ## pl.y_axis.title = "Explained variance [%]"
-        ## pl.y_mapper.range.set_bounds(-50, 100)
         return pl
 
     def _show_plot_window(self, plot_window):
@@ -565,10 +580,10 @@ prefmap_tree_view = View(
 
 if __name__ == '__main__':
     print("Interactive start")
-    # import numpy as np
+    import numpy as np
     from tests.conftest import TestContainer
-    td = TestDummy(container=PrefmapsContainer())
-    container = TestContainer(test_subject = td.container)
-    td.configure_traits(view=test_view)
-    ## with np.errstate(invalid='ignore'):
-    ##     container.test_subject.configure_traits(view=prefmap_tree_view)
+
+    with np.errstate(invalid='ignore'):
+        td = TestDummy(container=PrefmapsContainer())
+        container = TestContainer(test_subject = td.container)
+        td.configure_traits(view=test_view)
