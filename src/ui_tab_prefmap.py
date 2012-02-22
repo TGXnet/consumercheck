@@ -54,7 +54,6 @@ new_prefmap_tree = TreeEditor(
             delete_me = False,
             insert = False,
             auto_open = True,
-            
             ),
         TreeNode(
             node_for = [APrefmapHandler],
