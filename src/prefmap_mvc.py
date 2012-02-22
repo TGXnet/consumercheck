@@ -7,6 +7,7 @@ import logging
 # Enthought imports
 from traits.api import HasTraits, Instance, Str, List, DelegatesTo, PrototypedFrom, Property
 from traitsui.api import View, Item, ModelView
+from enable.api import BaseTool
 
 # Local imports
 from plsr import nipalsPLS2 as pls
@@ -14,6 +15,21 @@ from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
+
+
+#Double click tool
+class DClickTool(BaseTool):
+    plot_dict = {}
+    #List that holds the function names
+    func_list = ['plot_scores','plot_corr_loading', 'plot_expl_var_x', 'plot_expl_var_y']
+    #Triggered on double click
+    def normal_left_dclick(self,event):
+        self._build_plot_list()
+        call_function = getattr(self.ref, self.plot_dict[self.component.title])()
+    #Builds a dictionary that holds the function names, based on func_list, with the window title as key
+    def _build_plot_list(self):
+        for e,i in enumerate(self.component.container.plot_components):
+            self.plot_dict[i.title] = self.func_list[e]
 
 
 class APrefmapModel(HasTraits):
@@ -69,6 +85,10 @@ class APrefmapHandler(ModelView):
         """
         ds_plots = [[self._make_scores_plot(), self._make_corr_load_plot()],
                     [self._make_expl_var_plot_x(), self._make_expl_var_plot_y()]]
+        for plots in ds_plots:
+            for plot in plots:
+                plot.tools.append(DClickTool(plot, ref = self))
+
         mpw = MultiPlotWindow(title_text=self._wind_title())
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
@@ -178,7 +198,7 @@ class APrefmapHandler(ModelView):
     def _make_expl_var_plot_x(self):
         res = self.model.result
         sumCalX = self._ev_rem_zero_adapter(res.XcumCalExplVar_tot_list())
-        pl = EVLinePlot(sumCalX)
+        pl = EVLinePlot(sumCalX, title = "Explained Variance X")
         return pl
 
 
@@ -195,7 +215,7 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         sumCalY = self._ev_rem_zero_adapter(res.YcumCalExplVar_tot_list())
         sumValY = self._ev_rem_zero_adapter(res.YcumValExplVar_tot_list())
-        pl = EVLinePlot(sumCalY, 'red', 'calibrated Y')
+        pl = EVLinePlot(sumCalY, 'red', 'calibrated Y', title = "Explained Variance Y")
         pl.add_EV_set(sumValY, 'blue', 'validated Y')
         return pl
 

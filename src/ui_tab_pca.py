@@ -13,6 +13,7 @@ import numpy as np
 # Enthought imports
 from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Dict, Any, Enum, Bool, on_trait_change
 from traitsui.api import View, Item, UItem, Handler, ModelView, TreeEditor, TreeNode, InstanceEditor, Group
+from enable.api import BaseTool
 
 # Local imports
 from plot_pc_scatter import PCScatterPlot
@@ -118,6 +119,9 @@ class PcaModelViewHandler(ModelView):
         for ds_id in self.model.list_control.selected:
             ds_plots = [[self._make_scores_plot(ds_id), self._make_loadings_plot(ds_id)],
                         [self._make_corr_load_plot(ds_id), self._make_expl_var_plot(ds_id)]]
+            for plots in ds_plots:
+                for plot in plots:
+                    plot.tools.append(DClickTool(plot,ref = self))
             mpw = MultiPlotWindow(title_text=self._wind_title(ds_id))
             mpw.plots.component_grid = ds_plots
             mpw.plots.shape = (2, 2)
@@ -197,7 +201,7 @@ class PcaModelViewHandler(ModelView):
         res = self.model.get_res(ds_id)
         expl_vars = res.getCalExplVar()
         ev = self._accumulate_expl_var_adapter(expl_vars)
-        pl = EVLinePlot(ev)
+        pl = EVLinePlot(ev, title="Explained Variance")
         return pl
 
 
@@ -226,7 +230,23 @@ class PcaModelViewHandler(ModelView):
         return "ConsumerCheck PCA - {0}".format(ds_name)
     
 
+#Double click tool
+class DClickTool(BaseTool):
+    
+    plot_dict = {}
+    
+    #List that holds the function names
+    func_list = ['plot_scores','plot_loadings', 'plot_corr_loading', 'plot_expl_var']
+    
+    #Triggered on double click
+    def normal_left_dclick(self,event):
+        self._build_plot_list()
+        call_function = getattr(self.ref, self.plot_dict[self.component.title])()
 
+    #Builds a dictionary that holds the function names, based on func_list, with the window title as key
+    def _build_plot_list(self):
+        for e,i in enumerate(self.component.container.plot_components):
+            self.plot_dict[i.title] = self.func_list[e]
 
 # Double click handlers
 def clkOverview(obj):
