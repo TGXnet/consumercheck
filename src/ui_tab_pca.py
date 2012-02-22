@@ -1,4 +1,4 @@
-"""PCA module for ConsumerCheck application
+"""PCA module for ConsumerCheck application.
 
 Adds statistical methods, user inteface and plots for PCA
 

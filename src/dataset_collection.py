@@ -69,6 +69,17 @@ class DatasetCollection(HasTraits):
     def get_dataset_list(self):
         return self._datasets.values()
 
+
+    def get_id_list_by_type(self, ds_type=None):
+        if not ds_type:
+            return self._datasets.keys()
+        ids = []
+        for ds in self._datasets.values():
+            if ds._dataset_type == ds_type:
+                ids.append(ds._ds_id)
+        return ids
+
+
     @property_depends_on( '_datasets' )
     def _get_id_name_list(self):
         logging.info("Update id_name_list")
