@@ -85,8 +85,8 @@ class CombinationTable(HasTraits):
              editor=table_editor,
              show_label=False),
         resizable=True,
-        width=300,
-        height=200,
+        ## width=300,
+        ## height=200,
         )
 
 
