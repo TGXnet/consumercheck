@@ -24,19 +24,21 @@ from importer_interfaces import IDataImporter
 
 
 class RawLineAdapter(TabularAdapter):
-    # columns = []
     ncols = Int()
-    # can_edit = False
-    bg_color  = Property()
+    
+    #Temporary column to avoid crash
+    columns = ['tmp']
+    
     have_var_names = Bool(True)
-    # font = 'Courier 10'
-
-
-    def _get_bg_color(self):
-        if self.have_var_names and self.row == 0:
-            return (230, 123, 123)
-        elif self.row == 0:
-            return (255, 255, 255)
+    
+#    # font = 'Courier 10'
+#    bg_color  = Property()
+#    
+#    def _get_bg_color(self):
+#        if self.have_var_names and self.row == 0:
+#            return (230, 123, 123)
+#        elif self.row == 0:
+#            return (255, 255, 255)
 
 
     def _ncols_changed(self, info):
