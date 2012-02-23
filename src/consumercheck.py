@@ -8,17 +8,12 @@ import numpy as np
 ## from traits.etsconfig.api import ETSConfig
 ## ETSConfig.toolkit = 'wx'
 # ETSConfig.toolkit = 'qt4'
-#from pyface.api import GUI
 import traits.has_traits
 
 # 0: no check, 1: log warings, 2: error
 traits.has_traits.CHECK_INTERFACES = 0
 
 # Local imports
-# Set path to local R distribution
-## import rpy_locate
-## rpy_locate.set_rpy_env()
-
 from splash_screen import splash
 from main_ui import MainUi
 from ui_tab_pca import PcaModel, PcaModelViewHandler
