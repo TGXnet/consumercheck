@@ -13,7 +13,7 @@ from dataset_collection import DatasetCollection
 from importer_main import ImporterMain
 from ui_datasets_tree import tree_view
 from ui_tab_pca import PcaModelViewHandler, pca_tree_view
-from ui_tab_prefmap import PrefmapModelViewHandler, prefmap_tree_view
+from ui_tab_prefmap import PrefmapPlugin
 from about_consumercheck import ConsumerCheckAbout
 
 
@@ -60,13 +60,19 @@ class MainUi(HasTraits):
     pca = Instance(PcaModelViewHandler)
 
     # Object representing the Prefmap and the GUI tab
-    prefmap = Instance(PrefmapModelViewHandler)
+    prefmap = Instance(PrefmapPlugin)
 
     # Create an action that open dialog for dataimport
     import_action = Action(name = 'Add &Dataset', action = 'import_data')
     # Create an action that exits the application.
     exit_action = Action(name='E&xit', action='_on_close')
     about_action = Action(name='&About', action='view_about')
+
+
+    def __init__(self, **kwargs):
+        super(MainUi, self).__init__(**kwargs)
+        self.prefmap = PrefmapPlugin(mother_ref=self)
+
 
     def _pca_changed(self, old, new):
         logging.info("Setting pca mother")
@@ -75,12 +81,6 @@ class MainUi(HasTraits):
         if new is not None:
             new.mother_ref = self
 
-    def _prefmap_changed(self, old, new):
-        logging.info("Setting prefmap mother")
-        if old is not None:
-            old.mother_ref = None
-        if new is not None:
-            new.mother_ref = self
 
     # The main view
     traits_ui_view = View(
@@ -89,7 +89,7 @@ class MainUi(HasTraits):
                  style='custom', label="Datasets", show_label=False),
             Item('pca', editor=InstanceEditor(view = pca_tree_view),
                  style='custom', label="PCA", show_label=False),
-            Item('prefmap', editor=InstanceEditor(view = prefmap_tree_view),
+            Item('prefmap', editor=InstanceEditor(),
                  style='custom', label="Prefmap", show_label=False),
             layout='tabbed'
             ), # end UI tabs group
@@ -110,4 +110,3 @@ if __name__ == '__main__':
     dsl = make_dsl_mock()
     mother = MainUi(dsl=dsl)
     ui = mother.configure_traits()
-    # ui = MainViewHandler().edit_traits( context = dsl )

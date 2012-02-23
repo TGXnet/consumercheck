@@ -4,7 +4,7 @@ Adds statistical methods, user inteface and plots for Prefmap
 """
 
 # Enthought imports
-from traits.api import HasTraits, Any
+from traits.api import HasTraits, Instance, Any
 from traitsui.api import View, Item, TreeEditor, TreeNode
 
 # Local imports
@@ -115,15 +115,18 @@ new_prefmap_tree = TreeEditor(
 
 
 class PrefmapPlugin(HasTraits):
-    model_view = PrefmapsHandler()
+    prefmap_handler = Instance(PrefmapsHandler)
     selected_obj = Any()
 
-    def __init__(self, *args, **kwargs):
-        super(PrefmapPlugin, self).__init__(*args, **kwargs)
-        self.selected_obj = self.model_view
+    def __init__(self, mother_ref, **kwargs):
+        super(PrefmapPlugin, self).__init__(**kwargs)
+        model = PrefmapsContainer(mother_ref=mother_ref)
+        self.prefmap_handler = PrefmapsHandler(model=model)
+        self.selected_obj = self.prefmap_handler
 
-    test_view = View(
-        Item(name='model_view',
+
+    traits_view = View(
+        Item(name='prefmap_handler',
              editor=new_prefmap_tree,
              show_label=False),
         resizable=True,
@@ -139,6 +142,6 @@ if __name__ == '__main__':
     from tests.conftest import TestContainer
 
     with np.errstate(invalid='ignore'):
-        td = PrefmapPlugin(model_view=PrefmapsHandler(PrefmapsContainer()))
-        container = TestContainer(test_subject = td.model_view.model)
-        td.configure_traits()
+        container = TestContainer()
+        prefmap_plugin = PrefmapPlugin(mother_ref=container)
+        prefmap_plugin.configure_traits()

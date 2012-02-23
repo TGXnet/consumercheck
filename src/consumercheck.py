@@ -22,7 +22,7 @@ traits.has_traits.CHECK_INTERFACES = 0
 from splash_screen import splash
 from main_ui import MainUi
 from ui_tab_pca import PcaModel, PcaModelViewHandler
-from ui_tab_prefmap import PrefmapModel, PrefmapModelViewHandler
+
 
 LOGGING_LEVELS = {
     'critical': logging.CRITICAL,
@@ -49,7 +49,6 @@ def main():
     mother = MainUi(
         splash = splash,
         pca = PcaModelViewHandler(PcaModel()),
-        prefmap = PrefmapModelViewHandler(PrefmapModel()),
         )
     mother.configure_traits()
 
