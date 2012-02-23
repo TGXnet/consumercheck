@@ -4,7 +4,7 @@ Adds statistical methods, user inteface and plots for Prefmap
 """
 
 # Enthought imports
-from traits.api import HasTraits
+from traits.api import HasTraits, Any
 from traitsui.api import View, Item, TreeEditor, TreeNode
 
 # Local imports
@@ -39,7 +39,8 @@ new_prefmap_tree = TreeEditor(
         TreeNode(
             node_for = [PrefmapsHandler],
             children = '',
-            label = 'name',
+            label = '=Prefmap',
+            auto_open = True,
             view = prefmaps_view,
             ),
         TreeNode(
@@ -59,6 +60,7 @@ new_prefmap_tree = TreeEditor(
             node_for = [APrefmapHandler],
             children = '',
             label = 'name',
+            # auto_open = True,
             view = a_prefmap_view,
             ),
         TreeNode(
@@ -104,15 +106,21 @@ new_prefmap_tree = TreeEditor(
             view = a_prefmap_view,
             ),
         ],
-    hide_root = True,
+    # hide_root = True,
+    selected='selected_obj',
     # editable = False,
-    auto_open = 2,
+    # auto_open = 2,
     )
 
 
 
 class PrefmapPlugin(HasTraits):
     model_view = PrefmapsHandler()
+    selected_obj = Any()
+
+    def __init__(self, *args, **kwargs):
+        super(PrefmapPlugin, self).__init__(*args, **kwargs)
+        self.selected_obj = self.model_view
 
     test_view = View(
         Item(name='model_view',
