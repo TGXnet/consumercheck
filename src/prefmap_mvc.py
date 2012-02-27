@@ -58,7 +58,7 @@ class APrefmapModel(HasTraits):
         return pls(
             self.dsX.matrix,
             self.dsY.matrix,
-            numPC=8,
+            numPC=self.max_n_pc,
             cvType=["loo"],
             Xstand=self.standardize,
             Ystand=self.standardize)

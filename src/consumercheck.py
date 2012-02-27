@@ -16,7 +16,6 @@ traits.has_traits.CHECK_INTERFACES = 0
 # Local imports
 from splash_screen import splash
 from main_ui import MainUi
-from ui_tab_pca import PcaModel, PcaModelViewHandler
 
 
 LOGGING_LEVELS = {
@@ -43,7 +42,6 @@ def main():
     splash.open()
     mother = MainUi(
         splash = splash,
-        pca = PcaModelViewHandler(PcaModel()),
         )
     mother.configure_traits()
 

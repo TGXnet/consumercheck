@@ -12,7 +12,7 @@ from traitsui.menu import Action, Menu, MenuBar
 from dataset_collection import DatasetCollection
 from importer_main import ImporterMain
 from ui_datasets_tree import tree_view
-from ui_tab_pca import PcaModelViewHandler, pca_tree_view
+from ui_tab_pca import PCAPlugin
 from ui_tab_prefmap import PrefmapPlugin
 from about_consumercheck import ConsumerCheckAbout
 
@@ -57,7 +57,7 @@ class MainUi(HasTraits):
     splash = None
 
     # Object representing the PCA and the GUI tab
-    pca = Instance(PcaModelViewHandler)
+    pca = Instance(PCAPlugin)
 
     # Object representing the Prefmap and the GUI tab
     prefmap = Instance(PrefmapPlugin)
@@ -72,6 +72,7 @@ class MainUi(HasTraits):
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
         self.prefmap = PrefmapPlugin(mother_ref=self)
+        self.pca = PCAPlugin(mother_ref=self)
 
 
     def _pca_changed(self, old, new):
@@ -87,7 +88,7 @@ class MainUi(HasTraits):
         Group(
             Item('dsl', editor=InstanceEditor(view = tree_view),
                  style='custom', label="Datasets", show_label=False),
-            Item('pca', editor=InstanceEditor(view = pca_tree_view),
+            Item('pca', editor=InstanceEditor(),
                  style='custom', label="PCA", show_label=False),
             Item('prefmap', editor=InstanceEditor(),
                  style='custom', label="Prefmap", show_label=False),
@@ -106,7 +107,7 @@ class MainUi(HasTraits):
 
 
 if __name__ == '__main__':
-    from tests.tools import make_dsl_mock
+    from tests.conftest import make_dsl_mock
     dsl = make_dsl_mock()
     mother = MainUi(dsl=dsl)
     ui = mother.configure_traits()
