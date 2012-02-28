@@ -8,6 +8,7 @@ import logging
 from traits.api import HasTraits, Instance, Str, List, DelegatesTo, PrototypedFrom, Property
 from traitsui.api import View, Item, ModelView
 from enable.api import BaseTool
+import numpy as np
 
 # Local imports
 from nipals import PCA
@@ -81,10 +82,11 @@ class APCAHandler(ModelView):
         
         ds_plots = [[self._make_scores_plot(), self._make_loadings_plot()],
                     [self._make_corr_load_plot(), self._make_expl_var_plot()]]
+        
         for plots in ds_plots:
             for plot in plots:
                 plot.tools.append(DClickTool(plot,ref = self))
-                
+        
         mpw = MultiPlotWindow(title_text=self._wind_title())
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
@@ -116,7 +118,7 @@ class APCAHandler(ModelView):
     def _make_loadings_plot(self):
         res = self.model.result
         pc_tab = res.loadings
-        labels = self.model.ds.object_names
+        labels = self.model.ds.variable_names
         plot = PCScatterPlot(pc_tab, labels, title="Loadings")
         return plot
 
@@ -132,7 +134,7 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.getCorrLoadings()
         expl_vars = res.explainedVariances
-        labels = res.variable_names
+        labels = self.model.ds.variable_names
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
         pcl.plot_circle(True)
         return pcl

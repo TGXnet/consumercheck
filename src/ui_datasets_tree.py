@@ -4,10 +4,11 @@ import logging
 
 # Enthought imports
 from traits.api import HasTraits, Str, List, Instance, on_trait_change
-from traitsui.api import Item, View, TreeEditor, TreeNode, Handler
-
+from traitsui.api import Item, View, TreeEditor, Handler, TreeNode
+from traitsui.tree_node import TreeNode as TN
 # Local imports
 from ds_ui import DataSet, ds_list_tab
+from importer_main import DND
 
 
 class Datasets(HasTraits):
@@ -17,7 +18,7 @@ class Datasets(HasTraits):
     def updateList(self, dcObj):
         self.imported = dcObj.get_dataset_list()
 
-# end Datasets
+    # end Datasets
 
 
 class DatasetsTreeHandler(Handler):
@@ -49,6 +50,16 @@ class DatasetsTreeHandler(Handler):
 # Create an empty view for objects that have no data to display:
 no_view = View()
 
+#
+##Gjor saa denne returnerer importert funksjon fra importer_main som gjor nesten det samme som dialog_multi_import per fil i dropped_object
+class TreeNode(TN):
+    def drop_object(self, object, dropped_object):
+        file_path = dropped_object.path
+        ds = DND.dnd_import_data(file_path)
+        
+        object.imported.append(ds)
+        object.print_traits()
+        
 
 # Define the TreeEditor used to display the hierarchy:
 datasets_tree = TreeEditor(
@@ -90,6 +101,6 @@ tree_view = View(
 
 
 if __name__ == '__main__':
-    from tests.tools import make_dsl_mock
+    from tests.conftest import make_dsl_mock
     dsl = make_dsl_mock()
     ui = dsl.configure_traits(view=tree_view)
