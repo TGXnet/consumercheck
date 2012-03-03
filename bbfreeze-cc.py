@@ -10,13 +10,18 @@ ff = "consumercheck-" + FREEZE_VERSION
 # R folder
 # rf = "R-" + R_VERSION
 
-exclude1 = ['pydoc', 'pydoc_topics', 'pkg_resources', 'doctest', 'difflib',
-            'cookielib', 'urllib', 'urllib2' 'acb', 'anydbm', 'ast', 'base64',
-            'pstats', 'TiffImagePlugin', 'uuid', 'modulefinder', 'xml', 'PIL']
+# Modules I have tried to exclude:
+# unittest: "numpy/testing/__init__.py"
+# ditutils: pyface\toolkit.py -> NotImplementedError
+# 
+gui_lib = ['PyQt4', 'PySide', 'Tkinter', 'vtk', 'tvtk']
+div_lib = ['IPython', 'matplotlib', 'twisted', 'PIL', 'mercurial', 'nose',
+           'win32com', 'reportlab', 'setuptools', 'doctest', 'pygments',
+           'pyreadline', 'scimath', 'email']
+new_out = []
 
-#includes = pyface + pyface_action + traitsui + enable
-includes = []
-excludes = []
+includes = tuple()
+excludes = tuple(gui_lib + div_lib + new_out)
 
 freeze = Freezer(ff, includes=includes, excludes=excludes)
 freeze.addScript("src/consumercheck.py", gui_only=False)
@@ -24,7 +29,7 @@ freeze.use_compression = False
 freeze.include_py = True
 freeze()    # starts the freezing process
 
-# xcopy src\datasets consumercheck-0.5.2\datasets\ /S /Q
+# Copy testdata
 ds_source = os.path.abspath(os.path.join('src', 'datasets'))
 ds_dest = os.path.abspath(os.path.join(ff, 'datasets'))
 shutil.copytree(ds_source, ds_dest)
@@ -57,10 +62,9 @@ for pack in ets_pack:
 #r_dest = os.path.abspath(os.path.join(ff, rf))
 #shutil.copytree(r_source, r_dest)
 
-to_delete = [
-    'QtWebKit4.dll', 'QtGui4.dll', 'PyQt4.QtGui.pyd', 'QtCore4.dll',
-    'PyQt4.QtCore.pyd', 'QtNetwork4.dll', 'PyQt4.QtWebKit.pyd',
-    '_ssl.pyd', 'PIL._imaging.pyd',
-    ]
-#for file in to_delete:
-#    os.remove(os.path.abspath(os.path.join(ff, file)))
+# Dependency investigation
+gr = freeze.mf.graph
+# Dumps dependencies graph dot file to dep.dot
+freeze.dump_dot()
+# Open browser
+freeze.showxref()
