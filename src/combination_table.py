@@ -30,6 +30,11 @@ class CombinationTable(HasTraits):
     combination_updated = Event()
 
 
+    def __init__(self, *args, **kwargs):
+        super(CombinationTable, self).__init__(*args, **kwargs)
+        self._update_combinations()
+
+
     def get_selected_combinations(self):
         combinations = []
         for row in self.rows:
@@ -55,10 +60,11 @@ class CombinationTable(HasTraits):
     @on_trait_change('row_set,col_set')
     def _update_combinations(self):
         self._generate_combinations()
-        self._define_columns()
 
 
     def _generate_combinations(self):
+        if not self.row_set:
+            self.row_set.append('')
         self.rows = []
         for row in self.row_set:
             ro = Row()
@@ -67,6 +73,7 @@ class CombinationTable(HasTraits):
                 an = 'ck{0}'.format(i)
                 setattr(ro, an, False)
             self.rows.append(ro)
+        self._define_columns()
 
 
     def _define_columns(self):
@@ -85,8 +92,15 @@ class CombinationTable(HasTraits):
              editor=table_editor,
              show_label=False),
         resizable=True,
-        ## width=300,
-        ## height=200,
+        )
+
+    test_view = View(
+        Item('rows',
+             editor=table_editor,
+             show_label=False),
+        resizable=True,
+        width=300,
+        height=200,
         )
 
 
@@ -94,8 +108,7 @@ if __name__ == '__main__':
     print("Test start")
     row = ['alfa', 'bravo', 'charlie']
     col = ['one', 'two', 'three']
-    comb = CombinationTable(
-        row_set=row,
-        col_set=col
-        )
-    comb.configure_traits()
+    comb = CombinationTable()
+        ## row_set = row,
+        ## col_set = col)
+    comb.configure_traits(view='test_view')
