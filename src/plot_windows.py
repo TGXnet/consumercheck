@@ -1,7 +1,7 @@
 """Plotting stand alone windows
 
 """
-import os.path
+import os
 
 # Enthought library imports
 from enable.api import Component, ComponentEditor
@@ -157,37 +157,37 @@ class SinglePlotWindow(HasTraits):
 
 
     save_plot = SVGButton(
-                          filename=os.path.join(os.path.dirname(__file__),
+                          filename=os.path.join(os.getcwd(),
                                                 'save.svg'),
                           width=32,
                           height=32)
 
     y_down = SVGButton(
-                            filename=os.path.join(os.path.dirname(__file__),
+                            filename=os.path.join(os.getcwd(),
                                                   'y_down.svg'),
                             width=32,
                             height=32)
     
     y_up = SVGButton(
-                            filename=os.path.join(os.path.dirname(__file__),
+                            filename=os.path.join(os.getcwd(),
                                                   'y_up.svg'),
                             width=32,
                             height=32)
 
     x_down = SVGButton(
-                            filename=os.path.join(os.path.dirname(__file__),
+                            filename=os.path.join(os.getcwd(),
                                                   'x_down.svg'),
                             width=32,
                             height=32)
 
     x_up = SVGButton(
-                            filename=os.path.join(os.path.dirname(__file__),
+                            filename=os.path.join(os.getcwd(),
                                                   'x_up.svg'),
                             width=32,
                             height=32)
 
     reset_xy = SVGButton(
-                            filename=os.path.join(os.path.dirname(__file__),
+                            filename=os.path.join(os.getcwd(),
                                                   'reset_xy.svg'),
                             width=32,
                             height=32)
