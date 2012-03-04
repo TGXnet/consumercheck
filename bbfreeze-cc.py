@@ -13,15 +13,22 @@ ff = "consumercheck-" + FREEZE_VERSION
 # Modules I have tried to exclude:
 # unittest: "numpy/testing/__init__.py"
 # ditutils: pyface\toolkit.py -> NotImplementedError
-# 
-gui_lib = ['PyQt4', 'PySide', 'Tkinter', 'vtk', 'tvtk']
-div_lib = ['IPython', 'matplotlib', 'twisted', 'PIL', 'mercurial', 'nose',
+#
+
+qt_lib = ['traitsui.qt4', 'pyface.ui.qt4', 'pyface.qt', 'PyQt4', 'PySide']
+xw_lib = []
+ets_lib = ['pyface.workbench', 'etsdevtools', 'apptools']
+gui_lib = ['Tkinter', 'vtk', 'tvtk']
+num_lib = ['numpy.f2py', 'numpy.distutils']
+sci_lib = ['IPython', 'matplotlib', 'scimath']
+std_lib = []
+div_lib = ['twisted', 'PIL', 'mercurial', 'nose',
            'win32com', 'reportlab', 'setuptools', 'doctest', 'pygments',
-           'pyreadline', 'scimath', 'email']
+           'pyreadline', 'email']
 new_out = []
 
-includes = tuple()
-excludes = tuple(gui_lib + div_lib + new_out)
+includes = tuple(['traitsui.wx.tabular_editor', 'enable.savage.trait_defs.ui.wx.svg_button_editor'])
+excludes = tuple(qt_lib + ets_lib + gui_lib + num_lib + sci_lib + std_lib + div_lib + new_out)
 
 freeze = Freezer(ff, includes=includes, excludes=excludes)
 freeze.addScript("src/consumercheck.py", gui_only=False)
@@ -48,23 +55,10 @@ for pack in ets_pack:
     dst = os.path.join(ff, pack)
     shutil.copytree(pp, dst)
 
-
-# Image hack de la grande
-#old = os.path.abspath(os.path.join(ff, 'pyface-4.0.0-py2.7.egg', 'pyface', 'images', 'image_not_found.png'))
-#new = os.path.abspath(os.path.join(ff, 'pyface-4.0.0-py2.7.egg', 'pyface', 'images', 'image_not_found.orgi'))
-#shutil.move(old, new)
-#frimg = os.path.abspath(os.path.join('src', 'ConsumerCheckLogo.png'))
-#toimg = os.path.abspath(os.path.join(ff, 'pyface-4.0.0-py2.7.egg', 'pyface', 'images', 'image_not_found.png'))
-#shutil.copy2(frimg, toimg)
-
-# xcopy src\R-2.11.1 consumercheck-0.5.2\R-2.11.1\ /S /Q
-#r_source = os.path.abspath(os.path.join('src', rf))
-#r_dest = os.path.abspath(os.path.join(ff, rf))
-#shutil.copytree(r_source, r_dest)
-
 # Dependency investigation
 gr = freeze.mf.graph
 # Dumps dependencies graph dot file to dep.dot
+# dot -Granksep=4.0 -Tpdf -O dep.dot
 freeze.dump_dot()
 # Open browser
 freeze.showxref()
