@@ -1,18 +1,16 @@
-
-from os.path import abspath, dirname
+import os
 
 from pyface.image_resource import ImageResource
 from pyface.api import SplashScreen
 
-path = [ abspath(dirname(__file__ ))]
 img = ImageResource(
     'ConsumerCheckLogo.png',
-#    search_path=path
+    search_path=[os.getcwd()],
     )
 splash = SplashScreen(image=img)
 
 if __name__ == '__main__':
     from time import sleep
     splash.open()
-    sleep(10)
+    sleep(4)
     splash.close()
