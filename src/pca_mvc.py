@@ -2,10 +2,10 @@
 
 # stdlib imports
 import sys
-import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, DelegatesTo, PrototypedFrom, Property
+from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
+                        PrototypedFrom, Property, on_trait_change)
 from traitsui.api import View, Item, ModelView
 from enable.api import BaseTool
 import numpy as np
@@ -16,7 +16,7 @@ from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
-
+from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
 
 
 #Double click tool
@@ -33,6 +33,7 @@ class DClickTool(BaseTool):
         for e,i in enumerate(self.component.container.plot_components):
             self.plot_dict[i.title] = self.func_list[e]
 
+
 class APCAModel(HasTraits):
     """Represent the PCA model of a dataset."""
     name = Str()
@@ -40,6 +41,7 @@ class APCAModel(HasTraits):
     # but who comes first?
     mother_ref = Instance(HasTraits)
     ds = DataSet()
+    sub_ds = DataSet()
     # FIXME: To be replaced by groups
     sel_var = List()
     sel_obj = List()
@@ -53,9 +55,9 @@ class APCAModel(HasTraits):
 
 
     def _get_result(self):
-#        logging.info("Run pls for: X: {0} ,Y: {1}".format(self.dsX._ds_id, self.dsY._ds_id))
+        self.sub_ds = self.ds.subset()
         return PCA(
-            self.ds.matrix,
+            self.sub_ds.matrix,
             numPC=self.max_n_pc,
             mode=self.standardize)
 
@@ -63,6 +65,17 @@ class APCAModel(HasTraits):
 class APCAHandler(ModelView):
     plot_uis = List()
     name = DelegatesTo('model')
+
+    show_sel_obj = Button('Objects')
+    show_sel_var = Button('Variables')
+
+    @on_trait_change('show_sel_obj')
+    def _act_show_sel_obj(self, object, name, new):
+        object.model.ds.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
+
+    @on_trait_change('show_sel_var')
+    def _act_show_sel_var(self, object, name, new):
+        object.model.ds.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     def __eq__(self, other):
         return self.name == other
@@ -101,7 +114,7 @@ class APCAHandler(ModelView):
     def _make_scores_plot(self):
         res = self.model.result
         pc_tab = res.scores
-        labels = self.model.ds.object_names
+        labels = self.model.sub_ds.object_names
         plot = PCScatterPlot(pc_tab, labels, title="Scores")
         return plot
 
@@ -116,7 +129,7 @@ class APCAHandler(ModelView):
     def _make_loadings_plot(self):
         res = self.model.result
         pc_tab = res.loadings
-        labels = self.model.ds.variable_names
+        labels = self.model.sub_ds.variable_names
         plot = PCScatterPlot(pc_tab, labels, title="Loadings")
         return plot
 
@@ -132,7 +145,7 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.getCorrLoadings()
         expl_vars = res.explainedVariances
-        labels = self.model.ds.variable_names
+        labels = self.model.sub_ds.variable_names
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
         pcl.plot_circle(True)
         return pcl
@@ -176,10 +189,35 @@ class APCAHandler(ModelView):
     def _wind_title(self):
         ds_name = self.model.ds._ds_name
         return "ConsumerCheck PCA - {0}".format(ds_name)
-    
+
 
 a_pca_view = View(
     Item('model.name'),
     Item('model.standardize'),
-    Item('model.max_n_pc')
+    Item('model.max_n_pc'),
+    Item('show_sel_obj'),
+    Item('show_sel_var'),
     )
+
+
+if __name__ == '__main__':
+    # Things to fix for testing
+    # mother_ref: standardize, max_n_pc
+    from traits.api import Bool, Enum
+    from tests.conftest import make_ds_mock
+    ds = make_ds_mock()
+
+    class MocMother(HasTraits):
+        standardize = Bool(False)
+        max_n_pc = Enum(2,3,4,5,6)
+
+    moc_mother = MocMother()
+    
+    model = APCAModel(
+        name = 'Tore test',
+        ds = ds,
+        mother_ref=moc_mother)
+
+    controller = APCAHandler(
+        model=model)
+    controller.configure_traits(view=a_pca_view)

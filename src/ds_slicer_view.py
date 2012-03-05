@@ -73,13 +73,65 @@ ds_slicer_view = View(
     )
 
 
+ds_var_slicer_view = View(
+    Group(
+        Group(
+            Item('handler.picked_var',
+                 editor=CheckListEditor(
+                     cols=1,
+                     name='object.variable_names',
+                     ),
+                 style='custom',
+                 show_label=False,
+                 ),
+            label='Variable names',
+            show_border=True,
+            scrollable=True,
+            ),
+        orientation='horizontal',
+        ),
+    resizable=True,
+    handler=slicer_handler_instance,
+    width=300,
+    height=300,
+    buttons=[OKButton]
+    )
+
+
+ds_obj_slicer_view = View(
+    Group(
+        Group(
+            Item('handler.picked_obj',
+                 editor=CheckListEditor(
+                     cols=1,
+                     name='object.object_names',
+                     ),
+                 style='custom',
+                 show_label=False,
+                 ),
+            label='Object names',
+            show_border=True,
+            scrollable=True,
+            ),
+        orientation='horizontal',
+        ),
+    resizable=True,
+    handler=slicer_handler_instance,
+    width=300,
+    height=300,
+    buttons=[OKButton]
+    )
+
+
 if __name__ == '__main__':
     from importer_main import ImporterMain
     fi = ImporterMain()
     ds = fi.import_data('./datasets/Vine/A_labels.txt', True, True)
-    ds.configure_traits(view=ds_slicer_view)
+    # ds.configure_traits(view=ds_slicer_view)
+    ds.configure_traits(view=ds_obj_slicer_view)
+    ds.configure_traits(view=ds_var_slicer_view)
     sub_ds = ds.subset()
-    ## sub_ds.print_traits()
-    ## print(sub_ds.matrix)
     print(sub_ds.variable_names)
-    ## print(sub_ds.object_names)
+    print(sub_ds.object_names)
+    sub_ds.print_traits()
+    print(sub_ds.matrix)

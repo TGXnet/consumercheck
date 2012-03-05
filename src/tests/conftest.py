@@ -88,6 +88,14 @@ def make_dsl_mock():
     return dsl
 
 
+def make_ds_mock():
+    importer = ImporterMain()
+    tdd = get_test_ds_path()
+    ds = importer.import_data(osp.join(tdd, 'Vine', 'A_labels.txt'))
+    return ds
+
+
+
 def pytest_funcarg__dsl_data(request):
     """Makes a test dataset collection"""
     return make_dsl_mock()
