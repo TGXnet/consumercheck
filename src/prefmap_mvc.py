@@ -5,7 +5,8 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, DelegatesTo, PrototypedFrom, Property
+from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
+                        PrototypedFrom, Property, on_trait_change)
 from traitsui.api import View, Item, ModelView
 from enable.api import BaseTool
 
@@ -15,6 +16,7 @@ from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
+from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
 
 
 #Double click tool
@@ -40,6 +42,8 @@ class APrefmapModel(HasTraits):
     mother_ref = Instance(HasTraits)
     dsX = DataSet()
     dsY = DataSet()
+    sub_dsX = DataSet()
+    sub_dsY = DataSet()
     # FIXME: To be replaced by groups
     sel_var_X = List()
     sel_var_Y = List()
@@ -55,9 +59,11 @@ class APrefmapModel(HasTraits):
 
     def _get_result(self):
         logging.info("Run pls for: X: {0} ,Y: {1}".format(self.dsX._ds_id, self.dsY._ds_id))
+        self.sub_dsX = self.dsX.subset()
+        self.sub_dsY = self.dsY.subset()
         return pls(
-            self.dsX.matrix,
-            self.dsY.matrix,
+            self.sub_dsX.matrix,
+            self.sub_dsY.matrix,
             numPC=self.max_n_pc,
             cvType=["loo"],
             Xstand=self.standardize,
@@ -69,6 +75,23 @@ class APrefmapModel(HasTraits):
 class APrefmapHandler(ModelView):
     plot_uis = List()
     name = DelegatesTo('model')
+
+    show_sel_obj = Button('Objects')
+    show_sel_x_var = Button('X Variables')
+    show_sel_y_var = Button('Y Variables')
+    
+    @on_trait_change('show_sel_obj')
+    def _act_show_sel_obj(self, object, name, new):
+        object.model.dsX.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
+        object.model.dsY.active_objects = object.model.dsX.active_objects
+
+    @on_trait_change('show_sel_x_var')
+    def _act_show_sel_x_var(self, object, name, new):
+        object.model.dsX.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+
+    @on_trait_change('show_sel_y_var')
+    def _act_show_sel_y_var(self, object, name, new):
+        object.model.dsY.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     def __eq__(self, other):
         return self.name == other
@@ -108,7 +131,7 @@ class APrefmapHandler(ModelView):
     def _make_scores_plot(self):
         res = self.model.result
         pc_tab = res.Xscores()
-        labels = self.model.dsX.object_names
+        labels = self.model.sub_dsX.object_names
         expl_vars_x = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
         # expl_vars_y = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
         plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
@@ -132,7 +155,7 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         xLP = res.Xloadings()
         expl_vars = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
-        labels = self.model.dsX.variable_names
+        labels = self.model.sub_dsX.variable_names
         plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
         return plot
 
@@ -150,7 +173,7 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         yLP = res.Yloadings()
         expl_vars = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
-        labels = self.model.dsY.variable_names
+        labels = self.model.sub_dsY.variable_names
         plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings")
         return plot
 
@@ -173,8 +196,8 @@ class APrefmapHandler(ModelView):
         # calExplVarX
         cevx = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
         cevy = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
-        vnx = self.model.dsX.variable_names
-        vny = self.model.dsY.variable_names
+        vnx = self.model.sub_dsX.variable_names
+        vny = self.model.sub_dsY.variable_names
         pcl = PCScatterPlot(clx, vnx, 'red', cevx, title="X & Y correlation loadings")
         pcl.add_PC_set(cly, vny, 'blue', cevy)
         pcl.plot_circle(True)
@@ -245,5 +268,31 @@ class APrefmapHandler(ModelView):
 a_prefmap_view = View(
     Item('model.name'),
     Item('model.standardize'),
-    Item('model.max_n_pc')
+    Item('model.max_n_pc'),
+    Item('show_sel_obj'),
+    Item('show_sel_x_var'),
+    Item('show_sel_y_var'),
     )
+
+
+if __name__ == '__main__':
+    from traits.api import Bool, Enum
+    from tests.conftest import make_ds_mock
+    dsx = make_ds_mock()
+    dsy = make_ds_mock()
+
+    class MocMother(HasTraits):
+        standardize = Bool(False)
+        max_n_pc = Enum(2,3,4,5,6)
+
+    moc_mother = MocMother()
+
+    model = APrefmapModel(
+        name='Tore tes',
+        dsX=dsx,
+        dsY=dsy,
+        mother_ref=moc_mother)
+
+    controller = APrefmapHandler(
+        model=model)
+    controller.configure_traits(view=a_prefmap_view)

@@ -214,8 +214,8 @@ if __name__ == '__main__':
     moc_mother = MocMother()
     
     model = APCAModel(
-        name = 'Tore test',
-        ds = ds,
+        name='Tore test',
+        ds=ds,
         mother_ref=moc_mother)
 
     controller = APCAHandler(
