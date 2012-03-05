@@ -127,7 +127,7 @@ class ImporterXlsFile(HasTraits):
             objnamelist = data_sheet.col_values(0)
             objnamelist.pop(0)
             
-            for i in range(0,len(c_table)):
+            for i in range(1,len(c_table)):
                 c_table[i].pop(0)
             
             revised_list = []
@@ -137,7 +137,6 @@ class ImporterXlsFile(HasTraits):
         
         if self.have_var_names:
             varnamelist = data_sheet.row_values(0)
-            varnamelist.pop(0)
             
             c_table.pop(0)
             
