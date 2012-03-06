@@ -44,7 +44,6 @@ class PCAsHandler(ModelView):
     last_selected = Set()
     
     def model_dsl_dataset__datasets_changed(self, info):
-        print("dataset event fired")
         self.data = self.model.dsl.id_name_list
 
     @on_trait_change('selected')
@@ -55,10 +54,8 @@ class PCAsHandler(ModelView):
         ndiff = new.difference(old)
 
         if odiff:
-            print 'removed {}'.format(odiff)
             self.model.remove_mapping(list(odiff)[0])
         elif ndiff:
-            print 'added {}'.format(ndiff)
             self.model.add_mapping(list(ndiff)[0])
             
 

@@ -58,8 +58,7 @@ class TreeNode(TN):
         ds = DND.dnd_import_data(file_path)
         
         object.imported.append(ds)
-        object.print_traits()
-        
+
 
 # Define the TreeEditor used to display the hierarchy:
 datasets_tree = TreeEditor(

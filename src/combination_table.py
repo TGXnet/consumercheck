@@ -52,11 +52,6 @@ class CombinationTable(HasTraits):
             self.combination_updated = True
 
 
-    @on_trait_change('combination_updated')
-    def _comb_upd(self):
-        print(self.get_selected_combinations())
-
-
     @on_trait_change('row_set,col_set')
     def _update_combinations(self):
         self._generate_combinations()
