@@ -145,23 +145,22 @@ class ImporterXlsxFile(HasTraits):
             objnamelist = c_col
             objnamelist.pop(0)
             
-            for i in range(0,len(c_table)):
+            for i in range(1,len(c_table)):
                 c_table[i].pop(0)
             
             revised_list = []
             for sh in objnamelist:
-                revised_list.append(str(sh))
+                revised_list.append(sh)
             self.ds.object_names = revised_list
         
         if self.have_var_names:
             varnamelist = c_table[0]
-            varnamelist.pop(0)
             
             c_table.pop(0)
             
             revised_list = []
             for sh in varnamelist:
-                revised_list.append(str(sh))
+                revised_list.append(sh)
             self.ds.variable_names = revised_list
         
         full_table = np.array(c_table)

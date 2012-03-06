@@ -9,7 +9,7 @@ import logging
 # logging.basicConfig(level=logging.WARNING)
 
 # SciPy imports
-from numpy import array, loadtxt, genfromtxt
+import numpy as np
 
 # Enthought imports
 from traits.api import HasTraits, Event, Str, Int, Bool, File, List, Enum, Property
@@ -157,33 +157,32 @@ class ImporterTextFile(HasTraits):
                 raise Exception('Ambiguous fileformat')
             data = data.replace(',', '.')
 
+
+        data = unicode(data,'utf-8')
+
         # Do we have variable names
-        names = None
-        skip_header = 0
         if self.have_var_names:
             # names = True
             fl, rest = data.split('\n', 1)
             names = fl.split(self.separator)
-            skip_header = 1
+            if names[0] == '':
+                names.pop(0)
 
-        pd = genfromtxt(
-            StringIO(data),
-            dtype=None,
-            delimiter=self.separator,
-            skip_header = skip_header,
-            names=names)
+            self.ds.variable_names = names
 
-        if self.have_var_names:
-            varnames = list(pd.dtype.names)
-            if self.have_obj_names:
-                corner = varnames.pop(0)
-                objnames = pd[corner].view().reshape(len(pd),-1)
-                objnames = objnames[:,0].tolist()
-                self.ds.object_names = objnames
+        data = rest.split('\n')
+        data.pop(-1)
 
-            dt = pd[varnames[0]].dtype
-            pd = pd[varnames].view(dt).reshape(len(pd),-1)
-            self.ds.variable_names = varnames
+        for n,i in enumerate(data):
+            data[n] = i.split('\t')
+
+        if self.have_obj_names:
+            objnamelist = []
+            for i in range(0,len(data)):
+                objnamelist.append(data[i].pop(0))
+            self.ds.object_names = objnamelist
+
+        pd = np.array(data)
 
         self.ds.matrix = pd
         return self.ds
