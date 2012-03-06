@@ -181,10 +181,15 @@ class APCAHandler(ModelView):
         # FIXME: Setting parent forcing main ui to stay behind plot windows
         if sys.platform == 'linux2':
             self.plot_uis.append( plot_window.edit_traits(kind='live') )
-        else:
+        elif sys.platform == 'win32':
+            # FIXME: Investigate more here
             self.plot_uis.append(
-                plot_window.edit_traits(parent=self.info.ui.control, kind='live')
+                # plot_window.edit_traits(parent=self.info.ui.control, kind='nonmodal')
+                plot_window.edit_traits(kind='live')
                 )
+        else:
+            raise Exception("Not implemented for this platform: ".format(sys.platform))
+
 
     def _wind_title(self):
         ds_name = self.model.ds._ds_name
