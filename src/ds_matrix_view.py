@@ -41,13 +41,9 @@ class MatrixViewHandler(Handler):
     def _make_header(self, ds):
         if ds.variable_names:
             varnames = []
-            varlist = []
             if ds.object_names:
                 varnames = [('SampleName', 'obj_name')]
-            for i,vn in enumerate(ds.variable_names):
-                a = vn.encode('utf-8')
-                varlist.append((a,i))
-            varnames += varlist
+            varnames += [(vn, i) for i, vn in enumerate(ds.variable_names)]
             return varnames
         else:
             return [("var{}".format(col+1), col) for col in range(ds.n_cols)]

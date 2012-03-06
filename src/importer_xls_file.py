@@ -75,7 +75,7 @@ class FilePreviewer(Handler):
         for x in range(no_lines):
             c_row = []
             for y in range(length):
-                c_row.append((data_sheet.cell_value(x,y)))
+                c_row.append(str(data_sheet.cell_value(x,y)))
             c_table.append(c_row)
         self._parsed_data = self._raw_lines = c_table
 
@@ -120,10 +120,7 @@ class ImporterXlsFile(HasTraits):
         for x in range(data_sheet.nrows):
             c_row = []
             for y in range(data_sheet.ncols):
-                cell = data_sheet.cell_value(x,y)
-                if isinstance( cell, basestring ):
-                    cell = cell.encode("utf-8")
-                c_row.append((cell))
+                c_row.append((data_sheet.cell_value(x,y)))
             c_table.append(c_row)
         
         if self.have_obj_names:
@@ -135,7 +132,7 @@ class ImporterXlsFile(HasTraits):
             
             revised_list = []
             for sh in objnamelist:
-                revised_list.append(sh)
+                revised_list.append(str(sh))
             self.ds.object_names = revised_list
         
         if self.have_var_names:
@@ -145,7 +142,7 @@ class ImporterXlsFile(HasTraits):
             
             revised_list = []
             for sh in varnamelist:
-                revised_list.append(sh)
+                revised_list.append(str(sh))
             self.ds.variable_names = revised_list
 
         full_table = np.array(c_table)
