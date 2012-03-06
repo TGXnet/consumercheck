@@ -59,7 +59,7 @@ class FilePreviewer(Handler):
 #    def object_have_obj_names_changed(self, info):
 #        preview_table.adapter.have_obj_names = info.object.have_obj_names
 
-    def _probe_read(self, obj, no_lines=7, length=5):
+    def _probe_read(self, obj, no_lines=100, length=7):
         lines = []  
         raw_data = xlrd.open_workbook(obj.file_path)
         data_sheet = raw_data.sheet_by_index(0)

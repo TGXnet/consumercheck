@@ -99,7 +99,7 @@ class FilePreviewer(Handler):
         return preview_matrix
 
 
-    def _probe_read(self, obj, no_lines=8, length=100):
+    def _probe_read(self, obj, no_lines=100, length=200):
         lines = []
         with open(obj.file_path, 'rU') as fp:
             for i in range(no_lines):

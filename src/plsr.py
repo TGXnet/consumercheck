@@ -451,17 +451,13 @@ class nipalsPLS1:
             numObj = np.shape(self.vecy)[0]
             
             if self.cvType[0] == "loo":
-                print "loo"
                 cvComb = cv.LeaveOneOut(numObj)
             elif self.cvType[0] == "lpo":
-                print "lpo"
                 cvComb = cv.LeavePOut(numObj, self.cvType[1])
             elif self.cvType[0] == "lolo":
-                print "lolo"
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
-                print('Requested form of cross validation is not available')
-                pass
+                raise Exception('Requested form of cross validation is not available')
 
 
             # Collect predicted y (i.e. yhat) for each CV segment in a  
@@ -1402,17 +1398,13 @@ class nipalsPLS2:
             numObj = np.shape(self.arrY)[0]
             
             if self.cvType[0] == "loo":
-                print "loo"
                 cvComb = cv.LeaveOneOut(numObj)
             elif self.cvType[0] == "lpo":
-                print "lpo"
                 cvComb = cv.LeavePOut(numObj, self.cvType[1])
             elif self.cvType[0] == "lolo":
-                print "lolo"
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
-                print('Requested form of cross validation is not available')
-                pass
+                raise Exception('Requested form of cross validation is not available')
             
                         
             # Collect predicted y (i.e. yhat) for each CV segment in a  

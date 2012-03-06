@@ -51,7 +51,6 @@ class PrefmapsHandler(ModelView):
     ##     print("datasets event fired")
 
     def model_dsl_dataset_event_changed(self, info):
-        print("dataset event fired")
         # Sensory on columns
         self.comb.col_set = self.model.dsl.get_id_list_by_type('Sensory profiling')
         # Consumer liking on rows
@@ -60,7 +59,6 @@ class PrefmapsHandler(ModelView):
 
     @on_trait_change('comb:combination_updated')
     def _handle_selection(self, object, name, old, new):
-        print("comb.combination_updated")
         if not self.info:
             return
 
@@ -69,12 +67,10 @@ class PrefmapsHandler(ModelView):
             added = selection.difference(self.last_selection)
             self.last_selection = selection
             added = list(added)[0]
-            print("Added", added)
             self.model.add_mapping(added[0], added[1])
         elif self.last_selection.difference(selection):
             removed = self.last_selection.difference(selection)
             removed = list(removed)[0]
-            print("Removed", removed)
             rem_id = '{0}{1}'.format(removed[0], removed[1])
             self.last_selection = selection
             self.model.remove_mapping(rem_id)
