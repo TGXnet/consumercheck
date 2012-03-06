@@ -27,7 +27,7 @@ div_lib = ['twisted', 'PIL', 'mercurial', 'nose',
            'pyreadline', 'email']
 new_out = []
 
-includes = tuple(['traitsui.wx.tabular_editor', 'enable.savage.trait_defs.ui.wx.svg_button_editor'])
+includes = tuple(['traitsui.wx.tabular_editor', 'traitsui.wx.table_editor', 'enable.savage.trait_defs.ui.wx.svg_button_editor'])
 excludes = tuple(qt_lib + ets_lib + gui_lib + num_lib + sci_lib + std_lib + div_lib + new_out)
 
 freeze = Freezer(ff, includes=includes, excludes=excludes)
