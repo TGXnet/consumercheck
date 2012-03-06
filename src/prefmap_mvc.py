@@ -7,7 +7,7 @@ import logging
 # Enthought imports
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         PrototypedFrom, Property, on_trait_change)
-from traitsui.api import View, Item, ModelView
+from traitsui.api import View, Group, Item, ModelView
 from enable.api import BaseTool
 
 # Local imports
@@ -271,12 +271,18 @@ class APrefmapHandler(ModelView):
 
 
 a_prefmap_view = View(
-    Item('model.name'),
-    Item('model.standardize'),
-    Item('model.max_n_pc'),
-    Item('show_sel_obj'),
-    Item('show_sel_x_var'),
-    Item('show_sel_y_var'),
+    Group(
+        Group(
+            Item('model.name'),
+            Item('model.standardize'),
+            Item('model.max_n_pc'),
+            Item('show_sel_obj'),
+            Item('show_sel_x_var'),
+            Item('show_sel_y_var'),
+            ),
+        Item('', springy=True),
+        orientation='horizontal',
+        ),
     )
 
 

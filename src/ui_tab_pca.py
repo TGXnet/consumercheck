@@ -108,8 +108,8 @@ class PCAPlugin(HasTraits):
              editor=new_pca_tree,
              show_label=False),
         resizable=True,
-        height=200,
-        width=800,
+        height=300,
+        width=600,
         )
 
 

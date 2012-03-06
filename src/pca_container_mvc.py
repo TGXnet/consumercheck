@@ -1,7 +1,7 @@
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Enum, Str, List, DelegatesTo, Bool, on_trait_change, Set
-from traitsui.api import View, Item, ModelView, CheckListEditor
+from traitsui.api import View, Group, Item, ModelView, CheckListEditor
 
 # Local imports
 from pca_mvc import APCAHandler, APCAModel
@@ -60,12 +60,30 @@ class PCAsHandler(ModelView):
             
 
 pcas_view = View(
-    Item('selected', editor=CheckListEditor(name='data'), style='custom'),
-    Item('model.standardize'),
-    Item('model.max_n_pc',springy = True),
+    Group(
+        Group(
+            Group(
+                Item('selected',
+                     editor=CheckListEditor(name='data'),
+                     style='custom',
+                     show_label=False),
+                label='Select dataset',
+                show_border=True,
+                ),
+            Group(
+                Item('model.standardize'),
+                Item('model.max_n_pc',
+                     # springy = True
+                     ),
+                label='Prototype PCA settings',
+                show_border=True,
+                ),
+            orientation='vertical',
+            ),
+        Item('', springy=True),
+        orientation='horizontal',
+        ),
     resizable=True,
-    height=200,
-    width=500,
     )
 
 

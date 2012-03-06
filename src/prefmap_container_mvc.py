@@ -1,7 +1,7 @@
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Enum, Str, List, DelegatesTo, Bool, Set, on_trait_change
-from traitsui.api import View, Item, ModelView, InstanceEditor
+from traitsui.api import View, Group, Item, ModelView, InstanceEditor
 
 # Local imports
 from combination_table import CombinationTable
@@ -80,11 +80,31 @@ class PrefmapsHandler(ModelView):
 
 
 prefmaps_view = View(
-    Item('comb', editor=InstanceEditor(),
-         style='custom',
-         show_label=False),
-    Item('model.standardize'),
-    Item('model.max_n_pc'),
+    Group(
+        Group(
+            Group(
+                Item('comb', editor=InstanceEditor(),
+                     style='custom',
+                     show_label=False),
+                label='Select Prefmap combinations',
+                show_border=True,
+                ),
+            Item('', springy=True),
+            orientation='horizontal',
+            ),
+        Group(
+            Group(
+                Item('model.standardize'),
+                Item('model.max_n_pc'),
+                orientation='vertical',
+                label='Prototype Prefmap settings',
+                show_border=True,
+                ),
+            orientation='horizontal',
+            springy=True,
+            ),
+        orientation='vertical',
+        ),
     resizable=True,
     height=200,
     width=500,

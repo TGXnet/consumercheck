@@ -130,8 +130,8 @@ class PrefmapPlugin(HasTraits):
              editor=new_prefmap_tree,
              show_label=False),
         resizable=True,
-        height=200,
-        width=800,
+        height=400,
+        width=600,
         )
 
 
