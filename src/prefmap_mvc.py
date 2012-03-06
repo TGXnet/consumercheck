@@ -59,6 +59,7 @@ class APrefmapModel(HasTraits):
 
     def _get_result(self):
         logging.info("Run pls for: X: {0} ,Y: {1}".format(self.dsX._ds_id, self.dsY._ds_id))
+        self.dsY.active_objects = self.dsX.active_objects
         self.sub_dsX = self.dsX.subset()
         self.sub_dsY = self.dsY.subset()
         return pls(
@@ -83,7 +84,6 @@ class APrefmapHandler(ModelView):
     @on_trait_change('show_sel_obj')
     def _act_show_sel_obj(self, object, name, new):
         object.model.dsX.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
-        object.model.dsY.active_objects = object.model.dsX.active_objects
 
     @on_trait_change('show_sel_x_var')
     def _act_show_sel_x_var(self, object, name, new):
