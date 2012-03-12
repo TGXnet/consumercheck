@@ -53,11 +53,20 @@ class MatrixViewHandler(Handler):
             return [("var{}".format(col+1), col) for col in range(ds.n_cols)]
 
     def handler_cp_clip_changed(self, info):
-        tf = tempfile.TemporaryFile()
-        savetxt(tf, info.object.matrix, fmt='%.2f', delimiter='\t', newline='\n')
-        tf.seek(0)
-        txt_mat = tf.read()
-        clipboard.data = txt_mat
+        txt_var = ''
+        for i in info.object.variable_names:
+            txt_var += '{}"{}"'.format('\t',i)
+        txt_var += '{}'.format('\n')
+
+        txt_mat = ''
+        for i,a in enumerate(info.object.matrix):
+            txt_mat += '"{}"'.format(info.object.object_names[i])
+            for e in a:
+                txt_mat += '{}{}'.format('\t',e)
+            txt_mat += '{}'.format('\n')
+
+        txt = txt_var + txt_mat
+        clipboard.data = txt
 
 
 matrix_view = View(
