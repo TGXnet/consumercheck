@@ -9,7 +9,7 @@ from pca_mvc import APCAHandler, APCAModel
 
 class PCAsContainer(HasTraits):
     """PCA plugin container."""
-    name = Str('Define PCA')
+    name = Str('PCA results')
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
@@ -23,7 +23,7 @@ class PCAsContainer(HasTraits):
 
     def add_mapping(self, ds_id):
         set_ds = self.dsl.get_by_id(ds_id)
-        map_name = ds_id
+        map_name = set_ds._ds_name
         mapping_model = APCAModel(mother_ref=self, name=map_name,  ds=set_ds)
         mapping_handler = APCAHandler(mapping_model)
         self.mappings.append(mapping_handler)
@@ -75,7 +75,7 @@ pcas_view = View(
                 Item('model.max_n_pc',
                      # springy = True
                      ),
-                label='Prototype PCA settings',
+                label='PCA settings',
                 show_border=True,
                 ),
             orientation='vertical',
