@@ -193,7 +193,7 @@ class APCAHandler(ModelView):
 
     def _wind_title(self):
         ds_name = self.model.ds._ds_name
-        return "ConsumerCheck PCA - {0}".format(ds_name)
+        return "{0} | PCA - ConsumerCheck".format(ds_name)
 
 
 a_pca_view = View(

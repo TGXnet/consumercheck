@@ -267,7 +267,7 @@ class APrefmapHandler(ModelView):
     def _wind_title(self):
         dsx_name = self.model.dsX._ds_name
         dsy_name = self.model.dsY._ds_name
-        return "ConsumerCheck Prefmap - ({0}) X ~ Y ({1})".format(dsx_name, dsy_name)
+        return "({0}) X ~ Y ({1}) | Prefmap - ConsumerCheck".format(dsx_name, dsy_name)
 
 
 a_prefmap_view = View(
