@@ -14,7 +14,9 @@ class PCAsContainer(HasTraits):
     # WeakRef?
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
+    ds_event = DelegatesTo('mother_ref')
     mappings = List(APCAHandler)
+
 
     # Fitting parameters
     standardize = Bool(False)
@@ -24,7 +26,8 @@ class PCAsContainer(HasTraits):
     def add_mapping(self, ds_id):
         set_ds = self.dsl.get_by_id(ds_id)
         map_name = set_ds._ds_name
-        mapping_model = APCAModel(mother_ref=self, name=map_name,  ds=set_ds)
+        map_id = set_ds._ds_id
+        mapping_model = APCAModel(mother_ref=self, nid=map_id, name=map_name,  ds=set_ds)
         mapping_handler = APCAHandler(mapping_model)
         self.mappings.append(mapping_handler)
         return map_name
@@ -42,9 +45,18 @@ class PCAsHandler(ModelView):
     selected = List()
     data = List()
     last_selected = Set()
-    
-    def model_dsl_dataset__datasets_changed(self, info):
-        self.data = self.model.dsl.id_name_list
+
+    def model_dsname_event_changed(self, info):
+        data = []
+        for i in self.model.dsl.name_id_mapping:
+            data.append((self.model.dsl.name_id_mapping[i],i))
+        self.data = data
+
+    def model_ds_event_changed(self, info):
+        data = []
+        for i in self.model.dsl.name_id_mapping:
+            data.append((self.model.dsl.name_id_mapping[i],i))
+        self.data = data
 
     @on_trait_change('selected')
     def handle_selected(self, obj, ref, old, new):

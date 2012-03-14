@@ -37,6 +37,7 @@ class DClickTool(BaseTool):
 class APCAModel(HasTraits):
     """Represent the PCA model of a dataset."""
     name = Str()
+    nid = Str()
     # Shoud be Instance(PrefmapsContainer)
     # but who comes first?
     mother_ref = Instance(HasTraits)
@@ -65,6 +66,7 @@ class APCAModel(HasTraits):
 class APCAHandler(ModelView):
     plot_uis = List()
     name = DelegatesTo('model')
+    nid = DelegatesTo('model')
 
     show_sel_obj = Button('Objects')
     show_sel_var = Button('Variables')
@@ -78,10 +80,10 @@ class APCAHandler(ModelView):
         object.model.ds.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     def __eq__(self, other):
-        return self.name == other
+        return self.nid == other
 
     def __ne__(self, other):
-        return self.name != other
+        return self.nid != other
 
 
     def plot_overview(self):
