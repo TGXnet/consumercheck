@@ -5,7 +5,7 @@ class ConsumerCheckAbout(HasTraits):
     about_html = '''
     <body text="#404040" bgcolor="#f0f0f0">
     <div align="center"><font size="7">About ConsumerCheck</font></div>
-    <p align="center">ConsumerCheck is a program statistical analysis and visualization.</p>
+    <p align="center">ConsumerCheck is a program for statistical analysis and visualization.</p>
     <p align="center">ConsumerCheck development:<br />Thomas Graff, <a href="http://www.tgxnet.no">TGXnet</a></p>
     <p align="center">Python wrapping of R code and software development management:<br /><a href="http://www.nofima.no/en/person/oliver.tomic">Oliver Tomic</a>, <a href="http://www.nofima.no">Nofima</a></p>
     <p align="center">Version: 0.6.5</p>
