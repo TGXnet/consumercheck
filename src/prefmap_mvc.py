@@ -229,6 +229,7 @@ class APrefmapHandler(ModelView):
 
     def plot_expl_var_y(self):
         ev_plot = self._make_expl_var_plot_y()
+        ev_plot.legend.visible = True
         spw = LinePlotWindow(
             plot=ev_plot,
             title_text=self._wind_title()
@@ -240,8 +241,8 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         sumCalY = self._ev_rem_zero_adapter(res.YcumCalExplVar_tot_list())
         sumValY = self._ev_rem_zero_adapter(res.YcumValExplVar_tot_list())
-        pl = EVLinePlot(sumCalY, 'red', 'calibrated Y', title = "Explained Variance Y")
-        pl.add_EV_set(sumValY, 'blue', 'validated Y')
+        pl = EVLinePlot(sumCalY, 'red', 'Calibrated Y', title = "Explained Variance Y")
+        pl.add_EV_set(sumValY, 'blue', 'Validated Y')
         return pl
 
 

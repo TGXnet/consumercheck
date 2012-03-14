@@ -31,10 +31,11 @@ class MainViewHandler(Handler):
         """Action called when activating importing of new dataset"""
         importer = ImporterMain()
         imported = importer.dialog_multi_import()
-        for ds in imported:
-            ui_info.object.dsl.add_dataset(ds)
-            logging.info("importDataset: internal name = %s", ds._ds_id)
-        ui_info.object.ds_event = True
+        if imported != None:
+            for ds in imported:
+                ui_info.object.dsl.add_dataset(ds)
+                logging.info("importDataset: internal name = %s", ds._ds_id)
+            ui_info.object.ds_event = True
 
     def view_about(self, ui_info):
         ConsumerCheckAbout().edit_traits()

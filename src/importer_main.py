@@ -91,6 +91,8 @@ class ImporterMain(HasTraits):
         # self.configure_traits(view='many_view')
         # Open multipe file selection dialog
         self._open_files_changed()
+        if len(self._files_path)<1:
+            return None
         for filen in self._files_path:
             importer = self._make_importer(filen)
             importer.configure_traits()

@@ -206,7 +206,7 @@ class SinglePlotWindow(HasTraits):
                      show_label=False),
                 orientation = "vertical"
                 ),
-            Label('Mouse scroll and drag to zoom and pan in plot'),
+            Label('Scroll to zoom and drag to pan in plot.'),
             Group(
                 Item('eq_axis', label="Orthonormal axis"),
                 Item('show_labels', label="Show labels"),
@@ -262,7 +262,7 @@ class LinePlotWindow(HasTraits):
                      show_label=False),
                 orientation = "vertical"
                 ),
-            Label('Mouse scroll and drag to zoom and pan in plot'),
+            Label('Scroll to zoom and drag to pan in plot.'),
             Group(
                 Item('view_table', show_label=False),
                 orientation="horizontal",

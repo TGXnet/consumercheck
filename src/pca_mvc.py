@@ -154,6 +154,7 @@ class APCAHandler(ModelView):
 
     def plot_expl_var(self):
         ev_plot = self._make_expl_var_plot()
+        ev_plot.legend.visible = True
         spw = LinePlotWindow(
             plot=ev_plot,
             title_text=self._wind_title()
@@ -164,7 +165,7 @@ class APCAHandler(ModelView):
         res = self.model.result
         expl_vars = res.explainedVariances
         ev = self._accumulate_expl_var_adapter(expl_vars)
-        pl = EVLinePlot(ev, title="Explained Variance")
+        pl = EVLinePlot(ev, legend='Explained Variance', title="Explained Variance")
         return pl
 
 
