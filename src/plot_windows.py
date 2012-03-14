@@ -295,12 +295,12 @@ class MultiPlotWindow(HasTraits):
         obj.plots.component_grid[1][1].show_labels(show=new)
 
     traits_view = View(
+        Item('plots',
+             editor=ComponentEditor(
+                 size = size,
+                 bgcolor = bg_color),
+             show_label=False),
         Group(
-            Item('plots',
-                 editor=ComponentEditor(
-                     size = size,
-                     bgcolor = bg_color),
-                 show_label=False),
             Item('show_labels', label="Show labels"),
             orientation = "vertical"),
         resizable=True,
