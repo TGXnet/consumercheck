@@ -10,7 +10,7 @@ from prefmap_mvc import APrefmapHandler, APrefmapModel
 
 class PrefmapsContainer(HasTraits):
     """Prefmap plugin container."""
-    name = Str('Define preference mapping')
+    name = Str('Prefmap results')
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
