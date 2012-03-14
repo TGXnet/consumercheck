@@ -82,7 +82,7 @@ class MainUi(HasTraits):
     # The main view
     traits_ui_view = View(
         Group(
-            Item('dsl', editor=InstanceEditor(view = tree_view),
+            Item('dsl', editor=InstanceEditor(view=tree_view),
                  style='custom', label="Datasets", show_label=False),
             Item('pca', editor=InstanceEditor(),
                  style='custom', label="PCA", show_label=False),
@@ -91,8 +91,8 @@ class MainUi(HasTraits):
             layout='tabbed'
             ), # end UI tabs group
         resizable = True,
-        width = .3,
-        height = .3,
+        width=800,
+        height=400,
         title = 'Consumer Check',
         menubar = MenuBar(
             Menu(import_action, exit_action, name = '&File'),
