@@ -15,8 +15,6 @@ class PrefmapsContainer(HasTraits):
     # WeakRef?
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
-    ds_event = DelegatesTo('mother_ref')
-    dsname_event = DelegatesTo('mother_ref')
     mappings = List(APrefmapHandler)
 
     # Fitting parameters
@@ -29,7 +27,8 @@ class PrefmapsContainer(HasTraits):
         set_y = self.dsl.get_by_id(id_y)
         map_id = id_x+id_y
         map_name = set_x._ds_name + ' - ' + set_y._ds_name
-        mapping_model = APrefmapModel(mother_ref=self, nid=map_id, name=map_name,  dsX=set_x, dsY=set_y)
+        mapping_model = APrefmapModel(
+            mother_ref=self, nid=map_id, name=map_name,  dsX=set_x, dsY=set_y)
         mapping_handler = APrefmapHandler(mapping_model)
         self.mappings.append(mapping_handler)
         return map_name
@@ -49,29 +48,27 @@ class PrefmapsHandler(ModelView):
     last_selection = Set()
 
 
-    # @on_trait_change('model:dsl:datasets_event', post_init=True)
-    ## def _datasets_changed(self, object, name, old, new):
-    ##     print("datasets event fired")
+    @on_trait_change('model:mother_ref:dsname_event')
+    def dsname_changed(self, obj, name, new):
+        self._update_comb()
+        self.comb.update_names()
 
-    def update_comb(self):
+
+    @on_trait_change('model:mother_ref:ds_event')
+    def dsl_changed(self, obj, name, new):
+        self._update_comb()
+        self.comb._generate_combinations()
+
+
+    def _update_comb(self):
         sens_list = []
         cons_list = []
         for a in self.model.dsl.get_id_list_by_type('Sensory profiling'):
-            sens_list.append((a,self.model.dsl.get_by_id(a)._ds_name))
-        # Consumer liking on rows
+            sens_list.append((a, self.model.dsl.get_by_id(a)._ds_name))
         for b in self.model.dsl.get_id_list_by_type('Consumer liking'):
-            cons_list.append((b,self.model.dsl.get_by_id(b)._ds_name))
-        
+            cons_list.append((b, self.model.dsl.get_by_id(b)._ds_name))
         self.comb.col_set = sens_list
         self.comb.row_set = cons_list
-
-    def model_dsname_event_changed(self, info):
-        self.update_comb()
-        self.comb.update_names()
-
-    def model_ds_event_changed(self, info):
-        self.update_comb()
-        self.comb._generate_combinations()
 
 
     @on_trait_change('comb:combination_updated')
@@ -79,13 +76,7 @@ class PrefmapsHandler(ModelView):
         if not self.info:
             return
 
-        selection = self.comb.get_selected_combinations()
-        name_to_id = []
-        for combinations in selection:
-            name_to_id.append(combinations)
-                
-        selection = set(name_to_id)
-        
+        selection = set(self.comb.get_selected_combinations())
         if selection.difference(self.last_selection):
             added = selection.difference(self.last_selection)
             self.last_selection = selection
@@ -94,7 +85,7 @@ class PrefmapsHandler(ModelView):
         elif self.last_selection.difference(selection):
             removed = self.last_selection.difference(selection)
             removed = list(removed)[0]
-            rem_id = '{0}{1}'.format(removed[0],removed[1])
+            rem_id = '{0}{1}'.format(removed[0], removed[1])
             self.last_selection = selection
             self.model.remove_mapping(rem_id)
         else:

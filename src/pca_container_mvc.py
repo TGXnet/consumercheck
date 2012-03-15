@@ -14,9 +14,7 @@ class PCAsContainer(HasTraits):
     # WeakRef?
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
-    ds_event = DelegatesTo('mother_ref')
     mappings = List(APCAHandler)
-
 
     # Fitting parameters
     standardize = Bool(False)
@@ -46,13 +44,9 @@ class PCAsHandler(ModelView):
     data = List()
     last_selected = Set()
 
-    def model_dsname_event_changed(self, info):
-        data = []
-        for i in self.model.dsl.name_id_mapping:
-            data.append((self.model.dsl.name_id_mapping[i],i))
-        self.data = data
 
-    def model_ds_event_changed(self, info):
+    @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
+    def _ds_changed(self, info):
         data = []
         for i in self.model.dsl.name_id_mapping:
             data.append((self.model.dsl.name_id_mapping[i],i))

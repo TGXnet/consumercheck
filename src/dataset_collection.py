@@ -58,14 +58,12 @@ class DatasetCollection(HasTraits):
             raise Exception("Key ({0}) already exists".format(name))
         self._datasets[name] = ds
         self.datasets_event = True
-        self.mother_ref.ds_event = True
         logging.info("add_dataset: %s", name)
 
     def delete_dataset(self, ds_id):
         """Remove dataset from collection"""
         del self._datasets[ds_id]
         self.datasets_event = True
-        self.mother_ref.ds_event = True
         logging.info("delete_dataset: %s", ds_id)
 
     def get_dataset_list(self):
@@ -99,27 +97,25 @@ class DatasetCollection(HasTraits):
             id_names[so._ds_name] = si
         return id_names
 
-    @on_trait_change('_datasets:_dataset_type')
-    def _ds_change(self, obj, name, old, new):
-        self.mother_ref.ds_event = True
-
     @on_trait_change('_datasets:_ds_id')
     def _id_change(self, obj, name, old, new):
         """Update dictionary name"""
         moving = self._datasets.pop(old)
         self.add_dataset(moving)
         self.datasets_event = True
-        self.mother_ref.ds_event = True
         logging.info("dictNameChange: %s change from %s to %s", name, old, new)
 
     @on_trait_change('_datasets:_ds_name')
     def _name_change(self, obj, name, old, new):
         self.ds_name_event = True
-        self.mother_ref.dsname_event = True
         logging.info("displayNameChange: %s changed: %s to %s", name, old, new)
 
 
 if __name__ == '__main__':
     print("Interactive start")
-    from tests.tools import make_dsl_mock
+    def test_print():
+        print("Test")
+    from tests.conftest import make_dsl_mock
     dsl = make_dsl_mock()
+    dsl.on_trait_change(test_print, 'ds_name_event')
+    # dsl.print_traits()
