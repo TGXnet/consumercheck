@@ -105,6 +105,10 @@ class DatasetCollection(HasTraits):
         self.datasets_event = True
         logging.info("dictNameChange: %s change from %s to %s", name, old, new)
 
+    @on_trait_change('_datasets:_dataset_type')
+    def _ds_change(self, obj, name, old, new):
+        self.datasets_event = True
+
     @on_trait_change('_datasets:_ds_name')
     def _name_change(self, obj, name, old, new):
         self.ds_name_event = True
