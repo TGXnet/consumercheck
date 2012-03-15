@@ -7,12 +7,13 @@ from traitsui.extras.checkbox_column import CheckboxColumn
 
 table_editor = TableEditor(
     columns_name='cols',
-    editable=False,
-    # show_row_labels=True,
-    sortable=False,
     selection_mode='row',
     selected='selected_row',
     )
+
+
+class CombCheck(CheckboxColumn):
+    horizontal_alignment='center'
 
 
 class Row(HasTraits):
@@ -46,6 +47,7 @@ class CombinationTable(HasTraits):
                     combinations.append(cmb)
         return combinations
 
+
     def update_names(self):
         for i in self.row_set:
             for row in self.rows:
@@ -54,10 +56,12 @@ class CombinationTable(HasTraits):
         for i,col in enumerate(self.col_set):
             self.cols[i+1].label = col[1]
 
+
     @on_trait_change('selected_row')
     def _selection_changed(self, new):
         if new:
             self.combination_updated = True
+
 
     def _generate_combinations(self):
         if not self.row_set:
@@ -76,10 +80,10 @@ class CombinationTable(HasTraits):
 
     def _define_columns(self):
         self.cols = []
-        oc = ObjectColumn(name='name')
+        oc = ObjectColumn(name='name', editable=False)
         self.cols.append(oc)
         for i, cn in enumerate(self.col_set):
-            cc = CheckboxColumn()
+            cc = CombCheck()
             cc.name = 'ck{0}'.format(i)
             cc.label = cn[1]
             self.cols.append(cc)
@@ -91,6 +95,7 @@ class CombinationTable(HasTraits):
              show_label=False),
         resizable=True,
         )
+
 
     test_view = View(
         Item('rows',
@@ -104,9 +109,13 @@ class CombinationTable(HasTraits):
 
 if __name__ == '__main__':
     print("Test start")
-    row = ['alfa', 'bravo', 'charlie']
-    col = ['one', 'two', 'three']
-    comb = CombinationTable()
-        ## row_set = row,
-        ## col_set = col)
+    def test_print():
+        print(comb.get_selected_combinations())
+
+    row = [('a', 'Alfa'), ('b', 'Bravo'), ('c', 'Charlie')]
+    col = [(1, 'One'), (1, 'Two'), (1, 'Three')]
+    comb = CombinationTable(
+        row_set = row,
+        col_set = col)
+    comb.on_trait_change(test_print, 'combination_updated')
     comb.configure_traits(view='test_view')
