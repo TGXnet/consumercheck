@@ -5,7 +5,7 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import (HasTraits, Instance, Str, Tuple, List, Button, DelegatesTo,
+from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         PrototypedFrom, Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView
 from enable.api import BaseTool
@@ -37,7 +37,6 @@ class DClickTool(BaseTool):
 class APrefmapModel(HasTraits):
     """Represent the Prefmap model between one X and Y dataset."""
     name = Str()
-    nid = Str()
     # Shoud be Instance(PrefmapsContainer)
     # but who comes first?
     mother_ref = Instance(HasTraits)
@@ -77,7 +76,6 @@ class APrefmapModel(HasTraits):
 class APrefmapHandler(ModelView):
     plot_uis = List()
     name = DelegatesTo('model')
-    nid = DelegatesTo('model')
 
     show_sel_obj = Button('Objects')
     show_sel_x_var = Button('X Variables')
@@ -96,10 +94,10 @@ class APrefmapHandler(ModelView):
         object.model.dsY.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     def __eq__(self, other):
-        return self.nid == other
+        return self.name == other
 
     def __ne__(self, other):
-        return self.nid != other
+        return self.name != other
 
 
     def plot_overview(self):

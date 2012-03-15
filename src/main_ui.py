@@ -3,7 +3,7 @@
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Event
+from traits.api import HasTraits, Instance
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
@@ -34,7 +34,6 @@ class MainViewHandler(Handler):
         for ds in imported:
             ui_info.object.dsl.add_dataset(ds)
             logging.info("importDataset: internal name = %s", ds._ds_id)
-        ui_info.object.ds_event = True
 
     def view_about(self, ui_info):
         ConsumerCheckAbout().edit_traits()
@@ -53,9 +52,7 @@ class MainUi(HasTraits):
     """Main application class"""
     # Singular dataset list for the application
     # or not?
-    dsl = Instance(DatasetCollection)
-    ds_event = Event()
-    dsname_event = Event()
+    dsl = DatasetCollection()
     
     splash = None
 
@@ -74,7 +71,6 @@ class MainUi(HasTraits):
 
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
-        self.dsl = DatasetCollection(mother_ref=self)
         self.prefmap = PrefmapPlugin(mother_ref=self)
         self.pca = PCAPlugin(mother_ref=self)
 

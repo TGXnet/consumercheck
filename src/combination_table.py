@@ -1,5 +1,5 @@
 
-from traits.api import HasTraits, Str, List, Bool, Any, Event, on_trait_change, Tuple
+from traits.api import HasTraits, Str, List, Bool, Any, Event, on_trait_change
 from traitsui.api import View, Item, TableEditor
 from traitsui.table_column import ObjectColumn
 from traitsui.extras.checkbox_column import CheckboxColumn
@@ -17,14 +17,13 @@ table_editor = TableEditor(
 
 class Row(HasTraits):
     name = Str()
-    nid = Str()
     # ck1, ck2, ...
     ck_ = Bool(False)
 
 
 class CombinationTable(HasTraits):
-    row_set = List(Tuple())
-    col_set = List(Tuple())
+    row_set = List()
+    col_set = List()
     rows = List(Row)
     cols = List()
     selected_row = Any()
@@ -33,7 +32,7 @@ class CombinationTable(HasTraits):
 
     def __init__(self, *args, **kwargs):
         super(CombinationTable, self).__init__(*args, **kwargs)
-        self._generate_combinations()
+        self._update_combinations()
 
 
     def get_selected_combinations(self):
@@ -42,31 +41,29 @@ class CombinationTable(HasTraits):
             for i, cn in enumerate(self.col_set):
                 an = 'ck{0}'.format(i)
                 if getattr(row, an):
-                    cmb = (row.nid, cn[0])
+                    cmb = (row.name, cn)
                     combinations.append(cmb)
         return combinations
 
-    def update_names(self):
-        for i in self.row_set:
-            for row in self.rows:
-                if row.nid == i[0]:
-                    row.name = i[1]
-        for i,col in enumerate(self.col_set):
-            self.cols[i+1].label = col[1]
 
     @on_trait_change('selected_row')
     def _selection_changed(self, new):
         if new:
             self.combination_updated = True
 
+
+    @on_trait_change('row_set,col_set')
+    def _update_combinations(self):
+        self._generate_combinations()
+
+
     def _generate_combinations(self):
         if not self.row_set:
-            self.row_set.append(('a',''))
+            self.row_set.append('')
         self.rows = []
         for row in self.row_set:
             ro = Row()
-            ro.nid = row[0]
-            ro.name = row[1]
+            ro.name = row
             for i in range(len(self.col_set)):
                 an = 'ck{0}'.format(i)
                 setattr(ro, an, False)
@@ -81,7 +78,7 @@ class CombinationTable(HasTraits):
         for i, cn in enumerate(self.col_set):
             cc = CheckboxColumn()
             cc.name = 'ck{0}'.format(i)
-            cc.label = cn[1]
+            cc.label = cn
             self.cols.append(cc)
 
 
