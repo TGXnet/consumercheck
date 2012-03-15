@@ -17,7 +17,7 @@ import logging
 from traits.api import HasTraits, File, List, Button, Instance
 from traitsui.api import View, Item, UCustom, FileEditor
 from traitsui.menu import OKButton, CancelButton
-from pyface.api import FileDialog, OK
+from pyface.api import FileDialog, OK, CANCEL
 
 # Local imports
 from dataset import DataSet
@@ -54,13 +54,6 @@ class ImporterMain(HasTraits):
         buttons=[OKButton, CancelButton],
         )
 
-    # Button to open multiple files dialog
-    open_files = Button("Open Files...")
-
-    many_view = View(
-        Item('open_files'),
-        )
-
 
     def import_data(self, file_path, have_variable_names = True, have_object_names = True):
         """Read file and return DataSet objekt"""
@@ -87,12 +80,9 @@ class ImporterMain(HasTraits):
     def dialog_multi_import(self):
         """Open dialog for selecting multiple files and return a list of DataSet's"""
         self._file_path = self._conf.read_work_dir()
-        # For stand alone testing
-        # self.configure_traits(view='many_view')
-        # Open multipe file selection dialog
-        self._open_files_changed()
-        if len(self._files_path)<1:
-            return None
+        status = self._show_file_selector()
+        if status == CANCEL:
+            return []
         for filen in self._files_path:
             importer = self._make_importer(filen)
             importer.configure_traits()
@@ -125,13 +115,17 @@ class ImporterMain(HasTraits):
 
 
     # For select multi file dialog
-    def _open_files_changed(self):
+    def _show_file_selector(self):
         dlg = FileDialog(
             action='open files',
             default_directory=self._file_path,
             title='Import data')
-        if dlg.open() == OK:
+        status = dlg.open()
+        if status == OK:
             self._files_path = dlg.paths
+        elif status == CANCEL:
+            pass
+        return status
 
 
     def _make_importer(self, path):
