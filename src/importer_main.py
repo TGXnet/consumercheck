@@ -151,4 +151,3 @@ if __name__ == '__main__':
     dsl = fi.dialog_multi_import()
     for ds in dsl:
         ds.print_traits()
-    ## ds = fi.import_data('datasets/Cheese/ConsumerLiking.txt')
