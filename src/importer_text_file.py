@@ -2,6 +2,7 @@
 # StdLib imports
 import os.path
 from StringIO import StringIO
+from codecs import open as unicode_open
 import logging
 # Log everything, and send it to stderr.
 # http://docs.python.org/howto/logging-cookbook.html
@@ -9,10 +10,10 @@ import logging
 # logging.basicConfig(level=logging.WARNING)
 
 # SciPy imports
-from numpy import array, loadtxt, genfromtxt
+from numpy import genfromtxt
 
 # Enthought imports
-from traits.api import HasTraits, Event, Str, Int, Bool, File, List, Enum, Property
+from traits.api import HasTraits, Event, Str, Unicode, Int, Bool, File, List, Enum, Property
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
@@ -67,12 +68,14 @@ preview_table = PreviewTableEditor(
 
 class FilePreviewer(Handler):
     _raw_lines = List(Str)
+    _unicode_lines = List(Unicode)
     _parsed_data = List()
 
 
     def init(self, info):
         info.object.make_ds_name()
         self._probe_read(info.object)
+        self._decode_chars(info.object.char_encoding)
 
 
     def object_have_var_names_changed(self, info):
@@ -81,12 +84,25 @@ class FilePreviewer(Handler):
 
 
     def object_separator_changed(self, info):
-        preview_matrix = [line.split(info.object.separator) for line in self._raw_lines]
+        self._split_table(info.object.separator)
+
+
+    def _split_table(self, separator):
+        preview_matrix = [line.split(separator) for line in self._unicode_lines]
         max_cols = 7
         for row in preview_matrix:
             max_cols = min(max_cols, len(row))
         self._parsed_data = self._fix_preview_matrix(preview_matrix, max_cols)
         preview_table.adapter.ncols = max_cols
+
+
+    def object_char_encoding_changed(self, info):
+        self._decode_chars(info.object.char_encoding)
+        self._split_table(info.object.separator)
+
+
+    def _decode_chars(self, encoding):
+        self._unicode_lines = [line.decode(encoding, errors='ignore') for line in self._raw_lines]
 
 
     def _fix_preview_matrix(self, preview_matrix, length):
@@ -122,6 +138,9 @@ class ImporterTextFile(HasTraits):
     file_path = File()
     separator = Enum('\t', ',', ' ')
     decimal_mark = Enum('period', 'comma')
+    char_encoding = Enum(
+        ('ascii', 'utf_8', 'latin_1')
+        )
     transpose = Bool(False)
     have_var_names = Bool(True)
     have_obj_names = Bool(True)
@@ -148,26 +167,27 @@ class ImporterTextFile(HasTraits):
             _source_file=self.file_path)
 
         # Read data from file
-        with open(self.file_path, 'rU') as fp:
-            data = fp.read()
+        with unicode_open(self.file_path, encoding=self.char_encoding) as fp:
+            unicode_data = fp.read()
+        ascii_data = unicode_data.encode('ascii', 'ignore')
 
-        # Preprocess file data
+        # Preprocess file ascii_data
         if self.decimal_mark == 'comma':
             if self.separator == ',':
                 raise Exception('Ambiguous fileformat')
-            data = data.replace(',', '.')
+            ascii_data = ascii_data.replace(',', '.')
 
         # Do we have variable names
         names = None
         skip_header = 0
         if self.have_var_names:
             # names = True
-            fl, rest = data.split('\n', 1)
+            fl, rest = ascii_data.split('\n', 1)
             names = fl.split(self.separator)
             skip_header = 1
 
         pd = genfromtxt(
-            StringIO(data),
+            StringIO(ascii_data),
             dtype=None,
             delimiter=self.separator,
             skip_header = skip_header,
@@ -194,6 +214,7 @@ class ImporterTextFile(HasTraits):
             Item('handler._parsed_data',
                  id='table',
                  editor=preview_table),
+            Item('char_encoding'),
             Item('separator',
                  editor=EnumEditor(
                      values={
@@ -227,7 +248,10 @@ class ImporterTextFile(HasTraits):
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
     test = ImporterTextFile()
-    test.file_path = 'datasets/Variants/ObjVarNames.txt'
+    test.char_encoding = 'utf_8'
+    # test.file_path = 'datasets/Variants/ObjVarNames.txt'
+    test.file_path = 'datasets/Variants/Names_UTF-8.txt'
+    # test.file_path = 'datasets/Variants/Names_iso-8859-1.txt'
     test.configure_traits()
     ds = test.import_data()
     ds.print_traits()
