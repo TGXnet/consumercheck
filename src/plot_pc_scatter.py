@@ -355,31 +355,30 @@ class PCScatterPlot(Plot):
             mapper=self.x_mapper,
             orientation='vertical',
             line_weight=1,
-            grid_interval=10,
+            grid_interval=1,
             component=self,
-            ## data_min=6,
-            ## data_max=9,
-            ## transverse_bounds=(-0.4, 0),
-            ## transverse_mapper=self.y_mapper
+            data_min=-0.5,
+            data_max=0.5,
+            # transverse_bounds=(-99, 99),
+            transverse_mapper=self.y_mapper
             )
         self.underlays.append(xgrid)
         ygrid = PlotGrid(
             mapper=self.y_mapper,
             orientation='horizontal',
             line_weight=1,
-            grid_interval=10,
+            grid_interval=1,
             component=self,
-            ## data_min=-0.4,
-            ## data_max=0,
-            ## transverse_bounds=(6, 9),
-            ## transverse_mapper=self.x_mapper
+            data_min=-0.5,
+            data_max=0.5,
+            # transverse_bounds=(-99, 99),
+            transverse_mapper=self.x_mapper
             )
         self.underlays.append(ygrid)
 
 
 
 if __name__ == '__main__':
-    errset = np.seterr(all="ignore")
 
     set1 = np.array([
         [-0.3, 0.4, 0.9],
@@ -400,5 +399,6 @@ if __name__ == '__main__':
     plot.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
     plot.add_PC_set(set2, labels=label2, color=(0.2, 0.9, 0.1, 1.0))
     plot.plot_circle(True)
-    plot.new_window(True)
-    np.seterr(**errset)
+
+    with np.errstate(invalid='ignore'):
+        plot.new_window(True)
