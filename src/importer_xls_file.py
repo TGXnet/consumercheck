@@ -132,7 +132,7 @@ class ImporterXlsFile(HasTraits):
             if self.have_var_names:
                 objnamelist.pop(0)
             
-            for i in range(1,len(c_table)):
+            for i in range(1, len(c_table)):
                 c_table[i].pop(0)
             
             revised_list = []

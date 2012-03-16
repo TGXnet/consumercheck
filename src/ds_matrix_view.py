@@ -53,20 +53,20 @@ class MatrixViewHandler(Handler):
             return [("var{}".format(col+1), col) for col in range(ds.n_cols)]
 
     def handler_cp_clip_changed(self, info):
-        txt_var = ''
+        txt_var = unicode()
         for i in info.object.variable_names:
-            txt_var += '{}"{}"'.format('\t',i)
-        txt_var += '{}'.format('\n')
+            txt_var += u'{}"{}"'.format('\t', i)
+        txt_var += '/n'
 
-        txt_mat = ''
-        for i,a in enumerate(info.object.matrix):
-            txt_mat += '"{}"'.format(info.object.object_names[i])
+        txt_mat = unicode()
+        for i, a in enumerate(info.object.matrix):
+            txt_mat += u'"{}"'.format(info.object.object_names[i])
             for e in a:
-                txt_mat += '{}{}'.format('\t',e)
-            txt_mat += '{}'.format('\n')
+                txt_mat += u'{}{}'.format('\t', e)
+            txt_mat += '\n'
 
         txt = txt_var + txt_mat
-        clipboard.data = txt
+        clipboard.data = txt.encode('utf_8')
 
 
 matrix_view = View(
@@ -86,7 +86,7 @@ matrix_view = View(
 
 
 if __name__ == '__main__':
-    from importer_main import ImporterMain
-    fi = ImporterMain()
-    ds = fi.import_data('./datasets/Vine/A_labels.txt', True, True)
-    ds.configure_traits(view=matrix_view)
+    from tests.conftest import make_non_ascii_ds_mock
+    ds = make_non_ascii_ds_mock()
+    ds.print_traits()
+    # ds.configure_traits(view=matrix_view)

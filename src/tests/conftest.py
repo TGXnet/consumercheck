@@ -95,6 +95,12 @@ def make_ds_mock():
     return ds
 
 
+def make_non_ascii_ds_mock():
+    importer = ImporterMain()
+    tdd = get_test_ds_path()
+    ds = importer.import_data(osp.join(tdd, 'Polser_data_nordisk.xls'))
+    return ds
+
 
 def pytest_funcarg__dsl_data(request):
     """Makes a test dataset collection"""
