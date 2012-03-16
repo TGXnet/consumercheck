@@ -235,6 +235,60 @@ if __name__ == '__main__':
         ds=ds,
         mother_ref=moc_mother)
 
-    controller = APCAHandler(
+    class APCATestHandler(APCAHandler):
+        bt_plot_overview = Button('Plot overview')
+        bt_plot_scores = Button('Plot scores')
+        bt_plot_loadings = Button('Plot loadings')
+        bt_plot_corr_loadings = Button('Plot corr loadings')
+        bt_plot_expl_var = Button('Plot explainded variance')
+
+        @on_trait_change('bt_plot_overview')
+        def _on_bpo(self, obj, name, new):
+            self.plot_overview()
+
+        @on_trait_change('bt_plot_scores')
+        def _on_bps(self, obj, name, new):
+            self.plot_scores()
+
+        @on_trait_change('bt_plot_loadings')
+        def _on_bpl(self, obj, name, new):
+            self.plot_loadings()
+
+        @on_trait_change('bt_plot_corr_loadings')
+        def _on_bpcl(self, obj, name, new):
+            self.plot_corr_loading()
+
+        @on_trait_change('bt_plot_expl_var')
+        def _on_bpev(self, obj, name, new):
+            self.plot_expl_var()
+
+        traits_view = View(
+            Group(
+                Group(
+                    Item('model.name'),
+                    Item('model.standardize'),
+                    Item('model.max_n_pc'),
+                    Item('show_sel_obj',
+                         show_label=False),
+                    Item('show_sel_var',
+                         show_label=False),
+                    orientation='vertical',
+                    ),
+                Item('', springy=True),
+                Group(
+                    Item('bt_plot_overview'),
+                    Item('bt_plot_scores'),
+                    Item('bt_plot_loadings'),
+                    Item('bt_plot_corr_loadings'),
+                    Item('bt_plot_expl_var'),
+                    ),
+                orientation='horizontal',
+                ),
+            resizable=True,
+            )
+
+
+    controller = APCATestHandler(
         model=model)
-    controller.configure_traits(view=a_pca_view)
+    with np.errstate(invalid='ignore'):
+        controller.configure_traits()
