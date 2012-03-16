@@ -9,6 +9,11 @@ import logging
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
 
+# About text encoding
+# There are 2 ways of determin the encodings for text files.
+# 1. To know in advance
+# 2. To make a correct guess
+
 # SciPy imports
 from numpy import genfromtxt
 
@@ -139,7 +144,8 @@ class ImporterTextFile(HasTraits):
     separator = Enum('\t', ',', ' ')
     decimal_mark = Enum('period', 'comma')
     char_encoding = Enum(
-        ('ascii', 'utf_8', 'latin_1')
+        # ('ascii', 'utf_8', 'latin_1')
+        ('ascii')
         )
     transpose = Bool(False)
     have_var_names = Bool(True)
@@ -167,7 +173,7 @@ class ImporterTextFile(HasTraits):
             _source_file=self.file_path)
 
         # Read data from file
-        with unicode_open(self.file_path, encoding=self.char_encoding) as fp:
+        with unicode_open(self.file_path, encoding=self.char_encoding, errors='ignore') as fp:
             unicode_data = fp.read()
         ascii_data = unicode_data.encode('ascii', 'ignore')
 
@@ -214,7 +220,7 @@ class ImporterTextFile(HasTraits):
             Item('handler._parsed_data',
                  id='table',
                  editor=preview_table),
-            Item('char_encoding'),
+            # Item('char_encoding'),
             Item('separator',
                  editor=EnumEditor(
                      values={
@@ -248,9 +254,8 @@ class ImporterTextFile(HasTraits):
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
     test = ImporterTextFile()
-    test.char_encoding = 'utf_8'
-    # test.file_path = 'datasets/Variants/ObjVarNames.txt'
-    test.file_path = 'datasets/Variants/Names_UTF-8.txt'
+    test.file_path = 'datasets/Variants/ObjVarNames.txt'
+    # test.file_path = 'datasets/Variants/Names_UTF-8.txt'
     # test.file_path = 'datasets/Variants/Names_iso-8859-1.txt'
     test.configure_traits()
     ds = test.import_data()
