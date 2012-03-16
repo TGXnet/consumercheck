@@ -19,32 +19,29 @@ from about_consumercheck import ConsumerCheckAbout
 
 class MainViewHandler(Handler):
     """Handler for dataset view"""
-    # Called when some value in object changes
-    def setattr(self, info, obj, name, value):
-        super(MainViewHandler, self).setattr(info, obj, name, value)
-        logging.info('setattr: Variables %s set to %s', name, value)
 
-    # Event handler signature
-    # extended_traitname_changed(info)
-    # default context is object
-    def import_data(self, ui_info):
+
+    def import_data(self, info):
         """Action called when activating importing of new dataset"""
         importer = ImporterMain()
         imported = importer.dialog_multi_import()
         for ds in imported:
-            ui_info.object.dsl.add_dataset(ds)
+            info.object.dsl.add_dataset(ds)
             logging.info("importDataset: internal name = %s", ds._ds_id)
 
-    def view_about(self, ui_info):
+
+    def view_about(self, info):
         ConsumerCheckAbout().edit_traits()
-        
-    def init(self, ui_info):
+
+
+    def init(self, info):
+        # Force update of plugin windows for preimported datasets
+        info.object.ds_event = True
+        # Close splash window
         try:
-            ui_info.object.splash.close()
+            info.object.splash.close()
         except AttributeError:
             pass
-
-    # end MainViewHandler
 
 
 
