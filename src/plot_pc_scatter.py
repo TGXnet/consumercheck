@@ -25,7 +25,10 @@ class PCDataSet(HasTraits):
     * A list of labels for each datapoint
     """
     labels = List()
-    color = ColorTrait('cyan')
+    # colors: chocolate, blue, brown, coral, darkblue, darkcyan, darkgoldenrod, darkgreen
+    # darkolivegreen, darkorange, darksalmon, darkseagreen
+    # from: /usr/share/pyshared/enable/colors.py
+    color = ColorTrait('darkviolet')
     expl_vars = Dict()
     selected = List()
 
@@ -208,6 +211,7 @@ class PCScatterPlot(Plot):
         pn = 'plot_{}'.format(set_id)
         #plot
         rl = self.plot(pd, type='scatter', name=pn,
+                       marker='dot', marker_size=2,
                        color=self.data.pc_ds[set_id-1].color)
         # Give plot space
         ## self._set_axis_margin()
@@ -238,7 +242,7 @@ class PCScatterPlot(Plot):
         x = self.data.get_data(xname)
         y = self.data.get_data(yname)
         labels = self.data.pc_ds[set_id-1].labels
-        bg_color = self.data.pc_ds[set_id-1].color
+        color = self.data.pc_ds[set_id-1].color
         for i, label in enumerate(labels):
             label_obj = DataLabel(
                 component = plot_render,
@@ -246,10 +250,12 @@ class PCScatterPlot(Plot):
                 label_format = label,
                 visible = self.visible_new_labels,
                 ## marker_color = pt_color,
-                text_color = 'black',
+                # text_color = 'black',
+                text_color = color,
                 border_visible = False,
                 marker_visible = False,
-                bgcolor = bg_color,
+                # bgcolor = color,
+                bgcolor = (0.5, 0.5, 0.5, 0.1),
                 ## label_position = 'bottom left',
                 ## bgcolor = 'transparent',
                 )
