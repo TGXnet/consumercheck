@@ -2,12 +2,13 @@
 
 """
 import os
+from os.path import join as pjoin
 
 # Enthought library imports
 from enable.api import Component, ComponentEditor
-from traits.api import HasTraits, Instance, Bool, Dict, Str, File,List, Button, on_trait_change
+from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
-from chaco.api import GridPlotContainer
+from chaco.api import Plot, GridPlotContainer
 from pyface.api import FileDialog, OK
 from enable.savage.trait_defs.ui.svg_button import SVGButton
 
@@ -19,32 +20,6 @@ from ui_results import TableViewController
 size = (850, 650)
 bg_color="white"
 #===============================================================================
-
-class FileEditor(HasTraits):
-    
-    file_name = File()
-    
-    def _save_img(self, obj):
-        """ Attaches a .png extension and exports the image.
-        """
-
-        a,b,c = self.file_name.rpartition('.')
-        if c == 'png':
-            obj.plot.export_image(self.file_name)
-        else:
-            self.file_name = '{}.png'.format(self.file_name)
-            obj.plot.export_image(self.file_name)
-
-    def _save_as_img(self, obj):
-        """ Used to browse to a destination folder, and specify a filename for the image.
-        """
-        fd = FileDialog(action='save as',default_path=self.file_name, default_filename='test.png',
-            wildcard = "PNG files (*.png)|*.png|")
-        if fd.open() == OK:
-            self.file_name = fd.path
-            if self.file_name != '':
-                self._save_img(obj)
-
 
 class TitleHandler(Handler):
     """ Change the title on the UI.
@@ -61,7 +36,7 @@ class SinglePlotWindow(HasTraits):
     """Window for embedding single plot
 
     """
-    plot = Instance(Component)
+    plot = Instance(Plot)
     eq_axis = Bool(False)
     show_labels = Bool(True)
     view_table = Button('View result table')
@@ -72,7 +47,19 @@ class SinglePlotWindow(HasTraits):
     y_up = Button('Y+')
     y_down = Button('Y-')
     reset_xy = Button('Reset axis')
-    
+    save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
+                          width=32, height=32)
+    y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
+                       width=32, height=32)
+    y_up = SVGButton(filename=pjoin(os.getcwd(), 'y_up.svg'),
+                     width=32, height=32)
+    x_down = SVGButton(filename=pjoin(os.getcwd(), 'x_down.svg'),
+                       width=32, height=32)
+    x_up = SVGButton(filename=pjoin(os.getcwd(), 'x_up.svg'),
+                     width=32, height=32)
+    reset_xy = SVGButton(filename=pjoin(os.getcwd(), 'reset_xy.svg'),
+                         width=32, height=32)
+
     title_text = Str("ConsumerCheck")
 
     @on_trait_change('show_labels')
@@ -132,68 +119,6 @@ class SinglePlotWindow(HasTraits):
     def render_plot(self, obj, name, old, new):
         fe = FileEditor()
         fe._save_as_img(obj)
-
-#    #SVG Params
-#    width = 32
-#    height = 32
-
-#    def _make_svg_btn(self,name):
-#        d = SVGButton(
-#                      filename=os.path.join(os.path.dirname(__file__),
-#                                            '{}.svg'.format(name)),
-#                      width=self.width,
-#                      height=self.height)
-#        return d
-
-
-
-#    btn_list = ['save_plot','x_up','x_down','y_down','y_up','reset_xy']
-#    btn_dict = Dict()
-
-
-#    def _btn_dict_default(self):
-#        for i in self.btn_list:
-#            vars(self)[i] = self._make_svg_btn(i)
-
-
-    save_plot = SVGButton(
-                          filename=os.path.join(os.getcwd(),
-                                                'save.svg'),
-                          width=32,
-                          height=32)
-
-    y_down = SVGButton(
-                            filename=os.path.join(os.getcwd(),
-                                                  'y_down.svg'),
-                            width=32,
-                            height=32)
-    
-    y_up = SVGButton(
-                            filename=os.path.join(os.getcwd(),
-                                                  'y_up.svg'),
-                            width=32,
-                            height=32)
-
-    x_down = SVGButton(
-                            filename=os.path.join(os.getcwd(),
-                                                  'x_down.svg'),
-                            width=32,
-                            height=32)
-
-    x_up = SVGButton(
-                            filename=os.path.join(os.getcwd(),
-                                                  'x_up.svg'),
-                            width=32,
-                            height=32)
-
-    reset_xy = SVGButton(
-                            filename=os.path.join(os.getcwd(),
-                                                  'reset_xy.svg'),
-                            width=32,
-                            height=32)
-
-
-
 
 
     traits_view = View(
@@ -312,6 +237,33 @@ class MultiPlotWindow(HasTraits):
     def _plots_default(self):
         container = GridPlotContainer(background=bg_color)
         return container
+
+
+class FileEditor(HasTraits):
+    
+    file_name = File()
+    
+    def _save_img(self, obj):
+        """ Attaches a .png extension and exports the image.
+        """
+        a,b,c = self.file_name.rpartition('.')
+        if c == 'png':
+            obj.plot.export_image(self.file_name)
+        else:
+            self.file_name = '{}.png'.format(self.file_name)
+            obj.plot.export_image(self.file_name)
+
+
+    def _save_as_img(self, obj):
+        """ Used to browse to a destination folder, and specify a filename for the image.
+        """
+        fd = FileDialog(action='save as',default_path=self.file_name, default_filename='test.png',
+            wildcard = "PNG files (*.png)|*.png|")
+        if fd.open() == OK:
+            self.file_name = fd.path
+            if self.file_name != '':
+                self._save_img(obj)
+
 
 
 if __name__ == '__main__':
