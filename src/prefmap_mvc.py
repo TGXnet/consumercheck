@@ -200,8 +200,8 @@ class APrefmapHandler(ModelView):
         cevy = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
         vnx = self.model.sub_dsX.variable_names
         vny = self.model.sub_dsY.variable_names
-        pcl = PCScatterPlot(clx, vnx, 'red', cevx, title="X & Y correlation loadings")
-        pcl.add_PC_set(cly, vny, 'blue', cevy)
+        pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings")
+        pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
         pcl.plot_circle(True)
         return pcl
 
@@ -241,8 +241,8 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         sumCalY = self._ev_rem_zero_adapter(res.YcumCalExplVar_tot_list())
         sumValY = self._ev_rem_zero_adapter(res.YcumValExplVar_tot_list())
-        pl = EVLinePlot(sumCalY, 'red', 'Calibrated Y', title = "Explained Variance Y")
-        pl.add_EV_set(sumValY, 'blue', 'Validated Y')
+        pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', title = "Explained Variance Y")
+        pl.add_EV_set(sumValY, 'darkgoldenrod', 'Validated Y')
         return pl
 
 

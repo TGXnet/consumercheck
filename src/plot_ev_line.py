@@ -19,7 +19,7 @@ class EVDataSet(HasTraits):
     * A color for each line
     """
     # (0.8, 0.2, 0.1, 1.0)
-    color = ColorTrait('cyan')
+    color = ColorTrait('darkviolet')
 
 
 class EVPlotData(ArrayPlotData):
