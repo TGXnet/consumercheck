@@ -120,11 +120,7 @@ class ImporterXlsFile(HasTraits):
         for x in range(data_sheet.nrows):
             c_row = []
             for y in range(data_sheet.ncols):
-                #c_row.append((data_sheet.cell_value(x,y)))
-                cell = data_sheet.cell_value(x,y)
-                if isinstance( cell, basestring ):
-                    cell = cell.encode("utf-8")
-                c_row.append((cell))
+                c_row.append((data_sheet.cell_value(x,y)))
             c_table.append(c_row)
         
         if self.have_obj_names:
@@ -167,9 +163,9 @@ class ImporterXlsFile(HasTraits):
             Item('ds_id', style='readonly', label='File name'),
             Item('ds_name', label='Dataset name'),
             Item('ds_type', label='Dataset type'),
-            Item('have_var_names', label='Have variables names?',
+            Item('have_var_names', label='Existing variable names',
                  tooltip='Is first row variables names?'),
-            Item('have_obj_names', label='Have object names?',
+            Item('have_obj_names', label='Existing object names',
                  tooltip='Is first column object names?'),
             show_labels=True,
             ),
