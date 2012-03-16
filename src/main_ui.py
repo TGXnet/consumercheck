@@ -114,8 +114,10 @@ class MainUi(HasTraits):
 
 
 if __name__ == '__main__':
+    import numpy as np
     from tests.conftest import make_dsl_mock
     dsl = make_dsl_mock()
     mother = MainUi(dsl=dsl)
     # mother = MainUi()
-    ui = mother.configure_traits()
+    with np.errstate(invalid='ignore'):
+        ui = mother.configure_traits()
