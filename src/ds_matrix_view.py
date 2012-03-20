@@ -56,7 +56,7 @@ class MatrixViewHandler(Handler):
         txt_var = unicode()
         for i in info.object.variable_names:
             txt_var += u'{}"{}"'.format('\t', i)
-        txt_var += '/n'
+        txt_var += '\n'
 
         txt_mat = unicode()
         for i, a in enumerate(info.object.matrix):
