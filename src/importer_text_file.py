@@ -107,7 +107,7 @@ class FilePreviewer(Handler):
 
 
     def _decode_chars(self, encoding):
-        self._unicode_lines = [line.decode(encoding, errors='ignore') for line in self._raw_lines]
+        self._unicode_lines = [line.decode(encoding, errors='replace') for line in self._raw_lines]
 
 
     def _fix_preview_matrix(self, preview_matrix, length):
@@ -144,8 +144,7 @@ class ImporterTextFile(HasTraits):
     separator = Enum('\t', ',', ' ')
     decimal_mark = Enum('period', 'comma')
     char_encoding = Enum(
-        # ('ascii', 'utf_8', 'latin_1')
-        ('ascii')
+        ('ascii', 'utf_8', 'latin_1')
         )
     transpose = Bool(False)
     have_var_names = Bool(True)
@@ -173,27 +172,29 @@ class ImporterTextFile(HasTraits):
             _source_file=self.file_path)
 
         # Read data from file
-        with unicode_open(self.file_path, encoding=self.char_encoding, errors='ignore') as fp:
+        with unicode_open(self.file_path,
+                          encoding=self.char_encoding,
+                          errors='strict') as fp:
             unicode_data = fp.read()
-        ascii_data = unicode_data.encode('ascii', 'ignore')
+        utf_8_data = unicode_data.encode('utf-8', 'strict')
 
-        # Preprocess file ascii_data
+        # Preprocess file utf_8_data
         if self.decimal_mark == 'comma':
             if self.separator == ',':
                 raise Exception('Ambiguous fileformat')
-            ascii_data = ascii_data.replace(',', '.')
+            utf_8_data = utf_8_data.replace(',', '.')
 
         # Do we have variable names
         names = None
         skip_header = 0
         if self.have_var_names:
             # names = True
-            fl, rest = ascii_data.split('\n', 1)
+            fl, rest = utf_8_data.split('\n', 1)
             names = fl.split(self.separator)
             skip_header = 1
 
         pd = genfromtxt(
-            StringIO(ascii_data),
+            StringIO(utf_8_data),
             dtype=None,
             delimiter=self.separator,
             skip_header = skip_header,
@@ -205,11 +206,11 @@ class ImporterTextFile(HasTraits):
                 corner = varnames.pop(0)
                 objnames = pd[corner].view().reshape(len(pd),-1)
                 objnames = objnames[:,0].tolist()
-                self.ds.object_names = objnames
+                self.ds.object_names = [on.decode('utf-8') for on in objnames]
 
             dt = pd[varnames[0]].dtype
             pd = pd[varnames].view(dt).reshape(len(pd),-1)
-            self.ds.variable_names = varnames
+            self.ds.variable_names = [vn.decode('utf-8') for vn in varnames]
 
         self.ds.matrix = pd
         return self.ds
@@ -220,7 +221,7 @@ class ImporterTextFile(HasTraits):
             Item('handler._parsed_data',
                  id='table',
                  editor=preview_table),
-            # Item('char_encoding'),
+            Item('char_encoding'),
             Item('separator',
                  editor=EnumEditor(
                      values={

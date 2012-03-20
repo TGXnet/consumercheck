@@ -29,7 +29,11 @@ class TestTextfileImport(object):
              [ 4.05,  2.4,   2.25,  1.3,   1.25,],
              [ 4.75,  4.5,   3.5,   2.05,  1.,  ]])
         self.var_names = ['Var1','Var2','Var3','Var4','Var5']
-        self.obj_names = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10', 'O11', 'O12']
+        self.obj_names = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6',
+                          'O7', 'O8', 'O9', 'O10', 'O11', 'O12']
+        self.varn_utf8 = [u'\xf8re1', u'\xe5re2', u'\xe6re3', u'\xf8re4', u'\xe5re5']
+        self.objn_utf8 = [u'\xc61', u'\xd82', u'\xc53', u'O4', u'O5', u'O6',
+                          u'O7', u'O8', u'O9', u'O10', u'O11', u'O12']
 
     def test_simple_tab_sep(self, test_ds_dir):
         ifp = ImporterTextFile(
@@ -88,6 +92,31 @@ class TestTextfileImport(object):
         assert self.obj_names == ds.object_names
 
 
+    def test_utf8_text(self, test_ds_dir):
+        ifp = ImporterTextFile(
+            file_path=join(test_ds_dir, 'Variants', 'Names_UTF-8.txt'),
+            char_encoding='utf_8',
+            have_var_names=True,
+            have_obj_names=True,
+            )
+        ds = ifp.import_data()
+        assert array_equal(self.ref, ds.matrix)
+        assert ds.variable_names == self.varn_utf8
+        assert ds.object_names == self.objn_utf8
+
+    def test_latin1_text(self, test_ds_dir):
+        ifp = ImporterTextFile(
+            file_path=join(test_ds_dir, 'Variants', 'Names_iso-8859-1.txt'),
+            char_encoding='latin_1',
+            have_var_names=True,
+            have_obj_names=True,
+            )
+        ds = ifp.import_data()
+        assert array_equal(self.ref, ds.matrix)
+        assert ds.variable_names == self.varn_utf8
+        assert ds.object_names == self.objn_utf8
+
+
 @pytest.mark.ui
 def test_ui_import(test_ds_dir):
     di = ImporterMain()
@@ -97,7 +126,7 @@ def test_ui_import(test_ds_dir):
 
 
 def test_add_name(test_ds_dir):
-    file_path=join(test_ds_dir, 'test.txt')
+    file_path=join(test_ds_dir, 'test_number.txt')
     di = ImporterMain()
     ds = di.import_data(file_path, False, False)
     assert ds.n_cols == len(ds.variable_names)
