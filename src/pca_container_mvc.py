@@ -17,7 +17,7 @@ class PCAsContainer(HasTraits):
     mappings = List(APCAHandler)
 
     # Fitting parameters
-    standardize = Bool(False)
+    standardize = Bool(True)
     max_n_pc = Enum(2,3,4,5,6)
 
 
@@ -77,10 +77,8 @@ pcas_view = View(
                 show_border=True,
                 ),
             Group(
-                Item('model.standardize'),
-                Item('model.max_n_pc',
-                     # springy = True
-                     ),
+                # Item('model.standardize'),
+                Item('model.max_n_pc'),
                 label='PCA settings',
                 show_border=True,
                 ),

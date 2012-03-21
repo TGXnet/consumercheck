@@ -203,7 +203,7 @@ a_pca_view = View(
     Group(
         Group(
             Item('model.name'),
-            Item('model.standardize'),
+            # Item('model.standardize'),
             Item('model.max_n_pc'),
             Item('show_sel_obj',
                  show_label=False),
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     ds = make_ds_mock()
 
     class MocMother(HasTraits):
-        standardize = Bool(False)
+        standardize = Bool(True)
         max_n_pc = Enum(2,3,4,5,6)
 
     moc_mother = MocMother()
@@ -266,7 +266,7 @@ if __name__ == '__main__':
             Group(
                 Group(
                     Item('model.name'),
-                    Item('model.standardize'),
+                    # Item('model.standardize'),
                     Item('model.max_n_pc'),
                     Item('show_sel_obj',
                          show_label=False),
