@@ -37,6 +37,7 @@ class DClickTool(BaseTool):
 class APCAModel(HasTraits):
     """Represent the PCA model of a dataset."""
     name = Str()
+    plot_type = Str()
     nid = Str()
     # Shoud be Instance(PrefmapsContainer)
     # but who comes first?
@@ -98,6 +99,8 @@ class APCAHandler(ModelView):
         for each of the datasets.
         """
         
+        self.model.plot_type = 'Overview Plot'
+        
         ds_plots = [[self._make_scores_plot(), self._make_loadings_plot()],
                     [self._make_corr_load_plot(), self._make_expl_var_plot()]]
         
@@ -111,6 +114,7 @@ class APCAHandler(ModelView):
         self._show_plot_window(mpw)
 
     def plot_scores(self):
+        self.model.plot_type = 'Scores Plot'
         s_plot = self._make_scores_plot()
         spw = SinglePlotWindow(
             plot=s_plot,
@@ -126,6 +130,7 @@ class APCAHandler(ModelView):
         return plot
 
     def plot_loadings(self):
+        self.model.plot_type = 'Loadings Plot'
         l_plot = self._make_loadings_plot()
         spw = SinglePlotWindow(
             plot=l_plot,
@@ -141,6 +146,7 @@ class APCAHandler(ModelView):
         return plot
 
     def plot_corr_loading(self):
+        self.model.plot_type = 'Correlation Loadings Plot'
         cl_plot = self._make_corr_load_plot()
         spw = SinglePlotWindow(
             plot=cl_plot,
@@ -158,6 +164,7 @@ class APCAHandler(ModelView):
         return pcl
 
     def plot_expl_var(self):
+        self.model.plot_type = 'Explained Variance Plot'
         ev_plot = self._make_expl_var_plot()
         ev_plot.legend.visible = True
         spw = LinePlotWindow(
@@ -201,7 +208,8 @@ class APCAHandler(ModelView):
 
     def _wind_title(self):
         ds_name = self.model.ds._ds_name
-        return "{0} | PCA - ConsumerCheck".format(ds_name)
+        dstype = self.model.plot_type
+        return "{0} | PCA - {1} - ConsumerCheck".format(ds_name, dstype)
 
 
 a_pca_view = View(
