@@ -6,7 +6,7 @@ import sys
 # Enthought imports
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         PrototypedFrom, Property, on_trait_change)
-from traitsui.api import View, Group, Item, ModelView
+from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
 import numpy as np
 
@@ -49,11 +49,16 @@ class APCAModel(HasTraits):
 
     #checkbox bool for standardized results
     standardize = PrototypedFrom('mother_ref')
+    
     max_n_pc = PrototypedFrom('mother_ref')
+    max_pc = Property()
+    min_pc = 2
 
     # depends_on
     result = Property()
 
+    def _get_max_pc(self):
+        return (min(self.ds.n_rows,self.ds.n_cols)-1)
 
     def _get_result(self):
         self.sub_ds = self.ds.subset()
@@ -204,7 +209,7 @@ a_pca_view = View(
         Group(
             Item('model.name'),
             # Item('model.standardize'),
-            Item('model.max_n_pc'),
+            Item('model.max_n_pc',editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj',
                  show_label=False),
             Item('show_sel_var',

@@ -1,7 +1,7 @@
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Enum, Str, List, DelegatesTo, Bool, on_trait_change, Set
-from traitsui.api import View, Group, Item, ModelView, CheckListEditor
+from traits.api import HasTraits, Instance, Str, List, Int,DelegatesTo, Bool, on_trait_change, Set
+from traitsui.api import View, Group, Item, ModelView, CheckListEditor, RangeEditor
 
 # Local imports
 from pca_mvc import APCAHandler, APCAModel
@@ -15,17 +15,16 @@ class PCAsContainer(HasTraits):
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
     mappings = List(APCAHandler)
-
     # Fitting parameters
     standardize = Bool(True)
-    max_n_pc = Enum(2,3,4,5,6)
+    max_n_pc = Int(2)
 
 
     def add_mapping(self, ds_id):
         set_ds = self.dsl.get_by_id(ds_id)
         map_name = set_ds._ds_name
         map_id = set_ds._ds_id
-        mapping_model = APCAModel(mother_ref=self, nid=map_id, name=map_name,  ds=set_ds)
+        mapping_model = APCAModel(mother_ref=self, nid=map_id, name=map_name,ds=set_ds)
         mapping_handler = APCAHandler(mapping_model)
         self.mappings.append(mapping_handler)
         return map_name
@@ -35,13 +34,16 @@ class PCAsContainer(HasTraits):
         del(self.mappings[self.mappings.index(mapping_id)])
 
 
-
 class PCAsHandler(ModelView):
     name = DelegatesTo('model')
     # Used by tree editor in ui_tab_pca
     mappings = DelegatesTo('model')
+    max_n_pc = DelegatesTo('model')
+    pc_low = DelegatesTo('model')
+    pc_high = DelegatesTo('model')
     selected = List()
     data = List()
+    test = Int()
     last_selected = Set()
 
 
@@ -78,8 +80,9 @@ pcas_view = View(
                 ),
             Group(
                 # Item('model.standardize'),
-                Item('model.max_n_pc'),
-                label='PCA settings',
+                Item('max_n_pc',
+                     editor=RangeEditor(low='2',high='20',mode='spinner',is_float=False)),
+                label='Default PC #',
                 show_border=True,
                 ),
             orientation='vertical',
