@@ -118,7 +118,8 @@ class APCAHandler(ModelView):
         s_plot = self._make_scores_plot()
         spw = SinglePlotWindow(
             plot=s_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -134,7 +135,8 @@ class APCAHandler(ModelView):
         l_plot = self._make_loadings_plot()
         spw = SinglePlotWindow(
             plot=l_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -150,7 +152,8 @@ class APCAHandler(ModelView):
         cl_plot = self._make_corr_load_plot()
         spw = SinglePlotWindow(
             plot=cl_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -169,7 +172,8 @@ class APCAHandler(ModelView):
         ev_plot.legend.visible = True
         spw = LinePlotWindow(
             plot=ev_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 

@@ -92,6 +92,8 @@ class PCScatterPlot(Plot):
 
     # Should new labels be visible?
     visible_new_labels = Bool(True)
+    
+    visible_datasets = Int(3)
 
 
     def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None, **kwtraits):
@@ -139,9 +141,23 @@ class PCScatterPlot(Plot):
         self._plot_PC(set_id)
 
 
-    def show_points(self, set_id, show=True):
-        """Shows or hide datapoints for selected PC set."""
-        pass
+    def show_points(self):
+        """Shows or hide datapoints for PC set."""
+        
+        if self.visible_datasets == 3:
+            self.plots['plot_1'][0].visible = False
+            self.visible_datasets = 2
+        elif self.visible_datasets == 2 :
+            self.plots['plot_1'][0].visible = True
+            self.plots['plot_2'][0].visible = False
+            self.visible_datasets = 1
+        else:
+            self.plots['plot_2'][0].visible = True
+            self.visible_datasets = 3
+            
+        self.plots['plot_1'][0].request_redraw()
+        self.plots['plot_2'][0].request_redraw()
+
 
 
     def show_labels(self, set_id=None, show=True):
