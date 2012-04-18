@@ -55,7 +55,7 @@ class APrefmapModel(HasTraits):
 
     #checkbox bool for standardized results
     standardize = PrototypedFrom('mother_ref')
-    max_n_pc = PrototypedFrom('mother_ref')
+    pc_to_calc = PrototypedFrom('mother_ref')
 
     # depends_on
     result = Property()
@@ -69,7 +69,7 @@ class APrefmapModel(HasTraits):
         return pls(
             self.sub_dsX.matrix,
             self.sub_dsY.matrix,
-            numPC=self.max_n_pc,
+            numPC=self.pc_to_calc,
             cvType=["loo"],
             Xstand=self.standardize,
             Ystand=self.standardize)
@@ -297,7 +297,7 @@ a_prefmap_view = View(
         Group(
             Item('model.name'),
             Item('model.standardize'),
-            Item('model.max_n_pc'),
+            Item('model.pc_to_calc'),
             Item('show_sel_obj'),
             Item('show_sel_x_var'),
             Item('show_sel_y_var'),
@@ -316,7 +316,7 @@ if __name__ == '__main__':
 
     class MocMother(HasTraits):
         standardize = Bool(False)
-        max_n_pc = Enum(2,3,4,5,6)
+        pc_to_calc = Enum(2,3,4,5,6)
 
     moc_mother = MocMother()
 

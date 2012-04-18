@@ -19,7 +19,7 @@ class PrefmapsContainer(HasTraits):
 
     # Fitting parameters
     standardize = Bool(False)
-    max_n_pc = Enum(2,3,4,5,6)
+    pc_to_calc = Enum(2,3,4,5,6)
 
 
     def add_mapping(self, id_x, id_y):
@@ -109,7 +109,7 @@ prefmaps_view = View(
         Group(
             Group(
                 Item('model.standardize'),
-                Item('model.max_n_pc'),
+                Item('model.pc_to_calc'),
                 orientation='vertical',
                 label='Prototype Prefmap settings',
                 show_border=True,
