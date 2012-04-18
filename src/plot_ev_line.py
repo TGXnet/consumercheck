@@ -87,6 +87,7 @@ class EVLinePlot(Plot):
 
         self.x_axis.title = "# of principal components"
         self.y_axis.title = "Explained variance [%]"
+        self.legend_alignment = 'ul'
 
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))

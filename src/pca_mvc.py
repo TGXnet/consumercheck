@@ -6,7 +6,7 @@ import sys
 # Enthought imports
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         PrototypedFrom, Property, on_trait_change)
-from traitsui.api import View, Group, Item, ModelView
+from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
 import numpy as np
 
@@ -37,6 +37,7 @@ class DClickTool(BaseTool):
 class APCAModel(HasTraits):
     """Represent the PCA model of a dataset."""
     name = Str()
+    plot_type = Str()
     nid = Str()
     # Shoud be Instance(PrefmapsContainer)
     # but who comes first?
@@ -49,11 +50,16 @@ class APCAModel(HasTraits):
 
     #checkbox bool for standardized results
     standardize = PrototypedFrom('mother_ref')
+    
     max_n_pc = PrototypedFrom('mother_ref')
+    max_pc = Property()
+    min_pc = 2
 
     # depends_on
     result = Property()
 
+    def _get_max_pc(self):
+        return (min(self.ds.n_rows,self.ds.n_cols)-1)
 
     def _get_result(self):
         self.sub_ds = self.ds.subset()
@@ -93,6 +99,8 @@ class APCAHandler(ModelView):
         for each of the datasets.
         """
         
+        self.model.plot_type = 'Overview Plot'
+        
         ds_plots = [[self._make_scores_plot(), self._make_loadings_plot()],
                     [self._make_corr_load_plot(), self._make_expl_var_plot()]]
         
@@ -106,10 +114,12 @@ class APCAHandler(ModelView):
         self._show_plot_window(mpw)
 
     def plot_scores(self):
+        self.model.plot_type = 'Scores Plot'
         s_plot = self._make_scores_plot()
         spw = SinglePlotWindow(
             plot=s_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -121,10 +131,12 @@ class APCAHandler(ModelView):
         return plot
 
     def plot_loadings(self):
+        self.model.plot_type = 'Loadings Plot'
         l_plot = self._make_loadings_plot()
         spw = SinglePlotWindow(
             plot=l_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -136,10 +148,12 @@ class APCAHandler(ModelView):
         return plot
 
     def plot_corr_loading(self):
+        self.model.plot_type = 'Correlation Loadings Plot'
         cl_plot = self._make_corr_load_plot()
         spw = SinglePlotWindow(
             plot=cl_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -153,11 +167,13 @@ class APCAHandler(ModelView):
         return pcl
 
     def plot_expl_var(self):
+        self.model.plot_type = 'Explained Variance Plot'
         ev_plot = self._make_expl_var_plot()
         ev_plot.legend.visible = True
         spw = LinePlotWindow(
             plot=ev_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -196,7 +212,8 @@ class APCAHandler(ModelView):
 
     def _wind_title(self):
         ds_name = self.model.ds._ds_name
-        return "{0} | PCA - ConsumerCheck".format(ds_name)
+        dstype = self.model.plot_type
+        return "{0} | PCA - {1} - ConsumerCheck".format(ds_name, dstype)
 
 
 a_pca_view = View(
@@ -204,7 +221,7 @@ a_pca_view = View(
         Group(
             Item('model.name'),
             # Item('model.standardize'),
-            Item('model.max_n_pc'),
+            Item('model.max_n_pc',editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj',
                  show_label=False),
             Item('show_sel_var',

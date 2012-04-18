@@ -41,7 +41,9 @@ class SinglePlotWindow(HasTraits):
     show_labels = Bool(True)
     view_table = Button('View result table')
     save_plot = Button('Save plot image')
-
+    vis_toggle = Button('Visibility')
+    vistog = Bool(False)
+    
     x_up = Button('X+')
     x_down = Button('X-')
     y_up = Button('Y+')
@@ -119,6 +121,10 @@ class SinglePlotWindow(HasTraits):
     def render_plot(self, obj, name, old, new):
         fe = FileEditor()
         fe._save_as_img(obj)
+        
+    @on_trait_change('vis_toggle')
+    def switch_visibility(self, obj, name, new):
+        obj.plot.show_points()
 
 
     traits_view = View(
@@ -135,6 +141,7 @@ class SinglePlotWindow(HasTraits):
             Group(
                 Item('eq_axis', label="Orthonormal axis"),
                 Item('show_labels', label="Show labels"),
+                Item('vis_toggle', show_label=False, defined_when='vistog'),
 #                Item('view_table', show_label=False),
                 Item('save_plot', show_label=False),
                 Item('x_down', show_label=False),

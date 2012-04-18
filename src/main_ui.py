@@ -29,6 +29,12 @@ class MainViewHandler(Handler):
             info.object.dsl.add_dataset(ds)
             logging.info("importDataset: internal name = %s", ds._ds_id)
 
+    def _close_ds(self, info):
+        datasets = []
+        for i in info.object.dsl._datasets:
+            datasets.append(i)
+        for a in datasets:
+            info.object.dsl.delete_dataset(a)
 
     def view_about(self, info):
         ConsumerCheckAbout().edit_traits()
@@ -67,6 +73,7 @@ class MainUi(HasTraits):
     # Create an action that exits the application.
     exit_action = Action(name='E&xit', action='_on_close')
     about_action = Action(name='&About', action='view_about')
+    close_action = Action(name='&Remove Datasets', action='_close_ds')
 
 
     def __init__(self, **kwargs):
@@ -106,7 +113,7 @@ class MainUi(HasTraits):
         height=400,
         title = 'Consumer Check',
         menubar = MenuBar(
-            Menu(import_action, exit_action, name = '&File'),
+            Menu(import_action, close_action, exit_action, name = '&File'),
             Menu(about_action, name='&Help'),
             ),
         handler = MainViewHandler

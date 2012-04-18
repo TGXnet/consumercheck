@@ -24,6 +24,8 @@ class DClickTool(BaseTool):
     plot_dict = {}
     #List that holds the function names
     func_list = ['plot_scores','plot_corr_loading', 'plot_expl_var_x', 'plot_expl_var_y']
+    #def normal_left_down(self,event): -> single click.
+    #def normal_right_down(self,event): -> single rightclick.
     #Triggered on double click
     def normal_left_dclick(self,event):
         self._build_plot_list()
@@ -37,6 +39,7 @@ class DClickTool(BaseTool):
 class APrefmapModel(HasTraits):
     """Represent the Prefmap model between one X and Y dataset."""
     name = Str()
+    plot_type = Str()
     nid = Str()
     # Shoud be Instance(PrefmapsContainer)
     # but who comes first?
@@ -108,6 +111,9 @@ class APrefmapHandler(ModelView):
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
         for each of the datasets.
         """
+        
+        self.model.plot_type = 'Overview Plot'
+        
         ds_plots = [[self._make_scores_plot(), self._make_corr_load_plot()],
                     [self._make_expl_var_plot_x(), self._make_expl_var_plot_y()]]
         for plots in ds_plots:
@@ -122,10 +128,12 @@ class APrefmapHandler(ModelView):
 
 
     def plot_scores(self):
+        self.model.plot_type = 'Scores Plot'
         s_plot = self._make_scores_plot()
         spw = SinglePlotWindow(
             plot=s_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -145,10 +153,12 @@ class APrefmapHandler(ModelView):
 
 
     def plot_loadings_x(self):
+        self.model.plot_type = 'Loadings X Plot'
         l_plot = self._make_loadings_plot_x()
         spw = SinglePlotWindow(
             plot=l_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -163,10 +173,12 @@ class APrefmapHandler(ModelView):
 
 
     def plot_loadings_y(self):
+        self.model.plot_type = 'Loadings Y Plot'
         l_plot = self._make_loadings_plot_y()
         spw = SinglePlotWindow(
             plot=l_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -181,10 +193,12 @@ class APrefmapHandler(ModelView):
 
 
     def plot_corr_loading(self):
+        self.model.plot_type = 'Correlation Loadings Plot'
         cl_plot = self._make_corr_load_plot()
         spw = SinglePlotWindow(
             plot=cl_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=True
             )
         self._show_plot_window(spw)
 
@@ -207,10 +221,12 @@ class APrefmapHandler(ModelView):
 
 
     def plot_expl_var_x(self):
+        self.model.plot_type = 'Explained Variance X Plot'
         ev_plot = self._make_expl_var_plot_x()
         spw = LinePlotWindow(
             plot=ev_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -228,11 +244,13 @@ class APrefmapHandler(ModelView):
 
 
     def plot_expl_var_y(self):
+        self.model.plot_type = 'Explained Variance Y Plot'
         ev_plot = self._make_expl_var_plot_y()
         ev_plot.legend.visible = True
         spw = LinePlotWindow(
             plot=ev_plot,
-            title_text=self._wind_title()
+            title_text=self._wind_title(),
+            vistog=False
             )
         self._show_plot_window(spw)
 
@@ -270,7 +288,8 @@ class APrefmapHandler(ModelView):
     def _wind_title(self):
         dsx_name = self.model.dsX._ds_name
         dsy_name = self.model.dsY._ds_name
-        return "({0}) X ~ Y ({1}) | Prefmap - ConsumerCheck".format(dsx_name, dsy_name)
+        dstype = self.model.plot_type
+        return "({0}) X ~ Y ({1}) | Prefmap - {2} - ConsumerCheck".format(dsx_name, dsy_name, dstype)
 
 
 a_prefmap_view = View(
