@@ -3,7 +3,7 @@
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Event, on_trait_change
+from traits.api import HasTraits, Instance, Event, Bool
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
@@ -59,7 +59,12 @@ class MainUi(HasTraits):
     dsl = DatasetCollection()
     ds_event = Event()
     dsname_event = Event()
-    
+    en_advanced = Bool(False)
+
+    def _toggle_advanced(self):
+        self.en_advanced = not self.en_advanced
+        print(self.en_advanced)
+
     splash = None
 
     # Object representing the PCA and the GUI tab
@@ -74,6 +79,8 @@ class MainUi(HasTraits):
     exit_action = Action(name='E&xit', action='_on_close')
     about_action = Action(name='&About', action='view_about')
     close_action = Action(name='&Remove Datasets', action='_close_ds')
+    advanced_action = Action(name='&Advanced settings', checked_when='en_advanced',
+                             style='toggle', action='_toggle_advanced')
 
 
     def __init__(self, **kwargs):
@@ -113,7 +120,8 @@ class MainUi(HasTraits):
         height=400,
         title = 'Consumer Check',
         menubar = MenuBar(
-            Menu(import_action, close_action, exit_action, name = '&File'),
+            Menu(import_action, close_action, exit_action, name='&File'),
+            Menu(advanced_action, name='&Settings'),
             Menu(about_action, name='&Help'),
             ),
         handler = MainViewHandler
