@@ -1,7 +1,7 @@
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Enum, Str, List, DelegatesTo, Bool, Set, on_trait_change
-from traitsui.api import View, Group, Item, ModelView, InstanceEditor
+from traits.api import HasTraits, Instance, Int, Str, List, DelegatesTo, Bool, Set, on_trait_change
+from traitsui.api import View, Group, Item, ModelView, InstanceEditor, RangeEditor
 
 # Local imports
 from combination_table import CombinationTable
@@ -19,7 +19,7 @@ class PrefmapsContainer(HasTraits):
 
     # Fitting parameters
     standardize = Bool(False)
-    pc_to_calc = Enum(2,3,4,5,6)
+    pc_to_calc = Int(2)
 
 
     def add_mapping(self, id_x, id_y):
@@ -43,6 +43,8 @@ class PrefmapsHandler(ModelView):
     name = DelegatesTo('model')
     # Used by tre editor in ui_tab_prefmap
     mappings = DelegatesTo('model')
+    pc_to_calc = DelegatesTo('model')
+
     comb = Instance(CombinationTable, CombinationTable())
     # [('a_labels','c_labels'),('sensorydata','consumerliking')]
     last_selection = Set()
@@ -109,7 +111,8 @@ prefmaps_view = View(
         Group(
             Group(
                 Item('model.standardize'),
-                Item('model.pc_to_calc'),
+                Item('pc_to_calc',
+                     editor=RangeEditor(low='2',high='20',mode='spinner',is_float=False)),
                 orientation='vertical',
                 label='Prototype Prefmap settings',
                 show_border=True,
