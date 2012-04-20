@@ -122,5 +122,7 @@ if __name__ == '__main__':
     with np.errstate(invalid='ignore'):
         container = TestContainer()
         pca_plugin = PCAPlugin(mother_ref=container)
+        # To force populating selection list
+        pca_plugin.pca_handler._ds_changed(None)
         pca_plugin.configure_traits()
         

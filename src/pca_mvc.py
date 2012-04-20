@@ -11,7 +11,9 @@ from enable.api import BaseTool
 import numpy as np
 
 # Local imports
-from nipals import PCA
+# from nipals import PCA
+from pca import nipalsPCA as PCA
+
 from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
@@ -63,10 +65,13 @@ class APCAModel(HasTraits):
 
     def _get_result(self):
         self.sub_ds = self.ds.subset()
+        std_ds = 'raw'
+        if self.standardize:
+            std_ds = 'stand'
         return PCA(
             self.sub_ds.matrix,
             numPC=self.max_n_pc,
-            mode=self.standardize)
+            mode=std_ds)
 
 
 class APCAHandler(ModelView):
@@ -125,7 +130,7 @@ class APCAHandler(ModelView):
 
     def _make_scores_plot(self):
         res = self.model.result
-        pc_tab = res.scores
+        pc_tab = res.scores()
         labels = self.model.sub_ds.object_names
         plot = PCScatterPlot(pc_tab, labels, title="Scores")
         return plot
@@ -142,7 +147,7 @@ class APCAHandler(ModelView):
 
     def _make_loadings_plot(self):
         res = self.model.result
-        pc_tab = res.loadings
+        pc_tab = res.loadings()
         labels = self.model.sub_ds.variable_names
         plot = PCScatterPlot(pc_tab, labels, title="Loadings")
         return plot
@@ -159,8 +164,8 @@ class APCAHandler(ModelView):
 
     def _make_corr_load_plot(self):
         res = self.model.result
-        pc_tab = res.getCorrLoadings()
-        expl_vars = res.explainedVariances
+        pc_tab = res.corrLoadings()
+        expl_vars = res.calExplVar_dict()
         labels = self.model.sub_ds.variable_names
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
         pcl.plot_circle(True)
@@ -179,7 +184,8 @@ class APCAHandler(ModelView):
 
     def _make_expl_var_plot(self):
         res = self.model.result
-        expl_vars = res.explainedVariances
+        # expl_vars = res.explainedVariances
+        expl_vars = res.calExplVar_dict()
         ev = self._accumulate_expl_var_adapter(expl_vars)
         pl = EVLinePlot(ev, legend='Explained Variance', title="Explained Variance")
         return pl
@@ -220,7 +226,7 @@ a_pca_view = View(
     Group(
         Group(
             Item('model.name'),
-            # Item('model.standardize'),
+            Item('model.standardize'),
             Item('model.max_n_pc',editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj',
                  show_label=False),

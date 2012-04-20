@@ -79,7 +79,7 @@ pcas_view = View(
                 show_border=True,
                 ),
             Group(
-                # Item('model.standardize'),
+                Item('model.standardize'),
                 Item('max_n_pc',
                      editor=RangeEditor(low='2',high='20',mode='spinner',is_float=False)),
                 label='Default PC #',
