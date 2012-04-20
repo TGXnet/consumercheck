@@ -17,7 +17,7 @@ class PCAsContainer(HasTraits):
     mappings = List(APCAHandler)
     # Fitting parameters
     standardize = Bool(True)
-    max_n_pc = Int(2)
+    pc_to_calc = Int(2)
 
 
     def add_mapping(self, ds_id):
@@ -38,12 +38,9 @@ class PCAsHandler(ModelView):
     name = DelegatesTo('model')
     # Used by tree editor in ui_tab_pca
     mappings = DelegatesTo('model')
-    max_n_pc = DelegatesTo('model')
-    pc_low = DelegatesTo('model')
-    pc_high = DelegatesTo('model')
+    pc_to_calc = DelegatesTo('model')
     selected = List()
     data = List()
-    test = Int()
     last_selected = Set()
 
 
@@ -80,7 +77,7 @@ pcas_view = View(
                 ),
             Group(
                 Item('model.standardize'),
-                Item('max_n_pc',
+                Item('pc_to_calc',
                      editor=RangeEditor(low='2',high='20',mode='spinner',is_float=False)),
                 label='Default PC #',
                 show_border=True,

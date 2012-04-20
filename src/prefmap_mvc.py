@@ -5,9 +5,9 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import (HasTraits, Instance, Str, Tuple, List, Button, DelegatesTo,
+from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         PrototypedFrom, Property, on_trait_change)
-from traitsui.api import View, Group, Item, ModelView
+from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
 
 # Local imports
@@ -55,11 +55,16 @@ class APrefmapModel(HasTraits):
 
     #checkbox bool for standardized results
     standardize = PrototypedFrom('mother_ref')
-    max_n_pc = PrototypedFrom('mother_ref')
-
+    
+    pc_to_calc = PrototypedFrom('mother_ref')
+    max_pc = Property()
+    min_pc = 2
+    
     # depends_on
     result = Property()
 
+    def _get_max_pc(self):
+        return (min(self.dsX.n_rows,self.dsX.n_cols))
 
     def _get_result(self):
         logging.info("Run pls for: X: {0} ,Y: {1}".format(self.dsX._ds_id, self.dsY._ds_id))
@@ -69,7 +74,7 @@ class APrefmapModel(HasTraits):
         return pls(
             self.sub_dsX.matrix,
             self.sub_dsY.matrix,
-            numPC=self.max_n_pc,
+            numPC=self.pc_to_calc,
             cvType=["loo"],
             Xstand=self.standardize,
             Ystand=self.standardize)
@@ -297,7 +302,8 @@ a_prefmap_view = View(
         Group(
             Item('model.name'),
             Item('model.standardize'),
-            Item('model.max_n_pc'),
+            Item('model.pc_to_calc',
+                 editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj'),
             Item('show_sel_x_var'),
             Item('show_sel_y_var'),
@@ -316,7 +322,7 @@ if __name__ == '__main__':
 
     class MocMother(HasTraits):
         standardize = Bool(False)
-        max_n_pc = Enum(2,3,4,5,6)
+        pc_to_calc = Enum(2,3,4,5,6)
 
     moc_mother = MocMother()
 

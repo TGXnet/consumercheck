@@ -53,7 +53,7 @@ class APCAModel(HasTraits):
     #checkbox bool for standardized results
     standardize = PrototypedFrom('mother_ref')
     
-    max_n_pc = PrototypedFrom('mother_ref')
+    pc_to_calc = PrototypedFrom('mother_ref')
     max_pc = Property()
     min_pc = 2
 
@@ -70,7 +70,7 @@ class APCAModel(HasTraits):
             std_ds = 'stand'
         return PCA(
             self.sub_ds.matrix,
-            numPC=self.max_n_pc,
+            numPC=self.pc_to_calc,
             mode=std_ds)
 
 
@@ -227,7 +227,7 @@ a_pca_view = View(
         Group(
             Item('model.name'),
             Item('model.standardize'),
-            Item('model.max_n_pc',editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
+            Item('model.pc_to_calc',editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj',
                  show_label=False),
             Item('show_sel_var',
@@ -242,14 +242,14 @@ a_pca_view = View(
 
 if __name__ == '__main__':
     # Things to fix for testing
-    # mother_ref: standardize, max_n_pc
+    # mother_ref: standardize, pc_to_calc
     from traits.api import Bool, Enum
     from tests.conftest import make_ds_mock
     ds = make_ds_mock()
 
     class MocMother(HasTraits):
         standardize = Bool(True)
-        max_n_pc = Enum(2,3,4,5,6)
+        pc_to_calc = Enum(2,3,4,5,6)
 
     moc_mother = MocMother()
     
@@ -290,7 +290,7 @@ if __name__ == '__main__':
                 Group(
                     Item('model.name'),
                     # Item('model.standardize'),
-                    Item('model.max_n_pc'),
+                    Item('model.pc_to_calc'),
                     Item('show_sel_obj',
                          show_label=False),
                     Item('show_sel_var',
