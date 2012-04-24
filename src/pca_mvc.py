@@ -65,7 +65,7 @@ class APCAModel(HasTraits):
 
     def _get_result(self):
         self.sub_ds = self.ds.subset()
-        std_ds = 'raw'
+        std_ds = 'cent'
         if self.standardize:
             std_ds = 'stand'
         return PCA(
@@ -243,13 +243,13 @@ a_pca_view = View(
 if __name__ == '__main__':
     # Things to fix for testing
     # mother_ref: standardize, pc_to_calc
-    from traits.api import Bool, Enum
+    from traits.api import Bool, Int
     from tests.conftest import make_ds_mock
     ds = make_ds_mock()
 
     class MocMother(HasTraits):
         standardize = Bool(True)
-        pc_to_calc = Enum(2,3,4,5,6)
+        pc_to_calc = Int(2)
 
     moc_mother = MocMother()
     
@@ -289,7 +289,7 @@ if __name__ == '__main__':
             Group(
                 Group(
                     Item('model.name'),
-                    # Item('model.standardize'),
+                    Item('model.standardize'),
                     Item('model.pc_to_calc'),
                     Item('show_sel_obj',
                          show_label=False),
