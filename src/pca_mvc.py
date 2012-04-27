@@ -1,10 +1,9 @@
 
-
 # stdlib imports
 import sys
 
 # Enthought imports
-from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
+from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo, Any,
                         PrototypedFrom, Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
@@ -34,6 +33,19 @@ class DClickTool(BaseTool):
     def _build_plot_list(self):
         for e,i in enumerate(self.component.container.plot_components):
             self.plot_dict[i.title] = self.func_list[e]
+
+
+class PlotLauncher(HasTraits):
+    node_name = Str()
+    func_name = Str()
+    pca_ref = Any()
+
+
+launch_view = View(
+    # Item('node_name'),
+    # Item(name='model.show_sel_var'),
+    )
+
 
 
 class APCAModel(HasTraits):
@@ -82,6 +94,14 @@ class APCAHandler(ModelView):
     show_sel_obj = Button('Objects')
     show_sel_var = Button('Variables')
 
+    plot_launchers = List()
+
+
+    def __init__(self, *args, **kwargs):
+        super(APCAHandler, self).__init__(*args, **kwargs)
+        self._populate_plot_launchers()
+
+
     @on_trait_change('show_sel_obj')
     def _act_show_sel_obj(self, object, name, new):
         object.model.ds.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
@@ -96,6 +116,17 @@ class APCAHandler(ModelView):
     def __ne__(self, other):
         return self.nid != other
 
+    def _populate_plot_launchers(self):
+        adv_enable = self.model.mother_ref.mother_ref.en_advanced
+        std_launchers = [("Overview", "plot_overview"),
+                         ("Scores", "plot_scores"),
+                         ("Loadings", "plot_loadings"),
+                         ("Correlation loadings", "plot_corr_loading"),
+                         ("Explained variance", "plot_expl_var"),]
+        adv_launchers = [("Advanced test", "plot_test_tull")]
+        if adv_enable:
+            std_launchers.extend(adv_launchers)
+        self.plot_launchers = [PlotLauncher(node_name=nn, func_name=fn, pca_ref=self) for nn, fn in std_launchers]
 
     def plot_overview(self):
         """Make PCA overview plot.

@@ -9,23 +9,14 @@ from traitsui.api import View, Item, TreeEditor, TreeNode
 
 # Local imports
 from pca_container_mvc import PCAsHandler, PCAsContainer, pcas_view
-from pca_mvc import APCAHandler, a_pca_view
+from pca_mvc import APCAHandler, a_pca_view, PlotLauncher, launch_view
 
 
-def dclk_overview(obj):
-    obj.plot_overview()
+def dclk_plot_switch(obj):
+    fn = obj.func_name
+    plot_func = getattr(obj.pca_ref, fn)
+    plot_func()
 
-def dclk_scores(obj):
-    obj.plot_scores()
-
-def dclk_loadings(obj):
-    obj.plot_loadings()
-
-def dclk_corr_load(obj):
-    obj.plot_corr_loading()
-
-def dclk_expl_res_var(obj):
-    obj.plot_expl_var()
 
 new_pca_tree = TreeEditor(
     nodes = [
@@ -51,43 +42,21 @@ new_pca_tree = TreeEditor(
             ),
         TreeNode(
             node_for = [APCAHandler],
-            children = '',
+            children  = 'plot_launchers',
             label = 'name',
-            # auto_open = True,
             view = a_pca_view,
+            auto_open=True,
             ),
         TreeNode(
-            node_for = [APCAHandler],
-            label = '=Overview',
-            on_dclick = dclk_overview,
-            view = a_pca_view,
-            ),
-        TreeNode(
-            node_for = [APCAHandler],
-            label = '=Scores',
-            on_dclick = dclk_scores,
-            view = a_pca_view,
-            ),
-        TreeNode(
-            node_for = [APCAHandler],
-            label = '=Loadings',
-            on_dclick = dclk_loadings,
-            view = a_pca_view,
-            ),
-        TreeNode(
-            node_for = [APCAHandler],
-            label = '=Correlation loadings',
-            on_dclick = dclk_corr_load,
-            view = a_pca_view,
-            ),
-        TreeNode( 
-            node_for = [APCAHandler],
-            label = '=Explained variance',
-            on_dclick = dclk_expl_res_var,
-            view = a_pca_view,
+            node_for = [PlotLauncher],
+            label = 'node_name',
+            on_dclick = dclk_plot_switch,
+            view = launch_view,
             ),
         ],
+    # hide_root=True,
     selected='selected_obj',
+    # auto_open=0,
     )
 
 
@@ -125,4 +94,3 @@ if __name__ == '__main__':
         # To force populating selection list
         pca_plugin.pca_handler._ds_changed(None)
         pca_plugin.configure_traits()
-        
