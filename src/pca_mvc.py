@@ -106,27 +106,41 @@ class APCAHandler(ModelView):
     def _act_show_sel_obj(self, object, name, new):
         object.model.ds.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
 
+
     @on_trait_change('show_sel_var')
     def _act_show_sel_var(self, object, name, new):
         object.model.ds.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
+
     def __eq__(self, other):
         return self.nid == other
+
 
     def __ne__(self, other):
         return self.nid != other
 
+
     def _populate_plot_launchers(self):
         adv_enable = self.model.mother_ref.mother_ref.en_advanced
+
         std_launchers = [("Overview", "plot_overview"),
                          ("Scores", "plot_scores"),
                          ("Loadings", "plot_loadings"),
                          ("Correlation loadings", "plot_corr_loading"),
                          ("Explained variance", "plot_expl_var"),]
-        adv_launchers = [("Advanced test", "plot_test_tull")]
+
+        adv_launchers = [("Show residuals (subtree)", "show_residuals"),
+                         ("Predicated X cal", "show_pred_x_cal"),
+                         ("Predicated X val", "show_pred_x_val"),
+                         ("MSEE total (explained variance", "show_msee_tot"),
+                         ("MSEE individual", "show_msee_ind"),
+                         ("MSECV total", "show_msecv_tot"),
+                         ("MSECV individual", "show_msecv_ind")]
+
         if adv_enable:
             std_launchers.extend(adv_launchers)
         self.plot_launchers = [PlotLauncher(node_name=nn, func_name=fn, pca_ref=self) for nn, fn in std_launchers]
+
 
     def plot_overview(self):
         """Make PCA overview plot.
@@ -149,6 +163,7 @@ class APCAHandler(ModelView):
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)
 
+
     def plot_scores(self):
         self.model.plot_type = 'Scores Plot'
         s_plot = self._make_scores_plot()
@@ -159,12 +174,14 @@ class APCAHandler(ModelView):
             )
         self._show_plot_window(spw)
 
+
     def _make_scores_plot(self):
         res = self.model.result
         pc_tab = res.scores()
         labels = self.model.sub_ds.object_names
         plot = PCScatterPlot(pc_tab, labels, title="Scores")
         return plot
+
 
     def plot_loadings(self):
         self.model.plot_type = 'Loadings Plot'
@@ -176,12 +193,14 @@ class APCAHandler(ModelView):
             )
         self._show_plot_window(spw)
 
+
     def _make_loadings_plot(self):
         res = self.model.result
         pc_tab = res.loadings()
         labels = self.model.sub_ds.variable_names
         plot = PCScatterPlot(pc_tab, labels, title="Loadings")
         return plot
+
 
     def plot_corr_loading(self):
         self.model.plot_type = 'Correlation Loadings Plot'
@@ -193,6 +212,7 @@ class APCAHandler(ModelView):
             )
         self._show_plot_window(spw)
 
+
     def _make_corr_load_plot(self):
         res = self.model.result
         pc_tab = res.corrLoadings()
@@ -201,6 +221,7 @@ class APCAHandler(ModelView):
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
         pcl.plot_circle(True)
         return pcl
+
 
     def plot_expl_var(self):
         self.model.plot_type = 'Explained Variance Plot'
@@ -212,6 +233,7 @@ class APCAHandler(ModelView):
             vistog=False
             )
         self._show_plot_window(spw)
+
 
     def _make_expl_var_plot(self):
         res = self.model.result
@@ -231,6 +253,41 @@ class APCAHandler(ModelView):
             values.append(values[i-1] + val)
         values.pop(0)
         return np.array(values)
+
+
+    def show_residuals(self):
+        resids = self.model.result.residuals()
+        print(resids)
+
+
+    def show_pred_x_cal(self):
+        cal_pred_x = self.model.result.calPredX()
+        print(cal_pred_x)
+
+
+    def show_pred_x_val(self):
+        val_pred_x = self.model.result.valPredX()
+        print(val_pred_x)
+
+
+    def show_msee_tot(self):
+        msee = self.model.result.MSEE_total()
+        print(msee)
+
+
+    def show_msee_ind(self):
+        ind_var_msee = self.model.result.MSEE_indVar()
+        print(ind_var_msee)
+
+
+    def show_msecv_tot(self):
+        msecv = self.model.result.MSECV_total()
+        print(msecv)
+
+
+    def show_msecv_ind(self):
+        ind_var_msecv = self.model.result.MSECV_indVar()
+        print(ind_var_msecv)
 
 
     def _show_plot_window(self, plot_window):
