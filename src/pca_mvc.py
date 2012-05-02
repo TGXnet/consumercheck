@@ -18,6 +18,7 @@ from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
+from ui_results_new import TableViewController
 
 
 #Double click tool
@@ -83,7 +84,8 @@ class APCAModel(HasTraits):
         return PCA(
             self.sub_ds.matrix,
             numPC=self.pc_to_calc,
-            mode=std_ds)
+            mode=std_ds,
+            cvType=["loo"])
 
 
 class APCAHandler(ModelView):
@@ -123,19 +125,23 @@ class APCAHandler(ModelView):
     def _populate_plot_launchers(self):
         adv_enable = self.model.mother_ref.mother_ref.en_advanced
 
-        std_launchers = [("Overview", "plot_overview"),
-                         ("Scores", "plot_scores"),
-                         ("Loadings", "plot_loadings"),
-                         ("Correlation loadings", "plot_corr_loading"),
-                         ("Explained variance", "plot_expl_var"),]
+        std_launchers = [
+            ("Overview", "plot_overview"),
+            ("Scores", "plot_scores"),
+            ("Loadings", "plot_loadings"),
+            ("Correlation loadings", "plot_corr_loading"),
+            ("Explained variance", "plot_expl_var"),
+            ]
 
-        adv_launchers = [("Show residuals (subtree)", "show_residuals"),
-                         ("Predicated X cal", "show_pred_x_cal"),
-                         ("Predicated X val", "show_pred_x_val"),
-                         ("MSEE total (explained variance", "show_msee_tot"),
-                         ("MSEE individual", "show_msee_ind"),
-                         ("MSECV total", "show_msecv_tot"),
-                         ("MSECV individual", "show_msecv_ind")]
+        adv_launchers = [
+            # ("Show residuals (subtree)", "show_residuals"),
+            # ("Predicated X cal", "show_pred_x_cal"),
+            # ("Predicated X val", "show_pred_x_val"),
+            ("MSEE total (explained variance", "show_msee_tot"),
+            ("MSEE individual", "show_msee_ind"),
+            ("MSECV total", "show_msecv_tot"),
+            ("MSECV individual", "show_msecv_ind"),
+            ]
 
         if adv_enable:
             std_launchers.extend(adv_launchers)
@@ -271,23 +277,41 @@ class APCAHandler(ModelView):
 
 
     def show_msee_tot(self):
+        print("MSEE total")
         msee = self.model.result.MSEE_total()
-        print(msee)
+        tv = TableViewController(title="MSEE total")
+        tv.set_col_names([str(i) for i in range(msee.shape[0])])
+        tv.add_row(msee, 'MSEE')
+        tv.configure_traits()
 
 
     def show_msee_ind(self):
+        print("MSEE for each variable")
         ind_var_msee = self.model.result.MSEE_indVar()
-        print(ind_var_msee)
+        tv = TableViewController(title="MSEE individual variables")
+        tv.set_col_names([str(i) for i in range(ind_var_msee.shape[1])])
+        for i in range(ind_var_msee.shape[0]):
+            tv.add_row(ind_var_msee[i,:], 'MSEE')
+        tv.configure_traits()
 
 
     def show_msecv_tot(self):
+        print("MSECV total")
         msecv = self.model.result.MSECV_total()
-        print(msecv)
+        tv = TableViewController(title="MSECV total")
+        tv.set_col_names([str(i) for i in range(msecv.shape[0])])
+        tv.add_row(msecv, 'MSECV')
+        tv.configure_traits()
 
 
     def show_msecv_ind(self):
+        print("MSECV for each variable")
         ind_var_msecv = self.model.result.MSECV_indVar()
-        print(ind_var_msecv)
+        tv = TableViewController(title="MSECV individual variables")
+        tv.set_col_names([str(i) for i in range(ind_var_msecv.shape[1])])
+        for i in range(ind_var_msecv.shape[0]):
+            tv.add_row(ind_var_msecv[i,:], 'MSECV')
+        tv.configure_traits()
 
 
     def _show_plot_window(self, plot_window):
