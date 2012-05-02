@@ -21,7 +21,7 @@ import os.path as osp
 import traits.has_traits
 # 0: no check, 1: log warings, 2: error
 traits.has_traits.CHECK_INTERFACES = 1
-from traits.api import HasTraits, Instance, Event, on_trait_change
+from traits.api import HasTraits, Instance, Bool, Event, on_trait_change
 
 # Local imports
 from dataset import DataSet
@@ -114,6 +114,7 @@ class TestContainer(HasTraits):
     dsl = Instance(DatasetCollection)
     ds_event = Event()
     dsname_event = Event()
+    en_advanced = Bool(True)
 
     def _dsl_default(self):
         return make_dsl_mock()
