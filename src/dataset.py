@@ -50,7 +50,8 @@ class DataSet(HasTraits):
     _dataset_type = Enum(
         ('Design variable',
          'Sensory profiling',
-         'Consumer liking',),
+         'Consumer liking',
+         'Consumer attributes',),
         desc = 'Classify dataset',
         label = 'Dataset type')
 

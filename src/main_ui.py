@@ -3,7 +3,7 @@
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Event, on_trait_change
+from traits.api import HasTraits, Instance, Event
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
@@ -14,6 +14,7 @@ from importer_main import ImporterMain
 from ui_datasets_tree import tree_view
 from ui_tab_pca import PCAPlugin
 from ui_tab_prefmap import PrefmapPlugin
+from ui_tab_conjoint import ConjointPlugin
 from about_consumercheck import ConsumerCheckAbout
 
 
@@ -67,6 +68,9 @@ class MainUi(HasTraits):
 
     # Object representing the Prefmap and the GUI tab
     prefmap = Instance(PrefmapPlugin)
+    
+    # Object representing the Conjoint and the GUI tab
+    conjoint = Instance(ConjointPlugin)
 
     # Create an action that open dialog for dataimport
     import_action = Action(name = 'Add &Dataset', action = 'import_data')
@@ -80,6 +84,7 @@ class MainUi(HasTraits):
         super(MainUi, self).__init__(**kwargs)
         self.prefmap = PrefmapPlugin(mother_ref=self)
         self.pca = PCAPlugin(mother_ref=self)
+        self.conjoint = ConjointPlugin(mother_ref=self)
         self.dsl.on_trait_change(self._dsl_updated, 'datasets_event')
         self.dsl.on_trait_change(self._ds_name_updated, 'ds_name_event')
 
@@ -106,6 +111,8 @@ class MainUi(HasTraits):
                  style='custom', label="PCA", show_label=False),
             Item('prefmap', editor=InstanceEditor(),
                  style='custom', label="Prefmap", show_label=False),
+            Item('conjoint', editor=InstanceEditor(),
+                 style='custom', label="Conjoint", show_label=False),
             layout='tabbed'
             ), # end UI tabs group
         resizable = True,

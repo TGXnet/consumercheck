@@ -97,7 +97,8 @@ class ImporterXlsFile(HasTraits):
     ds_type = Enum(
         ('Design variable',
          'Sensory profiling',
-         'Consumer liking',)
+         'Consumer liking',
+         'Consumer attributes',)
         )
 
     def make_ds_name(self):

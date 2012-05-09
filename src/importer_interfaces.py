@@ -26,7 +26,8 @@ class IDataImporter(Interface):
     ds_type = Enum(
         ('Design variable',
          'Sensory profiling',
-         'Consumer liking',)
+         'Consumer liking',
+         'Consumer attributes',)
         )
     """The dataset type for this dataset."""
 
