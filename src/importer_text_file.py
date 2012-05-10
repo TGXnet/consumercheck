@@ -207,7 +207,7 @@ class ImporterTextFile(HasTraits):
                 corner = varnames.pop(0)
                 objnames = pd[corner].view().reshape(len(pd),-1)
                 objnames = objnames[:,0].tolist()
-                self.ds.object_names = [on.decode('utf-8') for on in objnames]
+                self.ds.object_names = [unicode(on).decode('utf-8') for on in objnames]
 
             dt = pd[varnames[0]].dtype
             pd = pd[varnames].view(dt).reshape(len(pd),-1)
