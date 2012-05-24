@@ -71,20 +71,29 @@ def make_dsl_mock():
     dsl = DatasetCollection()
     importer = ImporterMain()
     tdd = get_test_ds_path()
-#    dsl.add_dataset(importer.import_data('datasets/CheeseSensoryData.txt'))
-#    dsl.add_dataset(importer.import_data('datasets/SausageSensoryData.txt', True, True))
     dsl.add_dataset(importer.import_data(osp.join(tdd, 'Vine', 'A_labels.txt')))
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Vine', 'C_labels.txt')))
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Cheese', 'ConsumerLiking.txt')))
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Cheese', 'SensoryData.txt')))
     dsl._datasets['a_labels']._ds_name = 'Set A tull'
-    dsl._datasets['c_labels']._ds_name = 'Set C tull'
     dsl._datasets['a_labels']._dataset_type = 'Consumer liking'
+    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Vine', 'C_labels.txt')))
+    dsl._datasets['c_labels']._ds_name = 'Set C tull'
     dsl._datasets['c_labels']._dataset_type = 'Sensory profiling'
+    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Cheese', 'ConsumerLiking.txt')))
     dsl._datasets['consumerliking']._ds_name = 'Forbruker'
     dsl._datasets['consumerliking']._dataset_type = 'Consumer liking'
+    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Cheese', 'SensoryData.txt')))
     dsl._datasets['sensorydata']._ds_name = 'Sensorikk'
     dsl._datasets['sensorydata']._dataset_type = 'Sensory profiling'
+
+    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Conjoint', 'design.txt')))
+    dsl._datasets['design']._ds_name = 'Conjoint design'
+    dsl._datasets['design']._dataset_type = 'Design variable'
+    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Conjoint', 'overall_liking.txt')))
+    dsl._datasets['overall_liking']._ds_name = 'Overall liking'
+    dsl._datasets['overall_liking']._dataset_type = 'Consumer liking'
+    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Conjoint', 'consumerAttributes.txt')))
+    dsl._datasets['consumerattributes']._ds_name = 'Consumer Attributes'
+    dsl._datasets['consumerattributes']._dataset_type = 'Consumer attributes'
+
     return dsl
 
 
