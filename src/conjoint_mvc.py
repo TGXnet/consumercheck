@@ -1,52 +1,55 @@
 
-
 # stdlib imports
 import sys
 
-# Enthought imports
-from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
-                        PrototypedFrom, Property, on_trait_change)
-from traitsui.api import View, Group, Item, ModelView, RangeEditor
-from enable.api import BaseTool
 import numpy as np
 
+# Enthought imports
+from traits.api import (HasTraits, Instance, Str, Int, List, Button, DelegatesTo,
+                        Property, on_trait_change)
+from traitsui.api import View, Group, Item, ModelView
+
+
 # Local imports
-from nipals import PCA
 from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_windows import SinglePlotWindow
 from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
-
-
-#Double click tool
-class DClickTool(BaseTool):
-    plot_dict = {}
-    #List that holds the function names
-    func_list = ['plot_random','plot_fixed', 'plot_means']
-    #Triggered on double click
-    def normal_left_dclick(self,event):
-        self._build_plot_list()
-        call_function = getattr(self.ref, self.plot_dict[self.component.title])()
-    #Builds a dictionary that holds the function names, based on func_list, with the window title as key
-    def _build_plot_list(self):
-        for e,i in enumerate(self.component.container.plot_components):
-            self.plot_dict[i.title] = self.func_list[e]
+from conjoint import RConjoint as RCJ
 
 
 class AConjointModel(HasTraits):
     """Represent the Conjoint model of a dataset."""
     name = Str()
-    plot_type = Str()
     nid = Str()
     # Shoud be Instance(PrefmapsContainer)
     # but who comes first?
     mother_ref = Instance(HasTraits)
-    ds = DataSet()
-    sub_ds = DataSet()
-    # FIXME: To be replaced by groups
+
+    # The imput data for calculation
+    design = DataSet()
+    consumer_liking = DataSet()
+    consumer_attributes = DataSet()
+
+    # Conjoint settings
+    structure = Int(1)
 
     # depends_on
     result = Property()
+
+
+    def _get_result(self):
+        cons_attr = self.consumer_attributes.matrix
+        sel_cons_attr = ['sex']
+        design_vars = self.design.matrix
+        sel_design_vars = ['Flavour', 'Sugarlevel']
+        cons_liking = self.consumer_liking.matrix
+        cons_liking_tag = self.consumer_liking._ds_name
+        cj_mod = RCJ(
+            self.structure,
+            cons_attr, sel_cons_attr,
+            design_vars, sel_design_vars,
+            cons_liking, cons_liking_tag)
 
 
 
@@ -56,7 +59,6 @@ class AConjointHandler(ModelView):
     name = DelegatesTo('model')
     nid = DelegatesTo('model')
 
-
     def __eq__(self, other):
         return self.nid == other
 
@@ -64,7 +66,6 @@ class AConjointHandler(ModelView):
         return self.nid != other
 
     def plot_random(self):
-        self.model.plot_type = 'Random Plot'
         s_plot = self._make_random_plot()
         spw = SinglePlotWindow(
             plot=s_plot,
@@ -78,40 +79,6 @@ class AConjointHandler(ModelView):
         pc_tab = res.scores
         labels = self.model.sub_ds.object_names
         plot = PCScatterPlot(pc_tab, labels, title="Random")
-        return plot
-
-    def plot_fixed(self):
-        self.model.plot_type = 'Fixed Plot'
-        l_plot = self._make_fixed_plot()
-        spw = SinglePlotWindow(
-            plot=l_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-    def _make_fixed_plot(self):
-        res = self.model.result
-        pc_tab = res.loadings
-        labels = self.model.sub_ds.variable_names
-        plot = PCScatterPlot(pc_tab, labels, title="Fixed")
-        return plot
-    
-    def plot_means(self):
-        self.model.plot_type = 'Means Plot'
-        l_plot = self._make_means_plot()
-        spw = SinglePlotWindow(
-            plot=l_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-    def _make_means_plot(self):
-        res = self.model.result
-        pc_tab = res.loadings
-        labels = self.model.sub_ds.variable_names
-        plot = PCScatterPlot(pc_tab, labels, title="Means")
         return plot
 
 
@@ -131,7 +98,6 @@ class AConjointHandler(ModelView):
 
     def _wind_title(self):
         ds_name = self.model.ds._ds_name
-        dstype = self.model.plot_type
         return "{0} | Conjoint - {1} - ConsumerCheck".format(ds_name, dstype)
 
 
@@ -149,69 +115,33 @@ a_conjoint_view = View(
 
 
 if __name__ == '__main__':
-    # Things to fix for testing
-    # mother_ref: standardize, pc_to_calc
-    from traits.api import Bool, Enum
-    from tests.conftest import make_ds_mock
-    ds = make_ds_mock()
+    from tests.conftest import make_dsl_mock
+    dsl = make_dsl_mock()
 
-    class MocMother(HasTraits):
-        standardize = Bool(True)
-        pc_to_calc = Enum(2,3,4,5,6)
-
-    moc_mother = MocMother()
-    
     model = AConjointModel(
+        nid='abc',
         name='Tore test',
-        ds=ds,
-        mother_ref=moc_mother)
+        design=dsl.get_by_id('design'),
+        consumer_liking=dsl.get_by_id('overall_liking'),
+        consumer_attributes=dsl.get_by_id('consumerattributes'))
+
 
     class AConjointTestHandler(AConjointHandler):
-        bt_plot_overview = Button('Plot overview')
         bt_plot_scores = Button('Plot scores')
-        bt_plot_loadings = Button('Plot loadings')
-        bt_plot_corr_loadings = Button('Plot corr loadings')
-        bt_plot_expl_var = Button('Plot explainded variance')
-
-        @on_trait_change('bt_plot_overview')
-        def _on_bpo(self, obj, name, new):
-            self.plot_overview()
 
         @on_trait_change('bt_plot_scores')
         def _on_bps(self, obj, name, new):
-            self.plot_scores()
-
-        @on_trait_change('bt_plot_loadings')
-        def _on_bpl(self, obj, name, new):
-            self.plot_loadings()
-
-        @on_trait_change('bt_plot_corr_loadings')
-        def _on_bpcl(self, obj, name, new):
-            self.plot_corr_loading()
-
-        @on_trait_change('bt_plot_expl_var')
-        def _on_bpev(self, obj, name, new):
-            self.plot_expl_var()
+            self.plot_random()
 
         traits_view = View(
             Group(
                 Group(
                     Item('model.name'),
-                    # Item('model.standardize'),
-                    Item('model.pc_to_calc'),
-                    Item('show_sel_obj',
-                         show_label=False),
-                    Item('show_sel_var',
-                         show_label=False),
                     orientation='vertical',
                     ),
                 Item('', springy=True),
                 Group(
-                    Item('bt_plot_overview'),
                     Item('bt_plot_scores'),
-                    Item('bt_plot_loadings'),
-                    Item('bt_plot_corr_loadings'),
-                    Item('bt_plot_expl_var'),
                     ),
                 orientation='horizontal',
                 ),
@@ -222,4 +152,5 @@ if __name__ == '__main__':
     controller = AConjointTestHandler(
         model=model)
     with np.errstate(invalid='ignore'):
-        controller.configure_traits()
+        # controller.configure_traits()
+        controller.model.print_traits()
