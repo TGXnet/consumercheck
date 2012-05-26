@@ -24,11 +24,11 @@ r('library(lme4)')
 # Set working directory where latest version of Alexandra's conjoint package
 # is stored. SPECIFIC FOR OLI'S PC 
 # r('dir<-"//ad.local/dfs/AAS-Users/oliver.tomic/Documents/Work/ConsumerCheck/ConjointConsumerCheck/ConjointClass"')
-r('dir<-"/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/ConJoint/OliverMøte_2012-05-04/ConjointConsumerCheck_27_04_2012"')
+r('dir<-"/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27"')
 r('setwd(dir)')
 r('source(paste(getwd(),"/pgm/conjoint.r",sep=""))')
 
-
+print(r('search()'))
 
 class RConjoint:
     """
@@ -73,35 +73,33 @@ class RConjoint:
 
         # Transfer consumer attribute data from Python to R and build data 
         # frame in R space
-        r['consAttMat'] = consAtts.data
-        r['consAttVars'] = consAtts.varNames
-        r['consAttObj'] = consAtts.objNames
+        r['consAttMat'] = consAtts.matrix
+        r['consAttVars'] = [n.encode('ascii', 'ignore') for n in consAtts.variable_names]
+        r['consAttObj'] = [n.encode('ascii', 'ignore') for n in consAtts.object_names]
         r('consum.attr <- as.data.frame(consAttMat)')
         r('colnames(consum.attr) <- consAttVars')
         r('rownames(consum.attr) <- consAttObj')
 
         if verbose:
             print(r('consum.attr'))
-
             print; print '----- 3 -----'; print
 
-        r['designMat'] = design.data
-        r['designVars'] = design.varNames
-        r['designObj'] = design.objNames
+        r['designMat'] = design.matrix
+        r['designVars'] = [n.encode('ascii', 'ignore') for n in design.variable_names]
+        r['designObj'] = [n.encode('ascii', 'ignore') for n in design.object_names]
         r('design.matr <- as.data.frame(designMat)')
         r('colnames(design.matr) <- designVars')
         r('rownames(design.matr) <- designObj')
 
         if verbose:
             print(r('design.matr'))
-
             print; print '----- 4 -----'; print
 
         # Transfer odour/flavour liking data from Python to R and build data 
         # frame in R space
-        r['consLikingMat'] = consLiking.data
-        r['consLikingVars'] = consLiking.varNames
-        r['consLikingObj'] = consLiking.objNames
+        r['consLikingMat'] = consLiking.matrix
+        r['consLikingVars'] = [n.encode('ascii', 'ignore') for n in consLiking.variable_names]
+        r['consLikingObj'] = [n.encode('ascii', 'ignore') for n in consLiking.object_names]
         r('cons.liking <- as.data.frame(consLikingMat)')
         r('colnames(cons.liking) <- consLikingVars')
         r('rownames(cons.liking) <- consLikingObj')
@@ -112,6 +110,7 @@ class RConjoint:
         self.consLiking = consLiking
 
         if verbose:
+            print(r('cons.liking'))
             print; print '----- 5 -----'; print
 
         # Construct a list in R space that holds data and names of liking matrices
@@ -182,7 +181,8 @@ class RConjoint:
 
         if verbose:
             print rCommand_runAnalysis
-        r(rCommand_runAnalysis)
+            print(r('ls()'))
+        print(r(rCommand_runAnalysis))
 
         if verbose:
             print; print '----- 9 -----'; print

@@ -15,7 +15,7 @@ from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_windows import SinglePlotWindow
 from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
-from conjoint import RConjoint as RCJ
+import conjoint as cj
 
 
 class AConjointModel(HasTraits):
@@ -39,13 +39,13 @@ class AConjointModel(HasTraits):
 
 
     def _get_result(self):
-        cons_attr = self.consumer_attributes.matrix
+        cons_attr = self.consumer_attributes
         sel_cons_attr = ['sex']
-        design_vars = self.design.matrix
+        design_vars = self.design
         sel_design_vars = ['Flavour', 'Sugarlevel']
-        cons_liking = self.consumer_liking.matrix
-        cons_liking_tag = self.consumer_liking._ds_name
-        cj_mod = RCJ(
+        cons_liking = self.consumer_liking
+        cons_liking_tag = 'odourflavour'
+        cj_mod = cj.RConjoint(
             self.structure,
             cons_attr, sel_cons_attr,
             design_vars, sel_design_vars,
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         nid='abc',
         name='Tore test',
         design=dsl.get_by_id('design'),
-        consumer_liking=dsl.get_by_id('overall_liking'),
+        consumer_liking=dsl.get_by_id('odour-flavour_liking'),
         consumer_attributes=dsl.get_by_id('consumerattributes'))
 
 
