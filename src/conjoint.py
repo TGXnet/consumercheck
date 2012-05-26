@@ -28,7 +28,6 @@ r('dir<-"/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointC
 r('setwd(dir)')
 r('source(paste(getwd(),"/pgm/conjoint.r",sep=""))')
 
-print(r('search()'))
 
 class RConjoint:
     """
@@ -57,10 +56,12 @@ class RConjoint:
 
         type <consLikngTag>: string (data array tag from ConsumerCheck)
         """
-        verbose = True
+        verbose = False
 
         if verbose:
             print; print '----- 1 -----'; print
+
+            print(r('search()'))
 
             print; print 'MODEL SETTINGS'
             print '--------------'
@@ -182,7 +183,9 @@ class RConjoint:
         if verbose:
             print rCommand_runAnalysis
             print(r('ls()'))
-        print(r(rCommand_runAnalysis))
+            print(r(rCommand_runAnalysis))
+        else:
+            r(rCommand_runAnalysis)
 
         if verbose:
             print; print '----- 9 -----'; print
@@ -246,9 +249,9 @@ class RConjoint:
         Returns residuals from R conjoint function.
         """
         # Get size of liking data array. 
-        numRows, numCols = np.shape(self.consLiking.data)
-        #print 'number of rows:', numRows
-        #print 'number of cols:', numCols
+        numRows, numCols = np.shape(self.consLiking.matrix)
+        ## print 'number of rows:', numRows
+        ## print 'number of cols:', numCols
 
         r('residTab <- res.gm[[1]][5]')
 
@@ -256,7 +259,7 @@ class RConjoint:
         residTableDict['data'] = np.reshape(r['residTab']['residuals'], \
                 (numRows, numCols))
 
-        residTableDict['rowNames'] = self.consLiking.objNames
-        residTableDict['colNames'] = self.consLiking.varNames
+        residTableDict['rowNames'] = self.consLiking.object_names
+        residTableDict['colNames'] = self.consLiking.variable_names
 
         return residTableDict

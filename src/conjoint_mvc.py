@@ -18,6 +18,7 @@ from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
 import conjoint as cj
 
 
+
 class AConjointModel(HasTraits):
     """Represent the Conjoint model of a dataset."""
     name = Str()
@@ -40,7 +41,7 @@ class AConjointModel(HasTraits):
 
     def _get_result(self):
         cons_attr = self.consumer_attributes
-        sel_cons_attr = ['sex']
+        sel_cons_attr = ['Sex']
         design_vars = self.design
         sel_design_vars = ['Flavour', 'Sugarlevel']
         cons_liking = self.consumer_liking
@@ -50,8 +51,6 @@ class AConjointModel(HasTraits):
             cons_attr, sel_cons_attr,
             design_vars, sel_design_vars,
             cons_liking, cons_liking_tag)
-
-
 
 
 class AConjointHandler(ModelView):
