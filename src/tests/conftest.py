@@ -84,15 +84,31 @@ def make_dsl_mock():
     dsl._datasets['sensorydata']._ds_name = 'Sensorikk'
     dsl._datasets['sensorydata']._dataset_type = 'Sensory profiling'
 
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Conjoint', 'design.txt')))
+    # Conjoint test data
+    dsl.add_dataset(importer.import_data(
+        osp.join(tdd, 'Conjoint', 'design.txt')))
     dsl._datasets['design']._ds_name = 'Conjoint design'
     dsl._datasets['design']._dataset_type = 'Design variable'
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Conjoint', 'overall_liking.txt')))
-    dsl._datasets['overall_liking']._ds_name = 'Overall liking'
-    dsl._datasets['overall_liking']._dataset_type = 'Consumer liking'
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Conjoint', 'consumerAttributes.txt')))
+
+    dsl.add_dataset(importer.import_data(
+        osp.join(tdd, 'Conjoint', 'consumerAttributes.txt')))
     dsl._datasets['consumerattributes']._ds_name = 'Consumer Attributes'
     dsl._datasets['consumerattributes']._dataset_type = 'Consumer attributes'
+
+    dsl.add_dataset(importer.import_data(
+        osp.join(tdd, 'Conjoint', 'odour-flavour_liking.txt')))
+    dsl._datasets['odour-flavour_liking']._ds_name = 'Odour flavor liking'
+    dsl._datasets['odour-flavour_liking']._dataset_type = 'Consumer liking'
+
+    dsl.add_dataset(importer.import_data(
+        osp.join(tdd, 'Conjoint', 'consistency_liking.txt')))
+    dsl._datasets['consistency_liking']._ds_name = 'Consistency liking'
+    dsl._datasets['consistency_liking']._dataset_type = 'Consumer liking'
+
+    dsl.add_dataset(importer.import_data(
+        osp.join(tdd, 'Conjoint', 'overall_liking.txt')))
+    dsl._datasets['overall_liking']._ds_name = 'Overall liking'
+    dsl._datasets['overall_liking']._dataset_type = 'Consumer liking'
 
     return dsl
 
