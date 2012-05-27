@@ -9,6 +9,7 @@ Wraps Alexandra's conjoint function and accesses it via pyper
 """
 
 # Import necessary modules
+import string
 import pyper
 import numpy as np
 
@@ -29,6 +30,11 @@ r('setwd(dir)')
 r('source(paste(getwd(),"/pgm/conjoint.r",sep=""))')
 
 
+def asciify(names):
+    """Take a list of unicodes an tur each elemet into ascii strings"""
+    return [n.encode('ascii', 'ignore') for n in names]
+
+
 class RConjoint:
     """
     A wrapper around Alexandra's conjoint function in R
@@ -37,7 +43,7 @@ class RConjoint:
     def __init__(self, structure, \
                  consAtts, selected_consAtts, \
                  design, selected_designVars, \
-                 consLiking, consLikingTag):
+                 consLiking):
         """
         Input:
         ======
@@ -53,10 +59,19 @@ class RConjoint:
         type <selected_designVars>: list holding strings
 
         type <consLiking>: class arrayIO from statTools
-
-        type <consLikngTag>: string (data array tag from ConsumerCheck)
         """
-        verbose = False
+        verbose = True
+
+
+        # Convert to ascii strings
+        selected_consAtts = asciify(selected_consAtts)
+        selected_designVars = asciify(selected_designVars)
+
+        # Generate consumer liking tag acceptable for R
+        # Make list of character to trow away
+        throw_chrs = string.maketrans(string.ascii_letters, ' '*len(string.ascii_letters))
+        # Filter dataset name
+        consLikingTag = consLiking._ds_name.translate(None, throw_chrs)
 
         if verbose:
             print; print '----- 1 -----'; print
@@ -75,8 +90,8 @@ class RConjoint:
         # Transfer consumer attribute data from Python to R and build data 
         # frame in R space
         r['consAttMat'] = consAtts.matrix
-        r['consAttVars'] = [n.encode('ascii', 'ignore') for n in consAtts.variable_names]
-        r['consAttObj'] = [n.encode('ascii', 'ignore') for n in consAtts.object_names]
+        r['consAttVars'] = asciify(consAtts.variable_names)
+        r['consAttObj'] = asciify(consAtts.object_names)
         r('consum.attr <- as.data.frame(consAttMat)')
         r('colnames(consum.attr) <- consAttVars')
         r('rownames(consum.attr) <- consAttObj')
@@ -86,8 +101,8 @@ class RConjoint:
             print; print '----- 3 -----'; print
 
         r['designMat'] = design.matrix
-        r['designVars'] = [n.encode('ascii', 'ignore') for n in design.variable_names]
-        r['designObj'] = [n.encode('ascii', 'ignore') for n in design.object_names]
+        r['designVars'] = asciify(design.variable_names)
+        r['designObj'] = asciify(design.object_names)
         r('design.matr <- as.data.frame(designMat)')
         r('colnames(design.matr) <- designVars')
         r('rownames(design.matr) <- designObj')
@@ -99,8 +114,8 @@ class RConjoint:
         # Transfer odour/flavour liking data from Python to R and build data 
         # frame in R space
         r['consLikingMat'] = consLiking.matrix
-        r['consLikingVars'] = [n.encode('ascii', 'ignore') for n in consLiking.variable_names]
-        r['consLikingObj'] = [n.encode('ascii', 'ignore') for n in consLiking.object_names]
+        r['consLikingVars'] = asciify(consLiking.variable_names)
+        r['consLikingObj'] = asciify(consLiking.object_names)
         r('cons.liking <- as.data.frame(consLikingMat)')
         r('colnames(cons.liking) <- consLikingVars')
         r('rownames(cons.liking) <- consLikingObj')
@@ -190,7 +205,11 @@ class RConjoint:
         if verbose:
             print; print '----- 9 -----'; print
 
-            print(r('res.gm'))
+            # print(r('res.gm'))
+            print(r('res.gm[[1]][1]'))
+            print(r('res.gm[[1]][2]'))
+            print(r('res.gm[[1]][3]'))
+
 
     def randomTable(self):
         """
