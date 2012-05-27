@@ -7,7 +7,7 @@ import numpy as np
 # Enthought imports
 from traits.api import (HasTraits, Instance, Str, Int, List, Button, DelegatesTo,
                         Property, on_trait_change)
-from traitsui.api import View, Group, Item, ModelView
+from traitsui.api import View, Group, Item, ModelView, CheckListEditor
 
 
 # Local imports
@@ -29,8 +29,10 @@ class AConjointModel(HasTraits):
 
     # The imput data for calculation
     design = DataSet()
-    consumer_liking = DataSet()
-    consumer_attributes = DataSet()
+    sel_design_vars = List()
+    cons_attr = DataSet()
+    sel_cons_attr_vars = List()
+    cons_liking = DataSet()
 
     # Conjoint settings
     structure = Int(1)
@@ -40,17 +42,11 @@ class AConjointModel(HasTraits):
 
 
     def _get_result(self):
-        cons_attr = self.consumer_attributes
-        sel_cons_attr = ['Sex']
-        design_vars = self.design
-        sel_design_vars = ['Flavour', 'Sugarlevel']
-        cons_liking = self.consumer_liking
-        cons_liking_tag = 'odourflavour'
         cj_mod = cj.RConjoint(
             self.structure,
-            cons_attr, sel_cons_attr,
-            design_vars, sel_design_vars,
-            cons_liking, cons_liking_tag)
+            self.cons_attr, self.sel_cons_attr_vars,
+            self.design, self.sel_design_vars,
+            self.cons_liking)
 
 
 class AConjointHandler(ModelView):
@@ -58,27 +54,28 @@ class AConjointHandler(ModelView):
     name = DelegatesTo('model')
     nid = DelegatesTo('model')
 
+    # design_vars = List(['Flavour', 'Sugarlevel'])
+    design_vars = List()
+    # cons_attr_vars = List(['Sex', 'Age'])
+    cons_attr_vars = List()
+
+
     def __eq__(self, other):
         return self.nid == other
+
 
     def __ne__(self, other):
         return self.nid != other
 
-    def plot_random(self):
-        s_plot = self._make_random_plot()
-        spw = SinglePlotWindow(
-            plot=s_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
 
-    def _make_random_plot(self):
-        res = self.model.result
-        pc_tab = res.scores
-        labels = self.model.sub_ds.object_names
-        plot = PCScatterPlot(pc_tab, labels, title="Random")
-        return plot
+    def model_design_changed(self, info):
+        print("Design changed")
+        self.design_vars = self.model.design.variable_names
+
+
+    def model_cons_attr_changed(self, info):
+        print("Cons attr changed")
+        self.cons_attr_vars = self.model.cons_attr.variable_names
 
 
     def _show_plot_window(self, plot_window):
@@ -100,16 +97,36 @@ class AConjointHandler(ModelView):
         return "{0} | Conjoint - {1} - ConsumerCheck".format(ds_name, dstype)
 
 
-a_conjoint_view = View(
+gr_sel = Group(
+    Item('model.name',
+         style='readonly'),
     Group(
         Group(
-            Item('model.name'),
-            # Item('model.standardize'),
-            orientation='vertical',
+            Item('model.sel_design_vars',
+                 editor=CheckListEditor(name='object.design_vars'),
+                 style='custom',
+                 show_label=False,
+                 ),
+            show_border=True,
+            label='Test1',
             ),
-        Item('', springy=True),
+        Group(
+            Item('model.sel_cons_attr_vars',
+                 editor=CheckListEditor(name='object.cons_attr_vars'),
+                 style='custom',
+                 show_label=False,
+                 ),
+            show_border=True,
+            label='Test2',
+            ),
         orientation='horizontal',
         ),
+    orientation='vertical',
+    )
+
+
+a_conjoint_view = View(
+    gr_sel,
     )
 
 
@@ -118,38 +135,34 @@ if __name__ == '__main__':
     dsl = make_dsl_mock()
 
     model = AConjointModel(
-        nid='abc',
-        name='Tore test',
+        nid='conjoint',
+        name='Conjoint test',
         design=dsl.get_by_id('design'),
-        consumer_liking=dsl.get_by_id('odour-flavour_liking'),
-        consumer_attributes=dsl.get_by_id('consumerattributes'))
+        cons_liking=dsl.get_by_id('odour-flavour_liking'),
+        cons_attr=dsl.get_by_id('consumerattributes'))
 
 
     class AConjointTestHandler(AConjointHandler):
-        bt_plot_scores = Button('Plot scores')
+        bt_calc_conjoint = Button('Calc Conjoint')
 
-        @on_trait_change('bt_plot_scores')
-        def _on_bps(self, obj, name, new):
-            self.plot_random()
+        @on_trait_change('bt_calc_conjoint')
+        def _on_bcc(self, obj, name, new):
+            self.model.print_traits()
 
         traits_view = View(
             Group(
+                gr_sel,
                 Group(
-                    Item('model.name'),
-                    orientation='vertical',
+                    Item('bt_calc_conjoint',
+                         show_label=False),
+                    show_border=True,
                     ),
-                Item('', springy=True),
-                Group(
-                    Item('bt_plot_scores'),
-                    ),
-                orientation='horizontal',
                 ),
             resizable=True,
             )
 
 
-    controller = AConjointTestHandler(
-        model=model)
+    controller = AConjointTestHandler(model=model)
     with np.errstate(invalid='ignore'):
-        # controller.configure_traits()
-        controller.model.print_traits()
+        controller.configure_traits()
+        # controller.model.print_traits()
