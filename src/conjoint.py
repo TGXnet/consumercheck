@@ -40,9 +40,9 @@ class RConjoint:
     A wrapper around Alexandra's conjoint function in R
     """
 
-    def __init__(self, structure, \
-                 consAtts, selected_consAtts, \
-                 design, selected_designVars, \
+    def __init__(self, structure,
+                 consAtts, selected_consAtts,
+                 design, selected_designVars,
                  consLiking):
         """
         Input:
@@ -216,52 +216,60 @@ class RConjoint:
         Returns random table from R conjoint function.
         """
         r('randTab <- res.gm[[1]][1]')
+        print(r('randTab'))
 
         randTableDict = {}
         randTableDict['data'] = r['randTab']['rand.table']
-        randTableDict['colNames'] = r['colnames(res.gm$odourflavour$rand.table)']
-        randTableDict['rowNames'] = r['rownames(res.gm$odourflavour$rand.table)']
+        randTableDict['colNames'] = r['colnames(randTab$rand.table)']
+        randTableDict['rowNames'] = r['rownames(randTab$rand.table)']
 
         return randTableDict
+
 
     def anovaTable(self):
         """
         Returns ANOVA table from R conjoint function.
         """
         r('anovaTab <- res.gm[[1]][2]')
+        print(r('anovaTab'))
 
         anovaTableDict = {}
         anovaTableDict['data'] = r['anovaTab']['anova.table']
-        anovaTableDict['colNames'] = r['colnames(res.gm$odourflavour$anova.table)']
-        anovaTableDict['rowNames'] = r['rownames(res.gm$odourflavour$anova.table)']
+        anovaTableDict['colNames'] = r['colnames(anovaTab$anova.table)']
+        anovaTableDict['rowNames'] = r['rownames(anovaTab$anova.table)']
 
         return anovaTableDict
+
 
     def lsmeansTable(self):
         """
         Returns LS means table from R conjoint function.
         """
         r('lsmeansTab <- res.gm[[1]][3]')
+        print(r('lsmeansTab'))
 
         lsmeansTableDict = {}
         lsmeansTableDict['data'] = r['lsmeansTab']['lsmeans.table']
-        lsmeansTableDict['colNames'] = r['colnames(res.gm$odourflavour$lsmeans.table)']
-        lsmeansTableDict['rowNames'] = r['rownames(res.gm$odourflavour$lsmeans.table)']
+        lsmeansTableDict['colNames'] = r['colnames(lsmeansTab$lsmeans.table)']
+        lsmeansTableDict['rowNames'] = r['rownames(lsmeansTab$lsmeans.table)']
 
         return lsmeansTableDict
+
 
     def lsmeansDiffTable(self):
         """
         Returns table of differences between LS means from R conjoint function.
         """
         r('lsmeansDiffTab <- res.gm[[1]][4]')
+        print(r('lsmeansDiffTab'))
 
         lsmeansDiffTableDict = {}
         lsmeansDiffTableDict['data'] = r['lsmeansDiffTab']['diffs.lsmeans.table']
-        lsmeansDiffTableDict['colNames'] = r['colnames(res.gm$odourflavour$diffs.lsmeans.table)']
-        lsmeansDiffTableDict['rowNames'] = r['rownames(res.gm$odourflavour$diffs.lsmeans.table)']
+        lsmeansDiffTableDict['colNames'] = r['colnames(lsmeansDiffTab$diffs.lsmeans.table)']
+        lsmeansDiffTableDict['rowNames'] = r['rownames(lsmeansDiffTab$diffs.lsmeans.table)']
 
         return lsmeansDiffTableDict
+
 
     def residualsTable(self):
         """
@@ -273,10 +281,12 @@ class RConjoint:
         ## print 'number of cols:', numCols
 
         r('residTab <- res.gm[[1]][5]')
+        print(r('residTab'))
 
         residTableDict = {}
-        residTableDict['data'] = np.reshape(r['residTab']['residuals'], \
-                (numRows, numCols))
+        residTableDict['data'] = np.reshape(
+            r['residTab']['residuals'],
+            (numRows, numCols))
 
         residTableDict['rowNames'] = self.consLiking.object_names
         residTableDict['colNames'] = self.consLiking.variable_names
