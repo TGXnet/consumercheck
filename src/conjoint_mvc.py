@@ -15,8 +15,8 @@ from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_windows import SinglePlotWindow
 from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
+from ds_matrix_view import matrix_view
 import conjoint as cj
-
 
 
 class AConjointModel(HasTraits):
@@ -47,6 +47,7 @@ class AConjointModel(HasTraits):
             self.cons_attr, self.sel_cons_attr_vars,
             self.design, self.sel_design_vars,
             self.cons_liking)
+        return cj_mod
 
 
 class AConjointHandler(ModelView):
@@ -76,6 +77,41 @@ class AConjointHandler(ModelView):
     def model_cons_attr_changed(self, info):
         print("Cons attr changed")
         self.cons_attr_vars = self.model.cons_attr.variable_names
+
+
+
+    def show_random(self):
+        rand_map = self.model.result.randomTable()
+        cj_ds = self.cj_res_ds_adapter(rand_map)
+        cj_ds._ds_name = 'ANOVA table for random effects'
+        cj_ds.edit_traits(view=matrix_view)
+
+
+    def show_fixed(self):
+        anova_map = self.model.result.anovaTable()
+        cj_ds = self.cj_res_ds_adapter(anova_map)
+        cj_ds._ds_name = 'ANOVA table for fixed effects'
+        cj_ds.edit_traits(view=matrix_view)
+
+
+    def show_means(self):
+        ls_means_map = self.model.result.lsmeansTable()
+        cj_ds = self.cj_res_ds_adapter(ls_means_map)
+        cj_ds._ds_name = 'LS means (main effect and interaction)'
+        cj_ds.edit_traits(view=matrix_view)
+
+
+    def cj_res_ds_adapter(self, cj_res):
+        ds = DataSet()
+        print(cj_res['data'])
+        ds.matrix = cj_res['data']
+        print(cj_res['colNames'])
+        ds.variable_names = list(cj_res['colNames'])
+        print(cj_res['rowNames'])
+        ds.object_names = list(cj_res['rowNames'])
+        ds._is_calculated = True
+        ds.print_traits()
+        return ds
 
 
     def _show_plot_window(self, plot_window):
@@ -143,22 +179,40 @@ if __name__ == '__main__':
 
 
     class AConjointTestHandler(AConjointHandler):
-        bt_calc_conjoint = Button('Calc Conjoint')
+        bt_show_random = Button('Show random table')
+        bt_show_fixed = Button('Show fixed table')
+        bt_show_means = Button('Show means table')
 
-        @on_trait_change('bt_calc_conjoint')
-        def _on_bcc(self, obj, name, new):
-            self.model.print_traits()
+
+        @on_trait_change('bt_show_random')
+        def _on_bsr(self, obj, name, new):
+            self.show_random()
+
+        @on_trait_change('bt_show_fixed')
+        def _on_bsf(self, obj, name, new):
+            self.show_fixed()
+
+        @on_trait_change('bt_show_means')
+        def _on_bsm(self, obj, name, new):
+            self.show_means()
+
 
         traits_view = View(
             Group(
                 gr_sel,
                 Group(
-                    Item('bt_calc_conjoint',
+                    Item('bt_show_random',
+                         show_label=False),
+                    Item('bt_show_fixed',
+                         show_label=False),
+                    Item('bt_show_means',
                          show_label=False),
                     show_border=True,
                     ),
                 ),
             resizable=True,
+            width=400,
+            height=300,
             )
 
 
