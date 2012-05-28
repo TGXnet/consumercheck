@@ -60,8 +60,7 @@ class RConjoint:
 
         type <consLiking>: class arrayIO from statTools
         """
-        verbose = True
-
+        self.verbose = True
 
         # Convert to ascii strings
         selected_consAtts = asciify(selected_consAtts)
@@ -73,7 +72,7 @@ class RConjoint:
         # Filter dataset name
         consLikingTag = consLiking._ds_name.translate(None, throw_chrs)
 
-        if verbose:
+        if self.verbose:
             print; print '----- 1 -----'; print
 
             print(r('search()'))
@@ -96,7 +95,7 @@ class RConjoint:
         r('colnames(consum.attr) <- consAttVars')
         r('rownames(consum.attr) <- consAttObj')
 
-        if verbose:
+        if self.verbose:
             print(r('consum.attr'))
             print; print '----- 3 -----'; print
 
@@ -107,7 +106,7 @@ class RConjoint:
         r('colnames(design.matr) <- designVars')
         r('rownames(design.matr) <- designObj')
 
-        if verbose:
+        if self.verbose:
             print(r('design.matr'))
             print; print '----- 4 -----'; print
 
@@ -125,18 +124,18 @@ class RConjoint:
         # with row and column names.
         self.consLiking = consLiking
 
-        if verbose:
+        if self.verbose:
             print(r('cons.liking'))
             print; print '----- 5 -----'; print
 
         # Construct a list in R space that holds data and names of liking matrices
         rCommand_buildLikingList = 'list.consum.liking <- list(matr.liking=list({0}), names.liking=c("{1}"))'.format('cons.liking', consLikingTag)
 
-        if verbose:
+        if self.verbose:
             print rCommand_buildLikingList
         r(rCommand_buildLikingList)
 
-        if verbose:
+        if self.verbose:
             print; print '----- 6 -----'; print
 
         # Construct R list with R lists of product design variables as well as
@@ -166,11 +165,11 @@ class RConjoint:
 
         rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer={1})'.format(selDesVarStr, selConsAttStr)
 
-        if verbose:
+        if self.verbose:
             print rCommand_fixedFactors
         r(rCommand_fixedFactors)
 
-        if verbose:
+        if self.verbose:
             print(r('fixed'))
 
             print; print '----- 7 -----'; print
@@ -186,7 +185,7 @@ class RConjoint:
         facs.extend(selected_consAtts)
         r['facs'] = facs
 
-        if verbose:
+        if self.verbose:
             print(r('random'))
             print(r('response'))
             print(r('facs'))
@@ -195,20 +194,20 @@ class RConjoint:
 
         rCommand_runAnalysis = 'res.gm <- conjoint(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(structure)
 
-        if verbose:
+        if self.verbose:
             print rCommand_runAnalysis
             print(r('ls()'))
             print(r(rCommand_runAnalysis))
         else:
             r(rCommand_runAnalysis)
 
-        if verbose:
+        if self.verbose:
             print; print '----- 9 -----'; print
 
-            # print(r('res.gm'))
-            print(r('res.gm[[1]][1]'))
-            print(r('res.gm[[1]][2]'))
-            print(r('res.gm[[1]][3]'))
+            print(r('res.gm'))
+            # print(r('res.gm[[1]][1]'))
+            # print(r('res.gm[[1]][2]'))
+            # print(r('res.gm[[1]][3]'))
 
 
     def randomTable(self):
@@ -216,7 +215,8 @@ class RConjoint:
         Returns random table from R conjoint function.
         """
         r('randTab <- res.gm[[1]][1]')
-        print(r('randTab'))
+        if self.verbose:
+            print(r('randTab'))
 
         randTableDict = {}
         randTableDict['data'] = r['randTab']['rand.table']
@@ -231,7 +231,8 @@ class RConjoint:
         Returns ANOVA table from R conjoint function.
         """
         r('anovaTab <- res.gm[[1]][2]')
-        print(r('anovaTab'))
+        if self.verbose:
+            print(r('anovaTab'))
 
         anovaTableDict = {}
         anovaTableDict['data'] = r['anovaTab']['anova.table']
@@ -246,7 +247,8 @@ class RConjoint:
         Returns LS means table from R conjoint function.
         """
         r('lsmeansTab <- res.gm[[1]][3]')
-        print(r('lsmeansTab'))
+        if self.verbose:
+            print(r('lsmeansTab'))
 
         lsmeansTableDict = {}
         lsmeansTableDict['data'] = r['lsmeansTab']['lsmeans.table']
@@ -261,7 +263,8 @@ class RConjoint:
         Returns table of differences between LS means from R conjoint function.
         """
         r('lsmeansDiffTab <- res.gm[[1]][4]')
-        print(r('lsmeansDiffTab'))
+        if self.verbose:
+            print(r('lsmeansDiffTab'))
 
         lsmeansDiffTableDict = {}
         lsmeansDiffTableDict['data'] = r['lsmeansDiffTab']['diffs.lsmeans.table']
@@ -281,7 +284,9 @@ class RConjoint:
         ## print 'number of cols:', numCols
 
         r('residTab <- res.gm[[1]][5]')
-        print(r('residTab'))
+        if self.verbose:
+            pass
+            # print(r('residTab'))
 
         residTableDict = {}
         residTableDict['data'] = np.reshape(
