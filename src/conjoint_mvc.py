@@ -12,9 +12,6 @@ from traitsui.api import View, Group, Item, ModelView, CheckListEditor
 
 # Local imports
 from dataset import DataSet
-from plot_pc_scatter import PCScatterPlot
-from plot_windows import SinglePlotWindow
-from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
 from ds_matrix_view import matrix_view
 import conjoint as cj
 
@@ -126,11 +123,6 @@ class AConjointHandler(ModelView):
                 )
         else:
             raise Exception("Not implemented for this platform: ".format(sys.platform))
-
-
-    def _wind_title(self):
-        ds_name = self.model.ds._ds_name
-        return "{0} | Conjoint - {1} - ConsumerCheck".format(ds_name, dstype)
 
 
 gr_sel = Group(
