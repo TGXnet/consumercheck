@@ -6,7 +6,7 @@ import numpy as np
 
 # Enthought imports
 from traits.api import (HasTraits, Button, Enum, Instance, List, Str, DelegatesTo,
-                        Property, on_trait_change)
+                        Property, cached_property, on_trait_change)
 from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor
 
 
@@ -33,9 +33,9 @@ class AConjointModel(HasTraits):
     structure = Enum(1, 2, 3)
 
     # depends_on
-    result = Property()
+    result = Property(depends_on='sel_design_vars, sel_cons_attr_vars, structure')
 
-
+    @cached_property
     def _get_result(self):
         cj_mod = cj.RConjoint(
             self.structure,
