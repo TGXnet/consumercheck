@@ -5,9 +5,9 @@ import sys
 import numpy as np
 
 # Enthought imports
-from traits.api import (HasTraits, Instance, Str, Int, List, Button, DelegatesTo,
+from traits.api import (HasTraits, Button, Enum, Instance, List, Str, DelegatesTo,
                         Property, on_trait_change)
-from traitsui.api import View, Group, Item, ModelView, CheckListEditor
+from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor
 
 
 # Local imports
@@ -20,8 +20,6 @@ class AConjointModel(HasTraits):
     """Represent the Conjoint model of a dataset."""
     name = Str()
     nid = Str()
-    # Shoud be Instance(PrefmapsContainer)
-    # but who comes first?
     mother_ref = Instance(HasTraits)
 
     # The imput data for calculation
@@ -32,7 +30,7 @@ class AConjointModel(HasTraits):
     cons_liking = DataSet()
 
     # Conjoint settings
-    structure = Int(1)
+    structure = Enum(1, 2, 3)
 
     # depends_on
     result = Property()
@@ -136,7 +134,7 @@ gr_sel = Group(
                  show_label=False,
                  ),
             show_border=True,
-            label='Test1',
+            label='Design variables',
             ),
         Group(
             Item('model.sel_cons_attr_vars',
@@ -145,8 +143,17 @@ gr_sel = Group(
                  show_label=False,
                  ),
             show_border=True,
-            label='Test2',
+            label='Consumer attributes',
             ),
+        orientation='horizontal',
+        ),
+    Group(
+        Group(
+            Item('model.structure', show_label=False),
+            show_border=True,
+            label='Model structure type',
+            ),
+        Spring(),
         orientation='horizontal',
         ),
     orientation='vertical',
