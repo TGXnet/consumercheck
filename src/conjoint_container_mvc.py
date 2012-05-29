@@ -22,13 +22,24 @@ class ConjointsContainer(HasTraits):
     model_structure_type = Enum(1, 2, 3)
 
 
-    def add_mapping(self, ds_id):
-        set_ds = self.dsl.get_by_id(ds_id)
-        map_name = set_ds._ds_name
-        map_id = set_ds._ds_id
-        mapping_model = AConjointModel(mother_ref=self,
-                                       nid=map_id,
-                                       name=map_name)
+    def add_mapping(self, liking_set_id):
+
+        def get_set(set_id):
+            return self.dsl.get_by_id(set_id)
+
+        liking_set = get_set(liking_set_id)
+        map_name = liking_set._ds_name
+        map_id = liking_set._ds_id
+        mapping_model = AConjointModel(
+            mother_ref=self,
+            nid=map_id, name=map_name,
+            design=self.dsl.get_by_name(self.selected_design),
+            sel_design_vars=self.chosen_design_vars,
+            cons_attr=self.dsl.get_by_name(self.selected_consumer_attr),
+            sel_cons_attr_vars=self.chosen_consumer_attr_vars,
+            cons_liking=liking_set,
+            structure=self.model_structure_type,
+            )
         mapping_handler = AConjointHandler(mapping_model)
         self.mappings.append(mapping_handler)
         return map_name
