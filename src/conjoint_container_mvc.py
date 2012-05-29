@@ -69,8 +69,8 @@ class ConjointsHandler(ModelView):
 
     @on_trait_change('model:selected_design')
     def _handle_design_choice(self, obj, ref, new):
-        self.model.chosen_design_vars = []
-        self.available_design_vars = self.model.dsl.get_by_name(new).variable_names
+        obj.chosen_design_vars = []
+        self.available_design_vars = obj.dsl.get_by_name(new).variable_names
 
 
     # Not needed
@@ -81,8 +81,8 @@ class ConjointsHandler(ModelView):
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):
-        self.model.chosen_consumer_attr_vars = []
-        self.available_consumer_attr_vars = self.model.dsl.get_by_name(new).variable_names
+        obj.chosen_consumer_attr_vars = []
+        self.available_consumer_attr_vars = obj.dsl.get_by_name(new).variable_names
 
 
     # Not needed
@@ -105,10 +105,9 @@ class ConjointsHandler(ModelView):
         ndiff = new.difference(old)
 
         if odiff:
-            self.model.remove_mapping(list(odiff)[0])
+            obj.remove_mapping(list(odiff)[0])
         elif ndiff:
-            self.model.add_mapping(list(ndiff)[0])
-            
+            obj.add_mapping(list(ndiff)[0])
 
 
 conjoints_view = View(
