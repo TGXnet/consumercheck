@@ -13,13 +13,13 @@ from conjoint_mvc import AConjointHandler, a_conjoint_view
 
 
 def dclk_random(obj):
-    obj.plot_random()
+    obj.show_random()
 
 def dclk_fixed(obj):
-    obj.plot_fixed()
+    obj.show_fixed()
 
 def dclk_means(obj):
-    obj.plot_means()
+    obj.show_means()
 
 
 new_conjoint_tree = TreeEditor(
