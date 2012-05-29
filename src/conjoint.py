@@ -70,7 +70,8 @@ class RConjoint:
         # Make list of character to trow away
         throw_chrs = string.maketrans(string.ascii_letters, ' '*len(string.ascii_letters))
         # Filter dataset name
-        consLikingTag = consLiking._ds_name.translate(None, throw_chrs)
+        liking_name = consLiking._ds_name.encode('ascii', 'ignore')
+        consLikingTag = liking_name.translate(None, throw_chrs)
 
         if self.verbose:
             print; print '----- 1 -----'; print
