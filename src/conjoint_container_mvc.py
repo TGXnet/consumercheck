@@ -1,7 +1,7 @@
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, DelegatesTo, Bool, on_trait_change, Set
-from traitsui.api import View, Group, Item, ModelView, CheckListEditor
+from traits.api import HasTraits, Enum, Instance, List, Str, DelegatesTo, on_trait_change
+from traitsui.api import View, Group, Item, ModelView, CheckListEditor, EnumEditor
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
@@ -10,25 +10,25 @@ from conjoint_mvc import AConjointHandler, AConjointModel
 class ConjointsContainer(HasTraits):
     """Conjoint plugin container."""
     name = Str('Conjoint results')
-    # Instance(MainUi)?
-    # WeakRef?
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
     mappings = List(AConjointHandler)
-    # Fitting parameters
-    standardize = Bool(True)
-    design = List()
-    design_var = List()
-    attributes = List()
-    attributes_var = List()
-    st = List()
+
+    selected_design = Str()
+    chosen_design_vars = List(Str)
+    selected_consumer_attr = Str()
+    chosen_consumer_attr_vars = List(Str)
+    chosen_consumer_likings = List(Str)
+    model_structure_type = Enum(1, 2, 3)
 
 
     def add_mapping(self, ds_id):
         set_ds = self.dsl.get_by_id(ds_id)
         map_name = set_ds._ds_name
         map_id = set_ds._ds_id
-        mapping_model = AConjointModel(mother_ref=self, nid=map_id, name=map_name,ds=set_ds)
+        mapping_model = AConjointModel(mother_ref=self,
+                                       nid=map_id,
+                                       name=map_name)
         mapping_handler = AConjointHandler(mapping_model)
         self.mappings.append(mapping_handler)
         return map_name
@@ -41,50 +41,64 @@ class ConjointsContainer(HasTraits):
 class ConjointsHandler(ModelView):
     name = DelegatesTo('model')
     # Used by tree editor in ui_tab_conjoint
-    design = DelegatesTo('model')
-    design_var = DelegatesTo('model')
     mappings = DelegatesTo('model')
-    attributes = DelegatesTo('model')
-    attributes_var = DelegatesTo('model')
-    st = DelegatesTo('model')
     
-    liking = List()
-    
-    data_design = List()
-    data_design_var = List()
-    data_liking = List()
-    data_attributes = List()
-    data_attributes_var = List()
-    
+    available_designs = List()
+    available_design_vars = List()
+    available_consumer_attrs = List()
+    available_consumer_attr_vars = List()
+    available_consumer_likings = List()
 
 
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
     def _ds_changed(self, info):
-        data = []
-        for i in self.model.dsl.get_id_list_by_type('Design variable'):
-            data.append((self.model.dsl.get_by_id(i)._ds_name,i))
-        self.data_design = data
-        data = []
-        for i in self.model.dsl.get_id_list_by_type('Consumer liking'):
-            data.append((self.model.dsl.get_by_id(i)._ds_name,i))
-        self.data_liking = data
-        data = []
-        for i in self.model.dsl.get_id_list_by_type('Consumer attributes'):
-            data.append((self.model.dsl.get_by_id(i)._ds_name,i))
-        self.data_attributes = data
+
+        def id_by_type(type):
+            return self.model.dsl.get_id_list_by_type(type)
+
+        def name_from_id(id):
+            return self.model.dsl.get_by_id(id)._ds_name
+
+        self.available_designs = [name_from_id(i)
+                                  for i in id_by_type('Design variable')]
+        self.available_consumer_attrs = [name_from_id(i)
+                                         for i in id_by_type('Consumer attributes')]
+        self.available_consumer_likings = [(i, name_from_id(i))
+                                           for i in id_by_type('Consumer liking')]
 
 
-    @on_trait_change('design')
-    def handle_design(self, obj, ref, old, new):
-        self.design_var = []
-        self.data_design_var = self.model.dsl.get_by_name(new[0]).variable_names
+    @on_trait_change('model:selected_design')
+    def _handle_design_choice(self, obj, ref, new):
+        self.model.chosen_design_vars = []
+        self.available_design_vars = self.model.dsl.get_by_name(new).variable_names
 
-    @on_trait_change('design_var')
-    def handle_design_var(self, obj, ref, old, new):
+
+    # Not needed
+    @on_trait_change('model:chosen_design_vars')
+    def _handle_design_var_choice(self, obj, ref, old, new):
         print new
 
-    @on_trait_change('liking')
-    def handle_liking(self, obj, ref, old, new):
+
+    @on_trait_change('model:selected_consumer_attr')
+    def _handle_attributes(self, obj, ref, old, new):
+        self.model.chosen_consumer_attr_vars = []
+        self.available_consumer_attr_vars = self.model.dsl.get_by_name(new).variable_names
+
+
+    # Not needed
+    @on_trait_change('model:chosen_consumer_attr_vars')
+    def _handle_attributes_var(self, obj, ref, old, new):
+        print new
+
+
+    # Not needed
+    @on_trait_change('model:model_structure_type')
+    def _handle_model_choice(self, obj, ref, old, new):
+        print new
+
+
+    @on_trait_change('model:chosen_consumer_likings')
+    def _handle_liking_choice(self, obj, ref, old, new):
         old = set(old)
         new = set(new)
         odiff = old.difference(new)
@@ -95,33 +109,26 @@ class ConjointsHandler(ModelView):
         elif ndiff:
             self.model.add_mapping(list(ndiff)[0])
             
-    @on_trait_change('attributes')
-    def handle_attributes(self, obj, ref, old, new):
-        self.attributes_var = []
-        self.data_attributes_var = self.model.dsl.get_by_name(new[0]).variable_names
 
-    @on_trait_change('attributes_var')
-    def handle_attributes_var(self, obj, ref, old, new):
-        print new
 
 conjoints_view = View(
     Group(
         Group(
             Group(
-                Item('design',
-                     editor=CheckListEditor(name='data_design'),
+                Item('model.selected_design',
+                     editor=EnumEditor(name='handler.available_designs'),
                      style='simple',
                      show_label=False),
-                Item('design_var',
-                     editor=CheckListEditor(name='data_design_var'),
+                Item('model.chosen_design_vars',
+                     editor=CheckListEditor(name='handler.available_design_vars'),
                      style='custom',
                      show_label=False),
                 label='Consumer Design',
                 show_border=True,
                 ),
             Group(
-                Item('liking',
-                     editor=CheckListEditor(name='data_liking'),
+                Item('model.chosen_consumer_likings',
+                     editor=CheckListEditor(name='handler.available_consumer_likings'),
                      style='custom',
                      show_label=False),
                 label='Consumer Liking',
@@ -129,12 +136,12 @@ conjoints_view = View(
                 springy=True,
                 ),
             Group(
-                Item('attributes',
-                     editor=CheckListEditor(name='data_attributes'),
+                Item('model.selected_consumer_attr',
+                     editor=EnumEditor(name='handler.available_consumer_attrs'),
                      style='simple',
                      show_label=False),
-                Item('attributes_var',
-                     editor=CheckListEditor(name='data_attributes_var'),
+                Item('model.chosen_consumer_attr_vars',
+                     editor=CheckListEditor(name='handler.available_consumer_attr_vars'),
                      style='custom',
                      show_label=False),
                 label='Consumer Attributes',
@@ -142,7 +149,7 @@ conjoints_view = View(
                 ),
             orientation='horizontal',
             ),
-        Item('', springy=True),
+        Item('model.model_structure_type', springy=True),
         orientation='vertical',
         ),
     resizable=True,
