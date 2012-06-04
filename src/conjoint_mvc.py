@@ -1,6 +1,18 @@
 
 # stdlib imports
 import sys
+import logging
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    # datefmt='%m-%d %H:%M',
+                    datefmt='%y%m%dT%H:%M:%S',
+                    # filename='/temp/myapp.log',
+                    # filemode='w',
+                    )
+# logger = logging.getLogger(__name__)
+logger = logging.getLogger('tgxnet.nofima.cc.' + __file__.split('.')[0])
+# logger.setLevel(logging.DEBUG)
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 import numpy as np
 
@@ -25,7 +37,7 @@ class ConjointCalcState(HasTraits):
 
     traits_view = View(
         Item('messages',show_label=False, springy=True, style='custom' ),
-        Item('is_done',show_label=False, springy=True, style='readonly' ),
+        # Item('is_done',show_label=False, springy=True, style='readonly' ),
         height=400,
         width=1200,
         resizable=True,
@@ -65,6 +77,7 @@ class AConjointModel(HasTraits):
             self.cm.run_state = self.ccs
 
         self.ccs.edit_traits()
+        logger.info('Staring conjoint calculation')
         self.cm.schedule_calculation(
             self.structure,
             self.cons_attr, self.sel_cons_attr_vars,
@@ -72,10 +85,11 @@ class AConjointModel(HasTraits):
             self.cons_liking)
 
 
-    @on_trait_change('ccs.is_done')
-    def _result_ready(self):
-        print("Result ready")
-        self.result = self.cm.get_result()
+    @on_trait_change('ccs:is_done')
+    def _result_ready(self, obj, ref, old, new):
+        if new:
+            logger.info('Conjoint result ready')
+            self.result = self.cm.get_result()
 
 
     # @cached_property
@@ -109,12 +123,10 @@ class AConjointHandler(ModelView):
 
 
     def model_design_changed(self, info):
-        print("Design changed")
         self.design_vars = self.model.design.variable_names
 
 
     def model_cons_attr_changed(self, info):
-        print("Cons attr changed")
         self.cons_attr_vars = self.model.cons_attr.variable_names
 
 
@@ -145,14 +157,13 @@ class AConjointHandler(ModelView):
 
     def cj_res_ds_adapter(self, cj_res):
         ds = DataSet()
-        print(cj_res['data'])
+        logger.debug(cj_res['data'])
         ds.matrix = cj_res['data']
-        print(cj_res['colNames'])
+        logger.debug(cj_res['colNames'])
         ds.variable_names = list(cj_res['colNames'])
-        print(cj_res['rowNames'])
+        logger.debug(cj_res['rowNames'])
         ds.object_names = list(cj_res['rowNames'])
         ds._is_calculated = True
-        ds.print_traits()
         return ds
 
 
