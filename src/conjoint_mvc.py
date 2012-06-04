@@ -2,7 +2,7 @@
 # stdlib imports
 import sys
 import logging
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     # datefmt='%m-%d %H:%M',
                     datefmt='%y%m%dT%H:%M:%S',
@@ -24,27 +24,23 @@ from traitsui.menu import (OKButton)
 
 # Local imports
 from dataset import DataSet
-from ds_matrix_view import matrix_view
+# from ds_matrix_view import matrix_view
+from dataset_matrix import DatasetMatrix
 # import conjoint as cj
 from conjoint_machine import ConjointMachine
 
 
-
-
 class ConjointCalcState(HasTraits):
     messages = Str()
-    is_done = Bool(False)
+    is_done = Bool()
 
     traits_view = View(
         Item('messages',show_label=False, springy=True, style='custom' ),
-        # Item('is_done',show_label=False, springy=True, style='readonly' ),
-        height=400,
-        width=1200,
+        height=300,
+        width=600,
         resizable=True,
         buttons=[OKButton],
         )
-
-
 
 
 class AConjointModel(HasTraits):
@@ -135,36 +131,35 @@ class AConjointHandler(ModelView):
 
 
     def show_random(self):
-        # rand_map = self.model.result.randomTable()
-        cj_ds = self.cj_res_ds_adapter(self.model.result['randomTable'])
-        cj_ds._ds_name = 'ANOVA table for random effects'
-        cj_ds.edit_traits(view=matrix_view)
+        logger.info('Show randomTable')
+        cj_dm = self.cj_res_ds_adapter(self.model.result['randomTable'])
+        cj_dm._ds_name = 'ANOVA table for random effects'
+        cj_dm.edit_traits(view=cj_dm.get_view())
 
 
     def show_fixed(self):
-        # anova_map = self.model.result.anovaTable()
-        cj_ds = self.cj_res_ds_adapter(self.model.result['anovaTable'])
-        cj_ds._ds_name = 'ANOVA table for fixed effects'
-        cj_ds.edit_traits(view=matrix_view)
+        logger.info('Show fixed ANOVA table')
+        cj_dm = self.cj_res_ds_adapter(self.model.result['anovaTable'])
+        cj_dm._ds_name = 'ANOVA table for fixed effects'
+        cj_dm.edit_traits(view=cj_dm.get_view())
 
 
     def show_means(self):
-        # ls_means_map = self.model.result.lsmeansTable()
-        cj_ds = self.cj_res_ds_adapter(self.model.result['lsmeansTable'])
-        cj_ds._ds_name = 'LS means (main effect and interaction)'
-        cj_ds.edit_traits(view=matrix_view)
+        logger.info('Show LS mean ANOVA table')
+        cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'])
+        cj_dm._ds_name = 'LS means (main effect and interaction)'
+        cj_dm.edit_traits(view=cj_dm.get_view())
 
 
     def cj_res_ds_adapter(self, cj_res):
-        ds = DataSet()
+        dm = DatasetMatrix()
         logger.debug(cj_res['data'])
-        ds.matrix = cj_res['data']
+        dm.matrix = cj_res['data']
         logger.debug(cj_res['colNames'])
-        ds.variable_names = list(cj_res['colNames'])
+        dm.col_names = list(cj_res['colNames'])
         logger.debug(cj_res['rowNames'])
-        ds.object_names = list(cj_res['rowNames'])
-        ds._is_calculated = True
-        return ds
+        dm.row_names = list(cj_res['rowNames'])
+        return dm
 
 
     def _show_plot_window(self, plot_window):
