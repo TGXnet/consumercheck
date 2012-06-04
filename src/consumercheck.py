@@ -9,15 +9,17 @@ import numpy as np
 ## ETSConfig.toolkit = 'wx'
 # ETSConfig.toolkit = 'qt4'
 import traits.has_traits
-
 # 0: no check, 1: log warings, 2: error
 traits.has_traits.CHECK_INTERFACES = 0
+from traits.api import push_exception_handler
 
 # Local imports
 from splash_screen import splash
 from main_ui import MainUi
+from exception_handler import tgx_exception_handler
 
 
+# Setup logging
 LOGGING_LEVELS = {
     'critical': logging.CRITICAL,
     'error': logging.ERROR,
@@ -25,21 +27,33 @@ LOGGING_LEVELS = {
     'info': logging.INFO,
     'debug': logging.DEBUG,
     }
+LOG_FILENAME = 'cc.log'
+
 
 def main():
     parser = optparse.OptionParser()
     parser.add_option('-l', '--logging-level', help='Logging level')
     parser.add_option('-f', '--logging-file', help='Logging file name')
     (options, args) = parser.parse_args()
-    logging_level = LOGGING_LEVELS.get(options.logging_level, logging.WARNING)
+
+    # Configure logging
+    logging_level = LOGGING_LEVELS.get(options.logging_level, logging.DEBUG)
     logging.basicConfig(
         level=logging_level,
-        filename=options.logging_file,
-        format='%(asctime)s %(levelname)s: %(message)s %(pathname)s:%(lineno)d',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        # filename=options.logging_file,
+        filename=LOG_FILENAME,
+        # format='%(asctime)s %(levelname)s: %(message)s %(pathname)s:%(lineno)d',
+        # datefmt='%Y-%m-%d %H:%M:%S'
+        filemode='w',
         )
-    logging.info('Starting ConsumerCheck')
+    logger = logging.getLogger('tgxnet.nofima.cc')
+    logger.info('Starting ConsumerCheck')
+
+    # Open splashscreen
     splash.open()
+
+    # Set exception handler
+    push_exception_handler(tgx_exception_handler)
     mother = MainUi(
         splash = splash,
         )
