@@ -63,7 +63,7 @@ class AConjointModel(HasTraits):
     def update_conjoint_result(self):
         if not self.cm.run_state:
             self.cm.run_state = self.ccs
-
+            
         self.ccs.edit_traits()
         self.cm.schedule_calculation(
             self.structure,
@@ -94,9 +94,9 @@ class AConjointHandler(ModelView):
     nid = DelegatesTo('model')
 
     # design_vars = List(['Flavour', 'Sugarlevel'])
-    design_vars = List()
+    sel_design_vars = DelegatesTo('model')
     # cons_attr_vars = List(['Sex', 'Age'])
-    cons_attr_vars = List()
+    sel_cons_attr_vars = DelegatesTo('model')
 
     btn_calc_conjoint = Button('Calculate conjoint')
 
@@ -107,15 +107,15 @@ class AConjointHandler(ModelView):
     def __ne__(self, other):
         return self.nid != other
 
-
-    def model_design_changed(self, info):
+    @on_trait_change('model:mother_ref:chosen_design_vars')
+    def new_design(self, obj, ref, new):
         print("Design changed")
-        self.design_vars = self.model.design.variable_names
+        self.sel_design_vars = new
 
-
-    def model_cons_attr_changed(self, info):
+    @on_trait_change('model:mother_ref:chosen_consumer_attr_vars')
+    def new_cons_attr(self, obj, ref, new):
         print("Cons attr changed")
-        self.cons_attr_vars = self.model.cons_attr.variable_names
+        self.sel_cons_attr_vars = new
 
 
     def _btn_calc_conjoint_fired(self):
@@ -174,32 +174,6 @@ gr_sel = Group(
     Item('model.name',
          style='readonly'),
     Group(
-        Group(
-            Item('model.sel_design_vars',
-                 editor=CheckListEditor(name='object.design_vars'),
-                 style='custom',
-                 show_label=False,
-                 ),
-            show_border=True,
-            label='Design variables',
-            ),
-        Group(
-            Item('model.sel_cons_attr_vars',
-                 editor=CheckListEditor(name='object.cons_attr_vars'),
-                 style='custom',
-                 show_label=False,
-                 ),
-            show_border=True,
-            label='Consumer attributes',
-            ),
-        orientation='horizontal',
-        ),
-    Group(
-        Group(
-            Item('model.structure', show_label=False),
-            show_border=True,
-            label='Model structure type',
-            ),
         Item('btn_calc_conjoint', show_label=False),
         Spring(),
         orientation='horizontal',
