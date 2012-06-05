@@ -1,7 +1,7 @@
 
 # Enthought imports
 from traits.api import HasTraits, Enum, Instance, List, Str, DelegatesTo, on_trait_change
-from traitsui.api import View, Group, Item, ModelView, CheckListEditor, EnumEditor
+from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor, EnumEditor
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
@@ -159,7 +159,15 @@ conjoints_view = View(
                 ),
             orientation='horizontal',
             ),
-        Item('model.model_structure_type', springy=True),
+        Group(
+            Group(
+                Item('model.model_structure_type', show_label=False, width=150),
+                show_border=True,
+                label='Model structure',
+                ),
+            Spring(),
+            orientation='horizontal',
+            ),
         orientation='vertical',
         ),
     resizable=True,

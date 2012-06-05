@@ -32,7 +32,7 @@ from conjoint_machine import ConjointMachine
 
 class ConjointCalcState(HasTraits):
     messages = Str()
-    is_done = Bool()
+    is_done = Bool(True)
 
     traits_view = View(
         Item('messages',show_label=False, springy=True, style='custom' ),
@@ -41,6 +41,16 @@ class ConjointCalcState(HasTraits):
         resizable=True,
         buttons=[OKButton],
         )
+
+    def _messages_changed(self, new):
+        self.messages = '\n'.join(
+            [line for line in new.split('\n') if not line.startswith('try')])
+
+    def _is_done_changed(self, new):
+        if new:
+            logger.info('Conjoint result ready')
+        else:
+            logger.info('Staring conjoint calculation')
 
 
 class AConjointModel(HasTraits):
@@ -64,38 +74,20 @@ class AConjointModel(HasTraits):
     cm = Instance(ConjointMachine, ())
 
     # depends_on
-    # result = Property(depends_on='sel_design_vars, sel_cons_attr_vars, structure')
-    result = Dict()
+    result = Property(depends_on='sel_design_vars, sel_cons_attr_vars, structure')
 
-
-    def update_conjoint_result(self):
+    @cached_property
+    def _get_result(self):
         if not self.cm.run_state:
             self.cm.run_state = self.ccs
-            
-        self.ccs.edit_traits()
-        logger.info('Staring conjoint calculation')
+
         self.cm.schedule_calculation(
             self.structure,
             self.cons_attr, self.sel_cons_attr_vars,
             self.design, self.sel_design_vars,
             self.cons_liking)
-
-
-    @on_trait_change('ccs:is_done')
-    def _result_ready(self, obj, ref, old, new):
-        if new:
-            logger.info('Conjoint result ready')
-            self.result = self.cm.get_result()
-
-
-    # @cached_property
-    ## def _get_result(self):
-        ## cj_mod = cj.RConjoint(
-            ## self.structure,
-            ## self.cons_attr, self.sel_cons_attr_vars,
-            ## self.design, self.sel_design_vars,
-            ## self.cons_liking)
-        ## return cj_mod
+        self.ccs.edit_traits(kind='livemodal')
+        return self.cm.get_result()
 
 
 class AConjointHandler(ModelView):
@@ -103,14 +95,10 @@ class AConjointHandler(ModelView):
     name = DelegatesTo('model')
     nid = DelegatesTo('model')
 
-    # design_vars = List(['Flavour', 'Sugarlevel'])
     design_vars = List()
     sel_design_vars = DelegatesTo('model')
-    # cons_attr_vars = List(['Sex', 'Age'])
     cons_attr_vars = List()
     sel_cons_attr_vars = DelegatesTo('model')
-
-    btn_calc_conjoint = Button('Calculate conjoint')
 
     def __eq__(self, other):
         return self.nid == other
@@ -138,10 +126,6 @@ class AConjointHandler(ModelView):
     def model_cons_attr_changed(self, info):
         print("Cons attr changed")
         self.cons_attr_vars = self.model.cons_attr.variable_names
-
-
-    def _btn_calc_conjoint_fired(self):
-        self.model.update_conjoint_result()
 
 
     def show_random(self):
@@ -216,11 +200,10 @@ gr_sel = Group(
         ),
     Group(
         Group(
-            Item('model.structure', show_label=False),
+            Item('model.structure', show_label=False, width=150),
             show_border=True,
-            label='Model structure type',
+            label='Model structure',
             ),
-        Item('btn_calc_conjoint', show_label=False),
         Spring(),
         orientation='horizontal',
         ),
