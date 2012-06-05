@@ -45,7 +45,8 @@ def tgx_exception_handler(object, trait_name, old, new):
             height=150,
             )
 
-    ErrorDialog().edit_traits()
+    # FIXME: Make sure only one is open at the time
+    # ErrorDialog().edit_traits()
 
 
 if __name__ == '__main__':
