@@ -36,6 +36,7 @@ class ConjointCalcState(HasTraits):
 
     traits_view = View(
         Item('messages',show_label=False, springy=True, style='custom' ),
+        title='Conjoint calculation status',
         height=300,
         width=600,
         resizable=True,
@@ -131,22 +132,25 @@ class AConjointHandler(ModelView):
     def show_random(self):
         logger.info('Show randomTable')
         cj_dm = self.cj_res_ds_adapter(self.model.result['randomTable'])
-        cj_dm._ds_name = 'ANOVA table for random effects'
-        cj_dm.edit_traits(view=cj_dm.get_view())
+        # cj_dm._ds_name = 'ANOVA table for random effects'
+        cj_dm.edit_traits(view=cj_dm.get_view(
+            self.name + ' - ANOVA table for random effects'))
 
 
     def show_fixed(self):
         logger.info('Show fixed ANOVA table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['anovaTable'])
-        cj_dm._ds_name = 'ANOVA table for fixed effects'
-        cj_dm.edit_traits(view=cj_dm.get_view())
+        # cj_dm._ds_name = 'ANOVA table for fixed effects'
+        cj_dm.edit_traits(view=cj_dm.get_view(
+            self.name + ' - ANOVA table for fixed effects'))
 
 
     def show_means(self):
         logger.info('Show LS mean ANOVA table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'])
-        cj_dm._ds_name = 'LS means (main effect and interaction)'
-        cj_dm.edit_traits(view=cj_dm.get_view())
+        # cj_dm._ds_name = 'LS means (main effect and interaction)'
+        cj_dm.edit_traits(view=cj_dm.get_view(
+            self.name + ' - LS means (main effect and interaction)'))
 
 
     def cj_res_ds_adapter(self, cj_res):
