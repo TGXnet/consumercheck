@@ -26,7 +26,6 @@ from traitsui.menu import (OKButton)
 from dataset import DataSet
 # from ds_matrix_view import matrix_view
 from dataset_matrix import DatasetMatrix
-# import conjoint as cj
 from conjoint_machine import ConjointMachine
 
 
