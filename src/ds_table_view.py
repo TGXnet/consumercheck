@@ -1,4 +1,4 @@
-from traits.api import Color, Property, List, Array, Button
+from traits.api import Color, Property, List, Array, Button, Str
 from traitsui.api import Controller, View, Item, TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton
@@ -23,6 +23,7 @@ class DSTableViewer(Controller):
     col_names = List()
     header = Property()
     cp_clip = Button('Copy to clipboard')
+    _ds_name = Str()
 
     def _get_header(self):
         varnames = [('Names', 'index')]
@@ -46,7 +47,13 @@ class DSTableViewer(Controller):
         txt = txt_var + txt_mat
         clipboard.data = txt.encode('utf_8')
 
-    def get_view(self, header_txt=''):
+    def get_view(self):
+        
+        if self.model._ds_name:
+            header_txt=self.model._ds_name
+        else:
+            header_txt=''
+        
         aa = ArrayAdapter(
             columns = self.header,
             obj_names = self.model.object_names)

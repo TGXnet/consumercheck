@@ -24,8 +24,8 @@ from traitsui.menu import (OKButton)
 
 # Local imports
 from dataset import DataSet
+from ds_table_view import DSTableViewer
 # from ds_matrix_view import matrix_view
-from dataset_matrix import DatasetMatrix
 from conjoint_machine import ConjointMachine
 
 
@@ -130,36 +130,36 @@ class AConjointHandler(ModelView):
 
     def show_random(self):
         logger.info('Show randomTable')
-        cj_dm = self.cj_res_ds_adapter(self.model.result['randomTable'])
-        # cj_dm._ds_name = 'ANOVA table for random effects'
-        cj_dm.edit_traits(view=cj_dm.get_view(
-            self.name + ' - ANOVA table for random effects'))
+        cj_dm = self.cj_res_ds_adapter(self.model.result['randomTable'],
+                                       'ANOVA table for random effects')
+        dstv = DSTableViewer(cj_dm)
+        dstv.configure_traits(view=dstv.get_view())
 
 
     def show_fixed(self):
         logger.info('Show fixed ANOVA table')
-        cj_dm = self.cj_res_ds_adapter(self.model.result['anovaTable'])
-        # cj_dm._ds_name = 'ANOVA table for fixed effects'
-        cj_dm.edit_traits(view=cj_dm.get_view(
-            self.name + ' - ANOVA table for fixed effects'))
+        cj_dm = self.cj_res_ds_adapter(self.model.result['anovaTable'],
+                                       'ANOVA table for fixed effects')
+        dstv = DSTableViewer(cj_dm)
+        dstv.configure_traits(view=dstv.get_view())
 
 
     def show_means(self):
         logger.info('Show LS mean ANOVA table')
-        cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'])
-        # cj_dm._ds_name = 'LS means (main effect and interaction)'
-        cj_dm.edit_traits(view=cj_dm.get_view(
-            self.name + ' - LS means (main effect and interaction)'))
+        cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'],
+                                       'LS means (main effect and interaction)')
+        dstv = DSTableViewer(cj_dm)
+        dstv.configure_traits(view=dstv.get_view())
 
 
-    def cj_res_ds_adapter(self, cj_res):
-        dm = DatasetMatrix()
+    def cj_res_ds_adapter(self, cj_res, name='Dataset Viewer'):
+        dm = DataSet(_ds_name=name)
         logger.debug(cj_res['data'])
         dm.matrix = cj_res['data']
         logger.debug(cj_res['colNames'])
-        dm.col_names = list(cj_res['colNames'])
+        dm.variable_names = list(cj_res['colNames'])
         logger.debug(cj_res['rowNames'])
-        dm.row_names = list(cj_res['rowNames'])
+        dm.object_names = list(cj_res['rowNames'])
         return dm
 
 
