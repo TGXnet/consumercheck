@@ -62,6 +62,7 @@ class ImporterMain(HasTraits):
         importer.make_ds_name()
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
+        importer.ds_type = self._pick_ds_type(importer.ds_type_list,file_path)
         ds = importer.import_data()
         ds = self._add_generic_name(ds, importer)
         return ds
