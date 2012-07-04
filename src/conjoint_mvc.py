@@ -130,24 +130,24 @@ class AConjointHandler(ModelView):
 
     def show_random(self):
         logger.info('Show randomTable')
-        cj_dm = self.cj_res_ds_adapter(self.model.result['randomTable'],
-                                       'ANOVA table for random effects')
+        cj_dm = self.cj_res_ds_adapter(self.model.result['randomTable'], (self.name +
+                                       ' - ANOVA table for random effects'))
         dstv = DSTableViewer(cj_dm)
         dstv.configure_traits(view=dstv.get_view())
 
 
     def show_fixed(self):
         logger.info('Show fixed ANOVA table')
-        cj_dm = self.cj_res_ds_adapter(self.model.result['anovaTable'],
-                                       'ANOVA table for fixed effects')
+        cj_dm = self.cj_res_ds_adapter(self.model.result['anovaTable'], (self.name +
+                                       ' - ANOVA table for fixed effects'))
         dstv = DSTableViewer(cj_dm)
         dstv.configure_traits(view=dstv.get_view())
 
 
     def show_means(self):
         logger.info('Show LS mean ANOVA table')
-        cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'],
-                                       'LS means (main effect and interaction)')
+        cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'], (self.name +
+                                       ' - LS means (main effect and interaction)'))
         dstv = DSTableViewer(cj_dm)
         dstv.configure_traits(view=dstv.get_view())
 
