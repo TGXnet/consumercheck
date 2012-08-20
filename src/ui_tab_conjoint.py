@@ -13,13 +13,13 @@ from conjoint_mvc import AConjointHandler, a_conjoint_view
 
 
 def dclk_random(obj):
-    obj.plot_random()
+    obj.show_random()
 
 def dclk_fixed(obj):
-    obj.plot_fixed()
+    obj.show_fixed()
 
 def dclk_means(obj):
-    obj.plot_means()
+    obj.show_means()
 
 
 new_conjoint_tree = TreeEditor(
@@ -76,18 +76,18 @@ new_conjoint_tree = TreeEditor(
 
 
 class ConjointPlugin(HasTraits):
-    conjoint_handler = Instance(ConjointsHandler)
+    conjoints_handler = Instance(ConjointsHandler)
     selected_obj = Any()
 
     def __init__(self, mother_ref, **kwargs):
         super(ConjointPlugin, self).__init__(**kwargs)
         model = ConjointsContainer(mother_ref=mother_ref)
-        self.conjoint_handler = ConjointsHandler(model=model)
-        self.selected_obj = self.conjoint_handler
+        self.conjoints_handler = ConjointsHandler(model=model)
+        self.selected_obj = self.conjoints_handler
 
 
     traits_view = View(
-        Item(name='conjoint_handler',
+        Item(name='conjoints_handler',
              editor=new_conjoint_tree,
              show_label=False),
         resizable=True,
@@ -106,4 +106,4 @@ if __name__ == '__main__':
         container = TestContainer()
         conjoint_plugin = ConjointPlugin(mother_ref=container)
         conjoint_plugin.configure_traits()
-        
+        conjoint_plugin.conjoints_handler._ds_changed(None)

@@ -1,10 +1,8 @@
 
 # Std libs import
-import tempfile
-from numpy import savetxt
 
 # Enthough imports
-from traits.api import Button, List, Property
+from traits.api import Button, Color, List, Font, Property
 from traitsui.api import Handler, View, Item, TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton
@@ -12,11 +10,19 @@ from pyface.api import clipboard
 
 
 class ArrayAdapter(TabularAdapter):
-    width = 100
-    obj_name_text = Property()
-    obj_names = List([])
 
-    def _get_obj_name_text(self, name):
+    columns = []
+
+    # format = '%.4f'
+    # width = 100
+    index_text = Property()
+    # index_bg_color = Property()
+    bg_color = Color(0xE0E0E0)
+    # text_color = Color(0xE0E0E0)
+
+    obj_names = List()
+
+    def _get_index_text(self, name):
         return self.obj_names[self.row]
 
 
@@ -24,8 +30,6 @@ matrix_editor=TabularEditor(
     adapter=ArrayAdapter(),
     operations=[],
     editable=False,
-    show_titles=True,
-    multi_select=True,
     )
 
 
@@ -33,24 +37,25 @@ class MatrixViewHandler(Handler):
     """Separate table view for the dataset matrix."""
     cp_clip = Button('Copy to clipboard')
 
+
     def init(self, info):
         varnames = self._make_header(info.object)
         matrix_editor.adapter.columns = varnames
         matrix_editor.adapter.obj_names = info.object.object_names
 
+
     def _make_header(self, ds):
         if ds.variable_names:
             varnames = []
-            varlist = []
             if ds.object_names:
-                varnames = [('SampleName', 'obj_name')]
-            for i,vn in enumerate(ds.variable_names):
+                varnames = [('Names', 'index')]
+            for i, vn in enumerate(ds.variable_names):
                 a = vn.encode('utf-8')
-                varlist.append((a,i))
-            varnames += varlist
+                varnames.append((a, i))
             return varnames
         else:
             return [("var{}".format(col+1), col) for col in range(ds.n_cols)]
+
 
     def handler_cp_clip_changed(self, info):
         txt_var = unicode()
@@ -69,9 +74,18 @@ class MatrixViewHandler(Handler):
         clipboard.data = txt.encode('utf_8')
 
 
+    def object_ds_name_changed(self, info):
+        info.ui.title = info.object._ds_name
+
+
 matrix_view = View(
     Item(name='matrix',
          editor=matrix_editor,
+         ## editor=TabularEditor(
+         ##     adapter=ArrayAdapter(),
+         ##     operations=[],
+         ##     editable=False,
+         ##     ),
          show_label=False,
          style='readonly',
          ),
@@ -88,5 +102,5 @@ matrix_view = View(
 if __name__ == '__main__':
     from tests.conftest import make_non_ascii_ds_mock
     ds = make_non_ascii_ds_mock()
-    ds.print_traits()
-    # ds.configure_traits(view=matrix_view)
+    # ds.print_traits()
+    ds.configure_traits(view=matrix_view)

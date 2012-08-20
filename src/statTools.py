@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 statTools.py
 
@@ -6,8 +7,13 @@ Info: A collection of tools for data analysis
 Author: Oliver Tomic
 
 Date: 20.06.2009
+
+@update 01: 27.01.2011
+- Added function matrixRank
+
 """
 import numpy
+import numpy.linalg
 
 def RVcoeff(dataList):
     """
@@ -127,6 +133,7 @@ def RV2coeff_VEC(dataList):
     return C
 
 
+
 def normProcrSim(dataList):
     """
     This function computes the normalised Procrustes similarity between two 
@@ -199,7 +206,6 @@ def centre_old(Y):
     numberOfObjects, numberOfVariables = numpy.shape(X)
     variableMean = numpy.average(X, 0)
 
-
     # Now center by subtracting column means.
     for row in range(0, numberOfObjects):
         X[row] = X[row] - variableMean
@@ -225,12 +231,12 @@ def centre(Y, axis=0):
     X = numpy.array(Y, float)
     
     # Check whether column or row centring is required.
-    # Centring column-wise
+    # Centreing column-wise
     if axis == 0:
         variableMean = numpy.average(X, 0)
         centX = X - variableMean
     
-    # Centring row-wise. 
+    # Centreing row-wise. 
     if axis == 1:
         transX = numpy.transpose(X)
         objectMean = numpy.average(transX, 0)
@@ -278,6 +284,21 @@ def STD(Y, selection):
 
     return stdX
 
+
+
+def matrixRank(arr, tol=1e-8):
+    """
+    Computes the rank of an array/matrix, i.e. number of linearly independent
+    variables. This is not the same as numpy.rank() which only returns the
+    number of ways (2-way, 3-way, etc) an array/matrix has. 
+    """
+    if len(arr.shape) != 2:
+        raise ValueError('Input must be a 2-d array or Matrix object')
+    
+    s = numpy.linalg.svd(arr, compute_uv=0)
+    return numpy.sum(numpy.where(s>tol, 1, 0))
+
+    
 
 
 class arrayIO:

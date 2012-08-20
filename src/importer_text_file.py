@@ -151,12 +151,8 @@ class ImporterTextFile(HasTraits):
     have_obj_names = Bool(True)
     ds_id = Str()
     ds_name = Str()
-    ds_type = Enum(
-        ('Design variable',
-         'Sensory profiling',
-         'Consumer liking',
-         'Consumer attributes',)
-        )
+    ds_type = Str()
+    ds_type_list = List(['Design variable', 'Sensory profiling', 'Consumer liking', 'Consumer attributes'])
 
     def make_ds_name(self):
         # FIXME: Find a better more general solution
@@ -207,7 +203,7 @@ class ImporterTextFile(HasTraits):
                 corner = varnames.pop(0)
                 objnames = pd[corner].view().reshape(len(pd),-1)
                 objnames = objnames[:,0].tolist()
-                self.ds.object_names = [on.decode('utf-8') for on in objnames]
+                self.ds.object_names = [unicode(on).decode('utf-8') for on in objnames]
 
             dt = pd[varnames[0]].dtype
             pd = pd[varnames].view(dt).reshape(len(pd),-1)
@@ -236,7 +232,7 @@ class ImporterTextFile(HasTraits):
             ## Item('transpose'),
             Item('ds_id', style='readonly', label='File name'),
             Item('ds_name', label='Dataset name'),
-            Item('ds_type', label='Dataset type'),
+            Item('ds_type', editor=EnumEditor(name='ds_type_list'), label='Dataset type'),
             Item('have_var_names', label='Existing variable names',
                  tooltip='Is first row variable names?'),
             Item('have_obj_names', label='Existing object names',

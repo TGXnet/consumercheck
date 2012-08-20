@@ -1,6 +1,7 @@
 
 # stdlib imports
 import logging
+logger = logging.getLogger(__name__)
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Event
@@ -28,7 +29,7 @@ class MainViewHandler(Handler):
         imported = importer.dialog_multi_import()
         for ds in imported:
             info.object.dsl.add_dataset(ds)
-            logging.info("importDataset: internal name = %s", ds._ds_id)
+            logger.info("importDataset: internal name = %s", ds._ds_id)
 
     def _close_ds(self, info):
         datasets = []
@@ -92,13 +93,11 @@ class MainUi(HasTraits):
     # @on_trait_change('', post_init=True)
     # @on_trait_change('dsl.datasets_event')
     def _dsl_updated(self, obj, name, new):
-        print("main: dsl changed")
         self.ds_event = True
 
 
     # @on_trait_change('dsl.ds_name_event')
     def _ds_name_updated(self, obj, name, new):
-        print("main: ds name changed")
         self.dsname_event = True
 
 
@@ -130,6 +129,15 @@ class MainUi(HasTraits):
 if __name__ == '__main__':
     import numpy as np
     from tests.conftest import make_dsl_mock
+    lfn = __file__.split('.')[0]+'.log'
+    logging.basicConfig(level=logging.INFO,
+                        # format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                        # datefmt='%m-%d %H:%M',
+                        filename=lfn,
+                        filemode='w')
+
+    logger.info('Start interactive')
+
     dsl = make_dsl_mock()
     mother = MainUi(dsl=dsl)
     # mother = MainUi()

@@ -62,6 +62,7 @@ class ImporterMain(HasTraits):
         importer.make_ds_name()
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
+        importer.ds_type = self._pick_ds_type(importer.ds_type_list,file_path)
         ds = importer.import_data()
         ds = self._add_generic_name(ds, importer)
         return ds
@@ -85,6 +86,8 @@ class ImporterMain(HasTraits):
             return []
         for filen in self._files_path:
             importer = self._make_importer(filen)
+            #importer.ds_type_list, importer.ds_type = self._pick_ds_type(importer.ds_type_list,filen)
+            importer.ds_type = self._pick_ds_type(importer.ds_type_list,filen)
             importer.configure_traits()
             ds = importer.import_data()
             ds = self._add_generic_name(ds, importer)
@@ -137,6 +140,15 @@ class ImporterMain(HasTraits):
         elif fext in ['xlsx', 'xlsm']:
             return ImporterXlsxFile(file_path=path)
 
+    def _pick_ds_type(self, lists, filen):
+        filen = filen.lower()
+        if 'design' in filen:
+            return lists[0]
+        elif 'liking' in filen:
+            return lists[2]
+        elif 'attribute' in filen:
+            return lists[3]
+        return lists[0]
 
     def _identify_filetype(self, path):
         fn = os.path.basename(path)

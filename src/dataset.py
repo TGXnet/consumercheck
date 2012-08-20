@@ -74,8 +74,12 @@ class DataSet(HasTraits):
 
     @on_trait_change('matrix')
     def _all_active(self):
-        self.active_variables = range(self.matrix.shape[1])
         self.active_objects = range(self.matrix.shape[0])
+        try:
+            self.active_variables = range(self.matrix.shape[1])
+        except IndexError:
+            self.active_variables = range(len(self.matrix.dtype))
+
 
     def _get_n_rows(self):
         if self.matrix.shape[0] > 0:
@@ -85,7 +89,10 @@ class DataSet(HasTraits):
 
     def _get_n_cols(self):
         if self.matrix.shape[0] > 0:
-            return self.matrix.shape[1]
+            try:
+                return self.matrix.shape[1]
+            except IndexError:
+                return len(self.matrix.dtype)
         else:
             return 0
 
