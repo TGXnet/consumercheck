@@ -1,22 +1,24 @@
 
-
 # stdlib imports
 import sys
 
 # Enthought imports
-from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
+from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo, Any,
                         PrototypedFrom, Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
 import numpy as np
 
 # Local imports
-from nipals import PCA
+# from nipals import PCA
+from pca import nipalsPCA as PCA
+
 from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
+from ui_results_new import TableViewController
 
 
 #Double click tool
@@ -32,6 +34,19 @@ class DClickTool(BaseTool):
     def _build_plot_list(self):
         for e,i in enumerate(self.component.container.plot_components):
             self.plot_dict[i.title] = self.func_list[e]
+
+
+class PlotLauncher(HasTraits):
+    node_name = Str()
+    func_name = Str()
+    pca_ref = Any()
+
+
+launch_view = View(
+    # Item('node_name'),
+    # Item(name='model.show_sel_var'),
+    )
+
 
 
 class APCAModel(HasTraits):
@@ -63,10 +78,14 @@ class APCAModel(HasTraits):
 
     def _get_result(self):
         self.sub_ds = self.ds.subset()
+        std_ds = 'cent'
+        if self.standardize:
+            std_ds = 'stand'
         return PCA(
             self.sub_ds.matrix,
             numPC=self.pc_to_calc,
-            mode=self.standardize)
+            mode=std_ds,
+            cvType=["loo"])
 
 
 class APCAHandler(ModelView):
@@ -77,19 +96,56 @@ class APCAHandler(ModelView):
     show_sel_obj = Button('Objects')
     show_sel_var = Button('Variables')
 
+    plot_launchers = List()
+
+
+    def __init__(self, *args, **kwargs):
+        super(APCAHandler, self).__init__(*args, **kwargs)
+        self._populate_plot_launchers()
+
+
     @on_trait_change('show_sel_obj')
     def _act_show_sel_obj(self, object, name, new):
         object.model.ds.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
+
 
     @on_trait_change('show_sel_var')
     def _act_show_sel_var(self, object, name, new):
         object.model.ds.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
+
     def __eq__(self, other):
         return self.nid == other
 
+
     def __ne__(self, other):
         return self.nid != other
+
+
+    def _populate_plot_launchers(self):
+        adv_enable = self.model.mother_ref.mother_ref.en_advanced
+
+        std_launchers = [
+            ("Overview", "plot_overview"),
+            ("Scores", "plot_scores"),
+            ("Loadings", "plot_loadings"),
+            ("Correlation loadings", "plot_corr_loading"),
+            ("Explained variance", "plot_expl_var"),
+            ]
+
+        adv_launchers = [
+            # ("Show residuals (subtree)", "show_residuals"),
+            # ("Predicated X cal", "show_pred_x_cal"),
+            # ("Predicated X val", "show_pred_x_val"),
+            ("MSEE total (explained variance", "show_msee_tot"),
+            ("MSEE individual", "show_msee_ind"),
+            ("MSECV total", "show_msecv_tot"),
+            ("MSECV individual", "show_msecv_ind"),
+            ]
+
+        if adv_enable:
+            std_launchers.extend(adv_launchers)
+        self.plot_launchers = [PlotLauncher(node_name=nn, func_name=fn, pca_ref=self) for nn, fn in std_launchers]
 
 
     def plot_overview(self):
@@ -113,6 +169,7 @@ class APCAHandler(ModelView):
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)
 
+
     def plot_scores(self):
         self.model.plot_type = 'Scores Plot'
         s_plot = self._make_scores_plot()
@@ -123,12 +180,14 @@ class APCAHandler(ModelView):
             )
         self._show_plot_window(spw)
 
+
     def _make_scores_plot(self):
         res = self.model.result
-        pc_tab = res.scores
+        pc_tab = res.scores()
         labels = self.model.sub_ds.object_names
         plot = PCScatterPlot(pc_tab, labels, title="Scores")
         return plot
+
 
     def plot_loadings(self):
         self.model.plot_type = 'Loadings Plot'
@@ -140,12 +199,14 @@ class APCAHandler(ModelView):
             )
         self._show_plot_window(spw)
 
+
     def _make_loadings_plot(self):
         res = self.model.result
-        pc_tab = res.loadings
+        pc_tab = res.loadings()
         labels = self.model.sub_ds.variable_names
         plot = PCScatterPlot(pc_tab, labels, title="Loadings")
         return plot
+
 
     def plot_corr_loading(self):
         self.model.plot_type = 'Correlation Loadings Plot'
@@ -157,14 +218,16 @@ class APCAHandler(ModelView):
             )
         self._show_plot_window(spw)
 
+
     def _make_corr_load_plot(self):
         res = self.model.result
-        pc_tab = res.getCorrLoadings()
-        expl_vars = res.explainedVariances
+        pc_tab = res.corrLoadings()
+        expl_vars = res.calExplVar_dict()
         labels = self.model.sub_ds.variable_names
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
         pcl.plot_circle(True)
         return pcl
+
 
     def plot_expl_var(self):
         self.model.plot_type = 'Explained Variance Plot'
@@ -177,9 +240,11 @@ class APCAHandler(ModelView):
             )
         self._show_plot_window(spw)
 
+
     def _make_expl_var_plot(self):
         res = self.model.result
-        expl_vars = res.explainedVariances
+        # expl_vars = res.explainedVariances
+        expl_vars = res.calExplVar_dict()
         ev = self._accumulate_expl_var_adapter(expl_vars)
         pl = EVLinePlot(ev, legend='Explained Variance', title="Explained Variance")
         return pl
@@ -194,6 +259,59 @@ class APCAHandler(ModelView):
             values.append(values[i-1] + val)
         values.pop(0)
         return np.array(values)
+
+
+    def show_residuals(self):
+        resids = self.model.result.residuals()
+        print(resids)
+
+
+    def show_pred_x_cal(self):
+        cal_pred_x = self.model.result.calPredX()
+        print(cal_pred_x)
+
+
+    def show_pred_x_val(self):
+        val_pred_x = self.model.result.valPredX()
+        print(val_pred_x)
+
+
+    def show_msee_tot(self):
+        print("MSEE total")
+        msee = self.model.result.MSEE_total()
+        tv = TableViewController(title="MSEE total")
+        tv.set_col_names([str(i) for i in range(msee.shape[0])])
+        tv.add_row(msee, 'MSEE')
+        tv.configure_traits()
+
+
+    def show_msee_ind(self):
+        print("MSEE for each variable")
+        ind_var_msee = self.model.result.MSEE_indVar()
+        tv = TableViewController(title="MSEE individual variables")
+        tv.set_col_names([str(i) for i in range(ind_var_msee.shape[1])])
+        for i in range(ind_var_msee.shape[0]):
+            tv.add_row(ind_var_msee[i,:], 'MSEE')
+        tv.configure_traits()
+
+
+    def show_msecv_tot(self):
+        print("MSECV total")
+        msecv = self.model.result.MSECV_total()
+        tv = TableViewController(title="MSECV total")
+        tv.set_col_names([str(i) for i in range(msecv.shape[0])])
+        tv.add_row(msecv, 'MSECV')
+        tv.configure_traits()
+
+
+    def show_msecv_ind(self):
+        print("MSECV for each variable")
+        ind_var_msecv = self.model.result.MSECV_indVar()
+        tv = TableViewController(title="MSECV individual variables")
+        tv.set_col_names([str(i) for i in range(ind_var_msecv.shape[1])])
+        for i in range(ind_var_msecv.shape[0]):
+            tv.add_row(ind_var_msecv[i,:], 'MSECV')
+        tv.configure_traits()
 
 
     def _show_plot_window(self, plot_window):
@@ -220,7 +338,7 @@ a_pca_view = View(
     Group(
         Group(
             Item('model.name'),
-            # Item('model.standardize'),
+            Item('model.standardize'),
             Item('model.pc_to_calc',editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj',
                  show_label=False),
@@ -237,13 +355,13 @@ a_pca_view = View(
 if __name__ == '__main__':
     # Things to fix for testing
     # mother_ref: standardize, pc_to_calc
-    from traits.api import Bool, Enum
+    from traits.api import Bool, Int
     from tests.conftest import make_ds_mock
     ds = make_ds_mock()
 
     class MocMother(HasTraits):
         standardize = Bool(True)
-        pc_to_calc = Enum(2,3,4,5,6)
+        pc_to_calc = Int(2)
 
     moc_mother = MocMother()
     
@@ -283,7 +401,7 @@ if __name__ == '__main__':
             Group(
                 Group(
                     Item('model.name'),
-                    # Item('model.standardize'),
+                    Item('model.standardize'),
                     Item('model.pc_to_calc'),
                     Item('show_sel_obj',
                          show_label=False),

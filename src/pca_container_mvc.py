@@ -76,7 +76,7 @@ pcas_view = View(
                 show_border=True,
                 ),
             Group(
-                # Item('model.standardize'),
+                Item('model.standardize'),
                 Item('pc_to_calc',
                      editor=RangeEditor(low='2',high='20',mode='spinner',is_float=False)),
                 label='Default PC #',
