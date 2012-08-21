@@ -5,9 +5,9 @@ import optparse
 import numpy as np
 
 # Enthought imports
-from traits.etsconfig.api import ETSConfig
-## ETSConfig.toolkit = 'wx'
-ETSConfig.toolkit = 'qt4'
+# from traits.etsconfig.api import ETSConfig
+# ETSConfig.toolkit = 'wx'
+# ETSConfig.toolkit = 'qt4'
 
 import traits.has_traits
 # 0: no check, 1: log warings, 2: error
