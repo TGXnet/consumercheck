@@ -8,6 +8,11 @@ PC plot module
 
 import numpy as np
 
+# Enthought imports
+from traits.etsconfig.api import ETSConfig
+## ETSConfig.toolkit = 'wx'
+ETSConfig.toolkit = 'qt4'
+
 # Enthought library imports
 from chaco.api import Plot, ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool

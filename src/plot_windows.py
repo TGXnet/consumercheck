@@ -4,6 +4,11 @@
 import os
 from os.path import join as pjoin
 
+# Enthought imports
+from traits.etsconfig.api import ETSConfig
+## ETSConfig.toolkit = 'wx'
+ETSConfig.toolkit = 'qt4'
+
 # Enthought library imports
 from enable.api import Component, ComponentEditor
 from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
@@ -156,6 +161,8 @@ class SinglePlotWindow(HasTraits):
         resizable=True,
         handler=TitleHandler(),
         # kind = 'nonmodal',
+        width = 750,
+        height = 800,
         buttons = ["OK"]
         )
 
@@ -204,6 +211,8 @@ class LinePlotWindow(HasTraits):
         resizable=True,
         handler=TitleHandler(),
         # kind = 'nonmodal',
+        width = 750,
+        height = 800,
         buttons = ["OK"]
         )
 
@@ -238,6 +247,8 @@ class MultiPlotWindow(HasTraits):
         resizable=True,
         handler=TitleHandler(),
         # kind = 'nonmodal',
+        width = 750,
+        height = 800,
         buttons = ["OK"]
         )
 
