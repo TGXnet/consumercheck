@@ -9,17 +9,14 @@ from traitsui.api import View, Item, TreeEditor, TreeNode
 
 # Local imports
 from conjoint_container_mvc import ConjointsHandler, ConjointsContainer, conjoints_view
-from conjoint_mvc import AConjointHandler, a_conjoint_view
+from conjoint_mvc import AConjointHandler, TreeLauncher, a_conjoint_view
 
 
-def dclk_random(obj):
-    obj.show_random()
-
-def dclk_fixed(obj):
-    obj.show_fixed()
-
-def dclk_means(obj):
-    obj.show_means()
+def dclk_win_activator(obj):
+    fn = obj.func_name
+    open_win_func = getattr(obj.owner_ref, fn)
+    print(fn)
+    open_win_func()
 
 
 new_conjoint_tree = TreeEditor(
@@ -53,21 +50,30 @@ new_conjoint_tree = TreeEditor(
             ),
         TreeNode(
             node_for = [AConjointHandler],
-            label = '=Random',
-            on_dclick = dclk_random,
+            children = 'table_win_launchers',
+            label = '=Tables',
             view = a_conjoint_view,
+            auto_open = True,
             ),
         TreeNode(
             node_for = [AConjointHandler],
-            label = '=Fixed',
-            on_dclick = dclk_fixed,
+            children = 'me_plot_launchers',
+            label = '=Main effects plots',
             view = a_conjoint_view,
+            auto_open = True,
             ),
         TreeNode(
             node_for = [AConjointHandler],
-            label = '=Means',
-            on_dclick = dclk_means,
+            children = 'int_plot_launchers',
+            label = '=Interaction plots',
             view = a_conjoint_view,
+            auto_open = True,
+            ),
+        TreeNode(
+            node_for = [TreeLauncher],
+            label = 'node_name',
+            on_dclick = dclk_win_activator,
+            # view = a_conjoint_view,
             ),
         ],
     selected='selected_obj',
@@ -105,5 +111,5 @@ if __name__ == '__main__':
     with np.errstate(invalid='ignore'):
         container = TestContainer()
         conjoint_plugin = ConjointPlugin(mother_ref=container)
-        conjoint_plugin.configure_traits()
         conjoint_plugin.conjoints_handler._ds_changed(None)
+        conjoint_plugin.configure_traits()

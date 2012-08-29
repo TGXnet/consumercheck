@@ -17,7 +17,8 @@ else:
 import numpy as np
 
 # Enthought imports
-from traits.api import (HasTraits, Button, Enum, Bool, Dict, Instance, List, Str,
+from traits.api import (HasTraits, Any, Button, Enum, Bool, Instance,
+                        List, Str, Tuple,
                         DelegatesTo, Property, cached_property, on_trait_change)
 from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor
 from traitsui.menu import (OKButton)
@@ -51,6 +52,15 @@ class ConjointCalcState(HasTraits):
             logger.info('Conjoint result ready')
         else:
             logger.info('Staring conjoint calculation')
+
+
+
+class TreeLauncher(HasTraits):
+    owner_ref = Any()
+    node_name = Str()
+    func_name = Str()
+    func_parms = Tuple()
+
 
 
 class AConjointModel(HasTraits):
@@ -91,14 +101,24 @@ class AConjointModel(HasTraits):
 
 
 class AConjointHandler(ModelView):
-    plot_uis = List()
     name = DelegatesTo('model')
     nid = DelegatesTo('model')
+
+    win_uis = List()
+    table_win_launchers = List()
+    me_plot_launchers = List()
+    int_plot_launchers = List()
 
     design_vars = List()
     sel_design_vars = DelegatesTo('model')
     cons_attr_vars = List()
     sel_cons_attr_vars = DelegatesTo('model')
+
+
+    def __init__(self, *args, **kwargs):
+        super(AConjointHandler, self).__init__(*args, **kwargs)
+        self._populate_win_launchers()
+
 
     def __eq__(self, other):
         return self.nid == other
@@ -106,6 +126,16 @@ class AConjointHandler(ModelView):
 
     def __ne__(self, other):
         return self.nid != other
+
+
+    def _populate_win_launchers(self):
+        table_win_launchers = [
+            ("Random", 'show_random'),
+            ("Fixed", 'show_fixed'),
+            ("Means", 'show_means')]
+        self.table_win_launchers = [
+            TreeLauncher(owner_ref=self, node_name=nn, func_name=fn)
+            for nn, fn in table_win_launchers]
 
 
     @on_trait_change('model:mother_ref:chosen_design_vars')
@@ -166,10 +196,10 @@ class AConjointHandler(ModelView):
     def _show_plot_window(self, plot_window):
         # FIXME: Setting parent forcing main ui to stay behind plot windows
         if sys.platform == 'linux2':
-            self.plot_uis.append( plot_window.edit_traits(kind='live') )
+            self.win_uis.append( plot_window.edit_traits(kind='live') )
         elif sys.platform == 'win32':
             # FIXME: Investigate more here
-            self.plot_uis.append(
+            self.win_uis.append(
                 # plot_window.edit_traits(parent=self.info.ui.control, kind='nonmodal')
                 plot_window.edit_traits(kind='live')
                 )

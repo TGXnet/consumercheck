@@ -9,7 +9,6 @@ from enable.api import ColorTrait
 from chaco.tools.api import ZoomTool, PanTool
 
 
-
 class MainEffectsPlot(Plot):
 
     def __init__(self, conj_res, attr_name):
@@ -64,10 +63,6 @@ class InteractionPlot(Plot):
         line_data = self.selected[line_data_picker]
         self.data.set_data('line{}'.format(line), [float(val) for val in line_data[' Estimate ']])
         self.plot(('index', 'line{}'.format(line)), type='line', name='lp{}'.format(line))
-
-
-
-
 
 
 if __name__ == '__main__':
