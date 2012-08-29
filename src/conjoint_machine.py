@@ -49,6 +49,32 @@ class ConjointMachine(object):
         self.r('source(paste(getwd(),"/pgm/conjoint.r",sep=""))')
 
 
+    def synchronous_calculation(self, structure,
+                             consAtts, selected_consAtts,
+                             design, selected_designVars,
+                             consLiking):
+        pass
+        """Doc here"""
+        self.structure = structure
+        self.consAtts = consAtts
+        self.selected_consAtts = asciify(selected_consAtts)
+        self.design = design
+        self.selected_designVars = asciify(selected_designVars)
+        self.consLiking = consLiking
+
+        # Generate consumer liking tag acceptable for R
+        # Make list of character to trow away
+        throw_chrs = string.maketrans(string.ascii_letters, ' '*len(string.ascii_letters))
+        # Filter dataset name
+        liking_name = consLiking._ds_name.encode('ascii', 'ignore')
+        self.consLikingTag = liking_name.translate(None, throw_chrs)
+
+        self._copy_values_into_r_env()
+        self._run_conjoint()
+        return self.get_result()
+
+
+
 
     def schedule_calculation(self, structure,
                              consAtts, selected_consAtts,
