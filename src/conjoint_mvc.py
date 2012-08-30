@@ -28,6 +28,7 @@ from dataset import DataSet
 from ds_table_view import DSTableViewer
 # from ds_matrix_view import matrix_view
 from conjoint_machine import ConjointMachine
+from plot_conjoint import MainEffectsPlot, InteractionPlot
 
 
 class ConjointCalcState(HasTraits):
@@ -133,9 +134,40 @@ class AConjointHandler(ModelView):
             ("Random", 'show_random'),
             ("Fixed", 'show_fixed'),
             ("Means", 'show_means')]
+
         self.table_win_launchers = [
             TreeLauncher(owner_ref=self, node_name=nn, func_name=fn)
             for nn, fn in table_win_launchers]
+
+
+    # @on_trait_change('model:ccs:is_done')
+    def _update_plot_launchers(self, new=True):
+        if new:
+            vn = []
+            for name in self.model.result['lsmeansTable']['data'].dtype.names:
+                if name != ' Estimate ':
+                    vn.append(name)
+                else:
+                    break
+
+            self.me_plot_launchers = [
+                TreeLauncher(
+                    owner_ref=self, node_name=name,
+                    func_name='plot_main_effects', func_parms=tuple([name]))
+                for name in vn]
+
+            int_plot_launchers = [
+                ("Flavour:Sugarlevel", 'Flavour', 'Sugarlevel'),
+                ("Flavour:Sex", 'Flavour', 'Sex'),
+                ("Sugarlevel:Sex", 'Sugarlevel', 'Sex'),
+                ]
+
+            self.int_plot_launchers = [
+                TreeLauncher(
+                    owner_ref=self, node_name=nn,
+                    func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
+                for nn, p_one, p_two in int_plot_launchers]
+
 
 
     @on_trait_change('model:mother_ref:chosen_design_vars')
@@ -162,6 +194,7 @@ class AConjointHandler(ModelView):
         logger.info('Show randomTable')
         cj_dm = self.cj_res_ds_adapter(self.model.result['randomTable'], (self.name +
                                        ' - ANOVA table for random effects'))
+        self._update_plot_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.configure_traits(view=dstv.get_view())
 
@@ -170,6 +203,7 @@ class AConjointHandler(ModelView):
         logger.info('Show fixed ANOVA table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['anovaTable'], (self.name +
                                        ' - ANOVA table for fixed effects'))
+        self._update_plot_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.configure_traits(view=dstv.get_view())
 
@@ -178,8 +212,19 @@ class AConjointHandler(ModelView):
         logger.info('Show LS mean ANOVA table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'], (self.name +
                                        ' - LS means (main effect and interaction)'))
+        self._update_plot_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.configure_traits(view=dstv.get_view())
+
+
+    def plot_main_effects(self, attr_name):
+        mep = MainEffectsPlot(self.model.result, attr_name)
+        mep.new_window(True)
+
+
+    def plot_interaction(self, attr_one, attr_two):
+        mep = InteractionPlot(self.model.result, attr_one, attr_two)
+        mep.new_window(True)
 
 
     def cj_res_ds_adapter(self, cj_res, name='Dataset Viewer'):

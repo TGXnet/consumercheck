@@ -43,6 +43,8 @@ class InteractionPlot(Plot):
         self.attr_one_name = attr_one_name
         self.attr_two_name = attr_two_name
         ls_means = conj_res['lsmeansTable']['data']
+        print(ls_means)
+        print(attr_one_name, attr_two_name)
         picker_one = ls_means[attr_one_name] != 'NA'
         picker_two = ls_means[attr_two_name] != 'NA'
         picker = np.logical_and(picker_one, picker_two)

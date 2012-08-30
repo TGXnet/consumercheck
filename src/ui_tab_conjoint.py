@@ -15,8 +15,12 @@ from conjoint_mvc import AConjointHandler, TreeLauncher, a_conjoint_view
 def dclk_win_activator(obj):
     fn = obj.func_name
     open_win_func = getattr(obj.owner_ref, fn)
-    print(fn)
-    open_win_func()
+    if len(obj.func_parms) < 1:
+        open_win_func()
+    else:
+        open_win_func(*obj.func_parms)
+
+no_view = View()
 
 
 new_conjoint_tree = TreeEditor(
@@ -73,7 +77,7 @@ new_conjoint_tree = TreeEditor(
             node_for = [TreeLauncher],
             label = 'node_name',
             on_dclick = dclk_win_activator,
-            # view = a_conjoint_view,
+            view = no_view,
             ),
         ],
     selected='selected_obj',
