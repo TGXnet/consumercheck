@@ -41,8 +41,10 @@ class ConjointMachine(object):
 #        home = os.path.dirname(os.path.abspath(__file__))
         home = os.getcwd()
         Rbin = os.path.join(home, 'R-2.15.1', 'bin', 'R.exe')
-        print(Rbin)
-        self.r = pyper.R(Rbin)
+        try:
+            self.r = pyper.R(Rbin)
+        except WindowsError:
+            self.r = pyper.R()
 
 
     def _load_conjoint_resources(self):
