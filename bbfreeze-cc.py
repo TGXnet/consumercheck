@@ -1,14 +1,17 @@
-import os.path
+import os
+# import os.path
 import shutil
 
 from bbfreeze import Freezer
 
-FREEZE_VERSION = '0.6.5'
-# R_VERSION = '2.11.1'
+FREEZE_VERSION = '0.7.0'
+R_VER = '2.15.1'
 # freeze folder
 ff = "consumercheck-" + FREEZE_VERSION
 # R folder
-# rf = "R-" + R_VERSION
+rf = "R-" + R_VER
+# Home folder for source
+hf = os.path.dirname(os.path.abspath(__file__))
 
 # Modules I have tried to exclude:
 # unittest: "numpy/testing/__init__.py"
@@ -51,14 +54,25 @@ for img in cc_imgs:
 # Renember to delete these from library.zip
 ets_pack = ['pyface', 'enable', 'traitsui']
 for pack in ets_pack:
-    pp = os.path.join('C:\\Documents and Settings\\Thomas Graff\\Mine dokumenter\\Python\\ETS_packages', pack)
+    pp = os.path.join(os.path.dirname(hf), 'ETSpackages', pack)
     dst = os.path.join(ff, pack)
     shutil.copytree(pp, dst)
 
+# R dist
+rsource = os.path.join(os.path.dirname(hf), 'Rdist', rf)
+rdst = os.path.join(ff, rf)
+shutil.copytree(rsource, rdst)
+
+# Conjoint R scripts
+rss = os.path.join(os.path.dirname(hf), 'pgm')
+rsdst = os.path.join(ff, 'pgm')
+shutil.copytree(rss, rsdst)
+
+
 # Dependency investigation
-gr = freeze.mf.graph
+#gr = freeze.mf.graph
 # Dumps dependencies graph dot file to dep.dot
 # dot -Granksep=4.0 -Tpdf -O dep.dot
-freeze.dump_dot()
+#freeze.dump_dot()
 # Open browser
-freeze.showxref()
+#freeze.showxref()
