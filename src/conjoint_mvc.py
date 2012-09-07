@@ -131,9 +131,9 @@ class AConjointHandler(ModelView):
 
     def _populate_win_launchers(self):
         table_win_launchers = [
-            ("Random", 'show_random'),
+            ("Means", 'show_means'),
             ("Fixed", 'show_fixed'),
-            ("Means", 'show_means')]
+            ("Random", 'show_random')]
 
         self.table_win_launchers = [
             TreeLauncher(owner_ref=self, node_name=nn, func_name=fn)
