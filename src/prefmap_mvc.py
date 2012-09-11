@@ -5,7 +5,7 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
+from traits.api import (HasTraits, Any, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
@@ -34,6 +34,12 @@ class DClickTool(BaseTool):
     def _build_plot_list(self):
         for e,i in enumerate(self.component.container.plot_components):
             self.plot_dict[i.title] = self.func_list[e]
+
+
+class WindowLauncher(HasTraits):
+    node_name = Str()
+    func_name = Str()
+    owner_ref = Any()
 
 
 class APrefmapModel(HasTraits):
@@ -89,6 +95,14 @@ class APrefmapHandler(ModelView):
     show_sel_obj = Button('Objects')
     show_sel_x_var = Button('X Variables')
     show_sel_y_var = Button('Y Variables')
+
+    window_launchers = List(Instance(WindowLauncher))
+    
+    
+    def __init__(self, *args, **kwargs):
+        super(APrefmapHandler, self).__init__(*args, **kwargs)
+        self._populate_window_launchers()
+
     
     @on_trait_change('show_sel_obj')
     def _act_show_sel_obj(self, obj, name, new):
@@ -107,6 +121,21 @@ class APrefmapHandler(ModelView):
 
     def __ne__(self, other):
         return self.nid != other
+
+
+    def _populate_window_launchers(self):
+
+        std_launchers = [
+            ("Overview", "plot_overview"),
+            ("Scores", "plot_scores"),
+            ("X ~ Y correlation loadings", "plot_corr_loading"),
+            ("Explained var X", "plot_expl_var_x"),
+            ("Explained var Y", "plot_expl_var_y"),
+            ("X loadings", "plot_loadings_x"),
+            ("Y loadings", "plot_loadings_y"),
+            ]
+
+        self.window_launchers = [WindowLauncher(node_name=nn, func_name=fn, owner_ref=self) for nn, fn in std_launchers]
 
 
     def plot_overview(self):

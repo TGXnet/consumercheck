@@ -9,29 +9,13 @@ from traitsui.api import View, Group, Item, InstanceEditor, TreeEditor, TreeNode
 
 # Local imports
 from prefmap_container_mvc import PrefmapsHandler, PrefmapsContainer, prefmaps_view
-from prefmap_mvc import APrefmapHandler
+from prefmap_mvc import APrefmapHandler, WindowLauncher
 
 
-def dclk_overview(obj):
-    obj.plot_overview()
-
-def dclk_scores(obj):
-    obj.plot_scores()
-
-def dclk_corr_load(obj):
-    obj.plot_corr_loading()
-
-def dclk_expl_var_x(obj):
-    obj.plot_expl_var_x()
-
-def dclk_expl_var_y(obj):
-    obj.plot_expl_var_y()
-
-def dclk_loadings_x(obj):
-    obj.plot_loadings_x()
-
-def dclk_loadings_y(obj):
-    obj.plot_loadings_y()
+def dclk_activator(obj):
+    fn = obj.func_name
+    plot_func = getattr(obj.owner_ref, fn)
+    plot_func()
 
 
 prefmap_tree = TreeEditor(
@@ -56,44 +40,14 @@ prefmap_tree = TreeEditor(
             ),
         TreeNode(
             node_for = [APrefmapHandler],
-            children = '',
+            children = 'window_launchers',
             label = 'name',
             # auto_open = True,
             ),
         TreeNode(
-            node_for = [APrefmapHandler],
-            label = '=Overview plot',
-            on_dclick = dclk_overview,
-            ),
-        TreeNode(
-            node_for = [APrefmapHandler],
-            label = '=Scores plot',
-            on_dclick = dclk_scores,
-            ),
-        TreeNode(
-            node_for = [APrefmapHandler],
-            label = '=X ~ Y correlation loadings plot',
-            on_dclick = dclk_corr_load,
-            ),
-        TreeNode(
-            node_for = [APrefmapHandler],
-            label = '=Explained var X plot',
-            on_dclick = dclk_expl_var_x,
-            ),
-        TreeNode(
-            node_for = [APrefmapHandler],
-            label = '=Explained var Y plot',
-            on_dclick = dclk_expl_var_y,
-            ),
-        TreeNode(
-            node_for = [APrefmapHandler],
-            label = '=X loadings plot',
-            on_dclick = dclk_loadings_x,
-            ),
-        TreeNode(
-            node_for = [APrefmapHandler],
-            label = '=Y loadings plot',
-            on_dclick = dclk_loadings_y,
+            node_for = [WindowLauncher],
+            label = 'node_name',
+            on_dclick = dclk_activator,
             ),
         ],
     hide_root = True,

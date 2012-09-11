@@ -9,12 +9,12 @@ from traitsui.api import View, Group, Item, InstanceEditor, TreeEditor, TreeNode
 
 # Local imports
 from pca_container_mvc import PCAsHandler, PCAsContainer, pcas_view
-from pca_mvc import APCAHandler, PlotLauncher
+from pca_mvc import APCAHandler, WindowLauncher
 
 
 def dclk_activator(obj):
     fn = obj.func_name
-    plot_func = getattr(obj.pca_ref, fn)
+    plot_func = getattr(obj.owner_ref, fn)
     plot_func()
 
 
@@ -40,12 +40,12 @@ pca_tree = TreeEditor(
             ),
         TreeNode(
             node_for = [APCAHandler],
-            children  = 'plot_launchers',
+            children  = 'window_launchers',
             label = 'name',
 #            auto_open=True,
             ),
         TreeNode(
-            node_for = [PlotLauncher],
+            node_for = [WindowLauncher],
             label = 'node_name',
             on_dclick = dclk_activator,
             ),

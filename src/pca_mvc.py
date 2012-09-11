@@ -35,10 +35,10 @@ class DClickTool(BaseTool):
             self.plot_dict[i.title] = self.func_list[e]
 
 
-class PlotLauncher(HasTraits):
+class WindowLauncher(HasTraits):
     node_name = Str()
     func_name = Str()
-    pca_ref = Any()
+    owner_ref = Any()
 
 
 class APCAModel(HasTraits):
@@ -87,12 +87,12 @@ class APCAHandler(ModelView):
     show_sel_obj = Button('Objects')
     show_sel_var = Button('Variables')
 
-    plot_launchers = List()
+    window_launchers = List(Instance(WindowLauncher))
 
 
     def __init__(self, *args, **kwargs):
         super(APCAHandler, self).__init__(*args, **kwargs)
-        self._populate_plot_launchers()
+        self._populate_window_launchers()
 
 
     @on_trait_change('show_sel_obj')
@@ -113,7 +113,8 @@ class APCAHandler(ModelView):
         return self.nid != other
 
 
-    def _populate_plot_launchers(self):
+    def _populate_window_launchers(self):
+        # FIXME: Try
         adv_enable = self.model.mother_ref.mother_ref.en_advanced
 
         std_launchers = [
@@ -136,7 +137,7 @@ class APCAHandler(ModelView):
 
         if adv_enable:
             std_launchers.extend(adv_launchers)
-        self.plot_launchers = [PlotLauncher(node_name=nn, func_name=fn, pca_ref=self) for nn, fn in std_launchers]
+        self.window_launchers = [WindowLauncher(node_name=nn, func_name=fn, owner_ref=self) for nn, fn in std_launchers]
 
 
     def plot_overview(self):
