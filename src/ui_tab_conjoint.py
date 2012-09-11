@@ -9,16 +9,9 @@ from traitsui.api import View, Item, TreeEditor, TreeNode
 
 # Local imports
 from conjoint_container_mvc import ConjointsHandler, ConjointsContainer, conjoints_view
-from conjoint_mvc import AConjointHandler, TreeLauncher, a_conjoint_view
+from conjoint_mvc import AConjointHandler, WindowLauncher, a_conjoint_view
+from plugin_tree_helper import dclk_activator
 
-
-def dclk_win_activator(obj):
-    fn = obj.func_name
-    open_win_func = getattr(obj.owner_ref, fn)
-    if len(obj.func_parms) < 1:
-        open_win_func()
-    else:
-        open_win_func(*obj.func_parms)
 
 no_view = View()
 
@@ -74,9 +67,9 @@ new_conjoint_tree = TreeEditor(
         ##     auto_open = True,
         ##     ),
         TreeNode(
-            node_for = [TreeLauncher],
+            node_for = [WindowLauncher],
             label = 'node_name',
-            on_dclick = dclk_win_activator,
+            on_dclick = dclk_activator,
             view = no_view,
             ),
         ],
@@ -112,8 +105,8 @@ if __name__ == '__main__':
     import numpy as np
     from tests.conftest import TestContainer
 
+    container = TestContainer()
+    conjoint_plugin = ConjointPlugin(mother_ref=container)
+    conjoint_plugin.conjoints_handler._ds_changed(None)
     with np.errstate(invalid='ignore'):
-        container = TestContainer()
-        conjoint_plugin = ConjointPlugin(mother_ref=container)
-        conjoint_plugin.conjoints_handler._ds_changed(None)
         conjoint_plugin.configure_traits()

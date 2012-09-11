@@ -17,8 +17,7 @@ else:
 import numpy as np
 
 # Enthought imports
-from traits.api import (HasTraits, Any, Button, Enum, Bool, Instance,
-                        List, Str, Tuple,
+from traits.api import (HasTraits, Button, Enum, Bool, Instance, List, Str,
                         DelegatesTo, Property, cached_property, on_trait_change)
 from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor
 from traitsui.menu import (OKButton)
@@ -29,6 +28,7 @@ from ds_table_view import DSTableViewer
 # from ds_matrix_view import matrix_view
 from conjoint_machine import ConjointMachine
 from plot_conjoint import MainEffectsPlot, InteractionPlot
+from plugin_tree_helper import WindowLauncher
 
 
 class ConjointCalcState(HasTraits):
@@ -53,15 +53,6 @@ class ConjointCalcState(HasTraits):
             logger.info('Conjoint result ready')
         else:
             logger.info('Staring conjoint calculation')
-
-
-
-class TreeLauncher(HasTraits):
-    owner_ref = Any()
-    node_name = Str()
-    func_name = Str()
-    func_parms = Tuple()
-
 
 
 class AConjointModel(HasTraits):
@@ -136,7 +127,7 @@ class AConjointHandler(ModelView):
             ("Random", 'show_random')]
 
         self.table_win_launchers = [
-            TreeLauncher(owner_ref=self, node_name=nn, func_name=fn)
+            WindowLauncher(owner_ref=self, node_name=nn, func_name=fn)
             for nn, fn in table_win_launchers]
 
 
@@ -151,7 +142,7 @@ class AConjointHandler(ModelView):
                     break
 
             self.me_plot_launchers = [
-                TreeLauncher(
+                WindowLauncher(
                     owner_ref=self, node_name=name,
                     func_name='plot_main_effects', func_parms=tuple([name]))
                 for name in vn]
@@ -163,7 +154,7 @@ class AConjointHandler(ModelView):
                 ]
 
             self.int_plot_launchers = [
-                TreeLauncher(
+                WindowLauncher(
                     owner_ref=self, node_name=nn,
                     func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
                 for nn, p_one, p_two in int_plot_launchers]
@@ -354,4 +345,3 @@ if __name__ == '__main__':
     controller = AConjointTestHandler(model=model)
     with np.errstate(invalid='ignore'):
         controller.configure_traits()
-        # controller.model.print_traits()

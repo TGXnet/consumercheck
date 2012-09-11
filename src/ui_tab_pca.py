@@ -10,12 +10,7 @@ from traitsui.api import View, Group, Item, InstanceEditor, TreeEditor, TreeNode
 # Local imports
 from pca_container_mvc import PCAsHandler, PCAsContainer, pcas_view
 from pca_mvc import APCAHandler, WindowLauncher
-
-
-def dclk_activator(obj):
-    fn = obj.func_name
-    plot_func = getattr(obj.owner_ref, fn)
-    plot_func()
+from plugin_tree_helper import dclk_activator
 
 
 pca_tree = TreeEditor(

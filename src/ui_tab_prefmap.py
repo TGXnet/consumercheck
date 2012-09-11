@@ -10,12 +10,7 @@ from traitsui.api import View, Group, Item, InstanceEditor, TreeEditor, TreeNode
 # Local imports
 from prefmap_container_mvc import PrefmapsHandler, PrefmapsContainer, prefmaps_view
 from prefmap_mvc import APrefmapHandler, WindowLauncher
-
-
-def dclk_activator(obj):
-    fn = obj.func_name
-    plot_func = getattr(obj.owner_ref, fn)
-    plot_func()
+from plugin_tree_helper import dclk_activator
 
 
 prefmap_tree = TreeEditor(

@@ -3,7 +3,7 @@
 import sys
 
 # Enthought imports
-from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo, Any,
+from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
@@ -18,6 +18,7 @@ from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
 from ui_results_new import TableViewController
+from plugin_tree_helper import WindowLauncher
 
 
 #Double click tool
@@ -33,12 +34,6 @@ class DClickTool(BaseTool):
     def _build_plot_list(self):
         for e,i in enumerate(self.component.container.plot_components):
             self.plot_dict[i.title] = self.func_list[e]
-
-
-class WindowLauncher(HasTraits):
-    node_name = Str()
-    func_name = Str()
-    owner_ref = Any()
 
 
 class APCAModel(HasTraits):
