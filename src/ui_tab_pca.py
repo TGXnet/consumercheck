@@ -59,22 +59,22 @@ pca_tree = TreeEditor(
 
 
 class PCAPlugin(HasTraits):
-    pca_handler = Instance(PCAsHandler)
+    pcas_handler = Instance(PCAsHandler)
     selected_obj = Any()
 
     def __init__(self, mother_ref, **kwargs):
         super(PCAPlugin, self).__init__(**kwargs)
         model = PCAsContainer(mother_ref=mother_ref)
-        self.pca_handler = PCAsHandler(model=model)
-        self.selected_obj = self.pca_handler
+        self.pcas_handler = PCAsHandler(model=model)
+        self.selected_obj = self.pcas_handler
 
 
     traits_view = View(
                        Group(
-                             Item(name='pca_handler',
+                             Item(name='pcas_handler',
                                   editor=pca_tree,
                                   show_label=False),
-                             Item(name='pca_handler',
+                             Item(name='pcas_handler',
                                   editor=InstanceEditor(view=pcas_view),
                                   style='custom',
                                   show_label=False),
@@ -92,9 +92,9 @@ if __name__ == '__main__':
     import numpy as np
     from tests.conftest import TestContainer
 
+    container = TestContainer()
+    pca_plugin = PCAPlugin(mother_ref=container)
+    # To force populating selection list
+    pca_plugin.pcas_handler._ds_changed(None)
     with np.errstate(invalid='ignore'):
-        container = TestContainer()
-        pca_plugin = PCAPlugin(mother_ref=container)
-        # To force populating selection list
-        pca_plugin.pca_handler._ds_changed(None)
         pca_plugin.configure_traits()

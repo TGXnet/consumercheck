@@ -57,7 +57,6 @@ class APCAModel(HasTraits):
 
     #checkbox bool for standardized results
     standardize = DelegatesTo('mother_ref')
-    
     pc_to_calc = DelegatesTo('mother_ref')
     min_pc = 2
     max_pc = Property()
