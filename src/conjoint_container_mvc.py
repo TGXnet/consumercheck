@@ -64,11 +64,11 @@ class ConjointsHandler(ModelView):
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
     def _ds_changed(self, info):
 
-        def id_by_type(type):
-            return self.model.dsl.get_id_list_by_type(type)
+        def id_by_type(ds_type):
+            return self.model.dsl.get_id_list_by_type(ds_type)
 
-        def name_from_id(id):
-            return self.model.dsl.get_by_id(id)._ds_name
+        def name_from_id(ds_id):
+            return self.model.dsl.get_by_id(ds_id)._ds_name
 
         self.available_designs = [name_from_id(i)
                                   for i in id_by_type('Design variable')]

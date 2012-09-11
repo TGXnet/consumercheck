@@ -59,13 +59,6 @@ new_conjoint_tree = TreeEditor(
             view = a_conjoint_view,
             auto_open = True,
             ),
-        ## TreeNode(
-        ##     node_for = [AConjointHandler],
-        ##     children = 'int_plot_launchers',
-        ##     label = '=Interaction plots',
-        ##     view = a_conjoint_view,
-        ##     auto_open = True,
-        ##     ),
         TreeNode(
             node_for = [WindowLauncher],
             label = 'node_name',
@@ -73,8 +66,10 @@ new_conjoint_tree = TreeEditor(
             view = no_view,
             ),
         ],
-    selected='selected_obj',
-    )
+     hide_root=True,
+#     editable=False,
+     selected='selected_obj',
+   )
 
 
 
