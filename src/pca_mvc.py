@@ -4,13 +4,12 @@ import sys
 
 # Enthought imports
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo, Any,
-                        PrototypedFrom, Property, on_trait_change)
+                        Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
 import numpy as np
 
 # Local imports
-# from nipals import PCA
 from pca import nipalsPCA as PCA
 
 from dataset import DataSet
@@ -42,13 +41,6 @@ class PlotLauncher(HasTraits):
     pca_ref = Any()
 
 
-launch_view = View(
-    # Item('node_name'),
-    # Item(name='model.show_sel_var'),
-    )
-
-
-
 class APCAModel(HasTraits):
     """Represent the PCA model of a dataset."""
     name = Str()
@@ -64,11 +56,11 @@ class APCAModel(HasTraits):
     sel_obj = List()
 
     #checkbox bool for standardized results
-    standardize = PrototypedFrom('mother_ref')
+    standardize = DelegatesTo('mother_ref')
     
-    pc_to_calc = PrototypedFrom('mother_ref')
-    max_pc = Property()
+    pc_to_calc = DelegatesTo('mother_ref')
     min_pc = 2
+    max_pc = Property()
 
     # depends_on
     result = Property()
@@ -105,13 +97,13 @@ class APCAHandler(ModelView):
 
 
     @on_trait_change('show_sel_obj')
-    def _act_show_sel_obj(self, object, name, new):
-        object.model.ds.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
+    def _act_show_sel_obj(self, obj, name, new):
+        obj.model.ds.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
 
 
     @on_trait_change('show_sel_var')
-    def _act_show_sel_var(self, object, name, new):
-        object.model.ds.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+    def _act_show_sel_var(self, obj, name, new):
+        obj.model.ds.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
 
     def __eq__(self, other):

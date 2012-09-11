@@ -5,33 +5,31 @@ Adds statistical methods, user inteface and plots for PCA
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Any
-from traitsui.api import View, Item, TreeEditor, TreeNode
+from traitsui.api import View, Group, Item, InstanceEditor, TreeEditor, TreeNode
 
 # Local imports
 from pca_container_mvc import PCAsHandler, PCAsContainer, pcas_view
-from pca_mvc import APCAHandler, a_pca_view, PlotLauncher, launch_view
+from pca_mvc import APCAHandler, PlotLauncher
 
 
-def dclk_plot_switch(obj):
+def dclk_activator(obj):
     fn = obj.func_name
     plot_func = getattr(obj.pca_ref, fn)
     plot_func()
 
 
-new_pca_tree = TreeEditor(
+pca_tree = TreeEditor(
     nodes = [
         TreeNode(
             node_for = [PCAsHandler],
             children = '',
             label = '=PCA',
             auto_open = True,
-            view = pcas_view,
             ),
         TreeNode(
             node_for = [PCAsHandler],
             children = 'mappings',
             label = 'name',
-            view = pcas_view,
             rename = False,
             rename_me = False,
             copy = False,
@@ -44,19 +42,18 @@ new_pca_tree = TreeEditor(
             node_for = [APCAHandler],
             children  = 'plot_launchers',
             label = 'name',
-            view = a_pca_view,
-            auto_open=True,
+#            auto_open=True,
             ),
         TreeNode(
             node_for = [PlotLauncher],
             label = 'node_name',
-            on_dclick = dclk_plot_switch,
-            view = launch_view,
+            on_dclick = dclk_activator,
             ),
         ],
-    # hide_root=True,
+    hide_root=True,
+    editable=False,
     selected='selected_obj',
-    # auto_open=0,
+#    auto_open=0,
     )
 
 
@@ -73,9 +70,16 @@ class PCAPlugin(HasTraits):
 
 
     traits_view = View(
-        Item(name='pca_handler',
-             editor=new_pca_tree,
-             show_label=False),
+                       Group(
+                             Item(name='pca_handler',
+                                  editor=pca_tree,
+                                  show_label=False),
+                             Item(name='pca_handler',
+                                  editor=InstanceEditor(view=pcas_view),
+                                  style='custom',
+                                  show_label=False),
+                             orientation='horizontal'
+                             ),
         resizable=True,
         height=300,
         width=600,
