@@ -5,11 +5,11 @@ Adds statistical methods, user inteface and plots for Prefmap
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Any
-from traitsui.api import View, Item, TreeEditor, TreeNode
+from traitsui.api import View, Group, Item, InstanceEditor, TreeEditor, TreeNode
 
 # Local imports
 from prefmap_container_mvc import PrefmapsHandler, PrefmapsContainer, prefmaps_view
-from prefmap_mvc import APrefmapHandler, a_prefmap_view
+from prefmap_mvc import APrefmapHandler
 
 
 def dclk_overview(obj):
@@ -34,20 +34,18 @@ def dclk_loadings_y(obj):
     obj.plot_loadings_y()
 
 
-new_prefmap_tree = TreeEditor(
+prefmap_tree = TreeEditor(
     nodes = [
         TreeNode(
             node_for = [PrefmapsHandler],
             children = '',
             label = '=Prefmap',
             auto_open = True,
-            view = prefmaps_view,
             ),
         TreeNode(
             node_for = [PrefmapsHandler],
             children = 'mappings',
             label = 'name',
-            view = prefmaps_view,
             rename = False,
             rename_me = False,
             copy = False,
@@ -61,74 +59,72 @@ new_prefmap_tree = TreeEditor(
             children = '',
             label = 'name',
             # auto_open = True,
-            view = a_prefmap_view,
             ),
         TreeNode(
             node_for = [APrefmapHandler],
             label = '=Overview plot',
             on_dclick = dclk_overview,
-            view = a_prefmap_view,
             ),
         TreeNode(
             node_for = [APrefmapHandler],
             label = '=Scores plot',
             on_dclick = dclk_scores,
-            view = a_prefmap_view,
             ),
         TreeNode(
             node_for = [APrefmapHandler],
             label = '=X ~ Y correlation loadings plot',
             on_dclick = dclk_corr_load,
-            view = a_prefmap_view,
             ),
         TreeNode(
             node_for = [APrefmapHandler],
             label = '=Explained var X plot',
             on_dclick = dclk_expl_var_x,
-            view = a_prefmap_view,
             ),
         TreeNode(
             node_for = [APrefmapHandler],
             label = '=Explained var Y plot',
             on_dclick = dclk_expl_var_y,
-            view = a_prefmap_view,
             ),
         TreeNode(
             node_for = [APrefmapHandler],
             label = '=X loadings plot',
             on_dclick = dclk_loadings_x,
-            view = a_prefmap_view,
             ),
         TreeNode(
             node_for = [APrefmapHandler],
             label = '=Y loadings plot',
             on_dclick = dclk_loadings_y,
-            view = a_prefmap_view,
             ),
         ],
-    # hide_root = True,
+    hide_root = True,
     selected='selected_obj',
-    # editable = False,
-    # auto_open = 2,
+    editable = False,
     )
 
 
 
 class PrefmapPlugin(HasTraits):
-    prefmap_handler = Instance(PrefmapsHandler)
+    prefmaps_handler = Instance(PrefmapsHandler)
     selected_obj = Any()
 
     def __init__(self, mother_ref, **kwargs):
         super(PrefmapPlugin, self).__init__(**kwargs)
         model = PrefmapsContainer(mother_ref=mother_ref)
-        self.prefmap_handler = PrefmapsHandler(model=model)
-        self.selected_obj = self.prefmap_handler
+        self.prefmaps_handler = PrefmapsHandler(model=model)
+        self.selected_obj = self.prefmaps_handler
 
 
     traits_view = View(
-        Item(name='prefmap_handler',
-             editor=new_prefmap_tree,
-             show_label=False),
+                       Group(
+                             Item(name='prefmaps_handler',
+                                  editor=prefmap_tree,
+                                  show_label=False),
+                             Item(name='prefmaps_handler',
+                                  editor=InstanceEditor(view=prefmaps_view),
+                                  style='custom',
+                                  show_label=False),
+                             orientation='horizontal',
+                             ),
         resizable=True,
         height=400,
         width=600,
@@ -141,7 +137,9 @@ if __name__ == '__main__':
     import numpy as np
     from tests.conftest import TestContainer
 
+    container = TestContainer()
+    prefmap_plugin = PrefmapPlugin(mother_ref=container)
+    # To force populating selection list
+    prefmap_plugin.prefmaps_handler.dsl_changed()
     with np.errstate(invalid='ignore'):
-        container = TestContainer()
-        prefmap_plugin = PrefmapPlugin(mother_ref=container)
         prefmap_plugin.configure_traits()

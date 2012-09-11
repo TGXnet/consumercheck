@@ -6,7 +6,7 @@ import logging
 
 # Enthought imports
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
-                        PrototypedFrom, Property, on_trait_change)
+                        Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
 
@@ -54,11 +54,10 @@ class APrefmapModel(HasTraits):
     sel_obj = List()
 
     #checkbox bool for standardized results
-    standardize = PrototypedFrom('mother_ref')
-    
-    pc_to_calc = PrototypedFrom('mother_ref')
-    max_pc = Property()
+    standardize = DelegatesTo('mother_ref')
+    pc_to_calc = DelegatesTo('mother_ref')
     min_pc = 2
+    max_pc = Property()
     
     # depends_on
     result = Property()
@@ -92,16 +91,16 @@ class APrefmapHandler(ModelView):
     show_sel_y_var = Button('Y Variables')
     
     @on_trait_change('show_sel_obj')
-    def _act_show_sel_obj(self, object, name, new):
-        object.model.dsX.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
+    def _act_show_sel_obj(self, obj, name, new):
+        obj.model.dsX.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
 
     @on_trait_change('show_sel_x_var')
-    def _act_show_sel_x_var(self, object, name, new):
-        object.model.dsX.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+    def _act_show_sel_x_var(self, obj, name, new):
+        obj.model.dsX.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     @on_trait_change('show_sel_y_var')
-    def _act_show_sel_y_var(self, object, name, new):
-        object.model.dsY.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+    def _act_show_sel_y_var(self, obj, name, new):
+        obj.model.dsY.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     def __eq__(self, other):
         return self.nid == other

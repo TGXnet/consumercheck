@@ -51,13 +51,13 @@ class PrefmapsHandler(ModelView):
 
 
     @on_trait_change('model:mother_ref:dsname_event')
-    def dsname_changed(self, obj, name, new):
+    def dsname_changed(self):
         self._update_comb()
         self.comb.update_names()
 
 
     @on_trait_change('model:mother_ref:ds_event')
-    def dsl_changed(self, obj, name, new):
+    def dsl_changed(self):
         self._update_comb()
         self.comb._generate_combinations()
 
@@ -74,7 +74,7 @@ class PrefmapsHandler(ModelView):
 
 
     @on_trait_change('comb:combination_updated')
-    def _handle_selection(self, object, name, old, new):
+    def _handle_selection(self, obj, name, old, new):
         if not self.info:
             return
 
