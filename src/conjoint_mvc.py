@@ -17,10 +17,10 @@ else:
 import numpy as np
 
 # Enthought imports
-from traits.api import (HasTraits, Button, Enum, Bool, Instance, List, Str,
+from traits.api import (HasTraits, Button, Bool, Enum, Instance, List, Str,
                         DelegatesTo, Property, cached_property, on_trait_change)
 from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor
-from traitsui.menu import (OKButton)
+from traitsui.menu import OKButton
 
 # Local imports
 from dataset import DataSet
@@ -62,21 +62,21 @@ class AConjointModel(HasTraits):
     mother_ref = Instance(HasTraits)
 
     # The imput data for calculation
-    design = DataSet()
-    sel_design_vars = List()
-    cons_attr = DataSet()
-    sel_cons_attr_vars = List()
+    design_set = DelegatesTo('mother_ref')
+    chosen_design_vars = DelegatesTo('mother_ref')
+    consumer_attr_set = DelegatesTo('mother_ref')
+    chosen_consumer_attr_vars = DelegatesTo('mother_ref')
     cons_liking = DataSet()
 
     # Conjoint settings
-    structure = Enum(1, 2, 3)
+    model_structure_type = DelegatesTo('mother_ref')
 
     # Conjoint calculation state
     ccs = Instance(ConjointCalcState, ())
     cm = Instance(ConjointMachine, ())
 
     # depends_on
-    result = Property(depends_on='sel_design_vars, sel_cons_attr_vars, structure')
+    result = Property(depends_on='mother_ref.chosen_design_vars, mother_ref.chosen_consumer_attr_vars, mother_ref.model_structure_type')
 
     @cached_property
     def _get_result(self):
@@ -84,9 +84,9 @@ class AConjointModel(HasTraits):
             self.cm.run_state = self.ccs
 
         self.cm.schedule_calculation(
-            self.structure,
-            self.cons_attr, self.sel_cons_attr_vars,
-            self.design, self.sel_design_vars,
+            self.model_structure_type,
+            self.consumer_attr_set, self.chosen_consumer_attr_vars,
+            self.design_set, self.chosen_design_vars,
             self.cons_liking)
         self.ccs.edit_traits(kind='livemodal')
         return self.cm.get_result()
@@ -100,11 +100,6 @@ class AConjointHandler(ModelView):
     table_win_launchers = List()
     me_plot_launchers = List()
     int_plot_launchers = List()
-
-    design_vars = List()
-    sel_design_vars = DelegatesTo('model')
-    cons_attr_vars = List()
-    sel_cons_attr_vars = DelegatesTo('model')
 
 
     def __init__(self, *args, **kwargs):
@@ -158,27 +153,6 @@ class AConjointHandler(ModelView):
                     owner_ref=self, node_name=nn,
                     func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
                 for nn, p_one, p_two in int_plot_launchers]
-
-
-
-    @on_trait_change('model:mother_ref:chosen_design_vars')
-    def _mother_design_var_selected(self, new):
-        self.sel_design_vars = new
-
-
-    @on_trait_change('model:mother_ref:chosen_consumer_attr_vars')
-    def _mother_cons_attr_selected(self, new):
-        self.sel_cons_attr_vars = new
-
-
-    def model_design_changed(self, info):
-        print("Design changed")
-        self.design_vars = self.model.design.variable_names
-
-
-    def model_cons_attr_changed(self, info):
-        print("Cons attr changed")
-        self.cons_attr_vars = self.model.cons_attr.variable_names
 
 
     def show_random(self):
@@ -244,22 +218,21 @@ class AConjointHandler(ModelView):
 
 
 gr_sel = Group(
-    Item('model.name',
-         style='readonly'),
+    Item('model.name', style='readonly'),
     Group(
         Group(
-            Item('model.sel_design_vars',
-                 editor=CheckListEditor(name='object.design_vars'),
-                 style='custom',
+            Item('model.chosen_design_vars',
+                 editor=CheckListEditor(),
+                 style='readonly',
                  show_label=False,
                  ),
             show_border=True,
             label='Design variables',
             ),
         Group(
-            Item('model.sel_cons_attr_vars',
-                 editor=CheckListEditor(name='object.cons_attr_vars'),
-                 style='custom',
+            Item('model.chosen_consumer_attr_vars',
+                 editor=CheckListEditor(),
+                 style='readonly',
                  show_label=False,
                  ),
             show_border=True,
@@ -269,9 +242,12 @@ gr_sel = Group(
         ),
     Group(
         Group(
-            Item('model.structure', show_label=False, width=150),
+            Item('model.model_structure_type',
+                 style='readonly',
+                 width=150,
+                 show_label=False),
             show_border=True,
-            label='Model structure',
+            label='Model model_structure_type',
             ),
         Spring(),
         orientation='horizontal',
@@ -291,17 +267,22 @@ if __name__ == '__main__':
 
 
     class MocMother(HasTraits):
-        chosen_design_vars = List()
-        chosen_consumer_attr_vars = List()
+        chosen_design_vars = List([u'Flavour', u'Sugarlevel'])
+        chosen_consumer_attr_vars = List([u'Sex'])
+        model_structure_type = Enum(1, 2, 3)
+        design_set = Instance(DataSet),
+        consumer_attr_set = Instance(DataSet)
 
+    moc = MocMother()
+    moc.design_set = dsl.get_by_id('design')
+    moc.consumer_attr_set = dsl.get_by_id('consumerattributes')
+    moc.print_traits()
 
     model = AConjointModel(
         nid='conjoint',
         name='Conjoint test',
-        mother_ref=MocMother(),
-        design=dsl.get_by_id('design'),
-        cons_liking=dsl.get_by_id('odour-flavour_liking'),
-        cons_attr=dsl.get_by_id('consumerattributes'))
+        mother_ref=moc,
+        cons_liking=dsl.get_by_id('odour-flavour_liking'))
 
 
     class AConjointTestHandler(AConjointHandler):

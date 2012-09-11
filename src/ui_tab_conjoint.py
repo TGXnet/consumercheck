@@ -5,31 +5,26 @@ Adds statistical methods, user inteface and plots for Conjoint
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Any
-from traitsui.api import View, Item, TreeEditor, TreeNode
+from traitsui.api import View, Group, Item, InstanceEditor, TreeEditor, TreeNode
 
 # Local imports
 from conjoint_container_mvc import ConjointsHandler, ConjointsContainer, conjoints_view
-from conjoint_mvc import AConjointHandler, WindowLauncher, a_conjoint_view
+from conjoint_mvc import AConjointHandler, WindowLauncher
 from plugin_tree_helper import dclk_activator
 
 
-no_view = View()
-
-
-new_conjoint_tree = TreeEditor(
+conjoint_tree = TreeEditor(
     nodes = [
         TreeNode(
             node_for = [ConjointsHandler],
             children = '',
             label = '=Conjoint',
             auto_open = True,
-            view = conjoints_view,
             ),
         TreeNode(
             node_for = [ConjointsHandler],
             children = 'mappings',
             label = 'name',
-            view = conjoints_view,
             rename = False,
             rename_me = False,
             copy = False,
@@ -42,32 +37,27 @@ new_conjoint_tree = TreeEditor(
             node_for = [AConjointHandler],
             children = '',
             label = 'name',
-            # auto_open = True,
-            view = a_conjoint_view,
             ),
         TreeNode(
             node_for = [AConjointHandler],
             children = 'table_win_launchers',
             label = '=Tables',
-            view = a_conjoint_view,
-            auto_open = True,
+#            auto_open = True,
             ),
         TreeNode(
             node_for = [AConjointHandler],
             children = 'me_plot_launchers',
             label = '=Main effects plots',
-            view = a_conjoint_view,
-            auto_open = True,
+#            auto_open = True,
             ),
         TreeNode(
             node_for = [WindowLauncher],
             label = 'node_name',
             on_dclick = dclk_activator,
-            view = no_view,
             ),
         ],
      hide_root=True,
-#     editable=False,
+     editable=False,
      selected='selected_obj',
    )
 
@@ -85,9 +75,16 @@ class ConjointPlugin(HasTraits):
 
 
     traits_view = View(
-        Item(name='conjoints_handler',
-             editor=new_conjoint_tree,
-             show_label=False),
+                       Group(
+                             Item(name='conjoints_handler',
+                                  editor=conjoint_tree,
+                                  show_label=False),
+                             Item(name='conjoints_handler',
+                                  editor=InstanceEditor(view=conjoints_view),
+                                  style='custom',
+                                  show_label=False),
+                             orientation='horizontal',
+                             ),
         resizable=True,
         height=300,
         width=600,
