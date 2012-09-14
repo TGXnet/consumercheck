@@ -6,6 +6,7 @@ import sys
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
+from traitsui.menu import OKButton
 from enable.api import BaseTool
 import numpy as np
 
@@ -19,6 +20,17 @@ from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
 from ui_results_new import TableViewController
 from plugin_tree_helper import WindowLauncher
+
+
+class InComputeable(Exception):
+    pass
+
+
+class ErrorMessage(HasTraits):
+    err_msg = Str()
+    traits_view = View(Item('err_msg', style='readonly',
+                            label='Zero variance variables'),
+                       buttons=[OKButton], title='Warning')
 
 
 #Double click tool
@@ -46,6 +58,8 @@ class APCAModel(HasTraits):
     mother_ref = Instance(HasTraits)
     ds = DataSet()
     sub_ds = DataSet()
+    # List of variable names with zero variance in the data vector
+    zero_variance = List()
     # FIXME: To be replaced by groups
     sel_var = List()
     sel_obj = List()
@@ -62,16 +76,30 @@ class APCAModel(HasTraits):
     def _get_max_pc(self):
         return (min(self.ds.n_rows,self.ds.n_cols)-1)
 
+
+    def _check_std_dev(self):
+        sv = self.sub_ds.matrix.std(0)
+        std_limit = 0.001
+        dm = sv < std_limit
+        if np.any(dm):
+            vv = np.array(ds.variable_names)
+            self.zero_variance = list(vv[np.nonzero(dm)])
+        else:
+            self.zero_variance = []
+
+
     def _get_result(self):
         self.sub_ds = self.ds.subset()
         std_ds = 'cent'
         if self.standardise:
             std_ds = 'stand'
-        return PCA(
-            self.sub_ds.matrix,
-            numPC=self.pc_to_calc,
-            mode=std_ds,
-            cvType=["loo"])
+        self._check_std_dev()
+        if self.zero_variance:
+            raise InComputeable('PCA: matrix have vectors with zero variance')
+        return PCA(self.sub_ds.matrix,
+                   numPC=self.pc_to_calc,
+                   mode=std_ds,
+                   cvType=["loo"])
 
 
 class APCAHandler(ModelView):
@@ -109,8 +137,10 @@ class APCAHandler(ModelView):
 
 
     def _populate_window_launchers(self):
-        # FIXME: Try
-        adv_enable = self.model.mother_ref.mother_ref.en_advanced
+        try:
+            adv_enable = self.model.mother_ref.mother_ref.en_advanced
+        except AttributeError:
+            adv_enable = True
 
         std_launchers = [
             ("Overview", "plot_overview"),
@@ -135,6 +165,13 @@ class APCAHandler(ModelView):
         self.window_launchers = [WindowLauncher(node_name=nn, func_name=fn, owner_ref=self) for nn, fn in std_launchers]
 
 
+    def _show_zero_var_warning(self):
+        dlg = ErrorMessage()
+        for vn in self.model.zero_variance:
+            dlg.err_msg += vn + ', '
+        dlg.edit_traits()
+
+
     def plot_overview(self):
         """Make PCA overview plot.
 
@@ -143,10 +180,14 @@ class APCAHandler(ModelView):
         """
         
         self.model.plot_type = 'Overview Plot'
-        
-        ds_plots = [[self._make_scores_plot(), self._make_loadings_plot()],
-                    [self._make_corr_load_plot(), self._make_expl_var_plot()]]
-        
+
+        try:        
+            ds_plots = [[self._make_scores_plot(), self._make_loadings_plot()],
+                        [self._make_corr_load_plot(), self._make_expl_var_plot()]]
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         for plots in ds_plots:
             for plot in plots:
                 plot.tools.append(DClickTool(plot,ref = self))
@@ -159,7 +200,12 @@ class APCAHandler(ModelView):
 
     def plot_scores(self):
         self.model.plot_type = 'Scores Plot'
-        s_plot = self._make_scores_plot()
+        try:
+            s_plot = self._make_scores_plot()
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         spw = SinglePlotWindow(
             plot=s_plot,
             title_text=self._wind_title(),
@@ -178,7 +224,12 @@ class APCAHandler(ModelView):
 
     def plot_loadings(self):
         self.model.plot_type = 'Loadings Plot'
-        l_plot = self._make_loadings_plot()
+        try:
+            l_plot = self._make_loadings_plot()
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         spw = SinglePlotWindow(
             plot=l_plot,
             title_text=self._wind_title(),
@@ -197,7 +248,12 @@ class APCAHandler(ModelView):
 
     def plot_corr_loading(self):
         self.model.plot_type = 'Correlation Loadings Plot'
-        cl_plot = self._make_corr_load_plot()
+        try:
+            cl_plot = self._make_corr_load_plot()
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         spw = SinglePlotWindow(
             plot=cl_plot,
             title_text=self._wind_title(),
@@ -218,7 +274,12 @@ class APCAHandler(ModelView):
 
     def plot_expl_var(self):
         self.model.plot_type = 'Explained Variance Plot'
-        ev_plot = self._make_expl_var_plot()
+        try:
+            ev_plot = self._make_expl_var_plot()
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         ev_plot.legend.visible = True
         spw = LinePlotWindow(
             plot=ev_plot,
