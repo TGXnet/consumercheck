@@ -54,17 +54,17 @@ for img in cc_imgs:
 # Renember to delete these from library.zip
 ets_pack = ['pyface', 'enable', 'traitsui']
 for pack in ets_pack:
-    pp = os.path.join(os.path.dirname(hf), 'ETSpackages', pack)
+    pp = os.path.join(os.path.dirname(os.path.dirname(hf)), 'CCDev', 'ETSpackages', pack)
     dst = os.path.join(ff, pack)
     shutil.copytree(pp, dst)
 
 # R dist
-rsource = os.path.join(os.path.dirname(hf), 'Rdist', rf)
+rsource = os.path.join(os.path.dirname(os.path.dirname(hf)), 'CCDev', 'Rdist', rf)
 rdst = os.path.join(ff, rf)
 shutil.copytree(rsource, rdst)
 
 # Conjoint R scripts
-rss = os.path.join(os.path.dirname(hf), 'pgm')
+rss = os.path.join(hf, 'src', 'pgm')
 rsdst = os.path.join(ff, 'pgm')
 shutil.copytree(rss, rsdst)
 
