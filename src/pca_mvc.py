@@ -140,7 +140,7 @@ class APCAHandler(ModelView):
         try:
             adv_enable = self.model.mother_ref.mother_ref.en_advanced
         except AttributeError:
-            adv_enable = True
+            adv_enable = False
 
         std_launchers = [
             ("Overview", "plot_overview"),
