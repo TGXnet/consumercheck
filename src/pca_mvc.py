@@ -50,8 +50,8 @@ class APCAModel(HasTraits):
     sel_var = List()
     sel_obj = List()
 
-    #checkbox bool for standardized results
-    standardize = DelegatesTo('mother_ref')
+    #checkbox bool for standardised results
+    standardise = DelegatesTo('mother_ref')
     pc_to_calc = DelegatesTo('mother_ref')
     min_pc = 2
     max_pc = Property()
@@ -65,7 +65,7 @@ class APCAModel(HasTraits):
     def _get_result(self):
         self.sub_ds = self.ds.subset()
         std_ds = 'cent'
-        if self.standardize:
+        if self.standardise:
             std_ds = 'stand'
         return PCA(
             self.sub_ds.matrix,
@@ -325,7 +325,7 @@ a_pca_view = View(
     Group(
         Group(
             Item('model.name'),
-            Item('model.standardize'),
+            Item('model.standardise'),
             Item('model.pc_to_calc',editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj',
                  show_label=False),
@@ -341,13 +341,13 @@ a_pca_view = View(
 
 if __name__ == '__main__':
     # Things to fix for testing
-    # mother_ref: standardize, pc_to_calc
+    # mother_ref: standardise, pc_to_calc
     from traits.api import Bool, Int
     from tests.conftest import make_ds_mock
     ds = make_ds_mock()
 
     class MocMother(HasTraits):
-        standardize = Bool(True)
+        standardise = Bool(False)
         pc_to_calc = Int(2)
 
     moc_mother = MocMother()
@@ -388,7 +388,7 @@ if __name__ == '__main__':
             Group(
                 Group(
                     Item('model.name'),
-                    Item('model.standardize'),
+                    Item('model.standardise'),
                     Item('model.pc_to_calc'),
                     Item('show_sel_obj',
                          show_label=False),

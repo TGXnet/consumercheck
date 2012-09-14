@@ -18,7 +18,7 @@ class PrefmapsContainer(HasTraits):
     mappings = List(APrefmapHandler)
 
     # Fitting parameters
-    standardize = Bool(False)
+    standardise = Bool(False)
     pc_to_calc = Int(2)
 
 
@@ -110,7 +110,7 @@ prefmaps_view = View(
             ),
         Group(
             Group(
-                Item('model.standardize'),
+                Item('model.standardise'),
                 Item('pc_to_calc',
                      editor=RangeEditor(low='2',high='20',mode='spinner',is_float=False)),
                 orientation='vertical',

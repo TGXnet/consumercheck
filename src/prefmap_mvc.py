@@ -54,8 +54,8 @@ class APrefmapModel(HasTraits):
     sel_var_Y = List()
     sel_obj = List()
 
-    #checkbox bool for standardized results
-    standardize = DelegatesTo('mother_ref')
+    #checkbox bool for standardised results
+    standardise = DelegatesTo('mother_ref')
     pc_to_calc = DelegatesTo('mother_ref')
     min_pc = 2
     max_pc = Property()
@@ -76,8 +76,8 @@ class APrefmapModel(HasTraits):
             self.sub_dsY.matrix,
             numPC=self.pc_to_calc,
             cvType=["loo"],
-            Xstand=self.standardize,
-            Ystand=self.standardize)
+            Xstand=self.standardise,
+            Ystand=self.standardise)
 
 
 
@@ -324,7 +324,7 @@ a_prefmap_view = View(
     Group(
         Group(
             Item('model.name'),
-            Item('model.standardize'),
+            Item('model.standardise'),
             Item('model.pc_to_calc',
                  editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj'),
@@ -344,7 +344,7 @@ if __name__ == '__main__':
     dsy = make_ds_mock()
 
     class MocMother(HasTraits):
-        standardize = Bool(False)
+        standardise = Bool(False)
         pc_to_calc = Enum(2,3,4,5,6)
 
     moc_mother = MocMother()
