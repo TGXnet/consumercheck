@@ -11,6 +11,12 @@ from traits.api import (HasTraits, Array, Str, Int, Enum, File,
                         List, Bool, Property, on_trait_change)
 
 
+DS_TYPES = ['Design variable',
+            'Sensory profiling',
+            'Consumer liking',
+            'Consumer attributes']
+
+
 class DataSet(HasTraits):
     """Container for one array of related data.
 
@@ -47,13 +53,9 @@ class DataSet(HasTraits):
         desc = 'User friendly display name',
         label = 'Dataset name')
 
-    _dataset_type = Enum(
-        ('Design variable',
-         'Sensory profiling',
-         'Consumer liking',
-         'Consumer attributes',),
-        desc = 'Classify dataset',
-        label = 'Dataset type')
+    _dataset_type = Enum(DS_TYPES,
+                         desc = 'Classify dataset',
+                         label = 'Dataset type')
 
     _source_file = File(label = 'Source file')
 

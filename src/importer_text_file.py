@@ -18,14 +18,14 @@ import logging
 from numpy import genfromtxt
 
 # Enthought imports
-from traits.api import HasTraits, Event, Str, Unicode, Int, Bool, File, List, Enum, Property
+from traits.api import HasTraits, Event, Str, Unicode, Int, Bool, File, List, Enum
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
 from traits.api import implements
 
 # Local imports
-from dataset import DataSet
+from dataset import DS_TYPES, DataSet
 from importer_interfaces import IDataImporter
 
 
@@ -154,7 +154,7 @@ class ImporterTextFile(HasTraits):
     ds_id = Str()
     ds_name = Str()
     ds_type = Str()
-    ds_type_list = List(['Design variable', 'Sensory profiling', 'Consumer liking', 'Consumer attributes'])
+    ds_type_list = List(DS_TYPES)
 
     def make_ds_name(self):
         # FIXME: Find a better more general solution
