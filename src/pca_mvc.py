@@ -82,7 +82,7 @@ class APCAModel(HasTraits):
         std_limit = 0.001
         dm = sv < std_limit
         if np.any(dm):
-            vv = np.array(ds.variable_names)
+            vv = np.array(self.sub_ds.variable_names)
             self.zero_variance = list(vv[np.nonzero(dm)])
         else:
             self.zero_variance = []
