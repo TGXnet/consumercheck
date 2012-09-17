@@ -1,0 +1,4 @@
+# hg log -r v0.6.5:v0.7.0 --style cc.hgstyle
+changeset = "{date|shortdate}: {rev} {desc|firstline}\n"
+# changeset = "{date|shortdate}: {rev} {desc|firstline}\n{files}"
+# file = "  {file}\n"
