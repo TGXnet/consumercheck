@@ -1,5 +1,6 @@
 
 # Import necessary modules
+import os
 import string
 import pyper
 import numpy as np
@@ -37,16 +38,25 @@ class ConjointMachine(object):
 
 
     def _start_r_interpreter(self):
-        self.r = pyper.R()
+#        home = os.path.dirname(os.path.abspath(__file__))
+        home = os.getcwd()
+        Rbin = os.path.join(home, 'R-2.15.1', 'bin', 'R.exe')
+        try:
+            self.r = pyper.R(Rbin)
+        except WindowsError:
+            self.r = pyper.R()
 
 
     def _load_conjoint_resources(self):
         self.r('library(MixMod)')
         self.r('library(Hmisc)')
         self.r('library(lme4)')
-        self.r('dir<-"/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27"')
-        self.r('setwd(dir)')
+#        self.r('dir<-"/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27"')
+#        self.r('setwd(dir)')
         self.r('source(paste(getwd(),"/pgm/conjoint.r",sep=""))')
+        print(self.r('.libPaths()'))
+        print(self.r('search()'))
+        print(self.r('objects()'))
 
 
     def synchronous_calculation(self, structure,
@@ -265,3 +275,8 @@ class ConjointMachine(object):
         residTableDict['colNames'] = self.consLiking.variable_names
 
         return residTableDict
+
+
+if __name__ == '__main__':
+    print("Hello World")
+    cm = ConjointMachine()

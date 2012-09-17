@@ -7,15 +7,15 @@ Read a file and make a dataset object.
 import os.path
 
 # stdlib imports
-import logging
+# import logging
 # Log everything, and send it to stderr.
 # http://docs.python.org/howto/logging-cookbook.html
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
 
 # Enthought imports
-from traits.api import HasTraits, File, List, Button, Instance
-from traitsui.api import View, Item, UCustom, FileEditor
+from traits.api import HasTraits, File, List, Instance
+from traitsui.api import View, UCustom, FileEditor
 from traitsui.menu import OKButton, CancelButton
 from pyface.api import FileDialog, OK, CANCEL
 
@@ -62,16 +62,15 @@ class ImporterMain(HasTraits):
         importer.make_ds_name()
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
-        importer.ds_type = self._pick_ds_type(importer.ds_type_list,file_path)
+        importer.ds_type = self._pick_ds_type(file_path)
         ds = importer.import_data()
         ds = self._add_generic_name(ds, importer)
         return ds
 
 
-    def dnd_import_data(self,path):
+    def dnd_import_data(self, path):
         """Open dialog for selecting a file, import and return the DataSet"""
-        filen = path
-        importer = self._make_importer(filen)
+        importer = self._make_importer(path)
         importer.configure_traits()
         ds = importer.import_data()
         ds = self._add_generic_name(ds, importer)
@@ -87,7 +86,7 @@ class ImporterMain(HasTraits):
         for filen in self._files_path:
             importer = self._make_importer(filen)
             #importer.ds_type_list, importer.ds_type = self._pick_ds_type(importer.ds_type_list,filen)
-            importer.ds_type = self._pick_ds_type(importer.ds_type_list,filen)
+            importer.ds_type = self._pick_ds_type(filen)
             importer.configure_traits()
             ds = importer.import_data()
             ds = self._add_generic_name(ds, importer)
@@ -140,23 +139,31 @@ class ImporterMain(HasTraits):
         elif fext in ['xlsx', 'xlsm']:
             return ImporterXlsxFile(file_path=path)
 
-    def _pick_ds_type(self, lists, filen):
+    def _pick_ds_type(self, filen):
+        '''Available types:
+        ['Design variable', 'Sensory profiling', 'Consumer liking', 'Consumer attributes']
+        Defined in dataset.py
+        '''
         filen = filen.lower()
         if 'design' in filen:
-            return lists[0]
+            return 'Design variable'
         elif 'liking' in filen:
-            return lists[2]
+            return 'Consumer liking'
         elif 'attribute' in filen:
-            return lists[3]
-        return lists[0]
+            return 'Consumer attributes'
+        elif 'sensory' in filen:
+            return 'Sensory profiling'
+        elif 'qda' in filen:
+            return 'Sensory profiling'
+        return 'Sensory profiling'
 
     def _identify_filetype(self, path):
         fn = os.path.basename(path)
         return fn.partition('.')[2].lower()
 
 #Instantiate DND
-
 DND = ImporterMain()
+
 
 if __name__ == '__main__':
     fi = ImporterMain()

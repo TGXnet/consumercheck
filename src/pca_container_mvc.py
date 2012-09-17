@@ -16,7 +16,7 @@ class PCAsContainer(HasTraits):
     dsl = DelegatesTo('mother_ref')
     mappings = List(APCAHandler)
     # Fitting parameters
-    standardize = Bool(True)
+    standardise = Bool(False)
     pc_to_calc = Int(2)
 
 
@@ -76,7 +76,7 @@ pcas_view = View(
                 show_border=True,
                 ),
             Group(
-                Item('model.standardize'),
+                Item('model.standardise'),
                 Item('pc_to_calc',
                      editor=RangeEditor(low='2',high='20',mode='spinner',is_float=False)),
                 label='Default PC #',

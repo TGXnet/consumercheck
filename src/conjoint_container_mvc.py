@@ -5,6 +5,7 @@ from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor, 
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
+from dataset import DataSet
 
 
 class ConjointsContainer(HasTraits):
@@ -15,8 +16,10 @@ class ConjointsContainer(HasTraits):
     mappings = List(AConjointHandler)
 
     selected_design = Str()
+    design_set = Instance(DataSet)
     chosen_design_vars = List(Str)
     selected_consumer_attr = Str()
+    consumer_attr_set = Instance(DataSet)
     chosen_consumer_attr_vars = List(Str)
     chosen_consumer_likings = List(Str)
     model_structure_type = Enum(1, 2, 3)
@@ -33,12 +36,7 @@ class ConjointsContainer(HasTraits):
         mapping_model = AConjointModel(
             mother_ref=self,
             nid=map_id, name=map_name,
-            design=self.dsl.get_by_name(self.selected_design),
-            sel_design_vars=self.chosen_design_vars,
-            cons_attr=self.dsl.get_by_name(self.selected_consumer_attr),
-            sel_cons_attr_vars=self.chosen_consumer_attr_vars,
             cons_liking=liking_set,
-            structure=self.model_structure_type,
             )
         mapping_handler = AConjointHandler(mapping_model)
         self.mappings.append(mapping_handler)
@@ -64,11 +62,11 @@ class ConjointsHandler(ModelView):
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
     def _ds_changed(self, info):
 
-        def id_by_type(type):
-            return self.model.dsl.get_id_list_by_type(type)
+        def id_by_type(ds_type):
+            return self.model.dsl.get_id_list_by_type(ds_type)
 
-        def name_from_id(id):
-            return self.model.dsl.get_by_id(id)._ds_name
+        def name_from_id(ds_id):
+            return self.model.dsl.get_by_id(ds_id)._ds_name
 
         self.available_designs = [name_from_id(i)
                                   for i in id_by_type('Design variable')]
@@ -80,32 +78,16 @@ class ConjointsHandler(ModelView):
 
     @on_trait_change('model:selected_design')
     def _handle_design_choice(self, obj, ref, new):
+        self.model.design_set = obj.dsl.get_by_name(new)
         obj.chosen_design_vars = []
-        self.available_design_vars = obj.dsl.get_by_name(new).variable_names
-
-
-    # Not needed
-    @on_trait_change('model:chosen_design_vars')
-    def _handle_design_var_choice(self, obj, ref, old, new):
-        print new
+        self.available_design_vars = self.model.design_set.variable_names
 
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):
+        self.model.consumer_attr_set = obj.dsl.get_by_name(new)
         obj.chosen_consumer_attr_vars = []
-        self.available_consumer_attr_vars = obj.dsl.get_by_name(new).variable_names
-
-
-    # Not needed
-    @on_trait_change('model:chosen_consumer_attr_vars')
-    def _handle_attributes_var(self, obj, ref, old, new):
-        print new
-
-
-    # Not needed
-    @on_trait_change('model:model_structure_type')
-    def _handle_model_choice(self, obj, ref, old, new):
-        print new
+        self.available_consumer_attr_vars = self.model.consumer_attr_set.variable_names
 
 
     @on_trait_change('model:chosen_consumer_likings')

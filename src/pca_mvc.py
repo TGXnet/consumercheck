@@ -3,14 +3,14 @@
 import sys
 
 # Enthought imports
-from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo, Any,
-                        PrototypedFrom, Property, on_trait_change)
+from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
+                        Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
+from traitsui.menu import OKButton
 from enable.api import BaseTool
 import numpy as np
 
 # Local imports
-# from nipals import PCA
 from pca import nipalsPCA as PCA
 
 from dataset import DataSet
@@ -19,6 +19,18 @@ from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
 from ui_results_new import TableViewController
+from plugin_tree_helper import WindowLauncher
+
+
+class InComputeable(Exception):
+    pass
+
+
+class ErrorMessage(HasTraits):
+    err_msg = Str()
+    traits_view = View(Item('err_msg', style='readonly',
+                            label='Zero variance variables'),
+                       buttons=[OKButton], title='Warning')
 
 
 #Double click tool
@@ -36,19 +48,6 @@ class DClickTool(BaseTool):
             self.plot_dict[i.title] = self.func_list[e]
 
 
-class PlotLauncher(HasTraits):
-    node_name = Str()
-    func_name = Str()
-    pca_ref = Any()
-
-
-launch_view = View(
-    # Item('node_name'),
-    # Item(name='model.show_sel_var'),
-    )
-
-
-
 class APCAModel(HasTraits):
     """Represent the PCA model of a dataset."""
     name = Str()
@@ -59,16 +58,17 @@ class APCAModel(HasTraits):
     mother_ref = Instance(HasTraits)
     ds = DataSet()
     sub_ds = DataSet()
+    # List of variable names with zero variance in the data vector
+    zero_variance = List()
     # FIXME: To be replaced by groups
     sel_var = List()
     sel_obj = List()
 
-    #checkbox bool for standardized results
-    standardize = PrototypedFrom('mother_ref')
-    
-    pc_to_calc = PrototypedFrom('mother_ref')
-    max_pc = Property()
+    #checkbox bool for standardised results
+    standardise = DelegatesTo('mother_ref')
+    pc_to_calc = DelegatesTo('mother_ref')
     min_pc = 2
+    max_pc = Property()
 
     # depends_on
     result = Property()
@@ -76,16 +76,30 @@ class APCAModel(HasTraits):
     def _get_max_pc(self):
         return (min(self.ds.n_rows,self.ds.n_cols)-1)
 
+
+    def _check_std_dev(self):
+        sv = self.sub_ds.matrix.std(0)
+        std_limit = 0.001
+        dm = sv < std_limit
+        if np.any(dm):
+            vv = np.array(self.sub_ds.variable_names)
+            self.zero_variance = list(vv[np.nonzero(dm)])
+        else:
+            self.zero_variance = []
+
+
     def _get_result(self):
         self.sub_ds = self.ds.subset()
         std_ds = 'cent'
-        if self.standardize:
+        if self.standardise:
             std_ds = 'stand'
-        return PCA(
-            self.sub_ds.matrix,
-            numPC=self.pc_to_calc,
-            mode=std_ds,
-            cvType=["loo"])
+        self._check_std_dev()
+        if self.zero_variance:
+            raise InComputeable('PCA: matrix have vectors with zero variance')
+        return PCA(self.sub_ds.matrix,
+                   numPC=self.pc_to_calc,
+                   mode=std_ds,
+                   cvType=["loo"])
 
 
 class APCAHandler(ModelView):
@@ -96,22 +110,22 @@ class APCAHandler(ModelView):
     show_sel_obj = Button('Objects')
     show_sel_var = Button('Variables')
 
-    plot_launchers = List()
+    window_launchers = List(Instance(WindowLauncher))
 
 
     def __init__(self, *args, **kwargs):
         super(APCAHandler, self).__init__(*args, **kwargs)
-        self._populate_plot_launchers()
+        self._populate_window_launchers()
 
 
     @on_trait_change('show_sel_obj')
-    def _act_show_sel_obj(self, object, name, new):
-        object.model.ds.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
+    def _act_show_sel_obj(self, obj, name, new):
+        obj.model.ds.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
 
 
     @on_trait_change('show_sel_var')
-    def _act_show_sel_var(self, object, name, new):
-        object.model.ds.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+    def _act_show_sel_var(self, obj, name, new):
+        obj.model.ds.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
 
     def __eq__(self, other):
@@ -122,8 +136,11 @@ class APCAHandler(ModelView):
         return self.nid != other
 
 
-    def _populate_plot_launchers(self):
-        adv_enable = self.model.mother_ref.mother_ref.en_advanced
+    def _populate_window_launchers(self):
+        try:
+            adv_enable = self.model.mother_ref.mother_ref.en_advanced
+        except AttributeError:
+            adv_enable = False
 
         std_launchers = [
             ("Overview", "plot_overview"),
@@ -145,7 +162,14 @@ class APCAHandler(ModelView):
 
         if adv_enable:
             std_launchers.extend(adv_launchers)
-        self.plot_launchers = [PlotLauncher(node_name=nn, func_name=fn, pca_ref=self) for nn, fn in std_launchers]
+        self.window_launchers = [WindowLauncher(node_name=nn, func_name=fn, owner_ref=self) for nn, fn in std_launchers]
+
+
+    def _show_zero_var_warning(self):
+        dlg = ErrorMessage()
+        for vn in self.model.zero_variance:
+            dlg.err_msg += vn + ', '
+        dlg.edit_traits()
 
 
     def plot_overview(self):
@@ -156,10 +180,14 @@ class APCAHandler(ModelView):
         """
         
         self.model.plot_type = 'Overview Plot'
-        
-        ds_plots = [[self._make_scores_plot(), self._make_loadings_plot()],
-                    [self._make_corr_load_plot(), self._make_expl_var_plot()]]
-        
+
+        try:        
+            ds_plots = [[self._make_scores_plot(), self._make_loadings_plot()],
+                        [self._make_corr_load_plot(), self._make_expl_var_plot()]]
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         for plots in ds_plots:
             for plot in plots:
                 plot.tools.append(DClickTool(plot,ref = self))
@@ -172,7 +200,12 @@ class APCAHandler(ModelView):
 
     def plot_scores(self):
         self.model.plot_type = 'Scores Plot'
-        s_plot = self._make_scores_plot()
+        try:
+            s_plot = self._make_scores_plot()
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         spw = SinglePlotWindow(
             plot=s_plot,
             title_text=self._wind_title(),
@@ -191,7 +224,12 @@ class APCAHandler(ModelView):
 
     def plot_loadings(self):
         self.model.plot_type = 'Loadings Plot'
-        l_plot = self._make_loadings_plot()
+        try:
+            l_plot = self._make_loadings_plot()
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         spw = SinglePlotWindow(
             plot=l_plot,
             title_text=self._wind_title(),
@@ -210,7 +248,12 @@ class APCAHandler(ModelView):
 
     def plot_corr_loading(self):
         self.model.plot_type = 'Correlation Loadings Plot'
-        cl_plot = self._make_corr_load_plot()
+        try:
+            cl_plot = self._make_corr_load_plot()
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         spw = SinglePlotWindow(
             plot=cl_plot,
             title_text=self._wind_title(),
@@ -231,7 +274,12 @@ class APCAHandler(ModelView):
 
     def plot_expl_var(self):
         self.model.plot_type = 'Explained Variance Plot'
-        ev_plot = self._make_expl_var_plot()
+        try:
+            ev_plot = self._make_expl_var_plot()
+        except InComputeable:
+            self._show_zero_var_warning()
+            return
+
         ev_plot.legend.visible = True
         spw = LinePlotWindow(
             plot=ev_plot,
@@ -338,7 +386,7 @@ a_pca_view = View(
     Group(
         Group(
             Item('model.name'),
-            Item('model.standardize'),
+            Item('model.standardise'),
             Item('model.pc_to_calc',editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj',
                  show_label=False),
@@ -354,13 +402,13 @@ a_pca_view = View(
 
 if __name__ == '__main__':
     # Things to fix for testing
-    # mother_ref: standardize, pc_to_calc
+    # mother_ref: standardise, pc_to_calc
     from traits.api import Bool, Int
     from tests.conftest import make_ds_mock
     ds = make_ds_mock()
 
     class MocMother(HasTraits):
-        standardize = Bool(True)
+        standardise = Bool(False)
         pc_to_calc = Int(2)
 
     moc_mother = MocMother()
@@ -401,7 +449,7 @@ if __name__ == '__main__':
             Group(
                 Group(
                     Item('model.name'),
-                    Item('model.standardize'),
+                    Item('model.standardise'),
                     Item('model.pc_to_calc'),
                     Item('show_sel_obj',
                          show_label=False),

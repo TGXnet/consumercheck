@@ -1,8 +1,8 @@
 # StdLib imports
 import os.path
-from StringIO import StringIO
+# from StringIO import StringIO
 from openpyxl.reader.excel import load_workbook
-import logging
+# import logging
 # Log everything, and send it to stderr.
 # http://docs.python.org/howto/logging-cookbook.html
 # logging.basicConfig(level=logging.DEBUG)
@@ -10,14 +10,14 @@ import logging
 
 
 # Enthought imports
-from traits.api import implements, HasTraits, File, Bool, Property, Str, Enum, Int, List, Color
+from traits.api import implements, HasTraits, File, Bool, Str, Int, List
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton, CancelButton
 
 # Local imports
 from importer_interfaces import IDataImporter
-from dataset import DataSet
+from dataset import DS_TYPES, DataSet
 
 #Import NumPy
 import numpy as np
@@ -99,7 +99,7 @@ class ImporterXlsxFile(HasTraits):
     ds_id = Str()
     ds_name = Str()
     ds_type = Str()
-    ds_type_list = List(['Design variable', 'Sensory profiling', 'Consumer liking', 'Consumer attributes'])
+    ds_type_list = List(DS_TYPES)
 
     def make_ds_name(self):
         # FIXME: Find a better more general solution
@@ -189,6 +189,6 @@ class ImporterXlsxFile(HasTraits):
     
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
-    test = ImporterXlsFile()
+    test = ImporterXlsxFile()
     test.file_path = (os.path.join('datasets', 'Cheese', 'ConsumerLiking.xls'))
     test.configure_traits()

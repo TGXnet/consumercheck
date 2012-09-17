@@ -5,8 +5,8 @@ import sys
 import logging
 
 # Enthought imports
-from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
-                        PrototypedFrom, Property, on_trait_change)
+from traits.api import (HasTraits, Any, Instance, Str, List, Button, DelegatesTo,
+                        Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
 
@@ -17,6 +17,7 @@ from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
+from plugin_tree_helper import WindowLauncher
 
 
 #Double click tool
@@ -53,12 +54,11 @@ class APrefmapModel(HasTraits):
     sel_var_Y = List()
     sel_obj = List()
 
-    #checkbox bool for standardized results
-    standardize = PrototypedFrom('mother_ref')
-    
-    pc_to_calc = PrototypedFrom('mother_ref')
-    max_pc = Property()
+    #checkbox bool for standardised results
+    standardise = DelegatesTo('mother_ref')
+    pc_to_calc = DelegatesTo('mother_ref')
     min_pc = 2
+    max_pc = Property()
     
     # depends_on
     result = Property()
@@ -76,8 +76,8 @@ class APrefmapModel(HasTraits):
             self.sub_dsY.matrix,
             numPC=self.pc_to_calc,
             cvType=["loo"],
-            Xstand=self.standardize,
-            Ystand=self.standardize)
+            Xstand=self.standardise,
+            Ystand=self.standardise)
 
 
 
@@ -90,24 +90,47 @@ class APrefmapHandler(ModelView):
     show_sel_obj = Button('Objects')
     show_sel_x_var = Button('X Variables')
     show_sel_y_var = Button('Y Variables')
+
+    window_launchers = List(Instance(WindowLauncher))
+    
+    
+    def __init__(self, *args, **kwargs):
+        super(APrefmapHandler, self).__init__(*args, **kwargs)
+        self._populate_window_launchers()
+
     
     @on_trait_change('show_sel_obj')
-    def _act_show_sel_obj(self, object, name, new):
-        object.model.dsX.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
+    def _act_show_sel_obj(self, obj, name, new):
+        obj.model.dsX.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
 
     @on_trait_change('show_sel_x_var')
-    def _act_show_sel_x_var(self, object, name, new):
-        object.model.dsX.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+    def _act_show_sel_x_var(self, obj, name, new):
+        obj.model.dsX.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     @on_trait_change('show_sel_y_var')
-    def _act_show_sel_y_var(self, object, name, new):
-        object.model.dsY.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+    def _act_show_sel_y_var(self, obj, name, new):
+        obj.model.dsY.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     def __eq__(self, other):
         return self.nid == other
 
     def __ne__(self, other):
         return self.nid != other
+
+
+    def _populate_window_launchers(self):
+
+        std_launchers = [
+            ("Overview", "plot_overview"),
+            ("Scores", "plot_scores"),
+            ("X ~ Y correlation loadings", "plot_corr_loading"),
+            ("Explained var X", "plot_expl_var_x"),
+            ("Explained var Y", "plot_expl_var_y"),
+            ("X loadings", "plot_loadings_x"),
+            ("Y loadings", "plot_loadings_y"),
+            ]
+
+        self.window_launchers = [WindowLauncher(node_name=nn, func_name=fn, owner_ref=self) for nn, fn in std_launchers]
 
 
     def plot_overview(self):
@@ -301,7 +324,7 @@ a_prefmap_view = View(
     Group(
         Group(
             Item('model.name'),
-            Item('model.standardize'),
+            Item('model.standardise'),
             Item('model.pc_to_calc',
                  editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
             Item('show_sel_obj'),
@@ -321,7 +344,7 @@ if __name__ == '__main__':
     dsy = make_ds_mock()
 
     class MocMother(HasTraits):
-        standardize = Bool(False)
+        standardise = Bool(False)
         pc_to_calc = Enum(2,3,4,5,6)
 
     moc_mother = MocMother()
