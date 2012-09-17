@@ -42,20 +42,12 @@ conjoint_tree = TreeEditor(
             node_for = [AConjointHandler],
             children = 'table_win_launchers',
             label = '=Tables',
-#            auto_open = True,
             ),
         TreeNode(
             node_for = [AConjointHandler],
             children = 'me_plot_launchers',
             label = '=Main effects plots',
-#            auto_open = True,
-        ## TreeNode(
-        ##     node_for = [AConjointHandler],
-        ##     children = 'int_plot_launchers',
-        ##     label = '=Interaction plots',
-        ##     view = a_conjoint_view,
-        ##     auto_open = True,
-        ##     ),
+            ),
         TreeNode(
             node_for = [WindowLauncher],
             label = 'node_name',
