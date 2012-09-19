@@ -94,7 +94,7 @@ class APCAModel(HasTraits):
         if self.standardise:
             std_ds = 'stand'
         self._check_std_dev()
-        if self.zero_variance:
+        if self.zero_variance and self.standardise:
             raise InComputeable('PCA: matrix have vectors with zero variance')
         return PCA(self.sub_ds.matrix,
                    numPC=self.pc_to_calc,

@@ -116,7 +116,7 @@ def make_dsl_mock():
 def make_ds_mock():
     importer = ImporterMain()
     tdd = get_test_ds_path()
-    ds = importer.import_data(osp.join(tdd, 'Vine', 'A_labels.txt'))
+    ds = importer.import_data(osp.join(tdd, 'Data_1', 'Data_1_liking.xlsx'))
     return ds
 
 
