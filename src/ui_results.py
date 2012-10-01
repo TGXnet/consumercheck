@@ -88,12 +88,4 @@ class TableViewController(ModelView):
 
 
 if __name__ == '__main__':
-    from chaco.api import ArrayPlotData
-    from plots import CCPlotScatter
-
-    pd = ArrayPlotData()
-    pd.set_data('pc1', array([0.35, -0.92, 1.298]))
-    pd.set_data('pc2', array([-0.984, 0.053, 0.52]))
-    ps = CCPlotScatter(pd)
-    mvc = TableViewController(model=ps)
-    mvc.configure_traits()
+    print("Start test")
