@@ -43,7 +43,8 @@ class ConjointMachine(object):
         Rbin = os.path.join(home, 'R-2.15.1', 'bin', 'R.exe')
         try:
             self.r = pyper.R(Rbin)
-        except WindowsError:
+        # On MSWIN is an WindowsError which is a subclass of OSError raised.
+        except OSError:
             self.r = pyper.R()
 
 
