@@ -168,10 +168,9 @@ class APrefmapHandler(ModelView):
 
     def _make_scores_plot(self):
         res = self.model.result
-        pc_tab = res.Xscores()
+        pc_tab = res.X_scores()
         labels = self.model.sub_dsX.object_names
-        expl_vars_x = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
-        # expl_vars_y = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        expl_vars_x = res.X_calExplVar()
         plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
         return plot
 
@@ -193,8 +192,8 @@ class APrefmapHandler(ModelView):
 
     def _make_loadings_plot_x(self):
         res = self.model.result
-        xLP = res.Xloadings()
-        expl_vars = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
+        xLP = res.X_loadings()
+        expl_vars = res.X_calExplVar()
         labels = self.model.sub_dsX.variable_names
         plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
         return plot
@@ -213,8 +212,8 @@ class APrefmapHandler(ModelView):
 
     def _make_loadings_plot_y(self):
         res = self.model.result
-        yLP = res.Yloadings()
-        expl_vars = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        yLP = res.Y_loadings()
+        expl_vars = res.Y_calExplVar()
         labels = self.model.sub_dsY.variable_names
         plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings")
         return plot
@@ -235,11 +234,11 @@ class APrefmapHandler(ModelView):
         # VarNameX, CorrLoadX
         # labels
         res = self.model.result
-        clx = res.XcorrLoadings()
-        cly = res.YcorrLoadings()
+        clx = res.X_corrLoadings()
+        cly = res.Y_corrLoadings()
         # calExplVarX
-        cevx = self._ev_list_dict_adapter(res.XcalExplVar_tot_list())
-        cevy = self._ev_list_dict_adapter(res.YcalExplVar_tot_list())
+        cevx = res.X_calExplVar()
+        cevy = res.Y_calExplVar()
         vnx = self.model.sub_dsX.variable_names
         vny = self.model.sub_dsY.variable_names
         pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings")
@@ -266,7 +265,7 @@ class APrefmapHandler(ModelView):
 
     def _make_expl_var_plot_x(self):
         res = self.model.result
-        sumCalX = self._ev_rem_zero_adapter(res.XcumCalExplVar_tot_list())
+        sumCalX = res.X_cumCalExplVar()
         pl = EVLinePlot(sumCalX, title = "Explained Variance X")
         return pl
 
@@ -285,8 +284,8 @@ class APrefmapHandler(ModelView):
 
     def _make_expl_var_plot_y(self):
         res = self.model.result
-        sumCalY = self._ev_rem_zero_adapter(res.YcumCalExplVar_tot_list())
-        sumValY = self._ev_rem_zero_adapter(res.YcumValExplVar_tot_list())
+        sumCalY = res.Y_cumCalExplVar()
+        sumValY = res.Y_cumValExplVar()
         pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', title = "Explained Variance Y")
         pl.add_EV_set(sumValY, 'darkgoldenrod', 'Validated Y')
         return pl
