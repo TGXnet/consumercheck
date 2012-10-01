@@ -265,7 +265,7 @@ class APCAHandler(ModelView):
     def _make_corr_load_plot(self):
         res = self.model.result
         pc_tab = res.corrLoadings()
-        expl_vars = res.calExplVar_dict()
+        expl_vars = res.calExplVar()
         labels = self.model.sub_ds.variable_names
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
         pcl.plot_circle(True)
@@ -292,9 +292,8 @@ class APCAHandler(ModelView):
     def _make_expl_var_plot(self):
         res = self.model.result
         # expl_vars = res.explainedVariances
-        expl_vars = res.calExplVar_dict()
-        ev = self._accumulate_expl_var_adapter(expl_vars)
-        pl = EVLinePlot(ev, legend='Explained Variance', title="Explained Variance")
+        expl_vars = res.cumCalExplVar()
+        pl = EVLinePlot(expl_vars, legend='Explained Variance', title="Explained Variance")
         return pl
 
 

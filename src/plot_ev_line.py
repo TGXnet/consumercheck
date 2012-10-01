@@ -103,7 +103,7 @@ class EVLinePlot(Plot):
         """
         
         #Insert a 0 to start vector in origo
-        ev_vector = np.insert(ev_vector,0,0)
+        # ev_vector = np.insert(ev_vector,0,0)
         
         set_id = self.data.add_line_ds(ev_vector, color)
         self._plot_EV(set_id,legend)

@@ -29,7 +29,7 @@ class PCDataSet(HasTraits):
     # darkolivegreen, darkorange, darksalmon, darkseagreen
     # from: /usr/share/pyshared/enable/colors.py
     color = ColorTrait('darkviolet')
-    expl_vars = Dict()
+    expl_vars = List()
     selected = List()
 
 
@@ -243,8 +243,8 @@ class PCScatterPlot(Plot):
         ty = ['PC{0}'.format(self.data.y_no)]
         for pcds in self.data.pc_ds:
             try:
-                ev_x = pcds.expl_vars[self.data.x_no]
-                ev_y = pcds.expl_vars[self.data.y_no]
+                ev_x = pcds.expl_vars[self.data.x_no-1]
+                ev_y = pcds.expl_vars[self.data.y_no-1]
                 tx.append('({0:.0f}%)'.format(ev_x))
                 ty.append('({0:.0f}%)'.format(ev_y))
             except KeyError:
