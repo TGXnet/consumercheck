@@ -71,7 +71,7 @@ Created on Thu Jun 30 13:10:44 2011
 @update 06: 21.04.2012 (OTO)
 ============================
 - removed mode 'raw' and all code regarding it.
-    
+
 
 @update 07: 31.07.2012 (OTO)
 ============================
@@ -97,7 +97,7 @@ class nipalsPCA:
     
     EXAMPLE USE:
     ----
-    import pca    
+    import pca
     
     model = pca.nipalsPCA(array, numPC=5, mode="cent")
     model = pca.nipalsPCA(array)
@@ -106,14 +106,14 @@ class nipalsPCA:
     model = pca.nipalsPCA(array, cvType=["loo"])
     model = pca.nipalsPCA(array, cvType=["lpo", 4])
     model = pca.nipalsPCA(array, cvType=["lolo", [1,2,3,2,3,1]])
-        
+    
     
     TYPES:
     ------
     array: <array>
     numPC: <integer>
-    mode: <boolean>  
-                False: first column centre input data then run PCA 
+    mode: <boolean>
+                False: first column centre input data then run PCA
                 True: first scale columns of input data to equal variance
                          then run PCA
     cvType: <list>
@@ -142,7 +142,7 @@ class nipalsPCA:
         
         # Check whether number of PC's that are to be computed is provided.
         # If NOT, then number of PC's is set to either number of objects or
-        # variables of inputArray, whichever is smaller (maxPC). If number of  
+        # variables of inputArray, whichever is smaller (maxPC). If number of
         # PC's IS provided, then number is checked against maxPC and set to
         # maxPC if provided number is larger.
         if 'numPC' not in kargs.keys():
@@ -154,7 +154,7 @@ class nipalsPCA:
                 self.numPC = kargs['numPC']
         
         
-        # Check whether information on pre-processing is required. If NOT, 
+        # Check whether information on pre-processing is required. If NOT,
         # then inputArray is centred by default.
         if 'stand' not in kargs.keys():
             self.stand = False
@@ -176,7 +176,7 @@ class nipalsPCA:
         # Pre-process data according to user request.
         # -------------------------------------------
         
-        # Process inputArray according to request.        
+        # Process inputArray according to request.
         # Mean centre inputArray
         if self.stand == False:
             self.dataMean = np.average(inputArray, axis=0)
@@ -213,13 +213,13 @@ class nipalsPCA:
 
         
 #===============================================================================
-#        Here the NIPALS PCA algorithm starts 
+#        Here the NIPALS PCA algorithm starts
 #===============================================================================
         threshold = 1.0e-8
         X_new = self.data.copy()
         
-        # Compute number of principal components as specified by user 
-        for j in range(self.numPC): 
+        # Compute number of principal components as specified by user
+        for j in range(self.numPC):
             
             t = X_new[:,0].reshape(-1,1)
             
@@ -237,7 +237,7 @@ class nipalsPCA:
                 
                 # Check whether sum of squares is smaller than threshold. Break
                 # out of loop if true and start computation of next PC.
-                if SS < threshold: 
+                if SS < threshold:
                     scoresList.append(t)
                     loadingsList.append(p)
                     break
@@ -363,9 +363,9 @@ class nipalsPCA:
             self.valTlist = []
             self.valPlist = []
 
-            # Collect train and test set in a dictionary for each PC            
+            # Collect train and test set in a dictionary for each PC
             self.cvTrainAndTestDataList = []
-            self.X_train_means_list = []            
+            self.X_train_means_list = []
             
             # First devide into combinations of training and test sets
             for train_index, test_index in cvComb:
@@ -373,11 +373,11 @@ class nipalsPCA:
                 
                 subDict = {}
                 subDict['train'] = x_train
-                subDict['test'] = x_test                
+                subDict['test'] = x_test
                 self.cvTrainAndTestDataList.append(subDict)
                 
                 # -------------------------------------------------------------                    
-                # Center or standardise X according to users choice 
+                # Center or standardise X according to users choice
                 if self.stand == True:
                     X_train_mean = np.average(x_train, axis=0).reshape(1,-1)
                     X_train_std = np.std(x_train, axis=0, ddof=1).reshape(1,-1)
@@ -406,8 +406,8 @@ class nipalsPCA:
                 scoresList = []
                 loadingsList = []
                 
-                # Compute number of principal components as specified by user 
-                for j in range(self.numPC): 
+                # Compute number of principal components as specified by user
+                for j in range(self.numPC):
                     
                     t = X_new[:,0].reshape(-1,1)
                     
@@ -425,7 +425,7 @@ class nipalsPCA:
                         
                         # Check whether sum of squares is smaller than threshold. Break
                         # out of loop if true and start computation of next PC.
-                        if SS < threshold: 
+                        if SS < threshold:
                             scoresList.append(t)
                             loadingsList.append(p)
                             break
@@ -447,7 +447,7 @@ class nipalsPCA:
                 projT = np.dot(X_test_proc, valP)
                 dims = np.shape(projT)[1]
                 
-                # Construct validated predicted X first for one component, 
+                # Construct validated predicted X first for one component,
                 # then two, three, etc
                 for ind in range(0, dims):
                     
@@ -466,7 +466,7 @@ class nipalsPCA:
                     self.valPredXdict[ind+1].append(valPredX)
                 
             
-            # Convert list of one-row arrays into one array such that it 
+            # Convert list of one-row arrays into one array such that it
             # corresponds to the orignial variable
             for ind in range(1, dims+1):
                 self.valPredXdict[ind] = np.vstack(self.valPredXdict[ind])
@@ -520,19 +520,19 @@ class nipalsPCA:
             # Compute RMSEE for individual variables and for all together
             self.indVarRMSECVarr = np.sqrt(self.indVarMSECVarr)
             self.RMSECV_total = np.sqrt(self.MSECV_total)
-                          
+            
     
     def means(self):
         """
-        Returns the score matrix T. First column holds scores for PC1, 
+        Returns the score matrix T. First column holds scores for PC1,
         second column holds scores for PC2, etc.
         """
-        return self.dataMean.reshape(1,-1)    
+        return self.dataMean.reshape(1,-1)
         
     
     def scores(self):
         """
-        Returns the score matrix T. First column holds scores for PC1, 
+        Returns the score matrix T. First column holds scores for PC1,
         second column holds scores for PC2, etc.
         """
         return self.arr_scores
@@ -540,7 +540,7 @@ class nipalsPCA:
     
     def loadings(self):
         """
-        Returns the loading matrix P. First column holds loadings for PC1, 
+        Returns the loading matrix P. First column holds loadings for PC1,
         second column holds scores for PC2, etc.
         """
         return self.arr_loadings
@@ -585,12 +585,12 @@ class nipalsPCA:
         self.settings['inputArray'] = self.inputArray
         self.settings['analysedArray'] = self.data
         
-        return self.settings    
+        return self.settings
     
     
     def residuals(self):
         """
-        Returns a dictionary holding the residual matrices E after each 
+        Returns a dictionary holding the residual matrices E after each
         computed PC. Dictionary key represents order of PC.
         """
         return self.resids
@@ -598,7 +598,7 @@ class nipalsPCA:
     
     def calExplVar(self):
         """
-        Returns a list holding the calibrated explained variance for 
+        Returns a list holding the calibrated explained variance for
         each PC. 
         """
         return self.calExplainedVariancesList
@@ -614,16 +614,16 @@ class nipalsPCA:
     
     def cumCalExplVar(self):
         """
-        Returns a list holding the cumulative calibrated explained variance for 
-        each PC. Dictionary key represents order of PC. 
+        Returns a list holding the cumulative calibrated explained variance for
+        each PC. Dictionary key represents order of PC.
         """
         return self.XcumCalExplVarList
     
     
     def calPredX(self):
         """
-        Returns a dictionary holding the predicted matrices Xhat from 
-        calibration after each computed PC. Dictionary key represents order 
+        Returns a dictionary holding the predicted matrices Xhat from
+        calibration after each computed PC. Dictionary key represents order
         of PC.
         """
         return self.calPredXdict
@@ -633,7 +633,7 @@ class nipalsPCA:
         """
         Returns a dictionary holding MSEE from cross validation after each
         computed PC for each variable. Dictionary key represents order of PC.
-        """        
+        """
         return self.indVarMSEEarr
     
     
@@ -641,7 +641,7 @@ class nipalsPCA:
         """
         Returns a dictionary holding MSEE from cross validation after each
         computed PC. Dictionary key represents order of PC
-        """        
+        """
         return self.MSEE_total
     
     
@@ -649,7 +649,7 @@ class nipalsPCA:
         """
         Returns a dictionary holding RMSEE from cross validation after each
         computed PC for each variable. Dictionary key represents order of PC.
-        """        
+        """
         return self.indVarRMSEEarr
     
     
@@ -657,14 +657,14 @@ class nipalsPCA:
         """
         Returns a dictionary holding RMSEE from cross validation after each
         computed PC. Dictionary key represents order of PC
-        """        
+        """
         return self.RMSEE_total
     
 
     def valExplVar(self):
         """
-        Returns a list holding the validated explained variance for 
-        each PC. 
+        Returns a list holding the validated explained variance for
+        each PC.
         """
         l = self.XcumValExplVarList
         
@@ -681,16 +681,16 @@ class nipalsPCA:
     
     def cumValExplVar(self):
         """
-        Returns a list holding the cumulative validated explained variance for 
-        each PC. 
+        Returns a list holding the cumulative validated explained variance for
+        each PC.
         """
         return self.XcumValExplVarList
     
     
     def valPredX(self):
         """
-        Returns a dictionary holding the validated matrices Xhat from 
-        calibration after each computed PC. Dictionary key represents order 
+        Returns a dictionary holding the validated matrices Xhat from
+        calibration after each computed PC. Dictionary key represents order
         of PC.
         """
         return self.valPredXdict
@@ -700,7 +700,7 @@ class nipalsPCA:
         """
         Returns a dictionary holding MSECV from cross validation after each
         computed PC for each variable. Dictionary key represents order of PC.
-        """        
+        """
         return self.indVarMSECVarr
         
     
@@ -708,7 +708,7 @@ class nipalsPCA:
         """
         Returns a dictionary holding MSECV from cross validation after each
         computed PC. Dictionary key represents order of PC
-        """        
+        """
         return self.MSECV_total
     
     
@@ -716,7 +716,7 @@ class nipalsPCA:
         """
         Returns a dictionary holding RMSEE from cross validation after each
         computed PC for each variable. Dictionary key represents order of PC.
-        """        
+        """
         return self.indVarRMSECVarr
     
     
@@ -724,7 +724,7 @@ class nipalsPCA:
         """
         Returns a dictionary holding RMSEE from cross validation after each
         computed PC. Dictionary key represents order of PC
-        """        
+        """
         return self.RMSECV_total
     
     
