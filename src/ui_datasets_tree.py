@@ -40,8 +40,6 @@ class DatasetsTreeHandler(Handler):
 
 
     def object_datasets_event_changed(self, uiInfo):
-        print 'evrnT!!'
-        uiInfo.print_traits()
         self._updateDatasetsList(uiInfo.object)
         self.update_tree = True
 
