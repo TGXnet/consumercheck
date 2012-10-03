@@ -1,11 +1,10 @@
 
-
 # stdlib imports
 import sys
 import logging
 
 # Enthought imports
-from traits.api import (HasTraits, Any, Instance, Str, List, Button, DelegatesTo,
+from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from enable.api import BaseTool
@@ -325,7 +324,10 @@ a_prefmap_view = View(
             Item('model.name'),
             Item('model.standardise'),
             Item('model.pc_to_calc',
-                 editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
+                 editor=RangeEditor(
+                     low_name='model.min_pc',
+                     high_name='model.max_pc',
+                     mode='spinner')),
             Item('show_sel_obj'),
             Item('show_sel_x_var'),
             Item('show_sel_y_var'),
@@ -337,14 +339,16 @@ a_prefmap_view = View(
 
 
 if __name__ == '__main__':
-    from traits.api import Bool, Enum
-    from tests.conftest import make_ds_mock
-    dsx = make_ds_mock()
-    dsy = make_ds_mock()
+    import numpy as np
+    from traits.api import Bool, Int
+    from tests.conftest import make_dsl_mock
+    dsl = make_dsl_mock()
+    dsx = dsl.get_by_id('consumerliking')
+    dsy = dsl.get_by_id('sensorydata')
 
     class MocMother(HasTraits):
         standardise = Bool(False)
-        pc_to_calc = Enum(2,3,4,5,6)
+        pc_to_calc = Int(2)
 
     moc_mother = MocMother()
 
@@ -354,6 +358,75 @@ if __name__ == '__main__':
         dsY=dsy,
         mother_ref=moc_mother)
 
-    controller = APrefmapHandler(
+    class APrefmapTestHandler(APrefmapHandler):
+        bt_plot_overview = Button('Plot overview')
+        bt_plot_scores = Button('Plot scores')
+        bt_plot_loadings_x = Button('Plot loadings X')
+        bt_plot_loadings_y = Button('Plot loadings Y')
+        bt_plot_corr_loadings = Button('Plot corr loadings')
+        bt_plot_expl_var_x = Button('Plot explainded variance X')
+        bt_plot_expl_var_y = Button('Plot explainded variance Y')
+
+        @on_trait_change('bt_plot_overview')
+        def _on_bpo(self, obj, name, new):
+            self.plot_overview()
+
+        @on_trait_change('bt_plot_scores')
+        def _on_bps(self, obj, name, new):
+            self.plot_scores()
+
+        @on_trait_change('bt_plot_loadings_x')
+        def _on_bplx(self, obj, name, new):
+            self.plot_loadings_x()
+
+        @on_trait_change('bt_plot_loadings_y')
+        def _on_bply(self, obj, name, new):
+            self.plot_loadings_y()
+
+        @on_trait_change('bt_plot_corr_loadings')
+        def _on_bpcl(self, obj, name, new):
+            self.plot_corr_loading()
+
+        @on_trait_change('bt_plot_expl_var_x')
+        def _on_bpevx(self, obj, name, new):
+            self.plot_expl_var_x()
+
+        @on_trait_change('bt_plot_expl_var_y')
+        def _on_bpevy(self, obj, name, new):
+            self.plot_expl_var_y()
+
+        traits_view = View(
+            Group(
+                Group(
+                    Item('model.name'),
+                    Item('model.standardise'),
+                    Item('model.pc_to_calc',
+                         editor=RangeEditor(
+                             low_name='model.min_pc',
+                             high_name='model.max_pc',
+                             mode='spinner')),
+                    Item('show_sel_obj'),
+                    Item('show_sel_x_var'),
+                    Item('show_sel_y_var'),
+                    orientation='vertical',
+                    ),
+                Item('', springy=True),
+                Group(
+                    Item('bt_plot_overview'),
+                    Item('bt_plot_scores'),
+                    Item('bt_plot_loadings_x'),
+                    Item('bt_plot_loadings_y'),
+                    Item('bt_plot_corr_loadings'),
+                    Item('bt_plot_expl_var_x'),
+                    Item('bt_plot_expl_var_y'),
+                    ),
+                orientation='horizontal',
+                ),
+            resizable=True,
+            )
+
+
+    controller = APrefmapTestHandler(
         model=model)
-    controller.configure_traits(view=a_prefmap_view)
+    with np.errstate(invalid='ignore'):
+        controller.configure_traits()
