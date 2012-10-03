@@ -3,12 +3,13 @@
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Str, List, Instance, on_trait_change
+from traits.api import HasTraits, Str, List, Instance, on_trait_change, Event
 from traitsui.api import Item, View, TreeEditor, Handler, TreeNode
 from traitsui.tree_node import TreeNode as TN
 # Local imports
 from ds_ui import DataSet, ds_list_tab
 from importer_main import DND
+from traits.tests.test_extended_trait_change import OnTraitChangeTest
 
 
 class Datasets(HasTraits):
@@ -22,9 +23,10 @@ class Datasets(HasTraits):
 
 
 class DatasetsTreeHandler(Handler):
-    name    = Str( 'FIXME: Dette skal ikke vises' )
+    name    = Str( 'FIXME: This should not be shown' )
     collection = Instance( Datasets, Datasets(name = 'Datasets') )
 
+    update_tree = Event()
 
     # Called when some value in object changes
     def setattr(self, info, obj, name, value):
@@ -39,6 +41,7 @@ class DatasetsTreeHandler(Handler):
 
     def object_datasets_event_changed(self, uiInfo):
         self._updateDatasetsList(uiInfo.object)
+        self.update_tree = True
 
 
     def _updateDatasetsList(self, obj):
@@ -56,8 +59,26 @@ class TreeNode(TN):
     def drop_object(self, object, dropped_object):
         file_path = dropped_object.path
         ds = DND.dnd_import_data(file_path)
-        
         object.imported.append(ds)
+        
+    
+    def get_icon ( self, object, is_expanded ):
+        """ Returns custom icon name or the icon for a specified object.
+        """
+        if not self.allows_children( object ):
+            if hasattr(object, '_dataset_type'):
+                if object._dataset_type == 'Design variable':
+                    return 'design_variable.ico'
+                elif object._dataset_type == 'Sensory profiling':
+                    return 'sensory_profiling.ico'
+                elif object._dataset_type == 'Consumer liking':
+                    return 'customer_liking.ico'
+                elif object._dataset_type == 'Consumer attributes':
+                    return 'customer_attributes.ico'
+            return self.icon_item 
+        if is_expanded:
+            return self.icon_open
+        return self.icon_group
 
 
 # Define the TreeEditor used to display the hierarchy:
@@ -80,8 +101,11 @@ datasets_tree = TreeEditor(
                   auto_open = True,
                   label     = '_ds_name',
                   view      = ds_list_tab,
-                  )
-        ]
+                  icon_path = 'graphics',
+                  ),
+        ],
+        refresh='handler.update_tree',
+    
     )
 
 
