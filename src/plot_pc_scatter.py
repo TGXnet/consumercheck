@@ -9,15 +9,15 @@ PC plot module
 import numpy as np
 
 # Enthought library imports
-from chaco.api import Plot, ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
+from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Int, List, HasTraits, implements
+from traits.api import Bool, Callable, Int, List, HasTraits, implements
 from enable.api import ColorTrait
 
 
 # Local imports
 from plot_interface import IPCScatterPlot
-from chaco.data_range_1d import calc_bounds
+from plot_base import PlotBase
 
 
 class PCDataSet(HasTraits):
@@ -32,6 +32,7 @@ class PCDataSet(HasTraits):
     color = ColorTrait('darkviolet')
     expl_vars = List()
     selected = List()
+
 
 class PCPlotData(ArrayPlotData):
     """Container for Principal Component scatterplot type dataset.
@@ -77,7 +78,7 @@ class PCPlotData(ArrayPlotData):
         return set_n+1
 
 
-class PCScatterPlot(Plot):
+class PCScatterPlot(PlotBase):
     """Principal Component scatter plot.
 
     Draw scatterplot for one or several sets of principal components.
@@ -87,12 +88,10 @@ class PCScatterPlot(Plot):
        This is a testnote in PCScatterPlot class
 
     """
-
     implements(IPCScatterPlot)
 
     # Should new labels be visible?
     visible_new_labels = Bool(True)
-    
     visible_datasets = Int(3)
 
 
@@ -114,14 +113,11 @@ class PCScatterPlot(Plot):
         """
         data = PCPlotData()
         super(PCScatterPlot, self).__init__(data, **kwtraits)
-        self.index_range.margin = 0.15
-        self.value_range.margin = 0.15
-        self.index_range.tight_bounds = False
-        self.value_range.tight_bounds = False
-        self.index_range.bounds_func = calc_bounds
-        self.value_range.bounds_func = calc_bounds
+        self._adjust_range()
+
         if pc_matrix is not None:
             self.add_PC_set(pc_matrix, labels, color, expl_vars)
+
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
@@ -365,6 +361,15 @@ class PCScatterPlot(Plot):
         return margin_low, margin_high
 
 
+    def _adjust_range(self):
+        self.index_range.margin = 0.15
+        self.value_range.margin = 0.15
+        self.index_range.tight_bounds = False
+        self.value_range.tight_bounds = False
+        self.index_range.bounds_func = calc_bounds
+        self.value_range.bounds_func = calc_bounds
+
+
     def _reset_axis(self):
         self.index_range.reset()
         self.value_range.reset()
@@ -401,7 +406,7 @@ def calc_bounds(data_low, data_high, margin, tight_bounds):
     if tight_bounds:
         return data_low , data_high
     else:
-        return data_low * (1+ margin) , data_high * (1+margin)
+        return data_low * (1 + margin) , data_high * (1 + margin)
 
 
 if __name__ == '__main__':

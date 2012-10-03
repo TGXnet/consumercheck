@@ -12,7 +12,6 @@ import numpy as np
 
 # Local imports
 from pca import nipalsPCA as PCA
-
 from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
@@ -31,21 +30,6 @@ class ErrorMessage(HasTraits):
     traits_view = View(Item('err_msg', style='readonly',
                             label='Zero variance variables'),
                        buttons=[OKButton], title='Warning')
-
-
-#Double click tool
-class DClickTool(BaseTool):
-    plot_dict = {}
-    #List that holds the function names
-    func_list = ['plot_scores','plot_loadings', 'plot_corr_loading', 'plot_expl_var']
-    #Triggered on double click
-    def normal_left_dclick(self,event):
-        self._build_plot_list()
-        call_function = getattr(self.ref, self.plot_dict[self.component.title])()
-    #Builds a dictionary that holds the function names, based on func_list, with the window title as key
-    def _build_plot_list(self):
-        for e,i in enumerate(self.component.container.plot_components):
-            self.plot_dict[i.title] = self.func_list[e]
 
 
 class APCAModel(HasTraits):
@@ -181,15 +165,11 @@ class APCAHandler(ModelView):
         self.model.plot_type = 'Overview Plot'
 
         try:
-            ds_plots = [[self._make_scores_plot(), self._make_loadings_plot()],
-                        [self._make_corr_load_plot(), self._make_expl_var_plot()]]
+            ds_plots = [[self._make_scores_plot(True), self._make_loadings_plot(True)],
+                        [self._make_corr_load_plot(True), self._make_expl_var_plot(True)]]
         except InComputeable:
             self._show_zero_var_warning()
             return
-
-        for plots in ds_plots:
-            for plot in plots:
-                plot.tools.append(DClickTool(plot,ref = self))
 
         mpw = MultiPlotWindow(title_text=self._wind_title())
         mpw.plots.component_grid = ds_plots
@@ -213,11 +193,13 @@ class APCAHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_scores_plot(self):
+    def _make_scores_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.scores()
         labels = self.model.sub_ds.object_names
         plot = PCScatterPlot(pc_tab, labels, title="Scores")
+        if is_subplot:
+            plot.add_dclk_action(self.plot_scores)
         return plot
 
 
@@ -237,11 +219,13 @@ class APCAHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_loadings_plot(self):
+    def _make_loadings_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.loadings()
         labels = self.model.sub_ds.variable_names
         plot = PCScatterPlot(pc_tab, labels, title="Loadings")
+        if is_subplot:
+            plot.add_dclk_action(self.plot_loadings)
         return plot
 
 
@@ -261,13 +245,15 @@ class APCAHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_corr_load_plot(self):
+    def _make_corr_load_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.corrLoadings()
         expl_vars = res.calExplVar()
         labels = self.model.sub_ds.variable_names
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
         pcl.plot_circle(True)
+        if is_subplot:
+            pcl.add_dclk_action(self.plot_corr_loading)
         return pcl
 
 
@@ -288,11 +274,13 @@ class APCAHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_expl_var_plot(self):
+    def _make_expl_var_plot(self, is_subplot=False):
         res = self.model.result
         # expl_vars = res.explainedVariances
         expl_vars = res.cumCalExplVar()
         pl = EVLinePlot(expl_vars, legend='Explained Variance', title="Explained Variance")
+        if is_subplot:
+            pl.add_dclk_action(self.plot_expl_var)
         return pl
 
 

@@ -19,23 +19,6 @@ from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
 from plugin_tree_helper import WindowLauncher
 
 
-#Double click tool
-class DClickTool(BaseTool):
-    plot_dict = {}
-    #List that holds the function names
-    func_list = ['plot_scores','plot_corr_loading', 'plot_expl_var_x', 'plot_expl_var_y']
-    #def normal_left_down(self,event): -> single click.
-    #def normal_right_down(self,event): -> single rightclick.
-    #Triggered on double click
-    def normal_left_dclick(self,event):
-        self._build_plot_list()
-        call_function = getattr(self.ref, self.plot_dict[self.component.title])()
-    #Builds a dictionary that holds the function names, based on func_list, with the window title as key
-    def _build_plot_list(self):
-        for e,i in enumerate(self.component.container.plot_components):
-            self.plot_dict[i.title] = self.func_list[e]
-
-
 class APrefmapModel(HasTraits):
     """Represent the Prefmap model between one X and Y dataset."""
     name = Str()
@@ -141,11 +124,8 @@ class APrefmapHandler(ModelView):
         
         self.model.plot_type = 'Overview Plot'
         
-        ds_plots = [[self._make_scores_plot(), self._make_corr_load_plot()],
-                    [self._make_expl_var_plot_x(), self._make_expl_var_plot_y()]]
-        for plots in ds_plots:
-            for plot in plots:
-                plot.tools.append(DClickTool(plot, ref = self))
+        ds_plots = [[self._make_scores_plot(True), self._make_corr_load_plot(True)],
+                    [self._make_expl_var_plot_x(True), self._make_expl_var_plot_y(True)]]
 
         mpw = MultiPlotWindow(title_text=self._wind_title())
         mpw.plots.component_grid = ds_plots
@@ -165,12 +145,14 @@ class APrefmapHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_scores_plot(self):
+    def _make_scores_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.X_scores()
         labels = self.model.sub_dsX.object_names
         expl_vars_x = res.X_calExplVar()
         plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
+        if is_subplot:
+            plot.add_dclk_action(self.plot_scores)
         return plot
 
 
@@ -189,12 +171,14 @@ class APrefmapHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_loadings_plot_x(self):
+    def _make_loadings_plot_x(self, is_subplot=False):
         res = self.model.result
         xLP = res.X_loadings()
         expl_vars = res.X_calExplVar()
         labels = self.model.sub_dsX.variable_names
         plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
+        if is_subplot:
+            plot.add_dclk_action(self.plot_loadings_x)
         return plot
 
 
@@ -209,12 +193,14 @@ class APrefmapHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_loadings_plot_y(self):
+    def _make_loadings_plot_y(self, is_subplot=False):
         res = self.model.result
         yLP = res.Y_loadings()
         expl_vars = res.Y_calExplVar()
         labels = self.model.sub_dsY.variable_names
         plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings")
+        if is_subplot:
+            plot.add_dclk_action(self.plot_loadings_y)
         return plot
 
 
@@ -229,7 +215,7 @@ class APrefmapHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_corr_load_plot(self):
+    def _make_corr_load_plot(self, is_subplot=False):
         # VarNameX, CorrLoadX
         # labels
         res = self.model.result
@@ -242,6 +228,8 @@ class APrefmapHandler(ModelView):
         vny = self.model.sub_dsY.variable_names
         pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings")
         pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
+        if is_subplot:
+            pcl.add_dclk_action(self.plot_corr_loading)
         pcl.plot_circle(True)
         return pcl
 
@@ -262,10 +250,12 @@ class APrefmapHandler(ModelView):
         return ev_list
 
 
-    def _make_expl_var_plot_x(self):
+    def _make_expl_var_plot_x(self, is_subplot=False):
         res = self.model.result
         sumCalX = res.X_cumCalExplVar()
         pl = EVLinePlot(sumCalX, title = "Explained Variance X")
+        if is_subplot:
+            pl.add_dclk_action(self.plot_expl_var_x)
         return pl
 
 
@@ -281,12 +271,14 @@ class APrefmapHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_expl_var_plot_y(self):
+    def _make_expl_var_plot_y(self, is_subplot=False):
         res = self.model.result
         sumCalY = res.Y_cumCalExplVar()
         sumValY = res.Y_cumValExplVar()
         pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', title = "Explained Variance Y")
         pl.add_EV_set(sumValY, 'darkgoldenrod', 'Validated Y')
+        if is_subplot:
+            pl.add_dclk_action(self.plot_expl_var_y)
         return pl
 
 
