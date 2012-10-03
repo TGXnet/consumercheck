@@ -73,6 +73,10 @@ Created on Thu Jun 30 13:10:44 2011
 - removed mode 'raw' and all code regarding it.
     
 
+@update 07: 31.07.2012 (OTO)
+============================
+Code cleaup and renaming of class functions to correspond more with PLSR
+classes.
 """
 
 # Import necessary modules
@@ -108,9 +112,9 @@ class nipalsPCA:
     ------
     array: <array>
     numPC: <integer>
-    mode: <string>  
-                "cent": first column centre input data then run PCA 
-                "stand": first scale columns of input data to equal variance
+    mode: <boolean>  
+                False: first column centre input data then run PCA 
+                True: first scale columns of input data to equal variance
                          then run PCA
     cvType: <list>
                 loo: <string> leave one out (full cross validation)
@@ -128,8 +132,8 @@ class nipalsPCA:
     
     def __init__(self, inputArray, **kargs):
         """
-        On initialisation check how inputArray is to be pre-processed (which
-        mode is used). Then check whether number of PC's chosen by user is OK.
+        On initialisation check how inputArray is to be pre-processed (stand is
+        True or False). Then check whether number of PC's chosen by user is OK.
         Then run NIPALS algorithm.
         """
 #===============================================================================
@@ -150,19 +154,19 @@ class nipalsPCA:
                 self.numPC = kargs['numPC']
         
         
-        # Check whether mode is provided. If NOT, then inputArray is centred
-        # by default.
-        if 'mode' not in kargs.keys():
-            self.mode = "cent"
+        # Check whether information on pre-processing is required. If NOT, 
+        # then inputArray is centred by default.
+        if 'stand' not in kargs.keys():
+            self.stand = False
         else:
-            self.mode = kargs['mode']
+            self.stand = kargs['stand']
         
         # Define inputArray within class. self.inputArray is later needed in
         # .getCorrLoadings()
         self.inputArray = inputArray
         
         
-        # Check whether cvType is provided. If NOT, then use "loo" by default.
+        # Check whether cvType is provided. If NOT, then drop cross validation.
         if 'cvType' not in kargs.keys():
             self.cvType = None
         else:
@@ -172,15 +176,15 @@ class nipalsPCA:
         # Pre-process data according to user request.
         # -------------------------------------------
         
-        # Process inputArray according to selected mode.        
+        # Process inputArray according to request.        
         # Mean centre inputArray
-        if self.mode =="cent":
+        if self.stand == False:
             self.dataMean = np.average(inputArray, axis=0)
             self.data = inputArray.copy() - self.dataMean
             #self.data = st.centre(inputArray)
         
         # Standardise variables in inputArray
-        elif self.mode == "stand":
+        elif self.stand == True:
             self.dataMean = np.average(inputArray, axis=0)
             self.dataStd = np.std(inputArray, axis=0, ddof=1)
             self.data = (inputArray.copy() - self.dataMean) / self.dataStd
@@ -248,8 +252,9 @@ class nipalsPCA:
             self.resids[j+1] = X_new
             self.calXhatDict_singPC[j+1] = Xhat_j
             
-            if self.mode == "stand":
-                self.calXhatDict_singPC[j+1] = (Xhat_j * self.dataStd) + self.dataMean
+            if self.stand == True:
+                self.calXhatDict_singPC[j+1] = (Xhat_j * self.dataStd) + \
+                        self.dataMean
             
             else:
                 self.calXhatDict_singPC[j+1] = Xhat_j + self.dataMean
@@ -279,7 +284,7 @@ class nipalsPCA:
             
             # Depending on preprocessing re-process in same manner
             # in order to get values that compare to original values.
-            if self.mode == "stand":
+            if self.stand == True:
                 calXhat = (calPredX_proc * self.dataStd) + \
                         self.dataMean
             else:
@@ -314,16 +319,21 @@ class nipalsPCA:
         self.XcumCalExplVarList = [0]
         self.XcumCalExplVarDict = {}
         self.XcumCalExplVarDict[0] = 0
-        self.MSEE = np.average(self.indVarMSEEarr, axis=1)
-        firstMSEE = self.MSEE[0]
-        for value in range(1, len(self.MSEE)):
-            calPerc = (firstMSEE - self.MSEE[value]) / firstMSEE * 100
+        self.MSEE_total = np.average(self.indVarMSEEarr, axis=1)
+        firstMSEE = self.MSEE_total[0]
+        for value in range(1, len(self.MSEE_total)):
+            calPerc = (firstMSEE - self.MSEE_total[value]) / firstMSEE * 100
             self.XcumCalExplVarList.append(calPerc)
             self.XcumCalExplVarDict[value] = calPerc
         
-#===============================================================================
+        
+        # Compute RMSEE for individual variables and for all together
+        self.indVarRMSEEarr = np.sqrt(self.indVarMSEEarr)
+        self.RMSEE_total = np.sqrt(self.MSEE_total)
+        
+#==============================================================================
 #         From here cross validation procedure starts
-#===============================================================================
+#==============================================================================
         if self.cvType == None:
             pass
         else:
@@ -368,7 +378,7 @@ class nipalsPCA:
                 
                 # -------------------------------------------------------------                    
                 # Center or standardise X according to users choice 
-                if self.mode == "stand":
+                if self.stand == True:
                     X_train_mean = np.average(x_train, axis=0).reshape(1,-1)
                     X_train_std = np.std(x_train, axis=0, ddof=1).reshape(1,-1)
                     X_train_proc = (x_train - X_train_mean) / X_train_std
@@ -447,7 +457,7 @@ class nipalsPCA:
                     
                     # Depending on preprocessing re-process in same manner
                     # in order to get values that compare to original values.
-                    if self.mode == "stand":
+                    if self.stand == True:
                         valPredX = (valPredX_proc * X_train_std) + \
                                 X_train_mean
                     else:
@@ -498,20 +508,26 @@ class nipalsPCA:
             self.XcumValExplVarList = [0]
             self.XcumValExplVarDict = {}
             self.XcumValExplVarDict[0] = 0
-            self.MSECV = np.average(self.indVarMSECVarr, axis=1)
-            firstMSECV = self.MSECV[0]
-            for value in range(1, len(self.MSECV)):
-                valPerc = (firstMSECV - self.MSECV[value]) / firstMSECV * 100
+            self.MSECV_total = np.average(self.indVarMSECVarr, axis=1)
+            firstMSECV = self.MSECV_total[0]
+            for value in range(1, len(self.MSECV_total)):
+                valPerc = (firstMSECV - self.MSECV_total[value]) / firstMSECV * 100
                 self.XcumValExplVarList.append(valPerc)
                 self.XcumValExplVarDict[value] = valPerc
             
             self.valExplVarArr = np.vstack(self.XcumValExplVarList)
-                
             
+            # Compute RMSEE for individual variables and for all together
+            self.indVarRMSECVarr = np.sqrt(self.indVarMSECVarr)
+            self.RMSECV_total = np.sqrt(self.MSECV_total)
+                          
     
-    def res(self):
-        res = {}        
-        return res           
+    def means(self):
+        """
+        Returns the score matrix T. First column holds scores for PC1, 
+        second column holds scores for PC2, etc.
+        """
+        return self.dataMean.reshape(1,-1)    
         
     
     def scores(self):
@@ -528,175 +544,6 @@ class nipalsPCA:
         second column holds scores for PC2, etc.
         """
         return self.arr_loadings
-    
-    
-    def calExplVar_dict(self):
-        """
-        Returns a dictionary holding the calibrated explained variance for 
-        each PC. Key represents order of PC. 
-        """
-        return self.calExplainedVariancesDict
-
-    
-    def calExplVar_list(self):
-        """
-        Returns a list holding the calibrated explained variance for 
-        each PC. 
-        """
-        return self.calExplainedVariancesList
-    
-    
-    def valExplVar_dict(self):
-        """
-        Returns a dictionary holding the validated explained variance for 
-        each PC. Key represents order of PC. 
-        """
-        l = self.XcumValExplVarList
-        valExplVarPC = [b-a for a,b in zip(l,l[1:])]
-        
-        valExplVarPCDict = {}
-        for ind, value in enumerate(valExplVarPC):
-            valExplVarPCDict[ind+1] = value
-            
-        return valExplVarPCDict
-
-    
-    def valExplVar_list(self):
-        """
-        Returns a list holding the validated explained variance for 
-        each PC. 
-        """
-        l = self.XcumValExplVarList
-        
-        return [b-a for a,b in zip(l,l[1:])]
-    
-    
-    def cumCalExplVar_dict(self):
-        """
-        Returns a dictionary holding the cumulative calibrated explained 
-        variance for each PC. Key represents order of PC. 
-        """
-        return self.XcumCalExplVarDict
-
-    
-    def cumCalExplVar_list(self):
-        """
-        Returns a list holding the cumulative calibrated explained variance for 
-        each PC. Dictionary key represents order of PC. 
-        """
-        return self.XcumCalExplVarList
-    
-    
-    def cumValExplVar_dict(self):
-        """
-        Returns a dictionary holding the cumulative validated explained 
-        variance for each PC. Key represents order of PC. 
-        """
-        return self.XcumValExplVarDict
-
-    
-    def cumValExplVar_list(self):
-        """
-        Returns a list holding the cumulative validated explained variance for 
-        each PC. 
-        """
-        return self.XcumValExplVarList
-    
-    
-    def indVarCumCalExplVar_arr(self):
-        """
-        Returns an array holding the cumulative calibrated explained variance
-        for each variable in X after each PC.
-        """
-        return self.indVarXcalExplVarArr
-    
-    
-    def indVarCumValExplVar_arr(self):
-        """
-        Returns an array holding the cumulative validated explained variance
-        for each variable in X after each PC.
-        """
-        return self.indVarXvalExplVarArr
-    
-    
-    def residuals(self):
-        """
-        Returns a dictionary holding the residual matrices E after each 
-        computed PC. Dictionary key represents order of PC.
-        """
-        return self.resids
-    
-    
-    def calPredX(self):
-        """
-        Returns a dictionary holding the predicted matrices Xhat from 
-        calibration after each computed PC. Dictionary key represents order 
-        of PC.
-        """
-        return self.calPredXdict
-    
-    
-    def valPredX(self):
-        """
-        Returns a dictionary holding the validated matrices Xhat from 
-        calibration after each computed PC. Dictionary key represents order 
-        of PC.
-        """
-        return self.valPredXdict
-    
-    
-    def cvTrainAndTestData(self):
-        """
-        Returns a list consisting of dictionaries holding training and test sets.
-        """
-        return self.cvTrainAndTestDataList
-    
-    
-    def MSEE_total(self):
-        """
-        Returns a dictionary holding MSEE from cross validation after each
-        computed PC. Dictionary key represents order of PC
-        """        
-        return self.MSEE
-    
-    
-    def MSEE_indVar(self):
-        """
-        Returns a dictionary holding MSEE from cross validation after each
-        computed PC for each variable. Dictionary key represents order of PC.
-        """        
-        return self.indVarMSEEarr
-        
-    
-    def MSECV_total(self):
-        """
-        Returns a dictionary holding MSECV from cross validation after each
-        computed PC. Dictionary key represents order of PC
-        """        
-        return self.MSECV
-    
-    
-    def MSECV_indVar(self):
-        """
-        Returns a dictionary holding MSECV from cross validation after each
-        computed PC for each variable. Dictionary key represents order of PC.
-        """        
-        return self.indVarMSECVarr
-    
-    
-    def modelSettings(self):
-        """
-        Returns a dictionary holding the settings under which NIPALS PCA was
-        run. Dictionary key represents order of PC.
-        """
-        # Collect settings under which PCA was run.
-        self.settings = {}
-        self.settings['numPC'] = self.numPC
-        self.settings['mode'] = self.mode
-        self.settings['inputArray'] = self.inputArray
-        self.settings['analysedArray'] = self.data
-        
-        return self.settings
     
     
     def corrLoadings(self):
@@ -723,6 +570,169 @@ class nipalsPCA:
         self.arr_corrLoadings = np.transpose(arr_corrLoadings)
         
         return self.arr_corrLoadings
+    
+    
+    
+    def modelSettings(self):
+        """
+        Returns a dictionary holding the settings under which NIPALS PCA was
+        run. Dictionary key represents order of PC.
+        """
+        # Collect settings under which PCA was run.
+        self.settings = {}
+        self.settings['numPC'] = self.numPC
+        self.settings['stand'] = self.stand
+        self.settings['inputArray'] = self.inputArray
+        self.settings['analysedArray'] = self.data
+        
+        return self.settings    
+    
+    
+    def residuals(self):
+        """
+        Returns a dictionary holding the residual matrices E after each 
+        computed PC. Dictionary key represents order of PC.
+        """
+        return self.resids
+    
+    
+    def calExplVar(self):
+        """
+        Returns a list holding the calibrated explained variance for 
+        each PC. 
+        """
+        return self.calExplainedVariancesList
+    
+    
+    def cumCalExplVar_indVar(self):
+        """
+        Returns an array holding the cumulative calibrated explained variance
+        for each variable in X after each PC.
+        """
+        return self.indVarXcalExplVarArr
+    
+    
+    def cumCalExplVar(self):
+        """
+        Returns a list holding the cumulative calibrated explained variance for 
+        each PC. Dictionary key represents order of PC. 
+        """
+        return self.XcumCalExplVarList
+    
+    
+    def calPredX(self):
+        """
+        Returns a dictionary holding the predicted matrices Xhat from 
+        calibration after each computed PC. Dictionary key represents order 
+        of PC.
+        """
+        return self.calPredXdict
+    
+    
+    def MSEE_indVar(self):
+        """
+        Returns a dictionary holding MSEE from cross validation after each
+        computed PC for each variable. Dictionary key represents order of PC.
+        """        
+        return self.indVarMSEEarr
+    
+    
+    def MSEE(self):
+        """
+        Returns a dictionary holding MSEE from cross validation after each
+        computed PC. Dictionary key represents order of PC
+        """        
+        return self.MSEE_total
+    
+    
+    def RMSEE_indVar(self):
+        """
+        Returns a dictionary holding RMSEE from cross validation after each
+        computed PC for each variable. Dictionary key represents order of PC.
+        """        
+        return self.indVarRMSEEarr
+    
+    
+    def RMSEE(self):
+        """
+        Returns a dictionary holding RMSEE from cross validation after each
+        computed PC. Dictionary key represents order of PC
+        """        
+        return self.RMSEE_total
+    
+
+    def valExplVar(self):
+        """
+        Returns a list holding the validated explained variance for 
+        each PC. 
+        """
+        l = self.XcumValExplVarList
+        
+        return [b-a for a,b in zip(l,l[1:])]
+    
+    
+    def cumValExplVar_indVar(self):
+        """
+        Returns an array holding the cumulative validated explained variance
+        for each variable in X after each PC.
+        """
+        return self.indVarXvalExplVarArr
+
+    
+    def cumValExplVar(self):
+        """
+        Returns a list holding the cumulative validated explained variance for 
+        each PC. 
+        """
+        return self.XcumValExplVarList
+    
+    
+    def valPredX(self):
+        """
+        Returns a dictionary holding the validated matrices Xhat from 
+        calibration after each computed PC. Dictionary key represents order 
+        of PC.
+        """
+        return self.valPredXdict
+    
+    
+    def MSECV_indVar(self):
+        """
+        Returns a dictionary holding MSECV from cross validation after each
+        computed PC for each variable. Dictionary key represents order of PC.
+        """        
+        return self.indVarMSECVarr
+        
+    
+    def MSECV(self):
+        """
+        Returns a dictionary holding MSECV from cross validation after each
+        computed PC. Dictionary key represents order of PC
+        """        
+        return self.MSECV_total
+    
+    
+    def RMSECV_indVar(self):
+        """
+        Returns a dictionary holding RMSEE from cross validation after each
+        computed PC for each variable. Dictionary key represents order of PC.
+        """        
+        return self.indVarRMSECVarr
+    
+    
+    def RMSECV(self):
+        """
+        Returns a dictionary holding RMSEE from cross validation after each
+        computed PC. Dictionary key represents order of PC
+        """        
+        return self.RMSECV_total
+    
+    
+    def cvTrainAndTestData(self):
+        """
+        Returns a list consisting of dictionaries holding training and test sets.
+        """
+        return self.cvTrainAndTestDataList
     
     
     def corrLoadingsEllipses(self):
@@ -754,3 +764,9 @@ class nipalsPCA:
 
 
 
+if __name__ == '__main__':
+    # Things to fix for testing
+    from tests.conftest import make_ds_mock
+    ds = make_ds_mock()
+    with np.errstate(invalid='ignore'):
+        res = nipalsPCA(ds.matrix, numPC=4, mode='stand', cvType=["loo"])
