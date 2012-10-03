@@ -178,10 +178,9 @@ class APCAHandler(ModelView):
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
         for each of the datasets.
         """
-        
         self.model.plot_type = 'Overview Plot'
 
-        try:        
+        try:
             ds_plots = [[self._make_scores_plot(), self._make_loadings_plot()],
                         [self._make_corr_load_plot(), self._make_expl_var_plot()]]
         except InComputeable:
@@ -191,7 +190,7 @@ class APCAHandler(ModelView):
         for plots in ds_plots:
             for plot in plots:
                 plot.tools.append(DClickTool(plot,ref = self))
-        
+
         mpw = MultiPlotWindow(title_text=self._wind_title())
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
@@ -411,7 +410,7 @@ if __name__ == '__main__':
         pc_to_calc = Int(2)
 
     moc_mother = MocMother()
-    
+
     model = APCAModel(
         name='Tore test',
         ds=ds,
