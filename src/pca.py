@@ -340,17 +340,14 @@ class nipalsPCA:
             numObj = np.shape(self.data)[0]
             
             if self.cvType[0] == "loo":
-                print "loo"
                 cvComb = cv.LeaveOneOut(numObj)
             elif self.cvType[0] == "lpo":
-                print "lpo"
                 cvComb = cv.LeavePOut(numObj, self.cvType[1])
             elif self.cvType[0] == "lolo":
-                print "lolo"
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
-                print('Requested form of cross validation is not available')
-            
+                raise Exception('Available cross validations is: loo, lpo, lolo')
+
             
             # Collect validated predicted X for test data in dictionaries.
             # Later, when cross validation is finished they are all collected
