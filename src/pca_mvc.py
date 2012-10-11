@@ -199,7 +199,7 @@ class APCAHandler(ModelView):
         labels = self.model.sub_ds.object_names
         plot = PCScatterPlot(pc_tab, labels, title="Scores")
         if is_subplot:
-            plot.add_dclk_action(self.plot_scores)
+            plot.add_left_down_action(self.plot_scores)
         return plot
 
 
@@ -225,7 +225,7 @@ class APCAHandler(ModelView):
         labels = self.model.sub_ds.variable_names
         plot = PCScatterPlot(pc_tab, labels, title="Loadings")
         if is_subplot:
-            plot.add_dclk_action(self.plot_loadings)
+            plot.add_left_down_action(self.plot_loadings)
         return plot
 
 
@@ -253,7 +253,7 @@ class APCAHandler(ModelView):
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
         pcl.plot_circle(True)
         if is_subplot:
-            pcl.add_dclk_action(self.plot_corr_loading)
+            pcl.add_left_down_action(self.plot_corr_loading)
         return pcl
 
 
@@ -280,7 +280,7 @@ class APCAHandler(ModelView):
         expl_vars = res.cumCalExplVar()
         pl = EVLinePlot(expl_vars, legend='Explained Variance', title="Explained Variance")
         if is_subplot:
-            pl.add_dclk_action(self.plot_expl_var)
+            pl.add_left_down_action(self.plot_expl_var)
         return pl
 
 
