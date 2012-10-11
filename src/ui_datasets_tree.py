@@ -1,4 +1,5 @@
 
+
 # stdlib imports
 import logging
 
@@ -9,7 +10,6 @@ from traitsui.tree_node import TreeNode as TN
 # Local imports
 from ds_ui import DataSet, ds_list_tab
 from importer_main import DND
-from traits.tests.test_extended_trait_change import OnTraitChangeTest
 
 
 class Datasets(HasTraits):
@@ -104,8 +104,6 @@ datasets_tree = TreeEditor(
                   icon_path = 'graphics',
                   ),
         ],
-        refresh='handler.update_tree',
-    
     )
 
 
