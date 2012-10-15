@@ -1,7 +1,8 @@
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Int, Str, List, DelegatesTo, Bool, Set, on_trait_change
-from traitsui.api import View, Group, Item, ModelView, InstanceEditor, RangeEditor
+from traits.api import HasTraits, Instance, Int, Str, List, DelegatesTo, Bool, Set, on_trait_change, Enum
+from traitsui.api import View, Group, Item, ModelView, InstanceEditor, RangeEditor, EnumEditor
+
 
 # Local imports
 from combination_table import CombinationTable
@@ -20,6 +21,7 @@ class PrefmapsContainer(HasTraits):
     # Fitting parameters
     standardise = Bool(False)
     pc_to_calc = Int(2)
+    radio=Enum('Internal mapping', 'External mapping')
 
 
     def add_mapping(self, id_x, id_y):
@@ -38,18 +40,17 @@ class PrefmapsContainer(HasTraits):
         del(self.mappings[self.mappings.index(mapping_id)])
 
 
-
 class PrefmapsHandler(ModelView):
     name = DelegatesTo('model')
     # Used by tre editor in ui_tab_prefmap
     mappings = DelegatesTo('model')
     pc_to_calc = DelegatesTo('model')
-
     comb = Instance(CombinationTable, CombinationTable())
+    radio = DelegatesTo('model')
     # [('a_labels','c_labels'),('sensorydata','consumerliking')]
     last_selection = Set()
-
-
+       
+        
     @on_trait_change('model:mother_ref:dsname_event')
     def dsname_changed(self):
         self._update_comb()
@@ -65,12 +66,14 @@ class PrefmapsHandler(ModelView):
     def _update_comb(self):
         sens_list = []
         cons_list = []
+        
         for a in self.model.dsl.get_id_list_by_type('Sensory profiling'):
             sens_list.append((a, self.model.dsl.get_by_id(a)._ds_name))
         for b in self.model.dsl.get_id_list_by_type('Consumer liking'):
             cons_list.append((b, self.model.dsl.get_by_id(b)._ds_name))
         self.comb.col_set = sens_list
         self.comb.row_set = cons_list
+            
 
 
     @on_trait_change('comb:combination_updated')
@@ -108,6 +111,23 @@ prefmaps_view = View(
             Item('', springy=True),
             orientation='horizontal',
             ),
+          
+          
+        Group(
+            Group(
+                Item('radio', editor=EnumEditor(values={
+                    'Internal mapping' : '1:Internal mapping',
+                    'External mapping'    : '2:External mapping',
+                    }),
+                     style='custom',
+                     show_label=False),
+                label='Select mapping',
+                show_border=True,
+                ),
+            Item('', springy=True),
+            orientation='horizontal',
+            ),
+          
         Group(
             Group(
                 Item('model.standardise'),

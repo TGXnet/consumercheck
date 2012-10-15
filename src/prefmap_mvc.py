@@ -7,7 +7,6 @@ import logging
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
-from enable.api import BaseTool
 
 # Local imports
 from plsr import nipalsPLS2 as pls
@@ -53,16 +52,22 @@ class APrefmapModel(HasTraits):
         self.dsY.active_objects = self.dsX.active_objects
         self.sub_dsX = self.dsX.subset()
         self.sub_dsY = self.dsY.subset()
-        return pls(
-            self.sub_dsX.matrix,
-            self.sub_dsY.matrix,
-            numPC=self.pc_to_calc,
-            cvType=["loo"],
-            Xstand=self.standardise,
-            Ystand=self.standardise)
-
-
-
+        if self.mother_ref.radio == 'Internal mapping':
+            return pls(
+                       self.sub_dsX.matrix,
+                       self.sub_dsY.matrix,
+                       numPC=self.pc_to_calc,
+                       cvType=["loo"],
+                       Xstand=self.standardise,
+                       Ystand=self.standardise)
+        else:
+            return pls(
+                       self.sub_dsY.matrix,
+                       self.sub_dsX.matrix,
+                       numPC=self.pc_to_calc,
+                       cvType=["loo"],
+                       Ystand=self.standardise,
+                       Xstand=self.standardise,)
 
 class APrefmapHandler(ModelView):
     plot_uis = List()
@@ -175,7 +180,10 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         xLP = res.X_loadings()
         expl_vars = res.X_calExplVar()
-        labels = self.model.sub_dsX.variable_names
+        if self.model.mother_ref.radio == 'Internal mapping':
+            labels = self.model.sub_dsX.variable_names
+        else:
+            labels = self.model.sub_dsY.variable_names
         plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
         if is_subplot:
             plot.add_dclk_action(self.plot_loadings_x)
@@ -224,10 +232,16 @@ class APrefmapHandler(ModelView):
         # calExplVarX
         cevx = res.X_calExplVar()
         cevy = res.Y_calExplVar()
-        vnx = self.model.sub_dsX.variable_names
-        vny = self.model.sub_dsY.variable_names
+        if self.model.mother_ref.radio == 'Internal mapping':
+            vnx = self.model.sub_dsX.variable_names
+            vny = self.model.sub_dsY.variable_names
+        else:
+            vnx = self.model.sub_dsY.variable_names
+            vny = self.model.sub_dsX.variable_names
+        
         pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings")
         pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
+        
         if is_subplot:
             pcl.add_dclk_action(self.plot_corr_loading)
         pcl.plot_circle(True)
