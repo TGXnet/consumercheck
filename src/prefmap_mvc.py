@@ -271,7 +271,6 @@ class APrefmapHandler(ModelView):
         sumValX = res.X_cumValExplVar()
         pl = EVLinePlot(sumCalX, 'darkviolet', 'Calibrated X', title = "Explained Variance X")
         pl.add_EV_set(sumValX, 'darkgoldenrod', 'Validated X')
-        print 'x plot function running'
         if is_subplot:
             pl.add_dclk_action(self.plot_expl_var_x)
         return pl
