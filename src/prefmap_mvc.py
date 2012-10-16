@@ -157,7 +157,7 @@ class APrefmapHandler(ModelView):
         expl_vars_x = res.X_calExplVar()
         plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
         if is_subplot:
-            plot.add_dclk_action(self.plot_scores)
+            plot.add_left_down_action(self.plot_scores)
         return plot
 
 
@@ -186,7 +186,7 @@ class APrefmapHandler(ModelView):
             labels = self.model.sub_dsY.variable_names
         plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
         if is_subplot:
-            plot.add_dclk_action(self.plot_loadings_x)
+            plot.add_left_down_action(self.plot_loadings_x)
         return plot
 
 
@@ -208,7 +208,7 @@ class APrefmapHandler(ModelView):
         labels = self.model.sub_dsY.variable_names
         plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings")
         if is_subplot:
-            plot.add_dclk_action(self.plot_loadings_y)
+            plot.add_left_down_action(self.plot_loadings_y)
         return plot
 
 
@@ -243,7 +243,7 @@ class APrefmapHandler(ModelView):
         pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
         
         if is_subplot:
-            pcl.add_dclk_action(self.plot_corr_loading)
+            pcl.add_left_down_action(self.plot_corr_loading)
         pcl.plot_circle(True)
         return pcl
 
@@ -272,7 +272,7 @@ class APrefmapHandler(ModelView):
         pl = EVLinePlot(sumCalX, 'darkviolet', 'Calibrated X', title = "Explained Variance X")
         pl.add_EV_set(sumValX, 'darkgoldenrod', 'Validated X')
         if is_subplot:
-            pl.add_dclk_action(self.plot_expl_var_x)
+            pl.add_left_down_action(self.plot_expl_var_x)
         return pl
 
 
@@ -295,7 +295,7 @@ class APrefmapHandler(ModelView):
         pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', title = "Explained Variance Y")
         pl.add_EV_set(sumValY, 'darkgoldenrod', 'Validated Y')
         if is_subplot:
-            pl.add_dclk_action(self.plot_expl_var_y)
+            pl.add_left_down_action(self.plot_expl_var_y)
         return pl
 
 

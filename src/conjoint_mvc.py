@@ -117,9 +117,9 @@ class AConjointHandler(ModelView):
 
     def _populate_win_launchers(self):
         table_win_launchers = [
-            ("Means", 'show_means'),
-            ("Fixed", 'show_fixed'),
-            ("Random", 'show_random')]
+            ("LS means", 'show_means'),
+            ("Fixed effects", 'show_fixed'),
+            ("Random effects", 'show_random')]
 
         self.table_win_launchers = [
             WindowLauncher(owner_ref=self, node_name=nn, func_name=fn)

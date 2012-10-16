@@ -6,12 +6,12 @@ from chaco.api import Plot
 
 class PlotBase(Plot):
     # The function to call if the plot i double clicked
-    dclk_action = Callable()
+    ld_action_func = Callable()
 
-    def add_dclk_action(self, dclk_action_func):
-        self.dclk_action = dclk_action_func
+    def add_left_down_action(self, left_down_action_func):
+        self.ld_action_func = left_down_action_func
 
 
-    def normal_left_dclick(self, mouse_event):
-        if self.dclk_action:
-            self.dclk_action()
+    def normal_left_down(self, mouse_event):
+        if self.ld_action_func:
+            self.ld_action_func()
