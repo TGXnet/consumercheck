@@ -276,9 +276,10 @@ class APCAHandler(ModelView):
 
     def _make_expl_var_plot(self, is_subplot=False):
         res = self.model.result
-        # expl_vars = res.explainedVariances
-        expl_vars = res.cumCalExplVar()
-        pl = EVLinePlot(expl_vars, legend='Explained Variance', title="Explained Variance")
+        sumCal = res.cumCalExplVar()
+        sumVal = res.cumValExplVar()
+        pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated' ,title="Explained Variance")
+        pl.add_EV_set(sumVal, 'darkgoldenrod', 'Validated')
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var)
         return pl

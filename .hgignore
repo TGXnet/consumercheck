@@ -16,3 +16,4 @@ local
 .ropeproject
 .project
 .pydevproject
+.settings
