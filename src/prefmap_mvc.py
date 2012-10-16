@@ -238,10 +238,8 @@ class APrefmapHandler(ModelView):
         else:
             vnx = self.model.sub_dsY.variable_names
             vny = self.model.sub_dsX.variable_names
-        
         pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings")
         pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
-        
         if is_subplot:
             pcl.add_left_down_action(self.plot_corr_loading)
         pcl.plot_circle(True)
