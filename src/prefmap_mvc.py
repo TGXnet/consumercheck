@@ -26,13 +26,14 @@ class APrefmapModel(HasTraits):
     # Shoud be Instance(PrefmapsContainer)
     # but who comes first?
     mother_ref = Instance(HasTraits)
-    dsX = DataSet()
-    dsY = DataSet()
-    sub_dsX = DataSet()
-    sub_dsY = DataSet()
+    
+    ds_C = DataSet()
+    ds_S = DataSet()
+    sub_ds_C = DataSet()
+    sub_ds_S = DataSet()
     # FIXME: To be replaced by groups
-    sel_var_X = List()
-    sel_var_Y = List()
+    sel_var_C = List()
+    sel_var_S = List()
     sel_obj = List()
 
     #checkbox bool for standardised results
@@ -45,29 +46,30 @@ class APrefmapModel(HasTraits):
     result = Property()
 
     def _get_max_pc(self):
-        return (min(self.dsX.n_rows,self.dsX.n_cols))
+        return (min(self.ds_C.n_rows,self.ds_C.n_cols))
 
     def _get_result(self):
-        logging.info("Run pls for: X: {0} ,Y: {1}".format(self.dsX._ds_id, self.dsY._ds_id))
-        self.dsY.active_objects = self.dsX.active_objects
-        self.sub_dsX = self.dsX.subset()
-        self.sub_dsY = self.dsY.subset()
+        logging.info("Run pls for: Consumer: {0} ,Sensory: {1}".format(self.ds_C._ds_id, self.ds_S._ds_id))
+        self.ds_S.active_objects = self.ds_C.active_objects
+        self.sub_ds_C = self.ds_C.subset()
+        self.sub_ds_S = self.ds_S.subset()
         if self.mother_ref.radio == 'Internal mapping':
             return pls(
-                       self.sub_dsX.matrix,
-                       self.sub_dsY.matrix,
+                       self.sub_ds_C.matrix,
+                       self.sub_ds_S.matrix,
                        numPC=self.pc_to_calc,
                        cvType=["loo"],
                        Xstand=self.standardise,
                        Ystand=self.standardise)
         else:
             return pls(
-                       self.sub_dsY.matrix,
-                       self.sub_dsX.matrix,
+                       self.sub_ds_S.matrix,
+                       self.sub_ds_C.matrix,
                        numPC=self.pc_to_calc,
                        cvType=["loo"],
                        Ystand=self.standardise,
                        Xstand=self.standardise,)
+
 
 class APrefmapHandler(ModelView):
     plot_uis = List()
@@ -75,8 +77,8 @@ class APrefmapHandler(ModelView):
     nid = DelegatesTo('model')
 
     show_sel_obj = Button('Objects')
-    show_sel_x_var = Button('X Variables')
-    show_sel_y_var = Button('Y Variables')
+    show_sel_c_var = Button('Consumer Variables')
+    show_sel_s_var = Button('Sensory Variables')
 
     window_launchers = List(Instance(WindowLauncher))
     
@@ -88,15 +90,15 @@ class APrefmapHandler(ModelView):
     
     @on_trait_change('show_sel_obj')
     def _act_show_sel_obj(self, obj, name, new):
-        obj.model.dsX.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
+        obj.model.ds_C.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
 
-    @on_trait_change('show_sel_x_var')
+    @on_trait_change('show_sel_c_var')
     def _act_show_sel_x_var(self, obj, name, new):
-        obj.model.dsX.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+        obj.model.ds_C.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
-    @on_trait_change('show_sel_y_var')
+    @on_trait_change('show_sel_s_var')
     def _act_show_sel_y_var(self, obj, name, new):
-        obj.model.dsY.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+        obj.model.ds_S.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     def __eq__(self, other):
         return self.nid == other
@@ -130,7 +132,7 @@ class APrefmapHandler(ModelView):
         self.model.plot_type = 'Overview Plot'
         
         ds_plots = [[self._make_scores_plot(True), self._make_corr_load_plot(True)],
-                    [self._make_expl_var_plot_x(True), self._make_expl_var_plot_y(True)]]
+                    [self._make_expl_var_plot_c(True), self._make_expl_var_plot_s(True)]]
 
         mpw = MultiPlotWindow(title_text=self._wind_title())
         mpw.plots.component_grid = ds_plots
@@ -153,7 +155,7 @@ class APrefmapHandler(ModelView):
     def _make_scores_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.X_scores()
-        labels = self.model.sub_dsX.object_names
+        labels = self.model.sub_ds_C.object_names
         expl_vars_x = res.X_calExplVar()
         plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
         if is_subplot:
@@ -181,9 +183,9 @@ class APrefmapHandler(ModelView):
         xLP = res.X_loadings()
         expl_vars = res.X_calExplVar()
         if self.model.mother_ref.radio == 'Internal mapping':
-            labels = self.model.sub_dsX.variable_names
+            labels = self.model.sub_ds_C.variable_names
         else:
-            labels = self.model.sub_dsY.variable_names
+            labels = self.model.sub_ds_S.variable_names
         plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings_x)
@@ -205,7 +207,7 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         yLP = res.Y_loadings()
         expl_vars = res.Y_calExplVar()
-        labels = self.model.sub_dsY.variable_names
+        labels = self.model.sub_ds_S.variable_names
         plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings")
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings_y)
@@ -233,11 +235,11 @@ class APrefmapHandler(ModelView):
         cevx = res.X_calExplVar()
         cevy = res.Y_calExplVar()
         if self.model.mother_ref.radio == 'Internal mapping':
-            vnx = self.model.sub_dsX.variable_names
-            vny = self.model.sub_dsY.variable_names
+            vnx = self.model.sub_ds_C.variable_names
+            vny = self.model.sub_ds_S.variable_names
         else:
-            vnx = self.model.sub_dsY.variable_names
-            vny = self.model.sub_dsX.variable_names
+            vnx = self.model.sub_ds_S.variable_names
+            vny = self.model.sub_ds_C.variable_names
         
         pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings")
         pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
@@ -250,7 +252,7 @@ class APrefmapHandler(ModelView):
 
     def plot_expl_var_x(self):
         self.model.plot_type = 'Explained Variance X Plot'
-        ev_plot = self._make_expl_var_plot_x()
+        ev_plot = self._make_expl_var_plot_c()
         ev_plot.legend.visible = True
         spw = LinePlotWindow(
             plot=ev_plot,
@@ -265,7 +267,7 @@ class APrefmapHandler(ModelView):
         return ev_list
 
 
-    def _make_expl_var_plot_x(self, is_subplot=False):
+    def _make_expl_var_plot_c(self, is_subplot=False):
         res = self.model.result
         sumCalX = res.X_cumCalExplVar()
         sumValX = res.X_cumValExplVar()
@@ -278,7 +280,7 @@ class APrefmapHandler(ModelView):
 
     def plot_expl_var_y(self):
         self.model.plot_type = 'Explained Variance Y Plot'
-        ev_plot = self._make_expl_var_plot_y()
+        ev_plot = self._make_expl_var_plot_s()
         ev_plot.legend.visible = True
         spw = LinePlotWindow(
             plot=ev_plot,
@@ -288,7 +290,7 @@ class APrefmapHandler(ModelView):
         self._show_plot_window(spw)
 
 
-    def _make_expl_var_plot_y(self, is_subplot=False):
+    def _make_expl_var_plot_s(self, is_subplot=False):
         res = self.model.result
         sumCalY = res.Y_cumCalExplVar()
         sumValY = res.Y_cumValExplVar()
@@ -321,8 +323,8 @@ class APrefmapHandler(ModelView):
 
 
     def _wind_title(self):
-        dsx_name = self.model.dsX._ds_name
-        dsy_name = self.model.dsY._ds_name
+        dsx_name = self.model.ds_C._ds_name
+        dsy_name = self.model.ds_S._ds_name
         dstype = self.model.plot_type
         return "({0}) X ~ Y ({1}) | Prefmap - {2} - ConsumerCheck".format(dsx_name, dsy_name, dstype)
 
@@ -415,8 +417,8 @@ if __name__ == '__main__':
                              high_name='model.max_pc',
                              mode='spinner')),
                     Item('show_sel_obj'),
-                    Item('show_sel_x_var'),
-                    Item('show_sel_y_var'),
+                    Item('show_sel_c_var'),
+                    Item('show_sel_s_var'),
                     orientation='vertical',
                     ),
                 Item('', springy=True),
