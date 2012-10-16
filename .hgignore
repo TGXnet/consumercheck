@@ -7,11 +7,12 @@ R-2*
 *.log
 consumercheck-*
 CCWinPack
-eggs
 bin
-parts
+build
+include
+lib
+local
 .installed.cfg
-develop-eggs
 .ropeproject
 .project
 .pydevproject
