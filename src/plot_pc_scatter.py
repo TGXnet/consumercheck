@@ -14,14 +14,15 @@ from traits.etsconfig.api import ETSConfig
 ETSConfig.toolkit = 'qt4'
 
 # Enthought library imports
-from chaco.api import Plot, ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
+from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Dict, Int, List, HasTraits, implements
+from traits.api import Bool, Callable, Int, List, HasTraits, implements
 from enable.api import ColorTrait
 
 
 # Local imports
 from plot_interface import IPCScatterPlot
+from plot_base import PlotBase
 
 
 class PCDataSet(HasTraits):
@@ -34,7 +35,7 @@ class PCDataSet(HasTraits):
     # darkolivegreen, darkorange, darksalmon, darkseagreen
     # from: /usr/share/pyshared/enable/colors.py
     color = ColorTrait('darkviolet')
-    expl_vars = Dict()
+    expl_vars = List()
     selected = List()
 
 
@@ -82,7 +83,7 @@ class PCPlotData(ArrayPlotData):
         return set_n+1
 
 
-class PCScatterPlot(Plot):
+class PCScatterPlot(PlotBase):
     """Principal Component scatter plot.
 
     Draw scatterplot for one or several sets of principal components.
@@ -92,12 +93,10 @@ class PCScatterPlot(Plot):
        This is a testnote in PCScatterPlot class
 
     """
-
     implements(IPCScatterPlot)
 
     # Should new labels be visible?
     visible_new_labels = Bool(True)
-    
     visible_datasets = Int(3)
 
 
@@ -119,18 +118,15 @@ class PCScatterPlot(Plot):
         """
         data = PCPlotData()
         super(PCScatterPlot, self).__init__(data, **kwtraits)
-        ## self.index_range.margin = 0.1
-        ## self.value_range.margin = 0.1
-        ## self.index_range.tight_bounds = False
-        ## self.value_range.tight_bounds = False
-        ## scale_tracking_amount(self, multiplier):
-        ## set_bounds(self, low, high):
+        self._adjust_range()
+
         if pc_matrix is not None:
             self.add_PC_set(pc_matrix, labels, color, expl_vars)
+
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
-
+        
 
     def add_PC_set(self, matrix, labels=None, color=None, expl_vars=None):
         """Add a PC dataset with metadata.
@@ -233,9 +229,7 @@ class PCScatterPlot(Plot):
         #plot
         rl = self.plot(pd, type='scatter', name=pn,
                        marker='dot', marker_size=2,
-                       color=self.data.pc_ds[set_id-1].color)
-        # Give plot space
-        ## self._set_axis_margin()
+                       color=self.data.pc_ds[set_id-1].color,)
         # Set axis title
         self._set_plot_axis_title()
         #adding data labels
@@ -248,14 +242,18 @@ class PCScatterPlot(Plot):
         ty = ['PC{0}'.format(self.data.y_no)]
         for pcds in self.data.pc_ds:
             try:
-                ev_x = pcds.expl_vars[self.data.x_no]
-                ev_y = pcds.expl_vars[self.data.y_no]
+                ev_x = pcds.expl_vars[self.data.x_no-1]
+                ev_y = pcds.expl_vars[self.data.y_no-1]
                 tx.append('({0:.0f}%)'.format(ev_x))
                 ty.append('({0:.0f}%)'.format(ev_y))
-            except KeyError:
+            except IndexError:
                 pass
-        self.x_axis.title = ' '.join(tx)
-        self.y_axis.title = ' '.join(ty)
+        if len(tx)==3:
+            self.x_axis.title = tx[0]+'=X'+tx[1]+', Y'+tx[2]
+            self.y_axis.title = ty[0]+'=X'+ty[1]+', Y'+ty[2]
+        else:
+            self.x_axis.title = ' '.join(tx)  
+            self.y_axis.title = ' '.join(ty)           
 
 
     def _add_plot_data_labels(self, plot_render, point_data, set_id):
@@ -302,13 +300,13 @@ class PCScatterPlot(Plot):
             ("ell_full_x", "ell_full_y"), name="ell_full",
             type="line", index_sort="ascending",
             marker="dot", marker_size=1,
-            color="blue", bgcolor="white")
+            color="blue", bgcolor="white",)
         if show_half:
             self.plot(
                 ("ell_half_x", "ell_half_y"), name="ell_half",
                 type="line", index_sort="ascending",
                 marker="dot", marker_size=1,
-                color="blue", bgcolor="white")
+                color="blue", bgcolor="white",)
 
         ## self._set_axis_margin()
 
@@ -372,6 +370,15 @@ class PCScatterPlot(Plot):
         return margin_low, margin_high
 
 
+    def _adjust_range(self):
+        self.index_range.margin = 0.15
+        self.value_range.margin = 0.15
+        self.index_range.tight_bounds = False
+        self.value_range.tight_bounds = False
+        self.index_range.bounds_func = calc_bounds
+        self.value_range.bounds_func = calc_bounds
+
+
     def _reset_axis(self):
         self.index_range.reset()
         self.value_range.reset()
@@ -404,6 +411,12 @@ class PCScatterPlot(Plot):
         self.underlays.append(ygrid)
 
 
+def calc_bounds(data_low, data_high, margin, tight_bounds):
+    if tight_bounds:
+        return data_low , data_high
+    else:
+        return data_low * (1 + margin) , data_high * (1 + margin)
+
 
 if __name__ == '__main__':
 
@@ -415,7 +428,8 @@ if __name__ == '__main__':
 
     set2 = np.array([
         [-1.3, -0.4, -0.9],
-        [-1.1, -0.2, -0.7],
+        #[-1.1, -0.2, -0.7],
+        [-1.1, 1, -0.7],
         [-1.2, -0.1, -0.1],
         ])
 

@@ -5,37 +5,26 @@ Adds statistical methods, user inteface and plots for Conjoint
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Any
-from traitsui.api import View, Item, TreeEditor, TreeNode
+from traitsui.api import View, Group, Item, InstanceEditor, TreeEditor, TreeNode
 
 # Local imports
 from conjoint_container_mvc import ConjointsHandler, ConjointsContainer, conjoints_view
-from conjoint_mvc import AConjointHandler, a_conjoint_view
+from conjoint_mvc import AConjointHandler, WindowLauncher
+from plugin_tree_helper import dclk_activator
 
 
-def dclk_random(obj):
-    obj.show_random()
-
-def dclk_fixed(obj):
-    obj.show_fixed()
-
-def dclk_means(obj):
-    obj.show_means()
-
-
-new_conjoint_tree = TreeEditor(
+conjoint_tree = TreeEditor(
     nodes = [
         TreeNode(
             node_for = [ConjointsHandler],
             children = '',
             label = '=Conjoint',
             auto_open = True,
-            view = conjoints_view,
             ),
         TreeNode(
             node_for = [ConjointsHandler],
             children = 'mappings',
             label = 'name',
-            view = conjoints_view,
             rename = False,
             rename_me = False,
             copy = False,
@@ -48,30 +37,27 @@ new_conjoint_tree = TreeEditor(
             node_for = [AConjointHandler],
             children = '',
             label = 'name',
-            # auto_open = True,
-            view = a_conjoint_view,
             ),
         TreeNode(
             node_for = [AConjointHandler],
-            label = '=Random',
-            on_dclick = dclk_random,
-            view = a_conjoint_view,
+            children = 'table_win_launchers',
+            label = '=Tables',
             ),
         TreeNode(
             node_for = [AConjointHandler],
-            label = '=Fixed',
-            on_dclick = dclk_fixed,
-            view = a_conjoint_view,
+            children = 'me_plot_launchers',
+            label = '=Main effects plots',
             ),
         TreeNode(
-            node_for = [AConjointHandler],
-            label = '=Means',
-            on_dclick = dclk_means,
-            view = a_conjoint_view,
+            node_for = [WindowLauncher],
+            label = 'node_name',
+            on_dclick = dclk_activator,
             ),
         ],
-    selected='selected_obj',
-    )
+     hide_root=True,
+     editable=False,
+     selected='selected_obj',
+   )
 
 
 
@@ -87,9 +73,16 @@ class ConjointPlugin(HasTraits):
 
 
     traits_view = View(
-        Item(name='conjoints_handler',
-             editor=new_conjoint_tree,
-             show_label=False),
+                       Group(
+                             Item(name='conjoints_handler',
+                                  editor=conjoint_tree,
+                                  show_label=False),
+                             Item(name='conjoints_handler',
+                                  editor=InstanceEditor(view=conjoints_view),
+                                  style='custom',
+                                  show_label=False),
+                             orientation='horizontal',
+                             ),
         resizable=True,
         height=300,
         width=600,
@@ -102,8 +95,8 @@ if __name__ == '__main__':
     import numpy as np
     from tests.conftest import TestContainer
 
+    container = TestContainer()
+    conjoint_plugin = ConjointPlugin(mother_ref=container)
+    conjoint_plugin.conjoints_handler._ds_changed(None)
     with np.errstate(invalid='ignore'):
-        container = TestContainer()
-        conjoint_plugin = ConjointPlugin(mother_ref=container)
         conjoint_plugin.configure_traits()
-        conjoint_plugin.conjoints_handler._ds_changed(None)

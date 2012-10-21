@@ -130,9 +130,38 @@ PLS2 has now the following attributes:
 @update 03: 29.10.2011 (OTO)
 ============================
 Changed maximum number of components allowed in PLS2. In "update 02" dimensions 
-of both X and Y were used were used to determine maximum number of components. 
+of both X and Y were used to determine maximum number of components. 
 Now only X is used to determine maximum number of components. This needed to be
-fixed because a Y with only 2 variables would allow only 2 components. 
+fixed because a Y with only 2 variables would allow only 2 components.
+
+
+@update 04: 15.02.2012 (OTO)
+============================
+Fixed computation of calibrated explained variances for individual variables
+in Y for PLS2. Forgot to centre Y prior to MSEE_0 computation.
+
+
+@update 05: 23.02.2012 (OTO)
+============================
+Added attribute .XpredVal for predicted Xhat from cross validation for PLS2.
+
+
+@update 06: 15.05.2012 (OTO)
+============================
+Fixed MSEE, RMSEE, MSECV and RMSCV for X and Y. The same ones for individual
+variables were correct (PLS2).
+
+
+@update 06: 18.05.2012 (OTO)
+============================
+Fixed MSEE, RMSEE, MSECV and RMSCV for X and y (PLS).
+
+
+@update 07: 31.07.2012 (OTO)
+============================
+Major cleanup and restructuring of code. Some class functions were missing
+in either PLS1 or PLS2 or both. Renaming of class function names to be more
+readable.
 """
 
 # Import necessary modules
@@ -140,6 +169,7 @@ import numpy as np
 import statTools as st
 import numpy.linalg as npla
 import cross_val as cv
+# import matplotlib.pyplot as plt
 
 
 
@@ -214,9 +244,10 @@ class nipalsPLS1:
             self.vecy = self.vecy_input - vecyMean
         
 
-        # Check whether cvType is provided. If NOT, then use "loo" by default.
+        # Check whether cvType is provided. If NOT, then no cross validation
+        # is carried out.
         if 'cvType' not in kargs.keys():
-            self.cvType = ["loo"]
+            self.cvType = None
         else:
             self.cvType = kargs['cvType']
         
@@ -286,8 +317,9 @@ class nipalsPLS1:
         self.arrW = np.array(np.transpose(self.x_loadingsWeightsList))
         
         
+        
+        # ========== COMPUTATIONS FOR X ==========
         # ---------------------------------------------------------------------
-        # === COMPUTATIONS FOR X ===
         # Create a list holding arrays of Xhat predicted calibration after each 
         # component. Xhat is computed with Xhat = T*P'
         self.calXpredList = []
@@ -304,41 +336,120 @@ class nipalsPLS1:
             else:
                 Xhat = predXcal + Xmeans
             self.calXpredList.append(Xhat)
-        
-        
+        # ---------------------------------------------------------------------
+                
+        # ---------------------------------------------------------------------        
         # Construct a dictionary that holds predicted X (Xhat) from calibration
         # for each number of components.
         self.calXpredDict = {} 
         
         for ind, item in enumerate(self.calXpredList):
             self.calXpredDict[ind+1] = item
+        # ---------------------------------------------------------------------
         
-        # Construct a list that holds cumulative calibrated explained variance
-        # in X.
-        # First compute MSEE for zero components
-        X_cent = st.centre(self.arrX_input)
-        firstMSEE = np.sum(np.square(X_cent))
-        self.XcumCalExplVarList = [0]
+        # ---------------------------------------------------------------------
+        # Collect all PRESSE for individual variables in a dictionary. 
+        # Keys represent number of component.            
+        self.PRESSEdict_indVar_X = {}
         
-        # Compute MSEE for each Yhat for 1, 2, 3, etc number of components and
-        # compute explained variance
-        for Xhat in self.calXpredList:
-            diffX = X_cent - st.centre(Xhat)
-            MSEE = np.sum(np.square(diffX))
-            self.XcumCalExplVarList.append((firstMSEE - MSEE) / firstMSEE * 100)
+        # Compute PRESS for calibration / estimation
+        PRESSE_0_indVar_X = np.sum(np.square(st.centre(self.arrX_input)), \
+                axis=0)
+        self.PRESSEdict_indVar_X[0] = PRESSE_0_indVar_X
         
+        # Compute PRESS for each Xhat for 1, 2, 3, etc number of components
+        # and compute explained variance
+        for ind, Xhat in enumerate(self.calXpredList):
+            diffX = st.centre(self.arrX_input) - st.centre(Xhat)
+            PRESSE_indVar_X = np.sum(np.square(diffX), axis=0)
+            self.PRESSEdict_indVar_X[ind+1] = PRESSE_indVar_X
+                    
+        # Now store all PRESSE values into an array. Then compute MSEE and
+        # RMSEE.
+        self.PRESSEarr_indVar_X = np.array(self.PRESSEdict_indVar_X.values())
+        self.MSEEarr_indVar_X = self.PRESSEarr_indVar_X / \
+                np.shape(self.arrX_input)[0]
+        self.RMSEEarr_indVar_X = np.sqrt(self.MSEEarr_indVar_X)
+        # ---------------------------------------------------------------------
+                
+        # ---------------------------------------------------------------------
+        # Compute explained variance for each variable in X using the
+        # MSEE for each variable. Also collect PRESSE, MSEE, RMSEE in 
+        # their respective dictionaries for each variable. Keys represent 
+        # now variables and NOT components as above with 
+        # self.PRESSEdict_indVar_X
+        self.cumCalExplVarXarr_indVar = np.zeros(np.shape(self.MSEEarr_indVar_X))
+        MSEE_0_indVar_X = self.MSEEarr_indVar_X[0,:]
         
-        # Construct a list that holds calibrated explained variance in X
+        for ind, MSEE_indVar_X in enumerate(self.MSEEarr_indVar_X):
+            explVar = (MSEE_0_indVar_X - MSEE_indVar_X) / MSEE_0_indVar_X * 100
+            self.cumCalExplVarXarr_indVar[ind] = explVar
+                    
+        self.PRESSE_indVar_X = {}
+        self.MSEE_indVar_X = {}
+        self.RMSEE_indVar_X = {}
+        self.cumCalExplVarX_indVar = {}
+        
+        for ind in range(np.shape(self.PRESSEarr_indVar_X)[1]):
+            self.PRESSE_indVar_X[ind] = self.PRESSEarr_indVar_X[:,ind]
+            self.MSEE_indVar_X[ind] = self.MSEEarr_indVar_X[:,ind]
+            self.RMSEE_indVar_X[ind] = self.RMSEEarr_indVar_X[:,ind]
+            self.cumCalExplVarX_indVar[ind] = self.cumCalExplVarXarr_indVar[:,ind]
+        # ---------------------------------------------------------------------
+                
+        # ---------------------------------------------------------------------
+        # Collect total PRESSE across all variables in a dictionary. Also,
+        # compute total calibrated explained variance in X.
+        self.PRESSE_total_dict_X = {}
+        self.PRESSE_total_list_X = np.sum(self.PRESSEarr_indVar_X, axis=1)
+        
+        for ind, PRESSE_X in enumerate(self.PRESSE_total_list_X):
+            self.PRESSE_total_dict_X[ind] = PRESSE_X
+        # ---------------------------------------------------------------------
+        
+        # ---------------------------------------------------------------------
+        # Collect total MSEE across all variables in a dictionary. Also,
+        # compute total validated explained variance in X.             
+        self.MSEE_total_dict_X = {}
+        self.MSEE_total_list_X = np.sum(self.MSEEarr_indVar_X, axis=1) / \
+                np.shape(self.arrX_input)[1]        
+        MSEE_0_X = self.MSEE_total_list_X[0]
+
+        # Compute total calibrated explained variance in X
+        self.XcumCalExplVarList = []
+        for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
+            perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
+            self.MSEE_total_dict_X[ind] = MSEE_X
+            self.XcumCalExplVarList.append(perc)
+        
+        # Construct list with total validated explained variance in X
         self.XcalExplVarList = []
         for ind, item in enumerate(self.XcumCalExplVarList):
             if ind == len(self.XcumCalExplVarList)-1: break
-            explVarComp = self.XcumCalExplVarList[ind+1] - self.XcumCalExplVarList[ind]
+            explVarComp = self.XcumCalExplVarList[ind+1] - \
+                    self.XcumCalExplVarList[ind]
             self.XcalExplVarList.append(explVarComp)
+
+        # Construct a dictionary that holds predicted X (Xhat) from calibration
+        # for each number of components.
+        self.calXpredDict = {}
+        for ind, item in enumerate(self.calXpredList):
+            self.calXpredDict[ind+1] = item 
         # ---------------------------------------------------------------------
-            
         
         # ---------------------------------------------------------------------
-        # === COMPUTATIONS FOR Y =====
+        # Compute total RMSEE and store values in a dictionary and list.            
+        self.RMSEE_total_dict_X = {}
+        self.RMSEE_total_list_X = np.sqrt(self.MSEE_total_list_X)
+        
+        for ind, RMSEE_X in enumerate(self.RMSEE_total_list_X):
+            self.RMSEE_total_dict_X[ind] = RMSEE_X
+        # ---------------------------------------------------------------------
+        
+        
+
+        # ========== COMPUTATIONS FOR y ============
+        # --------------------------------------------------------------------
         # Create a list holding arrays of yhat predicted calibration after each 
         # component. yhat is computed with Yhat = T*Q'  
         self.calYpredList = []
@@ -352,92 +463,75 @@ class nipalsPLS1:
             # accordingly.            
             if self.ystand == True:
                 yhat_stand = np.dot(x_scores, np.transpose(y_loadings))
-                yhat = (yhat_stand * yStd.reshape(1,-1)) + vecyMean.reshape(1,-1)
+                yhat = (yhat_stand * yStd.reshape(1,-1)) + \
+                        vecyMean.reshape(1,-1)
             else:
                 yhat = np.dot(x_scores, np.transpose(y_loadings)) \
                         + vecyMean
             self.calYpredList.append(yhat)
-            
+        # ---------------------------------------------------------------------
         
-        # Construct a list that holds cumulative calibrated explained variance
-        # in Y.
-        # First compute MSEE for zero components
-        y_cent = st.centre(self.vecy_input)
-        firstMSEE = np.sum(np.square(y_cent))
-        self.YcumCalExplVarList = [0]
-        
-        # Compute MSEE for each Yhat for 1, 2, 3, etc number of components and
-        # compute explained variance
-        for yhat in self.calYpredList:
-            diffY = y_cent - st.centre(yhat)
-            MSEE = np.sum(np.square(diffY))
-            self.YcumCalExplVarList.append((firstMSEE - MSEE) / firstMSEE * 100)
-        
-        
-        # Construct a list that holds calibrated explained variance in Y
-        self.YcalExplVarList = []
-        for ind, item in enumerate(self.YcumCalExplVarList):
-            if ind == len(self.YcumCalExplVarList)-1: break
-            explVarComp = self.YcumCalExplVarList[ind+1] - self.YcumCalExplVarList[ind]
-            self.YcalExplVarList.append(explVarComp)
-        
-        
+        # ---------------------------------------------------------------------        
         # Construct a dictionary that holds predicted Y (Yhat) from calibration
         # for each number of components.
         self.calYpredDict = {}
         for ind, item in enumerate(self.calYpredList):
-            self.calYpredDict[ind+1] = item             
+            self.calYpredDict[ind+1] = item
         # ---------------------------------------------------------------------
         
         # ---------------------------------------------------------------------
-        # Collect all PRESSE in a dictionary. Keys represent number of 
-        # component.            
-        self.PRESSEdict_indVar = {}
+        # Collect PRESSE for each PC in a dictionary. 
+        # Keys represent number of component.            
+        self.PRESSE_total_dict = {}
+        self.MSEE_total_dict = {}
         
-        # Compute PRESS for calibration / estimation
-        PRESSE_0 = np.sum(np.square(self.vecy))
-        self.PRESSEdict_indVar[0] = PRESSE_0
+        # Compute PRESS and MSEE for calibration / estimation with zero
+        # components
+        PRESSE_0 = np.sum(np.square(st.centre(self.vecy_input)))
+        self.PRESSE_total_dict[0] = PRESSE_0
+        MSEE_0 = PRESSE_0 / np.shape(self.vecy_input)[0]
+        self.MSEE_total_dict[0] = MSEE_0
         
-        # Compute PRESS for each Yhat for 1, 2, 3, etc number of components
-        # and compute explained variance
+        # Compute PRESS and MSEE for each Yhat for 1, 2, 3, etc number of 
+        # components and compute explained variance
         for ind, yhat in enumerate(self.calYpredList):
-            diffY = self.vecy_input - yhat
-            PRESSE = np.sum(np.square(diffY), axis=0)
-            self.PRESSEdict_indVar[ind+1] = PRESSE
-                    
-        # Now store all PRESSE values into an array. Then compute MSEE and
-        # RMSEE.
-        self.PRESSEarr = np.array(self.PRESSEdict_indVar.values())
-        self.MSEEarr = self.PRESSEarr / np.shape(self.vecy_input)[0]
-        self.RMSEEarr = np.sqrt(self.MSEEarr)
+            diffy = st.centre(self.vecy_input) - st.centre(yhat)
+            PRESSE = np.sum(np.square(diffy))
+            self.PRESSE_total_dict[ind+1] = PRESSE
+            self.MSEE_total_dict[ind+1] = PRESSE / np.shape(self.vecy_input)[0]
+
+        
+        # Compute total calibrated explained variance in Y 
+        self.MSEE_total_list = self.MSEE_total_dict.values()
+        
+        self.YcumCalExplVarList = []
+        for ind, MSEE in enumerate(self.MSEE_total_list):
+            perc = (MSEE_0 - MSEE) / MSEE_0 * 100
+            self.YcumCalExplVarList.append(perc)
+        
+        # Construct list with total validated explained variance in Y
+        self.YcalExplVarList = []
+        for ind, item in enumerate(self.YcumCalExplVarList):
+            if ind == len(self.YcumCalExplVarList)-1: break
+            explVarComp = self.YcumCalExplVarList[ind+1] - \
+                    self.YcumCalExplVarList[ind]
+            self.YcalExplVarList.append(explVarComp)
         # ---------------------------------------------------------------------
         
-        # -----------------------------------------------------------------
-        # Compute explained variance for each variable in Y using the
-        # MSEE for each variable. Also collect PRESSE, MSEE, RMSEE in 
-        # their respective dictionaries for each variable. Keys represent 
-        # now variables and NOT components as above with 
-        # self.PRESSEdict_indVar
-        self.cumCalExplVarYarr_indVar = np.zeros(np.shape(self.MSEEarr))
-        MSEE_0 = self.MSEEarr[0]
+        # ---------------------------------------------------------------------
+        # Compute total RMSEP and store values in a dictionary and list.            
+        self.RMSEE_total_dict = {}
+        self.RMSEE_total_list = np.sqrt(self.MSEE_total_list)
         
-        for ind, item in enumerate(self.MSEEarr):
-            MSEE = item
-            explVar = (MSEE_0 - MSEE) / MSEE_0 * 100
-            self.cumCalExplVarYarr_indVar[ind] = explVar
-                    
-        self.PRESSEdict = {}
-        self.MSEEdict = {}
-        self.RMSEEdict = {}
-        self.cumCalExplVarY_indVar = {}
+        for ind, RMSEE in enumerate(self.RMSEE_total_list):
+            self.RMSEE_total_dict[ind] = RMSEE
+        # ---------------------------------------------------------------------
         
-        for ind in range(np.shape(self.PRESSEarr)[0]):
-            self.PRESSEdict[ind] = self.PRESSEarr[ind]
-            self.MSEEdict[ind] = self.MSEEarr[ind]
-            self.RMSEEdict[ind] = self.RMSEEarr[ind]
-            self.cumCalExplVarY_indVar[ind] = self.cumCalExplVarYarr_indVar[ind]
-        # -----------------------------------------------------------------
-
+        # ---------------------------------------------------------------------
+        self.PRESSEarr = np.array(self.PRESSE_total_dict.values())
+        self.MSEEarr = np.array(self.MSEE_total_dict.values())
+        self.RMSEEarr = np.array(self.RMSEE_total_dict.values())
+        # ---------------------------------------------------------------------
 
 #===============================================================================
 #         Here starts the cross validation process of PLS1
@@ -457,14 +551,20 @@ class nipalsPLS1:
             elif self.cvType[0] == "lolo":
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
-                raise Exception('Requested form of cross validation is not available')
+                raise Exception('Available cross validations is: loo, lpo, lolo')
 
 
             # Collect predicted y (i.e. yhat) for each CV segment in a  
             # dictionary according to numer of PC
             self.valYpredDict = {}
             for ind in range(1, self.numPC+1):
-                self.valYpredDict[ind] = []            
+                self.valYpredDict[ind] = []
+            
+            # Construct a dictionary that holds predicted X (Xhat) from 
+            # validation for each number of components. 
+            self.valXpredDict = {}             
+            for ind in range(1, self.numPC+1):
+                self.valXpredDict[ind] = []
             
 
             # Collect train and test set in dictionaries for each PC and put
@@ -515,12 +615,12 @@ class nipalsPLS1:
                 
                  # Standardise y if requested by user, otherwise center y.
                 if self.ystand == True:            
-                    y_train_mean = np.average(y_train)
+                    y_train_means = np.average(y_train)
                     y_train_std = np.std(y_train, ddof=1)
-                    y_new = (y_train - y_train_mean) / y_train_std
+                    y_new = (y_train - y_train_means) / y_train_std
                 else:           
-                    y_train_mean = np.average(y_train)
-                    y_new = y_train - y_train_mean
+                    y_train_means = np.average(y_train)
+                    y_new = y_train - y_train_means
                 
                 
                 # Compute j number of components
@@ -581,10 +681,12 @@ class nipalsPLS1:
                 t_list = []
                 for ind in range(self.numPC):
                     
-                    # Module 8: Prediction STEP 1                    
+                    # Module 8: Prediction STEP 1
+                    # ---------------------------
                     t = np.dot(x_new, val_arrW[:,ind]).reshape(-1,1)
                     
                     # Module 8: Prediction STEP 2
+                    # ---------------------------
                     p = val_arrP[:,ind].reshape(-1,1)                    
                     x_old = x_new
                     x_new = x_old - np.dot(t,np.transpose(p))
@@ -597,100 +699,208 @@ class nipalsPLS1:
                     # Give vector y_train_mean the correct dimension in 
                     # numpy, so matrix multiplication will be possible
                     # i.e from dimension (x,) to (1,x)                    
-                    ytm = y_train_mean.reshape(1,-1)
+                    ytm = y_train_means.reshape(1,-1)
+                    xtm = x_train_means.reshape(1,-1)
                     
-                    # Get relevant part of Q for specific number of PC's                   
+                    # Get relevant part of Q for specific number of PC's
+                    part_val_arrP = val_arrP[:,0:ind+1]
                     part_val_arrQ = val_arrQ[0,0:ind+1]
                     
-                    # Module 8: Prediction STEP 3                                        
+                    # Module 8: Prediction STEP 3
+                    # ---------------------------
+                    # First compute yhat                                      
                     if self.ystand == True:
-                        tCQ = np.dot(t_vec,part_val_arrQ) * y_train_std.reshape(1,-1)
+                        tCQ = np.dot(t_vec,part_val_arrQ) * \
+                                y_train_std.reshape(1,-1)
                     else:
                         tCQ = np.dot(t_vec,part_val_arrQ)
                     
                     yhat = ytm + tCQ
                     self.valYpredDict[ind+1].append(yhat.reshape(-1))
                     
+                    # Then compute Xhat
+                    if self.Xstand == True:
+                        tP = np.dot(t_vec,np.transpose(part_val_arrP)) * \
+                                x_train_std.reshape(1,-1)
+                    else:
+                        tP = np.dot(t_vec, np.transpose(part_val_arrP))
+                    
+                    xhat = xtm + tP
+                    self.valXpredDict[ind+1].append(xhat.reshape(-1))
+                    
+                    
+                    
                         
+            # ========== COMPUTATIONS FOR y ============
+            # -----------------------------------------------------------------            
             # Convert vectors from CV segments stored in lists into matrices 
             # for each PC            
             for key in self.valYpredDict:
                 self.valYpredDict[key] = np.array(self.valYpredDict[key])
-            
-            
-            
-            # -----------------------------------------------------------------
-            # Compute PRESS (PRediction Error Sum of Squares) for cross 
-            # validation 
             self.valYpredList = self.valYpredDict.values()
+            # -----------------------------------------------------------------
+                            
+            # -----------------------------------------------------------------
+            # Collect all PRESSCV for individual variables in a dictionary. 
+            # Keys represent number of component.            
+            self.PRESSCV_total_dict = {}
+            self.MSECV_total_dict = {}
             
-            # Collect all PRESS in a dictionary. Keys represent number of 
-            # component.            
-            #self.PRESSdict = {}
-            self.PRESSCVdict = {}
-            
-            # First compute PRESS for zero components            
+            # Compute PRESS for validation
             varY = np.var(self.vecy_input, ddof=1)
-            self.PRESS_0 = (varY * np.square(np.shape(self.vecy_input)[0])) \
+            PRESSCV_0 = (varY * np.square(np.shape(self.vecy_input)[0])) \
                     / np.shape(x_train)[0]
-            self.PRESSCVdict[0] = self.PRESS_0
+            self.PRESSCV_total_dict[0] = PRESSCV_0
+            MSECV_0 = PRESSCV_0 / np.shape(self.vecy_input)[0]
+            self.MSECV_total_dict[0] = MSECV_0
+            # -----------------------------------------------------------------
             
-            # Compute PRESS for each Yhat for 1, 2, 3, etc number of components
-            # and compute explained variance
+            # -----------------------------------------------------------------
+            # Compute PRESSCV and MSECV for each Yhat for 1, 2, 3, etc number  
+            # of components and compute explained variance
             for ind, yhat in enumerate(self.valYpredList):
-                diffy = self.vecy_input - yhat
-                PRESS = np.sum(np.square(diffy), axis=0)
-                self.PRESSCVdict[ind+1] = float(PRESS)
-                        
-            # Now store all PRESS values into an array. Then compute MSECV and
-            # RMSECV.
-            self.PRESSCVarr = np.array(self.PRESSCVdict.values())
-            self.MSECVarr = self.PRESSCVarr / np.shape(self.vecy_input)[0]
-            self.RMSECVarr = np.sqrt(self.MSECVarr)
-            # -----------------------------------------------------------------
+                diffy = st.centre(self.vecy_input) - st.centre(yhat)
+                PRESSCV = np.sum(np.square(diffy))
+                self.PRESSCV_total_dict[ind+1] = PRESSCV
+                self.MSECV_total_dict[ind+1] = PRESSCV / \
+                        np.shape(self.vecy_input)[0]
             
-            # -----------------------------------------------------------------
-            # Collect MSECV in a dictionary. Also,
-            # compute total validated explained variance in Y.             
-            self.MSECVdict = {}
-            MSECV0 = self.MSECVarr[0]
-
-            # Compute total validated explained variance in Y
+            # Compute total validated explained variance in Y        
+            self.MSECV_total_list = self.MSECV_total_dict.values()
+            
             self.YcumValExplVarList = []
-            for ind, MSECV in enumerate(self.MSECVarr):
-                perc = (MSECV0 - MSECV) / MSECV0 * 100
-                self.MSECVdict[ind] = MSECV
+            for ind, MSECV in enumerate(self.MSECV_total_list):
+                perc = (MSECV_0 - MSECV) / MSECV_0 * 100
                 self.YcumValExplVarList.append(perc)
             
             # Construct list with total validated explained variance in Y
             self.YvalExplVarList = []
             for ind, item in enumerate(self.YcumValExplVarList):
                 if ind == len(self.YcumValExplVarList)-1: break
-                explVarComp = self.YcumValExplVarList[ind+1] - self.YcumValExplVarList[ind]
+                explVarComp = self.YcumValExplVarList[ind+1] - \
+                        self.YcumValExplVarList[ind]
                 self.YvalExplVarList.append(explVarComp)
             # -----------------------------------------------------------------
             
             # -----------------------------------------------------------------
             # Compute total RMSECV and store values in a dictionary and list.            
-            self.RMSECVdict = {}
-            for ind, RMSECV in enumerate(self.RMSECVarr):
-                self.RMSECVarr[ind] = RMSECV
+            self.RMSECV_total_dict = {}
+            self.RMSECV_total_list = np.sqrt(self.MSECV_total_list)
+            
+            for ind, RMSECV in enumerate(self.RMSECV_total_list):
+                self.RMSECV_total_dict[ind] = RMSECV
             # -----------------------------------------------------------------
-                
-                
+            
+            # -----------------------------------------------------------------
+            self.PRESSCVarr = np.array(self.PRESSCV_total_dict.values())
+            self.MSECVarr = np.array(self.MSECV_total_dict.values())
+            self.RMSECVarr = np.array(self.RMSECV_total_dict.values())
+            # -----------------------------------------------------------------
+            
+
+            # ========== COMPUTATIONS FOR X ============
+            # -----------------------------------------------------------------
+            # Convert vectors from CV segments stored in lists into matrices 
+            # for each PC            
+            for key in self.valXpredDict:
+                self.valXpredDict[key] = np.array(self.valXpredDict[key])
+            self.valXpredList = self.valXpredDict.values()
+            # -----------------------------------------------------------------
+            
+            # -----------------------------------------------------------------
+            # Collect all PRESSCV for individual variables in X in a dictionary. 
+            # Keys represent number of component.            
+            self.PRESSCVdict_indVar_X = {}
+            
+            # First compute PRESSCV for zero components            
+            varX = np.var(self.arrX_input, axis=0, ddof=1)
+            PRESSCV_0_indVar_X = (varX * np.square(np.shape(self.arrX_input)[0])) \
+                    / (np.shape(x_train)[0])
+            self.PRESSCVdict_indVar_X[0] = PRESSCV_0_indVar_X
+            
+            # Compute PRESS for each Xhat for 1, 2, 3, etc number of components
+            # and compute explained variance
+            for ind, Xhat in enumerate(self.valXpredList):
+                diffX = st.centre(self.arrX_input) - st.centre(Xhat)
+                PRESSCV_indVar_X = np.sum(np.square(diffX), axis=0)
+                self.PRESSCVdict_indVar_X[ind+1] = PRESSCV_indVar_X
+                        
+            # Now store all PRESSE values into an array. Then compute MSEE and
+            # RMSEE.
+            self.PRESSCVarr_indVar_X = np.array(self.PRESSCVdict_indVar_X.values())
+            self.MSECVarr_indVar_X = self.PRESSCVarr_indVar_X / \
+                    np.shape(self.arrX_input)[0]
+            self.RMSECVarr_indVar_X = np.sqrt(self.MSECVarr_indVar_X)
+            # -----------------------------------------------------------------
+            
+            # -----------------------------------------------------------------
+            # Compute explained variance for each variable in X using the
+            # MSEP for each variable. Also collect PRESS, MSECV, RMSECV in 
+            # their respective dictionaries for each variable. Keys represent 
+            # now variables and NOT components as above with 
+            # self.PRESSdict_indVar
+            self.cumValExplVarXarr_indVar = np.zeros(np.shape(self.MSECVarr_indVar_X))
+            MSECV_0_indVar_X = self.MSECVarr_indVar_X[0,:]
+            
+            for ind, MSECV_indVar_X in enumerate(self.MSECVarr_indVar_X):
+                explVar = (MSECV_0_indVar_X - MSECV_indVar_X) / MSECV_0_indVar_X * 100
+                self.cumValExplVarXarr_indVar[ind] = explVar
+                        
+            self.PRESSCV_indVar_X = {}
+            self.MSECV_indVar_X = {}
+            self.RMSECV_indVar_X = {}
+            self.cumValExplVarX_indVar = {}
+            
+            for ind in range(np.shape(self.PRESSCVarr_indVar_X)[1]):
+                self.PRESSCV_indVar_X[ind] = self.PRESSCVarr_indVar_X[:,ind]
+                self.MSECV_indVar_X[ind] = self.MSECVarr_indVar_X[:,ind]
+                self.RMSECV_indVar_X[ind] = self.RMSECVarr_indVar_X[:,ind]
+                self.cumValExplVarX_indVar[ind] = self.cumValExplVarXarr_indVar[:,ind]
+            # -----------------------------------------------------------------
+            
+            # -----------------------------------------------------------------
+            # Collect total PRESSCV across all variables in a dictionary.
+            self.PRESSCV_total_dict_X = {}
+            self.PRESSCV_total_list_X = np.sum(self.PRESSCVarr_indVar_X, axis=1)
+            
+            for ind, PRESSCV_X in enumerate(self.PRESSCV_total_list_X):
+                self.PRESSCV_total_dict_X[ind] = PRESSCV_X
+            # -----------------------------------------------------------------
+            
+            # -----------------------------------------------------------------
+            # Collect total MSECV across all variables in a dictionary. Also,
+            # compute total validated explained variance in X.             
+            self.MSECV_total_dict_X = {}
+            self.MSECV_total_list_X = np.sum(self.MSECVarr_indVar_X, axis=1) / \
+                    np.shape(self.arrX_input)[1]
+            MSECV_0_X = self.MSECV_total_list_X[0]
+
+            # Compute total validated explained variance in X
+            self.XcumValExplVarList = []
+            for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
+                perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
+                self.MSECV_total_dict_X[ind] = MSECV_X
+                self.XcumValExplVarList.append(perc)
+            
+            # Construct list with total validated explained variance in X in 
+            # each component
+            self.XvalExplVarList = []
+            for ind, item in enumerate(self.XcumValExplVarList):
+                if ind == len(self.XcumValExplVarList)-1: break
+                explVarComp = self.XcumValExplVarList[ind+1] - \
+                        self.XcumValExplVarList[ind]
+                self.XvalExplVarList.append(explVarComp)
+            # -----------------------------------------------------------------
+            
+            # -----------------------------------------------------------------
+            # Compute total RMSECV and store values in a dictionary and list.            
+            self.RMSECV_total_dict_X = {}
+            self.RMSECV_total_list_X = np.sqrt(self.MSECV_total_list_X)
+            
+            for ind, RMSECV_X in enumerate(self.RMSECV_total_list_X):
+                self.RMSECV_total_dict_X[ind] = RMSECV_X
+            # -----------------------------------------------------------------
     
-    
-    
-    def results(self):
-        resDict = {}
-        resDict['X'] = self.arrX
-        resDict['y'] = self.vecy
-        resDict['T'] = self.x_scoresList
-        resDict['P'] = self.x_loadingsList
-        resDict['Q'] = self.y_loadingsList
-        resDict['W'] = self.x_loadingsWeightsList
-        
-        return resDict
     
         
     def modelSettings(self):
@@ -710,45 +920,38 @@ class nipalsPLS1:
         return settingsDict
     
     
-    def Xscores(self):
+    def X_means(self):
+        """
+        Returns an array holding the column means of X. 
+        """
+        return np.average(self.arrX_input, axis=0).reshape(1,-1)
+    
+    
+    def X_scores(self):
         """
         Returns an array holding X scores. First column for component 1, etc.
         """
         return self.arrT
     
     
-    def Xloadings(self):
+    def X_loadings(self):
         """
         Returns an array holding X loadings. First column for component 1, etc.
         """
         return self.arrP
     
     
-    def Yscores(self):
-        """
-        Returns an array holding Y scores. First column for component 1, etc.
-        """
-        return self.arrU
-    
-    
-    def Yloadings(self):
-        """
-        Returns an array holding Y loadings. First column for component 1, etc.
-        """
-        return self.arrQ
-    
-    
-    def XloadingsWeights(self):
+    def X_loadingsWeights(self):
         """
         Returns an array holding X loadings weights.
         """
         return self.arrW
     
     
-    def XcorrLoadings(self):
+    def X_corrLoadings(self):
         """
-        Returns correlation loadings. First column holds correlation loadings
-        for PC1, second column holds scores for PC2, etc.
+        Returns array holding correlation loadings for X. First column holds
+         correlation loadings for PC1, second column holds scores for PC2, etc.
         """
 
         # Creates empty matrix for correlation loadings
@@ -771,10 +974,215 @@ class nipalsPLS1:
         return self.arr_XcorrLoadings
     
     
-    def YcorrLoadings(self):
+    def X_residuals(self):
         """
-        Returns correlation loadings. First column holds correlation loadings
-        for PC1, second column holds scores for PC2, etc.
+        Returns list of arrays holding residuals E of X after each component.
+        """
+        # Create empty dictionary that will hold residuals
+        X_residualsDict = {}
+        
+        # Fill dictionary with residuals arrays from residuals list
+        for ind, item in enumerate(self.X_residualsList):
+            X_residualsDict[ind] = item
+        
+        return X_residualsDict
+    
+    
+    def X_calExplVar(self):
+        """
+        Returns list holding calibrated explained variance for each PC in X.
+        """
+        return self.XcalExplVarList
+        return self.Xcal
+    
+    
+    def X_cumCalExplVar_indVar(self):
+        """
+        Returns array holding cumulative validated explained variance in X for
+        each variable. Cols represent variables in X. Rows represent number of
+        components.
+        """
+        return self.cumCalExplVarXarr_indVar
+    
+    
+    def X_cumCalExplVar(self):
+        """
+        Returns list holding cumulative calibrated explained variance in X.
+        """
+        return self.XcumCalExplVarList
+    
+    
+    def X_predCal(self):
+        """
+        Returns dictionary holding arrays of predicted Xhat after each component 
+        from calibration. Dictionary key represents order of PC. Yhat is 
+        computed with Xhat = T*P'
+        """
+        return self.calXpredDict
+    
+    
+    def X_PRESSE_indVar(self):
+        """
+        Returns array holding PRESSE for each individual variable acquired
+        through calibration after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """
+        return self.PRESSEarr_indVar_X
+    
+    
+    def X_PRESSE(self):
+        """
+        Returns an array holding PRESS across all variables in X acquired  
+        through calibration after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.PRESSE_total_list_X
+    
+    
+    def X_MSEE_indVar(self):
+        """
+        Returns an arrary holding MSE from calibration for each variable in X. 
+        First row is MSE for zero components, second row for component 1, etc.
+        """
+        return self.MSEEarr_indVar_X
+    
+    
+    def X_MSEE(self):
+        """
+        Returns an array holding MSE across all variables in X acquired through 
+        calibration after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.MSEE_total_list_X
+    
+    
+    def X_RMSEE_indVar(self):
+        """
+        Returns an arrary holding RMSE from calibration for each variable in X. 
+        First row is MSE for zero components, second row for component 1, etc.
+        """
+        return self.RMSEEarr_indVar_X
+    
+    
+    def X_RMSEE(self):
+        """
+        Returns an array holding RMSE across all variables in X acquired through 
+        calibration after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.RMSEE_total_list_X
+    
+    
+    def X_valExplVar(self):
+        """
+        Returns list holding calibrated explained variance for each PC in X.
+        """
+        return  self.XvalExplVarList
+    
+    
+    def X_cumValExplVar_indVar(self):
+        """
+        Returns array holding cumulative validated explained variance in X for
+        each variable. Rows represent variables in X. Rows represent number of
+        components.
+        """
+        return self.cumValExplVarXarr_indVar
+    
+    
+    def X_cumValExplVar(self):
+        """
+        Returns list holding cumulative calibrated explained variance in X.
+        """
+        return self.XcumValExplVarList
+    
+    
+    def X_predVal(self):
+        """
+        Returns dictionary holding arrays of predicted Xhat after each  
+        component from cross validation. Dictionary key represents order of PC.
+        """
+        return self.valXpredDict
+    
+    
+    def X_PRESSCV_indVar(self):
+        """
+        Returns array holding PRESS for each individual variable in X acquired
+        through cross validation after each computed PC. First row is PRESS for
+        zero components, second row component 1, third row for component 2, etc.
+        """
+        return self.PRESSCVarr_indVar_X
+    
+    
+    def X_PRESSCV(self):
+        """
+        Returns an array holding PRESS across all variables in X acquired  
+        through cross validation after each computed PC. First row is PRESS for 
+        zero components, second row component 1, third row for component 2, etc.
+        """   
+        return self.PRESSCV_total_list_X
+    
+    
+    def X_MSECV_indVar(self):
+        """
+        Returns an arrary holding MSE from cross validation for each variable  
+        in X. First row is MSE for zero components, second row for component 1, 
+        etc.
+        """
+        return self.MSECVarr_indVar_X
+    
+    
+    def X_MSECV(self):
+        """
+        Returns an array holding MSE across all variables in X acquired through 
+        cross validation after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.MSECV_total_list_X
+    
+    
+    def X_RMSECV_indVar(self):
+        """
+        Returns an arrary holding RMSE from cross validation for each variable
+        in X. First row is MSE for zero components, second row for component 1, 
+        etc.
+        """
+        return self.RMSECVarr_indVar_X
+    
+    
+    def X_RMSECV(self):
+        """
+        Returns an array holding RMSE across all variables in X acquired through 
+        cross validation after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.RMSECV_total_list_X
+    
+    
+    def Y_means(self):
+        """
+        Returns an array holding the column means of Y. 
+        """
+        return np.average(self.vecy_input)
+    
+    
+    def Y_scores(self):
+        """
+        Returns Y scores (NOT IMPLEMENTED YET)
+        """
+        return None
+    
+    
+    def Y_loadings(self):
+        """
+        Returns an array holding Y loadings. First column for component 1, etc.
+        """
+        return self.arrQ
+    
+    
+    def Y_corrLoadings(self):
+        """
+        Returns array holding correlation loadings for Y. First column holds 
+        correlation loadings for PC1, second column holds scores for PC2, etc.
         """
 
         # Creates empty matrix for correlation loadings
@@ -797,132 +1205,114 @@ class nipalsPLS1:
         return self.arr_ycorrLoadings
     
     
-    def Yresiduals(self):
+    def Y_residuals(self):
         """
-        Returns list holding residuals F of Y after each component.
+        Returns list of arrays holding residuals F of Y after each component.
         """
-        return self.Y_residualsList
+        Y_residualsDict = {}
+        for ind, item in enumerate(self.Y_residualsList):
+            Y_residualsDict[ind] = item
+        return Y_residualsDict
     
     
-    def Xresiduals(self):
-        """
-        Returns list holding  residuals E of X after each component.
-        """
-        return self.X_residualsList
-    
-    
-    def Xmeans(self):
-        """
-        Returns a vector holding the column means of X. 
-        """
-        return np.average(self.arrX_input, axis=0)
-    
-    
-    def Ymeans(self):
-        """
-        Returns a vector holding the column means of Y. 
-        """
-        return np.average(self.vecy_input)
-    
-    
-    def XpredCal(self):
-        """
-        Returns dictionary holding arrays of predicted Xhat after each component 
-        from calibration. Dictionary key represents order of PC. Yhat is 
-        computed with Xhat = T*P'
-        """
-        return self.calXpredDict
-    
-    
-    def YpredCal(self):
-        """
-        Returns dictionary holding arrays of predicted Yhat after each component 
-        from calibration. Dictionary key represents order of PC. Yhat is 
-        computed with Yhat = T*Chat*Q'
-        """
-        return self.calYpredDict
-    
-    
-    def YcalExplVar_tot_list(self):
+    def Y_calExplVar(self):
         """
         Returns list holding calibrated explained variance for each PC in Y.
         """
         return self.YcalExplVarList
     
     
-    def YcumCalExplVar_tot_list(self):
+    def Y_cumCalExplVar(self):
         """
         Returns list holding cumulative calibrated explained variance in Y.
         """
         return self.YcumCalExplVarList
     
     
-    def XcalExplVar_tot_list(self):
+    def Y_predCal(self):
         """
-        Returns list holding calibrated explained variance for each PC in X.
+        Returns dictionary holding arrays of predicted Yhat after each component 
+        from calibration. Dictionary key represents order of PC.
         """
-        return self.XcalExplVarList
+        return self.calYpredDict
     
     
-    def XcumCalExplVar_tot_list(self):
+    def Y_PRESSE(self):
         """
-        Returns list holding cumulative calibrated explained variance in X.
-        """
-        return self.XcumCalExplVarList
-    
-    
-    def PRESSE_tot_list(self):
-        """
-        Returns an array holding PRESS of all variables in Y acquired through 
-        calibration after each computed PC. First row is PRESS for zero
+        Returns an array holding PRESS across all variables in Y acquired  
+        through calibration after each computed PC. First row is PRESS for zero
         components, second row component 1, third row for component 2, etc.
         """   
         return self.PRESSEarr
     
     
-    def PRESSE_tot_dict(self):
+    def Y_MSEE(self):
         """
-        Returns a dictionary holding PRESS off all variables in Y acquire
-        through cross validation after each computed PC. Dictionary key 
-        represents order of variable in Y.
-        """
-        return self.PRESSEdict
-    
-    
-    def MSEE_tot_list(self):
-        """
-        Returns an array holding MSECV of all variables in Y acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
+        Returns an array holding MSE across all variables in Y acquired through 
+        calibration after each computed PC. First row is PRESS for zero
         components, second row component 1, third row for component 2, etc.
         """   
         return self.MSEEarr
     
     
-    def MSEE_tot_dict(self):
+    def Y_RMSEE(self):
         """
-        Returns a dictionary holding MSEP from cross validation after each
-        computed PC. Dictionary key represents order of variable in Y.
-        """   
-        return self.MSEEdict
-    
-    
-    def RMSEE_tot_list(self):
-        """
-        Returns an array holding MSECV of all variables in Y acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
+        Returns an array holding RMSE across all variables in Y acquired  
+        through calibration after each computed PC. First row is RMSE for zero
         components, second row component 1, third row for component 2, etc.
         """   
         return self.RMSEEarr
     
     
-    def RMSEE_tot_dict(self):
+    def Y_valExplVar(self):
         """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of variable in Y.
+        Returns list holding calibrated explained variance for each PC in Y.
+        """
+        return  self.YvalExplVarList
+    
+    
+    def Y_cumValExplVar(self):
+        """
+        Returns list holding cumulative calibrated explained variance in Y.
+        """
+        return self.YcumValExplVarList
+    
+    
+    def Y_predVal(self):
+        """
+        Returns dictionary holding arrays of predicted Yhat after each  
+        component from cross validation. Dictionary key represents order of PC.
+        """
+        return self.valYpredDict
+    
+    
+    def Y_PRESSCV(self):
+        """
+        Returns an array holding PRESS across all variables in Y acquired  
+        through cross validation after each computed PC. First row is PRESS for
+        zero components, second row component 1, third row for component 2, etc.
         """   
-        return self.RMSEEdict
-
-
+        return self.PRESSCVarr
+    
+    
+    def Y_MSECV(self):
+        """
+        Returns an array holding MSECV across all variables in Y acquired  
+        through cross validation after each computed PC. First row is PRESS for 
+        zero components, second row component 1, third row for component 2, etc.
+        """   
+        return self.MSECVarr
+    
+    
+    def Y_RMSECV(self):
+        """
+        Returns an array holding MSECV across all variables in Y acquired  
+        through cross validation after each computed PC. First row is PRESS for 
+        zero components, second row component 1, third row for component 2, etc.
+        """   
+        return self.RMSECVarr
+            
+    
     def corrLoadingsEllipses(self):
         """
         Returns the ellipses that represent 50% and 100% expl. variance in
@@ -957,80 +1347,6 @@ class nipalsPLS1:
         sets.
         """
         return self.cvTrainAndTestDataList
-
-
-    def YpredVal(self):
-        """
-        Returns dictionary holding arrays of predicted Yhat after each component 
-        from validation. Dictionary key represents order of PC.
-        """
-        return self.valYpredDict
-    
-    
-    def YcumValExplVar_tot_list(self):
-        """
-        Returns list holding cumulative calibrated explained variance in Y.
-        """
-        return self.YcumValExplVarList
-    
-    
-    def YvalExplVar_tot_list(self):
-        """
-        Returns list holding calibrated explained variance for each PC in Y.
-        """
-        return  self.YvalExplVarList
-    
-    
-    def PRESSCV_tot_list(self):
-        """
-        Returns an array holding PRESS of all variables in Y acquired through 
-        calibration after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
-        """   
-        return self.PRESSCVarr
-    
-    
-    def PRESSCV_tot_dict(self):
-        """
-        Returns a dictionary holding PRESS off all variables in Y acquire
-        through cross validation after each computed PC. Dictionary key 
-        represents order of variable in Y.
-        """
-        return self.PRESSCVdict
-    
-    
-    def MSECV_tot_list(self):
-        """
-        Returns an array holding MSECV of all variables in Y acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
-        """   
-        return self.MSECVarr
-    
-    
-    def MSECV_tot_dict(self):
-        """
-        Returns a dictionary holding MSEP from cross validation after each
-        computed PC. Dictionary key represents order of variable in Y.
-        """   
-        return self.MSECVdict
-    
-    
-    def RMSECV_tot_list(self):
-        """
-        Returns an array holding MSECV of all variables in Y acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
-        """   
-        return self.RMSECVarr
-    
-    
-    def RMSECV_tot_dict(self):
-        """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of variable in Y.
-        """   
-        return self.RMSECVdict
     
 
 
@@ -1110,9 +1426,10 @@ class nipalsPLS2:
             self.arrY = self.arrY_input - Ymeans
         
         
-        # Check whether cvType is provided. If NOT, then use "loo" by default.
+        # Check whether cvType is provided. If NOT, then no cross validation
+        # is carried out.
         if 'cvType' not in kargs.keys():
-            self.cvType = ["loo"]
+            self.cvType = None
         else:
             self.cvType = kargs['cvType']
         
@@ -1211,10 +1528,10 @@ class nipalsPLS2:
         self.arrW = np.array(np.transpose(self.x_loadingsWeightsList))
         self.arrC = np.eye(self.numPC) * np.array(np.transpose(self.coeffList))
         
-
-
+        
+        
+        # ========== COMPUTATIONS FOR Y ============
         # ---------------------------------------------------------------------
-        # === COMPUTATIONS FOR Y =====
         # Create a list holding arrays of Yhat predicted calibration after each 
         # component. Yhat is computed with Yhat = T*Chat*Q'  
         self.calYpredList = []
@@ -1228,47 +1545,118 @@ class nipalsPLS2:
             # Depending on whether Y was standardised or not compute Yhat
             # accordingly.            
             if self.Ystand == True:
-                Yhat_stand = np.dot(np.dot(x_scores, c_regrCoeff), np.transpose(y_loadings))
+                Yhat_stand = np.dot(np.dot(x_scores, c_regrCoeff), \
+                        np.transpose(y_loadings))
                 Yhat = (Yhat_stand * Ystd.reshape(1,-1)) + Ymeans.reshape(1,-1)
             else:
-                Yhat = np.dot(np.dot(x_scores, c_regrCoeff), np.transpose(y_loadings)) \
-                        + Ymeans
+                Yhat = np.dot(np.dot(x_scores, c_regrCoeff), \
+                        np.transpose(y_loadings)) + Ymeans            
             self.calYpredList.append(Yhat)
-            
+        # ---------------------------------------------------------------------
+                
+        # ---------------------------------------------------------------------
+        # Collect all PRESSE for individual variables in a dictionary. 
+        # Keys represent number of component.            
+        self.PRESSEdict_indVar = {}
         
-        # Construct a list that holds cumulative calibrated explained variance
-        # in Y.
-        # First compute MSEE for zero components
-        Y_cent = st.centre(self.arrY_input)
-        firstMSEE = np.sum(np.square(Y_cent))
-        self.YcumCalExplVarList = [0]
+        # Compute PRESS for calibration / estimation
+        PRESSE_0_indVar = np.sum(np.square(st.centre(self.arrY_input)), axis=0)
+        self.PRESSEdict_indVar[0] = PRESSE_0_indVar
         
-        # Compute MSEE for each Yhat for 1, 2, 3, etc number of components and
-        # compute explained variance
-        for Yhat in self.calYpredList:
-            diffY = Y_cent - st.centre(Yhat)
-            MSEE = np.sum(np.square(diffY))
-            self.YcumCalExplVarList.append((firstMSEE - MSEE) / firstMSEE * 100)
+        # Compute PRESS for each Yhat for 1, 2, 3, etc number of components
+        # and compute explained variance
+        for ind, Yhat in enumerate(self.calYpredList):
+            diffY = st.centre(self.arrY_input) - st.centre(Yhat)
+            PRESSE_indVar = np.sum(np.square(diffY), axis=0)
+            self.PRESSEdict_indVar[ind+1] = PRESSE_indVar
+                    
+        # Now store all PRESSE values into an array. Then compute MSEE and
+        # RMSEE.
+        self.PRESSEarr_indVar = np.array(self.PRESSEdict_indVar.values())
+        self.MSEEarr_indVar = self.PRESSEarr_indVar / \
+                np.shape(self.arrY_input)[0]
+        self.RMSEEarr_indVar = np.sqrt(self.MSEEarr_indVar)
+        # ---------------------------------------------------------------------
         
+        # ---------------------------------------------------------------------
+        # Compute explained variance for each variable in Y using the
+        # MSEP for each variable. Also collect PRESSE, MSEE, RMSEE in 
+        # their respective dictionaries for each variable. Keys represent 
+        # now variables and NOT components as above with 
+        # self.PRESSEdict_indVar
+        self.cumCalExplVarYarr_indVar = np.zeros(np.shape(self.MSEEarr_indVar))
+        MSEE_0_indVar = self.MSEEarr_indVar[0,:]
         
-        # Construct a list that holds calibrated explained variance in Y
+        for ind, MSEE_indVar in enumerate(self.MSEEarr_indVar):
+            explVar = (MSEE_0_indVar - MSEE_indVar) / MSEE_0_indVar * 100
+            self.cumCalExplVarYarr_indVar[ind] = explVar
+                    
+        self.PRESSE_indVar = {}
+        self.MSEE_indVar = {}
+        self.RMSEE_indVar = {}
+        self.cumCalExplVarY_indVar = {}
+        
+        for ind in range(np.shape(self.PRESSEarr_indVar)[1]):
+            self.PRESSE_indVar[ind] = self.PRESSEarr_indVar[:,ind]
+            self.MSEE_indVar[ind] = self.MSEEarr_indVar[:,ind]
+            self.RMSEE_indVar[ind] = self.RMSEEarr_indVar[:,ind]
+            self.cumCalExplVarY_indVar[ind] = self.cumCalExplVarYarr_indVar[:,ind]
+        # ---------------------------------------------------------------------
+        
+        # ---------------------------------------------------------------------
+        # Collect total PRESSE across all variables in a dictionary. Also,
+        # compute total calibrated explained variance in Y.
+        self.PRESSE_total_dict = {}
+        self.PRESSE_total_list = np.sum(self.PRESSEarr_indVar, axis=1)
+        
+        for ind, PRESSE in enumerate(self.PRESSE_total_list):
+            self.PRESSE_total_dict[ind] = PRESSE
+        # ---------------------------------------------------------------------        
+                
+        # ---------------------------------------------------------------------
+        # Collect total MSEE across all variables in a dictionary. Also,
+        # compute total calibrated explained variance in Y.             
+        self.MSEE_total_dict = {}
+        self.MSEE_total_list = np.sum(self.MSEEarr_indVar, axis=1) / \
+                np.shape(self.arrY_input)[1]
+        MSEE_0 = self.MSEE_total_list[0]
+
+        # Compute total calibrated explained variance in Y
+        self.YcumCalExplVarList = []
+        for ind, MSEE in enumerate(self.MSEE_total_list):
+            perc = (MSEE_0 - MSEE) / MSEE_0 * 100
+            self.MSEE_total_dict[ind] = MSEE
+            self.YcumCalExplVarList.append(perc)
+        
+        # Construct list with total validated explained variance in Y
         self.YcalExplVarList = []
         for ind, item in enumerate(self.YcumCalExplVarList):
             if ind == len(self.YcumCalExplVarList)-1: break
-            explVarComp = self.YcumCalExplVarList[ind+1] - self.YcumCalExplVarList[ind]
+            explVarComp = self.YcumCalExplVarList[ind+1] - \
+                    self.YcumCalExplVarList[ind]
             self.YcalExplVarList.append(explVarComp)
-        
-        
+
         # Construct a dictionary that holds predicted Y (Yhat) from calibration
         # for each number of components.
         self.calYpredDict = {}
         for ind, item in enumerate(self.calYpredList):
-            self.calYpredDict[ind+1] = item             
+            self.calYpredDict[ind+1] = item 
+        # ---------------------------------------------------------------------
+        
+        # ---------------------------------------------------------------------
+        # Compute total RMSEP and store values in a dictionary and list.            
+        self.RMSEE_total_dict = {}
+        self.RMSEE_total_list = np.sqrt(self.MSEE_total_list)
+        
+        for ind, RMSEE in enumerate(self.RMSEE_total_list):
+            self.RMSEE_total_dict[ind] = RMSEE
         # ---------------------------------------------------------------------
         
         
+        
+        
+        # ========== COMPUTATIONS FOR X ==========
         # ---------------------------------------------------------------------
-        # === COMPUTATIONS FOR X ===
         # Create a list holding arrays of Xhat predicted calibration after each 
         # component. Xhat is computed with Xhat = T*P'
         self.calXpredList = []
@@ -1285,115 +1673,115 @@ class nipalsPLS2:
             else:
                 Xhat = predXcal + Xmeans
             self.calXpredList.append(Xhat)
-        
-        
-        # Construct a dictionary that holds predicted X (Xhat) from calibration
-        # for each number of components.
-        self.calXpredDict = {} 
-        
-        for ind, item in enumerate(self.calXpredList):
-            self.calXpredDict[ind+1] = item
-        
-        # Construct a list that holds cumulative calibrated explained variance
-        # in X.
-        # First compute MSEE for zero components
-        X_cent = st.centre(self.arrX_input)
-        firstMSEE = np.sum(np.square(X_cent))
-        self.XcumCalExplVarList = [0]
-        
-        # Compute MSEE for each Yhat for 1, 2, 3, etc number of components and
-        # compute explained variance
-        for Xhat in self.calXpredList:
-            diffX = X_cent - st.centre(Xhat)
-            MSEE = np.sum(np.square(diffX))
-            self.XcumCalExplVarList.append((firstMSEE - MSEE) / firstMSEE * 100)
-        
-        
-        # Construct a list that holds calibrated explained variance in X
-        self.XcalExplVarList = []
-        for ind, item in enumerate(self.XcumCalExplVarList):
-            if ind == len(self.XcumCalExplVarList)-1: break
-            explVarComp = self.XcumCalExplVarList[ind+1] - self.XcumCalExplVarList[ind]
-            self.XcalExplVarList.append(explVarComp)
         # ---------------------------------------------------------------------
         
-        
         # ---------------------------------------------------------------------
-        # Collect all PRESSE in a dictionary. Keys represent number of 
-        # component.            
-        self.PRESSEdict_indVar = {}
+        # Collect all PRESSE for individual variables in a dictionary. 
+        # Keys represent number of component.            
+        self.PRESSEdict_indVar_X = {}
         
         # Compute PRESS for calibration / estimation
-        PRESSE_0 = np.sum(np.square(self.arrY), axis=0)
-        self.PRESSEdict_indVar[0] = PRESSE_0
+        PRESSE_0_indVar_X = np.sum(np.square(st.centre(self.arrX_input)), axis=0)
+        self.PRESSEdict_indVar_X[0] = PRESSE_0_indVar_X
         
-        # Compute PRESS for each Yhat for 1, 2, 3, etc number of components
+        # Compute PRESS for each Xhat for 1, 2, 3, etc number of components
         # and compute explained variance
-        for ind, Yhat in enumerate(self.calYpredList):
-            diffY = self.arrY_input - Yhat
-            PRESSE = np.sum(np.square(diffY), axis=0)
-            self.PRESSEdict_indVar[ind+1] = PRESSE
+        for ind, Xhat in enumerate(self.calXpredList):
+            diffX = st.centre(self.arrX_input) - st.centre(Xhat)
+            PRESSE_indVar_X = np.sum(np.square(diffX), axis=0)
+            self.PRESSEdict_indVar_X[ind+1] = PRESSE_indVar_X
                     
         # Now store all PRESSE values into an array. Then compute MSEE and
         # RMSEE.
-        self.PRESSEarr_indVar = np.array(self.PRESSEdict_indVar.values())
-        self.MSEEarr_indVar = self.PRESSEarr_indVar / np.shape(self.arrY_input)[0]
-        self.RMSEEarr_indVar = np.sqrt(self.MSEEarr_indVar)
+        self.PRESSEarr_indVar_X = np.array(self.PRESSEdict_indVar_X.values())
+        self.MSEEarr_indVar_X = self.PRESSEarr_indVar_X / \
+                np.shape(self.arrX_input)[0]
+        self.RMSEEarr_indVar_X = np.sqrt(self.MSEEarr_indVar_X)
         # ---------------------------------------------------------------------
         
-        # -----------------------------------------------------------------
-        # Compute explained variance for each variable in Y using the
+        # ---------------------------------------------------------------------
+        # Compute explained variance for each variable in X using the
         # MSEP for each variable. Also collect PRESSE, MSEE, RMSEE in 
         # their respective dictionaries for each variable. Keys represent 
         # now variables and NOT components as above with 
-        # self.PRESSEdict_indVar
-        self.cumCalExplVarYarr_indVar = np.zeros(np.shape(self.MSEEarr_indVar))
-        MSEE_0 = self.MSEEarr_indVar[0,:]
+        # self.PRESSEdict_indVar_X
+        self.cumCalExplVarXarr_indVar = np.zeros(np.shape(self.MSEEarr_indVar_X))
+        MSEE_0_indVar_X = self.MSEEarr_indVar_X[0,:]
         
-        for ind, item in enumerate(self.MSEEarr_indVar):
-            MSEE = item
-            explVar = (MSEE_0 - MSEE) / MSEE_0 * 100
-            self.cumCalExplVarYarr_indVar[ind] = explVar
+        for ind, MSEE_indVar_X in enumerate(self.MSEEarr_indVar_X):
+            explVar = (MSEE_0_indVar_X - MSEE_indVar_X) / MSEE_0_indVar_X * 100
+            self.cumCalExplVarXarr_indVar[ind] = explVar
                     
-        self.PRESSE_indVar = {}
-        self.MSEE_indVar = {}
-        self.RMSEE_indVar = {}
-        self.cumCalExplVarY_indVar = {}
+        self.PRESSE_indVar_X = {}
+        self.MSEE_indVar_X = {}
+        self.RMSEE_indVar_X = {}
+        self.cumCalExplVarX_indVar = {}
         
-        for ind in range(np.shape(self.PRESSEarr_indVar)[1]):
-            self.PRESSE_indVar[ind] = self.PRESSEarr_indVar[:,ind]
-            self.MSEE_indVar[ind] = self.MSEEarr_indVar[:,ind]
-            self.RMSEE_indVar[ind] = self.RMSEEarr_indVar[:,ind]
-            self.cumCalExplVarY_indVar[ind] = self.cumCalExplVarYarr_indVar[:,ind]
-        # -----------------------------------------------------------------
+        for ind in range(np.shape(self.PRESSEarr_indVar_X)[1]):
+            self.PRESSE_indVar_X[ind] = self.PRESSEarr_indVar_X[:,ind]
+            self.MSEE_indVar_X[ind] = self.MSEEarr_indVar_X[:,ind]
+            self.RMSEE_indVar_X[ind] = self.RMSEEarr_indVar_X[:,ind]
+            self.cumCalExplVarX_indVar[ind] = self.cumCalExplVarXarr_indVar[:,ind]
+        # ---------------------------------------------------------------------
         
-        # -----------------------------------------------------------------
-        # Collect total MSECV across all variables in a dictionary. Also,
-        # compute total validated explained variance in Y.             
-        self.MSEE_total_dict = {}
-        self.MSEE_total_list = np.sum(self.MSEEarr_indVar, axis=1) 
+        # ---------------------------------------------------------------------
+        # Collect total PRESSE across all variables in a dictionary. Also,
+        # compute total calibrated explained variance in Y.
+        self.PRESSE_total_dict_X = {}
+        self.PRESSE_total_list_X = np.sum(self.PRESSEarr_indVar_X, axis=1)
+        
+        for ind, PRESSE_X in enumerate(self.PRESSE_total_list_X):
+            self.PRESSE_total_dict_X[ind] = PRESSE_X
+        # ---------------------------------------------------------------------
+        
+        # ---------------------------------------------------------------------
+        # Collect total MSEE across all variables in a dictionary. Also,
+        # compute total validated explained variance in X.             
+        self.MSEE_total_dict_X = {}
+        self.MSEE_total_list_X = np.sum(self.MSEEarr_indVar_X, axis=1) / \
+                np.shape(self.arrX_input)[1]
+        MSEE_0_X = self.MSEE_total_list_X[0]
 
-        for ind, MSEE in enumerate(self.MSEE_total_list):
-            self.MSEE_total_dict[ind] = MSEE
-        # -----------------------------------------------------------------
+        # Compute total calibrated explained variance in X
+        self.XcumCalExplVarList = []
+        for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
+            perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
+            self.MSEE_total_dict_X[ind] = MSEE_X
+            self.XcumCalExplVarList.append(perc)
         
-        # -----------------------------------------------------------------
-        # Compute total RMSEP and store values in a dictionary and list.            
-        self.RMSEE_total_dict = {}
-        self.RMSEE_total_list = np.sqrt(self.MSEE_total_list)
-        
-        for ind, RMSEE in enumerate(self.RMSEE_total_list):
-            self.RMSEE_total_dict[ind] = RMSEE
-        # -----------------------------------------------------------------
+        # Construct list with total validated explained variance in X
+        self.XcalExplVarList = []
+        for ind, item in enumerate(self.XcumCalExplVarList):
+            if ind == len(self.XcumCalExplVarList)-1: break
+            explVarComp = self.XcumCalExplVarList[ind+1] - \
+                    self.XcumCalExplVarList[ind]
+            self.XcalExplVarList.append(explVarComp)
 
-#===============================================================================
+        # Construct a dictionary that holds predicted X (Xhat) from calibration
+        # for each number of components.
+        self.calXpredDict = {}
+        for ind, item in enumerate(self.calXpredList):
+            self.calXpredDict[ind+1] = item 
+        # ---------------------------------------------------------------------
+        
+        # ---------------------------------------------------------------------
+        # Compute total RMSEE and store values in a dictionary and list.            
+        self.RMSEE_total_dict_X = {}
+        self.RMSEE_total_list_X = np.sqrt(self.MSEE_total_list_X)
+        
+        for ind, RMSEE_X in enumerate(self.RMSEE_total_list_X):
+            self.RMSEE_total_dict_X[ind] = RMSEE_X
+        # ---------------------------------------------------------------------
+
+#==============================================================================
 #         Here starts the cross validation process
-#===============================================================================
+#==============================================================================
         
         # Check whether cross validation is required by user. If required,
         # check what kind and build training and test sets thereafter.        
         if self.cvType == None:
             pass
+            
         else:
             numObj = np.shape(self.arrY)[0]
             
@@ -1404,14 +1792,20 @@ class nipalsPLS2:
             elif self.cvType[0] == "lolo":
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
-                raise Exception('Requested form of cross validation is not available')
+                raise Exception('Available cross validations is: loo, lpo, lolo')
             
                         
             # Collect predicted y (i.e. yhat) for each CV segment in a  
-            # dictionary according to numer of PC
+            # dictionary according to nubmer of PC
             self.valYpredDict = {}
             for ind in range(1, self.numPC+1):
-                self.valYpredDict[ind] = []            
+                self.valYpredDict[ind] = []
+            
+            # Collect predicted x (i.e. xhat) for each CV segment in a
+            # dictionary according to number of PC
+            self.valXpredDict = {}
+            for ind in range(1, self.numPC+1):
+                self.valXpredDict[ind] = []
             
 
             # Collect train and test set in dictionaries for each PC and put
@@ -1566,10 +1960,12 @@ class nipalsPLS2:
                 t_list = []
                 for ind in range(self.numPC):
                     
-                    # Module 8: Prediction STEP 1                    
+                    # Module 8: Prediction STEP 1
+                    # ---------------------------
                     t = np.dot(x_new, val_arrW[:,ind]).reshape(-1,1)
                     
                     # Module 8: Prediction STEP 2
+                    # ---------------------------
                     p = val_arrP[:,ind].reshape(-1,1)                    
                     x_old = x_new
                     x_new = x_old - np.dot(t,np.transpose(p))
@@ -1583,15 +1979,21 @@ class nipalsPLS2:
                     # numpy, so matrix multiplication will be possible
                     # i.e from dimension (x,) to (1,x)                    
                     ytm = y_train_means.reshape(1,-1)
+                    xtm = x_train_means.reshape(1,-1)
                     
-                    # Get relevant part of C anc Q for specific number of PC's                   
+                    # Get relevant part of P, C anc Q for specific number of 
+                    # PC's
+                    part_val_arrP = val_arrP[:,0:ind+1]
                     part_val_arrQ = val_arrQ[:,0:ind+1]
                     part_val_arrC = val_arrC[0:ind+1,0:ind+1]
                     
-                    # Module 8: Prediction STEP 3                                        
+                    # Module 8: Prediction STEP 3 
+                    # ---------------------------                                       
+                    # First compute yhat                    
                     if self.Ystand == True:
                         tCQ = np.dot(np.dot(t_vec,part_val_arrC), \
-                                np.transpose(part_val_arrQ)) * y_train_std.reshape(1,-1)
+                                np.transpose(part_val_arrQ)) * \
+                                y_train_std.reshape(1,-1)
                     else:
                         tCQ = np.dot(np.dot(t_vec,part_val_arrC), \
                                 np.transpose(part_val_arrQ))
@@ -1599,12 +2001,27 @@ class nipalsPLS2:
                     yhat = ytm + tCQ
                     self.valYpredDict[ind+1].append(yhat.reshape(-1))
                     
+                    # Then compute xhat
+                    if self.Xstand == True:
+                        tP = np.dot(t_vec,np.transpose(part_val_arrP)) * \
+                                x_train_std.reshape(1,-1)
+                    else:
+                        tP = np.dot(t_vec, np.transpose(part_val_arrP))
+                    
+                    xhat = xtm + tP
+                    self.valXpredDict[ind+1].append(xhat.reshape(-1))
+                    
                         
             # Convert vectors from CV segments stored in lists into matrices 
             # for each PC            
             for key in self.valYpredDict:
                 self.valYpredDict[key] = np.array(self.valYpredDict[key])
             
+            for key in self.valXpredDict:
+                self.valXpredDict[key] = np.array(self.valXpredDict[key])
+            
+            
+            # ========== Computations for Y ==========
             # -----------------------------------------------------------------
             # Compute PRESSCV (PRediction Error Sum of Squares) for cross 
             # validation 
@@ -1614,24 +2031,24 @@ class nipalsPLS2:
             # component.            
             self.PRESSdict_indVar = {}
             
-            # First compute PRESSE for zero components            
+            # First compute PRESSCV for zero components            
             varY = np.var(self.arrY_input, axis=0, ddof=1)
-            self.PRESSCV_0 = (varY * np.square(np.shape(self.arrY_input)[0])) \
+            self.PRESSCV_0_indVar = (varY * np.square(np.shape(self.arrY_input)[0])) \
                     / (np.shape(x_train)[0])
-            self.PRESSdict_indVar[0] = self.PRESSCV_0
+            self.PRESSdict_indVar[0] = self.PRESSCV_0_indVar
             
             # Compute PRESSCV for each Yhat for 1, 2, 3, etc number of components
             # and compute explained variance
             for ind, Yhat in enumerate(self.valYpredList):
-                diffY = self.arrY_input - Yhat
-                #diffY = st.centre(self.arrY_input, axis=0) - st.centre(Yhat)
-                PRESSCV = np.sum(np.square(diffY), axis=0)
-                self.PRESSdict_indVar[ind+1] = PRESSCV
+                diffY = st.centre(self.arrY_input) - st.centre(Yhat)
+                PRESSCV_indVar = np.sum(np.square(diffY), axis=0)
+                self.PRESSdict_indVar[ind+1] = PRESSCV_indVar
                         
             # Now store all PRESSCV values into an array. Then compute MSECV and
             # RMSECV.
             self.PRESSCVarr_indVar = np.array(self.PRESSdict_indVar.values())
-            self.MSECVarr_indVar = self.PRESSCVarr_indVar / np.shape(self.arrY_input)[0]
+            self.MSECVarr_indVar = self.PRESSCVarr_indVar / \
+                    np.shape(self.arrY_input)[0]
             self.RMSECVarr_indVar = np.sqrt(self.MSECVarr_indVar)
             # -----------------------------------------------------------------
             
@@ -1642,11 +2059,10 @@ class nipalsPLS2:
             # now variables and NOT components as above with 
             # self.PRESSdict_indVar
             self.cumValExplVarYarr_indVar = np.zeros(np.shape(self.MSECVarr_indVar))
-            MSECV_0 = self.MSECVarr_indVar[0,:]
+            MSECV_0_indVar = self.MSECVarr_indVar[0,:]
             
-            for ind, item in enumerate(self.MSECVarr_indVar):
-                MSECV = item
-                explVar = (MSECV_0 - MSECV) / MSECV_0 * 100
+            for ind, MSECV_indVar in enumerate(self.MSECVarr_indVar):
+                explVar = (MSECV_0_indVar - MSECV_indVar) / MSECV_0_indVar * 100
                 self.cumValExplVarYarr_indVar[ind] = explVar
                         
             self.PRESSCV_indVar = {}
@@ -1662,13 +2078,12 @@ class nipalsPLS2:
             # -----------------------------------------------------------------
             
             # -----------------------------------------------------------------
-            # Collect total PRESSCV across all variables in a dictionary. Also,
-            # compute total validated explained variance in Y.
+            # Collect total PRESSCV across all variables in a dictionary.
             self.PRESSCV_total_dict = {}
             self.PRESSCV_total_list = np.sum(self.PRESSCVarr_indVar, axis=1)
             
             for ind, PRESSCV in enumerate(self.PRESSCV_total_list):
-                self.PRESSCV_total_dict[ind] =PRESSCV
+                self.PRESSCV_total_dict[ind] = PRESSCV
             # -----------------------------------------------------------------
             
             
@@ -1676,21 +2091,24 @@ class nipalsPLS2:
             # Collect total MSECV across all variables in a dictionary. Also,
             # compute total validated explained variance in Y.             
             self.MSECV_total_dict = {}
-            self.MSECV_total_list = np.sum(self.MSECVarr_indVar, axis=1) 
-            MSECV0 = self.MSECV_total_list[0]
+            self.MSECV_total_list = np.sum(self.MSECVarr_indVar, axis=1) / \
+                    np.shape(self.arrY_input)[1]
+            MSECV_0 = self.MSECV_total_list[0]
 
             # Compute total validated explained variance in Y
             self.YcumValExplVarList = []
             for ind, MSECV in enumerate(self.MSECV_total_list):
-                perc = (MSECV0 - MSECV) / MSECV0 * 100
+                perc = (MSECV_0 - MSECV) / MSECV_0 * 100
                 self.MSECV_total_dict[ind] = MSECV
                 self.YcumValExplVarList.append(perc)
             
-            # Construct list with total validated explained variance in Y
+            # Construct list with total validated explained variance in Y in
+            # each component
             self.YvalExplVarList = []
             for ind, item in enumerate(self.YcumValExplVarList):
                 if ind == len(self.YcumValExplVarList)-1: break
-                explVarComp = self.YcumValExplVarList[ind+1] - self.YcumValExplVarList[ind]
+                explVarComp = self.YcumValExplVarList[ind+1] - \
+                        self.YcumValExplVarList[ind]
                 self.YvalExplVarList.append(explVarComp)
             # -----------------------------------------------------------------
             
@@ -1701,38 +2119,110 @@ class nipalsPLS2:
             
             for ind, RMSECV in enumerate(self.RMSECV_total_list):
                 self.RMSECV_total_dict[ind] = RMSECV
-            # -----------------------------------------------------------------       
+            # -----------------------------------------------------------------
             
-                            
-        
             
 
-    def results(self):
-        resDict = {}
-        resDict['T'] = self.arrT
-        resDict['P'] = self.arrP
-        resDict['U'] = self.arrU
-        resDict['Q'] = self.arrQ
-        resDict['W'] = self.arrW
-        resDict['C'] = self.arrC
-        
-        resDict['val T'] = self.val_arrTlist
-        resDict['val P'] = self.val_arrPlist
-        resDict['val U'] = self.val_arrUlist
-        resDict['val Q'] = self.val_arrQlist
-        resDict['val W'] = self.val_arrWlist
-        resDict['val C'] = self.val_arrClist
-        
-        resDict['val MSEP list'] = self.MSECV_total_dict.values()
-        resDict['PRESSCV_0'] = self.PRESSCV_0
-        
-        resDict['PRESSE'] = self.PRESSEarr_indVar
-        resDict['MSEE'] = self.MSEEarr_indVar
-        resDict['RMSEE'] = self.RMSEEarr_indVar
-        resDict['ind cum cal expl var Y'] = self.cumCalExplVarYarr_indVar
-        
-        
-        return resDict
+            # ========== Computations for X ==========
+            # -----------------------------------------------------------------
+            # Compute PRESSCV (PRediction Error Sum of Squares) for cross 
+            # validation 
+            self.valXpredList = self.valXpredDict.values()
+            
+            # Collect all PRESS in a dictionary. Keys represent number of 
+            # component.            
+            self.PRESSdict_indVar_X = {}
+            
+            # First compute PRESSCV for zero components            
+            varX = np.var(self.arrX_input, axis=0, ddof=1)
+            self.PRESSCV_0_indVar_X = (varX * np.square(np.shape(self.arrX_input)[0])) \
+                    / (np.shape(x_train)[0])
+            self.PRESSdict_indVar_X[0] = self.PRESSCV_0_indVar_X
+            
+            # Compute PRESSCV for each Yhat for 1, 2, 3, etc number of 
+            # components and compute explained variance
+            for ind, Xhat in enumerate(self.valXpredList):
+                #diffX = self.arrX_input - Xhat
+                diffX = st.centre(self.arrX_input) - st.centre(Xhat)
+                PRESSCV_indVar_X = np.sum(np.square(diffX), axis=0)
+                self.PRESSdict_indVar_X[ind+1] = PRESSCV_indVar_X
+                        
+            # Now store all PRESSCV values into an array. Then compute MSECV 
+            # and RMSECV.
+            self.PRESSCVarr_indVar_X = np.array(self.PRESSdict_indVar_X.values())
+            self.MSECVarr_indVar_X = self.PRESSCVarr_indVar_X / \
+                    np.shape(self.arrX_input)[0]
+            self.RMSECVarr_indVar_X = np.sqrt(self.MSECVarr_indVar_X)
+            # -----------------------------------------------------------------
+            
+            # -----------------------------------------------------------------
+            # Compute explained variance for each variable in X using the
+            # MSEP for each variable. Also collect PRESS, MSECV, RMSECV in 
+            # their respective dictionaries for each variable. Keys represent 
+            # now variables and NOT components as above with 
+            # self.PRESSdict_indVar
+            self.cumValExplVarXarr_indVar = np.zeros(np.shape(self.MSECVarr_indVar_X))
+            MSECV_0_indVar_X = self.MSECVarr_indVar_X[0,:]
+            
+            for ind, MSECV_indVar_X in enumerate(self.MSECVarr_indVar_X):
+                explVar = (MSECV_0_indVar_X - MSECV_indVar_X) / MSECV_0_indVar_X * 100
+                self.cumValExplVarXarr_indVar[ind] = explVar
+                        
+            self.PRESSCV_indVar_X = {}
+            self.MSECV_indVar_X = {}
+            self.RMSECV_indVar_X = {}
+            self.cumValExplVarX_indVar = {}
+            
+            for ind in range(np.shape(self.PRESSCVarr_indVar_X)[1]):
+                self.PRESSCV_indVar_X[ind] = self.PRESSCVarr_indVar_X[:,ind]
+                self.MSECV_indVar_X[ind] = self.MSECVarr_indVar_X[:,ind]
+                self.RMSECV_indVar_X[ind] = self.RMSECVarr_indVar_X[:,ind]
+                self.cumValExplVarX_indVar[ind] = self.cumValExplVarXarr_indVar[:,ind]
+            # -----------------------------------------------------------------
+            
+            # -----------------------------------------------------------------
+            # Collect total PRESSCV across all variables in a dictionary.
+            self.PRESSCV_total_dict_X = {}
+            self.PRESSCV_total_list_X = np.sum(self.PRESSCVarr_indVar_X, axis=1)
+            
+            for ind, PRESSCV_X in enumerate(self.PRESSCV_total_list_X):
+                self.PRESSCV_total_dict_X[ind] = PRESSCV_X
+            # -----------------------------------------------------------------
+            
+            # -----------------------------------------------------------------
+            # Collect total MSECV across all variables in a dictionary. Also,
+            # compute total validated explained variance in X.             
+            self.MSECV_total_dict_X = {}
+            self.MSECV_total_list_X = np.sum(self.MSECVarr_indVar_X, axis=1) / \
+                    np.shape(self.arrX_input)[1]
+            MSECV_0_X = self.MSECV_total_list_X[0]
+
+            # Compute total validated explained variance in X
+            self.XcumValExplVarList = []
+            for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
+                perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
+                self.MSECV_total_dict_X[ind] = MSECV_X
+                self.XcumValExplVarList.append(perc)
+            
+            # Construct list with total validated explained variance in X in 
+            # each component
+            self.XvalExplVarList = []
+            for ind, item in enumerate(self.XcumValExplVarList):
+                if ind == len(self.XcumValExplVarList)-1: break
+                explVarComp = self.XcumValExplVarList[ind+1] - \
+                        self.XcumValExplVarList[ind]
+                self.XvalExplVarList.append(explVarComp)
+            # -----------------------------------------------------------------
+            
+            # -----------------------------------------------------------------
+            # Compute total RMSECV and store values in a dictionary and list.            
+            self.RMSECV_total_dict_X = {}
+            self.RMSECV_total_list_X = np.sqrt(self.MSECV_total_list_X)
+            
+            for ind, RMSECV_X in enumerate(self.RMSECV_total_list_X):
+                self.RMSECV_total_dict_X[ind] = RMSECV_X
+            # -----------------------------------------------------------------
+                            
     
     
     def modelSettings(self):
@@ -1746,56 +2236,41 @@ class nipalsPLS2:
         settingsDict['Xstand'] = self.Xstand
         settingsDict['Ystand'] = self.Ystand
         settingsDict['analysed X'] = self.arrX
-        settingsDict['analysed Y'] = self.arrY 
+        settingsDict['analysed Y'] = self.arrY
+        print self.cvType
         settingsDict['cv type'] = self.cvType
         
         return settingsDict
+
     
+    def X_means(self):
+        """
+        Returns a vector holding the column means of X. 
+        """
+        return np.average(self.arrX_input, axis=0).reshape(1,-1)    
     
-    def Xscores(self):
+    def X_scores(self):
         """
         Returns an array holding X scores. First column for component 1, etc.
         """
         return self.arrT
     
     
-    def Xloadings(self):
+    def X_loadings(self):
         """
         Returns an array holding X loadings. First column for component 1, etc.
         """
         return self.arrP
     
     
-    def Yscores(self):
-        """
-        Returns an array holding Y scores. First column for component 1, etc.
-        """
-        return self.arrU
-    
-    
-    def Yloadings(self):
-        """
-        Returns an array holding Y loadings. First column for component 1, etc.
-        """
-        return self.arrQ
-    
-    
-    def XloadingsWeights(self):
+    def X_loadingsWeights(self):
         """
         Returns an array holding X loadings weights.
         """
         return self.arrW
     
     
-    def scoresRegressionCoeffs(self):
-        """
-        Returns a one dimensional array holding regression coefficients between
-        X and Y scores.
-        """ 
-        return self.arrC
-    
-    
-    def XcorrLoadings(self):
+    def X_corrLoadings(self):
         """
         Returns correlation loadings. First column holds correlation loadings
         for PC1, second column holds scores for PC2, etc.
@@ -1821,7 +2296,219 @@ class nipalsPLS2:
         return self.arr_XcorrLoadings
     
     
-    def YcorrLoadings(self):
+    def X_residuals(self):
+        """
+        Returns list holding  residuals E of X after each component.
+        """
+        # Create empty dictionary that will hold residuals
+        X_residualsDict = {}
+        
+        # Fill dictionary with residuals arrays from residuals list
+        for ind, item in enumerate(self.X_residualsList):
+            X_residualsDict[ind] = item
+        
+        return X_residualsDict
+    
+    
+    def X_calExplVar(self):
+        """
+        Returns list holding calibrated explained variance for each PC in X.
+        """
+        return self.XcalExplVarList
+    
+    
+    def X_cumCalExplVar_indVar(self):
+        """
+        Returns array holding cumulative validated explained variance in X for
+        each variable. Cols represent variables in X. Rows represent number of
+        components.
+        """
+        return self.cumCalExplVarXarr_indVar
+    
+    
+    def X_cumCalExplVar(self):
+        """
+        Returns list holding cumulative calibrated explained variance in X.
+        """
+        return self.XcumCalExplVarList
+    
+    
+    def X_predCal(self):
+        """
+        Returns dictionary holding arrays of predicted Xhat after each component 
+        from calibration. Dictionary key represents order of PC. Yhat is 
+        computed withXYhat = T*P'
+        """
+        return self.calXpredDict
+    
+    
+    def X_PRESSE_indVar(self):
+        """
+        Returns array holding PRESSE for each individual variable acquired
+        through calibration after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """
+        return self.PRESSEarr_indVar_X
+    
+    
+    def X_PRESSE(self):
+        """
+        Returns an array holding PRESS across all variables in X acquired  
+        through calibration after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.PRESSE_total_list_X
+    
+    
+    def X_MSEE_indVar(self):
+        """
+        Returns an arrary holding MSE from calibration for each variable in X. 
+        First row is MSE for zero components, second row for component 1, etc.
+        """
+        return self.MSEEarr_indVar_X
+    
+    
+    def X_MSEE(self):
+        """
+        Returns an array holding MSE across all variables in X acquired through 
+        calibration after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.MSEE_total_list_X
+    
+    
+    def X_RMSEE_indVar(self):
+        """
+        Returns an arrary holding RMSE from calibration for each variable in X. 
+        First row is MSE for zero components, second row for component 1, etc.
+        """
+        return self.RMSEEarr_indVar_X
+    
+    
+    def X_RMSEE(self):
+        """
+        Returns an array holding RMSE across all variables in X acquired through 
+        calibration after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.RMSEE_total_list_X
+    
+    
+    def X_valExplVar(self):
+        """
+        Returns list holding calibrated explained variance for each PC in Y.
+        """
+        return  self.XvalExplVarList
+    
+    
+    def X_cumValExplVar_indVar(self):
+        """
+        Returns array holding cumulative validated explained variance in X for
+        each variable. Rows represent variables in X. Rows represent number of
+        components.
+        """
+        return self.cumValExplVarXarr_indVar
+    
+    
+    def X_cumValExplVar(self):
+        """
+        Returns list holding cumulative calibrated explained variance in Y.
+        """
+        return self.XcumValExplVarList
+    
+    
+    def X_predVal(self):
+        """
+        Returns dictionary holding arrays of predicted Xhat after each component 
+        from validation. Dictionary key represents order of PC.
+        """
+        return self.valXpredDict
+    
+    
+    def X_PRESSCV_indVar(self):
+        """
+        Returns array holding PRESS for each individual variable in X acquired
+        through cross validation after each computed PC. First row is PRESS for
+        zero components, second row component 1, third row for component 2, etc.
+        """
+        return self.PRESSCVarr_indVar_X
+    
+    
+    def X_PRESSCV(self):
+        """
+        Returns an array holding PRESS across all variables in X acquired  
+        through cross validation after each computed PC. First row is PRESS for 
+        zero components, second row component 1, third row for component 2, etc.
+        """   
+        return self.PRESSCV_total_list_X
+    
+    
+    def X_MSECV_indVar(self):
+        """
+        Returns an arrary holding MSE from cross validation for each variable  
+        in X. First row is MSE for zero components, second row for component 1, 
+        etc.
+        """
+        return self.MSECVarr_indVar_X
+    
+    
+    def X_MSECV(self):
+        """
+        Returns an array holding MSE across all variables in X acquired through 
+        cross validation after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.MSECV_total_list_X
+    
+    
+    def X_RMSECV_indVar(self):
+        """
+        Returns an arrary holding RMSE from cross validation for each variable
+        in X. First row is MSE for zero components, second row for component 1, 
+        etc.
+        """
+        return self.RMSECVarr_indVar_X
+    
+    
+    def X_RMSECV(self):
+        """
+        Returns an array holding RMSE across all variables in X acquired through 
+        cross validation after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.RMSECV_total_list_X
+    
+    
+    def Y_means(self):
+        """
+        Returns a vector holding the column means of Y. 
+        """
+        return np.average(self.arrY_input, axis=0).reshape(1,-1)
+    
+    
+    def Y_scores(self):
+        """
+        Returns an array holding Y scores. First column for component 1, etc.
+        """
+        return self.arrU
+    
+    
+    def Y_loadings(self):
+        """
+        Returns an array holding Y loadings. First column for component 1, etc.
+        """
+        return self.arrQ
+    
+    
+    def scoresRegressionCoeffs(self):
+        """
+        Returns a one dimensional array holding regression coefficients between
+        X and Y scores.
+        """ 
+        return self.arrC
+    
+    
+    def Y_corrLoadings(self):
         """
         Returns correlation loadings. First column holds correlation loadings
         for PC1, second column holds scores for PC2, etc.
@@ -1847,75 +2534,28 @@ class nipalsPLS2:
         return self.arr_YcorrLoadings
     
     
-    def Yresiduals(self):
+    def Y_residuals(self):
         """
         Returns list holding residuals F of Y after each component.
         """
-        return self.Y_residualsList
-    
-    
-    def Xresiduals(self):
-        """
-        Returns list holding  residuals E of X after each component.
-        """
-        return self.X_residualsList
-    
-    
-    def Xmeans(self):
-        """
-        Returns a vector holding the column means of X. 
-        """
-        return np.average(self.arrX_input, axis=0)
-    
-    
-    def Ymeans(self):
-        """
-        Returns a vector holding the column means of Y. 
-        """
-        return np.average(self.arrY_input, axis=0)
+        # Create empty dictionary that will hold residuals
+        Y_residualsDict = {}
         
-    
-    def YpredCal(self):
-        """
-        Returns dictionary holding arrays of predicted Yhat after each component 
-        from calibration. Dictionary key represents order of PC. Yhat is 
-        computed with Yhat = T*Chat*Q'
-        """
-        return self.calYpredDict
+        # Fill dictionary with residuals arrays from residuals list
+        for ind, item in enumerate(self.Y_residualsList):
+            Y_residualsDict[ind] = item
+        
+        return Y_residualsDict
     
     
-    def YpredVal(self):
-        """
-        Returns dictionary holding arrays of predicted Yhat after each component 
-        from validation. Dictionary key represents order of PC.
-        """
-        return self.valYpredDict
-    
-    
-    def XpredCal(self):
-        """
-        Returns dictionary holding arrays of predicted Xhat after each component 
-        from calibration. Dictionary key represents order of PC. Yhat is 
-        computed withXYhat = T*P'
-        """
-        return self.calXpredDict
-    
-    
-    def YcumCalExplVar_tot_list(self):
-        """
-        Returns list holding cumulative calibrated explained variance in Y.
-        """
-        return self.YcumCalExplVarList
-    
-    
-    def YcalExplVar_tot_list(self):
+    def Y_calExplVar(self):
         """
         Returns list holding calibrated explained variance for each PC in Y.
         """
         return self.YcalExplVarList
     
     
-    def YcumCalExplVar_indVar_arr(self):
+    def Y_cumCalExplVar_indVar(self):
         """
         Returns array holding cumulative validated explained variance in Y for
         each variable. Cols represent variables in Y. Rows represent number of
@@ -1924,57 +2564,152 @@ class nipalsPLS2:
         return self.cumCalExplVarYarr_indVar
     
     
-    def YcumCalExplVar_indVar_dict(self):
-        """
-        Returns dictionary holding cumulative validated explained variance in Y 
-        for each variable. Keys represent number of variable in Y.
-        """
-        return self.cumCalExplVarY_indVar
-
-
-    def YcumValExplVar_tot_list(self):
+    def Y_cumCalExplVar(self):
         """
         Returns list holding cumulative calibrated explained variance in Y.
         """
-        return self.YcumValExplVarList
+        return self.YcumCalExplVarList
+        
+    
+    def Y_predCal(self):
+        """
+        Returns dictionary holding arrays of predicted Yhat after each component 
+        from calibration. Dictionary key represents order of PC. Yhat is 
+        computed with Yhat = T*Chat*Q'
+        """
+        return self.calYpredDict
+    
+    def Y_PRESSE_indVar(self):
+        """
+        Returns an array holding PRESS of all variables in Y acquired through 
+        calibration after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.PRESSEarr_indVar
     
     
-    def YvalExplVar_tot_list(self):
+    def Y_PRESSE(self):
+        """
+        Returns a dictionary holding total MSEP from cross validation after each
+        computed PC. Dictionary key represents order of PC.
+        """   
+        return self.PRESSE_total_list
+    
+    
+    def Y_MSEE_indVar(self):
+        """
+        Returns an array holding MSECV of all variables in Y acquired through 
+        cross validation after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.MSEEarr_indVar
+    
+    
+    def Y_MSEE(self):
+        """
+        Returns a dictionary holding total MSEP from cross validation after each
+        computed PC. Dictionary key represents order of PC.
+        """   
+        return self.MSEE_total_list
+    
+    
+    def Y_RMSEE_indVar(self):
+        """
+        Returns an array holding MSECV of all variables in Y acquired through 
+        cross validation after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.RMSEEarr_indVar
+    
+    
+    def Y_RMSEE(self):
+        """
+        Returns a dictionary holding total RMSEP from cross validation after each
+        computed PC. Dictionary key represents order of PC.
+        """   
+        return self.RMSEE_total_list
+    
+    
+    def Y_valExplVar(self):
         """
         Returns list holding calibrated explained variance for each PC in Y.
         """
         return  self.YvalExplVarList
     
     
-    def YcumValExplVar_indVar_arr(self):
+    def Y_cumValExplVar_indVar(self):
         """
         Returns array holding cumulative validated explained variance in Y for
-        each variable. Rows represent variables in Y. Rows represent number of
+        each variable. Cols represent variables in Y. Rows represent number of
         components.
         """
         return self.cumValExplVarYarr_indVar
     
     
-    def YcumValExplVar_indVar_dict(self):
+    def Y_cumValExplVar(self):
         """
-        Returns dictionary holding cumulative validated explained variance in Y 
-        for each variable. Keys represent number of variable in Y.
+        Returns list holding cumulative calibrated explained variance in Y.
         """
-        return self.cumValExplVarY_indVar
-        
-    
-    def XcumCalExplVar_tot_list(self):
-        """
-        Returns list holding cumulative calibrated explained variance in X.
-        """
-        return self.XcumCalExplVarList
+        return self.YcumValExplVarList
     
     
-    def XcalExplVar_tot_list(self):
+    def Y_predVal(self):
         """
-        Returns list holding calibrated explained variance for each PC in X.
+        Returns dictionary holding arrays of predicted Yhat after each component 
+        from validation. Dictionary key represents order of PC.
         """
-        return self.XcalExplVarList
+        return self.valYpredDict
+    
+    
+    def Y_PRESSCV_indVar(self):
+        """
+        Returns an array holding PRESS of all variables in Y acquired through 
+        cross validation after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.PRESSCVarr_indVar
+    
+    
+    def Y_PRESSCV(self):
+        """
+        Returns a dictionary holding total MSEP from cross validation after each
+        computed PC. Dictionary key represents order of PC.
+        """   
+        return self.PRESSCV_total_list
+    
+    
+    def Y_MSECV_indVar(self):
+        """
+        Returns an array holding MSECV of all variables in Y acquired through 
+        cross validation after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.MSECVarr_indVar
+    
+    
+    def Y_MSECV(self):
+        """
+        Returns a dictionary holding total MSEP from cross validation after each
+        computed PC. Dictionary key represents order of PC.
+        """   
+        return self.MSECV_total_list
+    
+    
+    def Y_RMSECV_indVar(self):
+        """
+        Returns an array holding MSECV of all variables in Y acquired through 
+        cross validation after each computed PC. First row is PRESS for zero
+        components, second row component 1, third row for component 2, etc.
+        """   
+        return self.RMSECVarr_indVar
+    
+    
+    def Y_RMSECV(self):
+        """
+        Returns a dictionary holding total RMSEP from cross validation after each
+        computed PC. Dictionary key represents order of PC.
+        """   
+        return self.RMSECV_total_list
             
                 
     def corrLoadingsEllipses(self):
@@ -2012,187 +2747,355 @@ class nipalsPLS2:
         """
         return self.cvTrainAndTestDataList
     
-    
-    def PRESSE_indVar_arr(self):
-        """
-        Returns an array holding PRESS of all variables in Y acquired through 
-        calibration after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
-        """   
-        return self.PRESSEarr_indVar
-    
-    
-    def PRESSE_indVar_dict(self):
-        """
-        Returns a dictionary holding PRESS off all variables in Y acquire
-        through cross validation after each computed PC. Dictionary key 
-        represents order of variable in Y.
-        """
-        return self.PRESSE_indVar
-    
-    
-    def MSEE_indVar_arr(self):
-        """
-        Returns an array holding MSECV of all variables in Y acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
-        """   
-        return self.MSEEarr_indVar
-    
-    
-    def MSEE_indVar_dict(self):
-        """
-        Returns a dictionary holding MSEP from cross validation after each
-        computed PC. Dictionary key represents order of variable in Y.
-        """   
-        return self.MSEE_indVar
-    
-    
-    def RMSEE_indVar_arr(self):
-        """
-        Returns an array holding MSECV of all variables in Y acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
-        """   
-        return self.RMSEEarr_indVar
-    
-    
-    def RMSEE_indVar_dict(self):
-        """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of variable in Y.
-        """   
-        return self.RMSEE_indVar
-    
-    
-    def MSEE_tot_list(self):
-        """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.MSEE_total_list
-    
-    
-    def MSEE_tot_dict(self):
-        """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.MSEE_total_dict
-        
-    
-    def RMSEE_tot_list(self):
-        """
-        Returns a dictionary holding total RMSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.RMSEE_total_list
-    
-    
-    def RMSEE_tot_dict(self):
-        """
-        Returns a dictionary holding total RMSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.RMSEE_total_dict
-    
-    
-    def PRESSCV_indVar_arr(self):
-        """
-        Returns an array holding PRESS of all variables in Y acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
-        """   
-        return self.PRESSCVarr_indVar
-    
-    
-    def PRESSCV_indVar_dict(self):
-        """
-        Returns a dictionary holding PRESS off all variables in Y acquire
-        through cross validation after each computed PC. Dictionary key 
-        represents order of variable in Y.
-        """
-        return self.PRESS_indVar
-    
-    
-    def MSECV_indVar_arr(self):
-        """
-        Returns an array holding MSECV of all variables in Y acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
-        """   
-        return self.MSECVarr_indVar
-    
-    
-    def MSECV_indVar_dict(self):
-        """
-        Returns a dictionary holding MSEP from cross validation after each
-        computed PC. Dictionary key represents order of variable in Y.
-        """   
-        return self.MSECV_indVar
-    
-    
-    def RMSECV_indVar_arr(self):
-        """
-        Returns an array holding MSECV of all variables in Y acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
-        """   
-        return self.RMSECVarr_indVar
-    
-    
-    def RMSECV_indVar_dict(self):
-        """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of variable in Y.
-        """   
-        return self.RMSECV_indVar
-    
-    
-    def PRESSCV_tot_list(self):
-        """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.PRESSCV_total_list
-    
-    
-    def PRESSCV_tot_dict(self):
-        """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.PRESSCV_total_dict
 
+
+
+def plotPLS(model, objNames, XvarNames, YvarNames):
+    """
+    This functions generates plots that visualise the most important results
+    from PLSR
+    """
+#==============================================================================
+# Plot PCP scores T
+#==============================================================================
     
-    def MSECV_tot_list(self):
-        """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.MSECV_total_list
+    Xscores = model.X_scores()
+    XexplVar = model.X_calExplVar()
+    YexplVar = model.Y_calExplVar()
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
     
     
-    def MSECV_tot_dict(self):
-        """
-        Returns a dictionary holding total MSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.MSECV_total_dict
+    # Loop through all coordinates (PC1,PC2) and names to plot scores.
+    for ind, objName in enumerate(objNames):
         
-    
-    def RMSECV_tot_list(self):
-        """
-        Returns a dictionary holding total RMSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.RMSECV_total_list
+        ax.scatter(Xscores[ind,0], Xscores[ind,1], s=10, c='w', \
+            marker='o', edgecolor='grey')
+        ax.text(Xscores[ind,0], Xscores[ind,1], objName, fontsize=10)
     
     
-    def RMSECV_tot_dict(self):
-        """
-        Returns a dictionary holding total RMSEP from cross validation after each
-        computed PC. Dictionary key represents order of PC.
-        """   
-        return self.RMSECV_total_dict
+    # Find maximum and minimum scores along PC1 and PC2
+    xMax = max(Xscores[:,0])
+    xMin = min(Xscores[:,0])
+    
+    yMax = max(Xscores[:,1])
+    yMin = min(Xscores[:,1])
+    
+    
+    # Set limits for lines representing the axes.
+    # x-axis
+    if abs(xMax) >= abs(xMin):
+        extraX = xMax * .4
+        limX = xMax * .3
+    
+    elif abs(xMax) < abs(xMin):
+        extraX = abs(xMin) * .4
+        limX = abs(xMin) * .3
+    
+    # y-axis
+    if abs(yMax) >= abs(yMin):
+        extraY = yMax * .4
+        limY = yMax * .3
+    
+    elif abs(yMax) < abs(yMin):
+        extraY = abs(yMin) * .4
+        limY = abs(yMin) * .3
+    
+    
+    xMaxLine = xMax + extraX
+    xMinLine = xMin - extraX
+    
+    yMaxLine = yMax + extraY
+    yMinLine = yMin - extraY
+    
+    
+    ax.plot([0,0], [yMaxLine,yMinLine], color='0.4', linestyle='dashed', \
+                    linewidth=1)
+    ax.plot([xMinLine,xMaxLine], [0,0], color='0.4', linestyle='dashed', \
+                    linewidth=1)
+    
+    
+    # Set limits for plot regions.
+    xMaxLim = xMax + limX
+    xMinLim = xMin - limX
+    
+    yMaxLim = yMax + limY
+    yMinLim = yMin - limY
+    
+    ax.set_xlim(xMinLim,xMaxLim)
+    ax.set_ylim(yMaxLim,yMinLim)
+    
+    
+    # Plot title, axis names. 
+    ax.set_xlabel('PC1 ({0}%, {1}%)'.format(str(round(XexplVar[0],1)), \
+            str(round(YexplVar[0],1))))
+    ax.set_ylabel('PC2 ({0}%, {1}%)'.format(str(round(XexplVar[1],1)), \
+            str(round(YexplVar[1],1))))
+    
+    ax.set_title('X scores plot')
+    
+    plt.show()
+    
+#==============================================================================
+# Plot Y loadings 
+#==============================================================================
+    
+    Yloadings = model.Y_loadings()    
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    
+    # Loop through all coordinates (PC1,PC2) and names to plot scores.
+    for ind, varName in enumerate(YvarNames):
         
+        ax.scatter(Yloadings[ind,0], Yloadings[ind,1], s=10, c='w', \
+            marker='o', edgecolor='grey')
+        
+        ax.text(Yloadings[ind,0], Yloadings[ind,1], varName, fontsize=10)
+    
+    
+    # Find maximum and minimum scores along PC1 and PC2
+    xMax = max(Yloadings[:,0])
+    xMin = min(Yloadings[:,0])
+    
+    yMax = max(Yloadings[:,1])
+    yMin = min(Yloadings[:,1])
+    
+    
+    # Set limits for lines representing the axes.
+    # x-axis
+    if abs(xMax) >= abs(xMin):
+        extraX = xMax * .4
+        limX = xMax * .3
+    
+    elif abs(xMax) < abs(xMin):
+        extraX = abs(xMin) * .4
+        limX = abs(xMin) * .3
+    
+    # y-axis
+    if abs(yMax) >= abs(yMin):
+        extraY = yMax * .4
+        limY = yMax * .3
+    
+    elif abs(yMax) < abs(yMin):
+        extraY = abs(yMin) * .4
+        limY = abs(yMin) * .3
+    
+    
+    xMaxLine = xMax + extraX
+    xMinLine = xMin - extraX
+    
+    yMaxLine = yMax + extraY
+    yMinLine = yMin - extraY
+    
+    
+    ax.plot([0,0], [yMaxLine,yMinLine], color='0.4', linestyle='dashed', \
+                    linewidth=1)
+    ax.plot([xMinLine,xMaxLine], [0,0], color='0.4', linestyle='dashed', \
+                    linewidth=1)
+    
+    
+    # Set limits for plot regions.
+    xMaxLim = xMax + limX
+    xMinLim = xMin - limX
+    
+    yMaxLim = yMax + limY
+    yMinLim = yMin - limY
+    
+    ax.set_xlim(xMinLim,xMaxLim)
+    ax.set_ylim(yMaxLim,yMinLim)
+    
+    
+    # Plot title, axis names. 
+    ax.set_xlabel('PC1 ({0}%)'.format(str(round(YexplVar[0],1))))
+    ax.set_ylabel('PC2 ({0}%)'.format(str(round(YexplVar[1],1))))
+    
+    ax.set_title('Y loadings')
+    
+    plt.show()
+
+
+#==============================================================================
+# Plot X and Y correlation loadings 
+#==============================================================================
+    
+    XcorrLoadings = model.X_corrLoadings()    
+    YcorrLoadings = model.Y_corrLoadings()
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    
+    # Plot lines through origo    
+    xMaxLine = 1.2
+    xMinLine = -1.2
+    
+    yMaxLine = 1.2
+    yMinLine = -1.2
+    
+    
+    ax.plot([0,0], [yMaxLine,yMinLine], color='0.4', linestyle='dashed', \
+                    linewidth=1)
+    ax.plot([xMinLine,xMaxLine], [0,0], color='0.4', linestyle='dashed', \
+                    linewidth=1)    
+    
+    # Plot ellipses for correlation loadings
+    ellipses = model.corrLoadingsEllipses()
+    xcords50perc = ellipses['x50perc']
+    ycords50perc = ellipses['y50perc']
+    
+    xcords100perc = ellipses['x100perc'] 
+    ycords100perc = ellipses['y100perc']
+    
+    ax.plot(xcords50perc, ycords50perc, 'k-')
+    ax.plot(xcords100perc, ycords100perc, 'k-')
+    
+    # Loop through all coordinates (PC1,PC2) and names to plot Y loadings
+    for ind, varName in enumerate(YvarNames):
+        
+        ax.scatter(YcorrLoadings[ind,0], YcorrLoadings[ind,1], s=10, c='w', \
+            marker='o', edgecolor='b')
+        
+        ax.text(YcorrLoadings[ind,0], YcorrLoadings[ind,1], varName, \
+                fontsize=10, color='b')
+    
+    # Loop through all coordinates (PC1,PC2) and names to plot X loadings
+    for ind, varName in enumerate(XvarNames):
+        
+        ax.scatter(XcorrLoadings[ind,0], XcorrLoadings[ind,1], s=10, c='w', \
+            marker='o', edgecolor='r')
+        
+#        ax.text(XcorrLoadings[ind,0], XcorrLoadings[ind,1], varName, \
+#                fontsize=10, color='r')
+    
+    # Other plot settings    
+    ax.set_title('X & Y correlation loadings plot')
+    
+    ax.set_xlim(-1.1, 1.1)
+    ax.set_ylim(-1.1, 1.1)
+    
+    plt.show()
+    
+    
+#==============================================================================
+# Plot cumulative explained variance in Y (CALIBRATED and VALIDATED)
+#==============================================================================
+
+    YcalExplVar = model.Y_cumCalExplVar()
+    YvalExplVar = model.Y_cumValExplVar()
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    
+    # Construct positions for ticks along x-axis.
+    xPos = range(len(YcalExplVar))
+    
+    # Do the plotting and set the ticks on x-axis with corresponding name.
+    ax.plot(xPos, YcalExplVar, color='b', linestyle='solid', \
+            linewidth=1, label='Calidated explained variance')
+    ax.plot(xPos, YvalExplVar, color='r', linestyle='solid', \
+            linewidth=1, label='Validated explained variance')
+    ax.set_xticks(xPos)
+
+    ax.set_ylabel('Explained variance [%]')
+    ax.set_title('Explained variance in Y')
+    
+    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
+    ltext = plt.gca().get_legend().get_texts()
+    plt.setp(ltext[0], fontsize = 10, color = 'k')
+    
+    plt.show()
+
+
+
+#==============================================================================
+# Plot cumulative explained variance for each variable in Y (CALIBRATED)
+#==============================================================================
+
+    YcalExplVar_indVar = model.Y_cumCalExplVar_indVar()
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    
+    # Construct positions for ticks along x-axis.
+    xPos = range(np.shape(YcalExplVar_indVar)[0])
+    
+    plot_colours = ['b', 'r', 'k', 'g', 'm', 'b', 'r', 'k', 'g', 'm']
+    plot_linestyles = ['solid', 'solid', 'solid', 'solid', 'solid', \
+            'dashed', 'dashed', 'dashed', 'dashed', 'dashed']
+    
+    for varInd in range(np.shape(YcalExplVar_indVar)[1]):
+        ax.plot(xPos, YcalExplVar_indVar[:,varInd], \
+                color=plot_colours[varInd], \
+                linestyle=plot_linestyles[varInd], linewidth=1, \
+                label=YvarNames[varInd]+' CAL')
+    
+    ax.set_xticks(xPos)
+
+    ax.set_ylabel('Explained variance [%]')
+    ax.set_title('CALIBRATED Explained variance of individual variables in Y')
+    
+    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
+    ltext = plt.gca().get_legend().get_texts()
+    plt.setp(ltext[0], fontsize = 10, color = 'k')
+    
+    plt.show()  
+
+
+#==============================================================================
+# Plot cumulative explained variance for each variable in Y (VALIDATED)
+#==============================================================================
+
+    YvalExplVar_indVar = model.Y_cumValExplVar_indVar()
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    
+    # Construct positions for ticks along x-axis.
+    xPos = range(np.shape(YcalExplVar_indVar)[0])
+    
+    plot_colours = ['b', 'r', 'k', 'g', 'm', 'b', 'r', 'k', 'g', 'm']
+    plot_linestyles = ['solid', 'solid', 'solid', 'solid', 'solid', \
+            'dashed', 'dashed', 'dashed', 'dashed', 'dashed']
+    
+#    print 'len xpos', len(xPos)
+#    print 'len Yvar', len()
+    for varInd in range(np.shape(YcalExplVar_indVar)[1]):
+        ax.plot(xPos, YvalExplVar_indVar[:,varInd], \
+                color=plot_colours[varInd], \
+                linestyle=plot_linestyles[varInd], linewidth=1, \
+                label=YvarNames[varInd]+' VAL')
+    
+    ax.set_xticks(xPos)
+
+    ax.set_ylabel('Explained variance [%]')
+    ax.set_title('VALIDATED Explained variance of individual variables in Y')
+    
+    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
+    ltext = plt.gca().get_legend().get_texts()
+    plt.setp(ltext[0], fontsize = 10, color = 'k')
+    
+    plt.show() 
+
+
+#==============================================================================
+# Plot Y loadings
+#==============================================================================
+    
+    Xloadings = model.X_loadings()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    
+    ax.plot(Xloadings[:,0], color='b', linewidth=1, label='PC1')
+    ax.plot(Xloadings[:,1], color='r', linewidth=1, label='PC2')
+    ax.plot(Xloadings[:,2], color='g', linewidth=1, label='PC3')
+
+    ax.set_title('X loadings')
+    
+    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
+    ltext = plt.gca().get_legend().get_texts()
+    plt.setp(ltext[0], fontsize = 10, color = 'k')
+    
+    plt.show() 
+            

@@ -1,5 +1,6 @@
 
 # Import necessary modules
+import os
 import string
 import pyper
 import numpy as np
@@ -37,16 +38,52 @@ class ConjointMachine(object):
 
 
     def _start_r_interpreter(self):
-        self.r = pyper.R()
+#        home = os.path.dirname(os.path.abspath(__file__))
+        home = os.getcwd()
+        Rbin = os.path.join(home, 'R-2.15.1', 'bin', 'R.exe')
+        try:
+            self.r = pyper.R(Rbin)
+        # On MSWIN is an WindowsError which is a subclass of OSError raised.
+        except OSError:
+            self.r = pyper.R()
 
 
     def _load_conjoint_resources(self):
         self.r('library(MixMod)')
         self.r('library(Hmisc)')
         self.r('library(lme4)')
-        self.r('dir<-"/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27"')
-        self.r('setwd(dir)')
+#        self.r('dir<-"/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27"')
+#        self.r('setwd(dir)')
         self.r('source(paste(getwd(),"/pgm/conjoint.r",sep=""))')
+        print(self.r('.libPaths()'))
+        print(self.r('search()'))
+        print(self.r('objects()'))
+
+
+    def synchronous_calculation(self, structure,
+                             consAtts, selected_consAtts,
+                             design, selected_designVars,
+                             consLiking):
+        pass
+        """Doc here"""
+        self.structure = structure
+        self.consAtts = consAtts
+        self.selected_consAtts = asciify(selected_consAtts)
+        self.design = design
+        self.selected_designVars = asciify(selected_designVars)
+        self.consLiking = consLiking
+
+        # Generate consumer liking tag acceptable for R
+        # Make list of character to trow away
+        throw_chrs = string.maketrans(string.ascii_letters, ' '*len(string.ascii_letters))
+        # Filter dataset name
+        liking_name = consLiking._ds_name.encode('ascii', 'ignore')
+        self.consLikingTag = liking_name.translate(None, throw_chrs)
+
+        self._copy_values_into_r_env()
+        self._run_conjoint()
+        return self.get_result()
+
 
 
 
@@ -239,3 +276,8 @@ class ConjointMachine(object):
         residTableDict['colNames'] = self.consLiking.variable_names
 
         return residTableDict
+
+
+if __name__ == '__main__':
+    print("Hello World")
+    cm = ConjointMachine()

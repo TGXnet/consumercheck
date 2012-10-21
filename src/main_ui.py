@@ -61,7 +61,7 @@ class MainUi(HasTraits):
     dsl = DatasetCollection()
     ds_event = Event()
     dsname_event = Event()
-    en_advanced = Bool(False)
+#    en_advanced = Bool(False)
 
     def _toggle_advanced(self):
         self.en_advanced = not self.en_advanced
@@ -127,7 +127,7 @@ class MainUi(HasTraits):
         title = 'Consumer Check',
         menubar = MenuBar(
             Menu(import_action, close_action, exit_action, name='&File'),
-            Menu(advanced_action, name='&Settings'),
+#            Menu(advanced_action, name='&Settings'),
             Menu(about_action, name='&Help'),
             ),
         handler = MainViewHandler
