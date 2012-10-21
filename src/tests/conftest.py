@@ -1,11 +1,6 @@
 # Per directory py.test helper functions
-# More info about this file her:
-# http://pytest.org/latest/funcargs.html
-# 
-# Example functions for this file
-# Argument parsers
-# Provider of various objects
-# ds, dsl, mock-mother
+
+import pytest
 
 # Std lib imports
 import logging
@@ -17,10 +12,32 @@ import numpy as np
 # from os.path import dirname, abspath, join
 import os.path as osp
 
-# Enthought Toolkit imports
-import traits.has_traits
-# 0: no check, 1: log warings, 2: error
-traits.has_traits.CHECK_INTERFACES = 1
+
+@pytest.fixture
+def check_trait_interface():
+    import traits.has_traits
+    # 0: no check, 1: log warings, 2: error
+    traits.has_traits.CHECK_INTERFACES = 1
+
+
+# @pytest.fixture(params=['wx', 'qt'])
+# def ets_gui_toolkit(request):
+#     from traits.etsconfig.api import ETSConfig
+#     ETSConfig.toolkit = request.param
+
+
+@pytest.fixture
+def gui_qt():
+    from traits.etsconfig.api import ETSConfig
+    ETSConfig.toolkit = 'qt'
+
+
+@pytest.fixture
+def gui_wx():
+    from traits.etsconfig.api import ETSConfig
+    ETSConfig.toolkit = 'wx'
+
+
 from traits.api import HasTraits, Instance, Bool, Event, on_trait_change
 
 # Local imports
@@ -30,44 +47,17 @@ from dataset_collection import DatasetCollection
 from importer_main import ImporterMain
 
 
-## def pytest_runtest_setup(item):
-##     print("hook in conftest: setting up", item)
-
-
-def pytest_funcarg__ds(request):
-    """Provides a dataset object"""
-    return DataSet()
-
-
-def get_test_ds_path():
+@pytest.fixture
+def tdd():
+    '''Test data dir (tdd)'''
     here = osp.dirname(__file__)
     basedir = osp.dirname(here)
     return osp.join(basedir, 'datasets')
 
 
-def pytest_funcarg__test_ds_dir(request):
-    """Yield a path to the test data directory"""
-    return get_test_ds_path()
-
-
-def pytest_funcarg__simple_plot(request):
-    """Yield a simple plot for testing plot windows"""
-    set1 = np.array([
-        [-0.3, 0.4, 0.9],
-        [-0.1, 0.2, 0.7],
-        [-0.1, 0.3, 0.1],
-        [0.1, 0.2, 0.1],
-        ])
-    label1 = ['s1pt1', 's1pt2', 's1pt3', 's1pt4']
-    expl_vars = [37.34, 9.4, 0.3498]
-    color = (0.7, 0.9, 0.4, 1.0)
-    sp = PCScatterPlot(set1, label1, color, expl_vars)
-    ## sp.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-
-    return sp
-
-
-def make_dsl_mock():
+@pytest.fixture
+def dsc_mock(tdd):
+    '''Data set container/collection mock'''
     dsl = DatasetCollection()
     importer = ImporterMain()
     tdd = get_test_ds_path()
@@ -127,11 +117,6 @@ def make_non_ascii_ds_mock():
     return ds
 
 
-def pytest_funcarg__dsl_data(request):
-    """Makes a test dataset collection"""
-    return make_dsl_mock()
-
-
 class TestContainer(HasTraits):
     """Main frame for testing method tabs
     """
@@ -142,7 +127,7 @@ class TestContainer(HasTraits):
     en_advanced = Bool(True)
 
     def _dsl_default(self):
-        return make_dsl_mock()
+        return dsc_mock()
 
     def _test_subject_changed(self, old, new):
         if old is not None:
@@ -169,3 +154,40 @@ class TestContainer(HasTraits):
 
 def pytest_funcarg__test_container(request):
     return TestContainer()
+
+
+
+def pytest_funcarg__simple_plot(request):
+    """Yield a simple plot for testing plot windows"""
+    set1 = np.array([
+        [-0.3, 0.4, 0.9],
+        [-0.1, 0.2, 0.7],
+        [-0.1, 0.3, 0.1],
+        [0.1, 0.2, 0.1],
+        ])
+    label1 = ['s1pt1', 's1pt2', 's1pt3', 's1pt4']
+    expl_vars = [37.34, 9.4, 0.3498]
+    color = (0.7, 0.9, 0.4, 1.0)
+    sp = PCScatterPlot(set1, label1, color, expl_vars)
+    ## sp.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
+
+    return sp
+
+
+
+
+# Update to py.test 2.3 funcargs
+
+import pytest
+
+# syntetic ds
+
+# vell know ds from file
+
+# pure random ds
+
+# Data set container/collection
+# All datasets
+# Related prefmap datasets
+# Related Conjoint datasets
+# Datasets with vaiable degree of missing data
