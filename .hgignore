@@ -12,6 +12,7 @@ build
 include
 lib
 local
+share
 .installed.cfg
 .ropeproject
 .project
