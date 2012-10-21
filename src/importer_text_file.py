@@ -153,7 +153,7 @@ class ImporterTextFile(HasTraits):
     have_obj_names = Bool(True)
     ds_id = Str()
     ds_name = Str()
-    ds_type = Str()
+    ds_type = Str('Design variable')
     ds_type_list = List(DS_TYPES)
 
     def make_ds_name(self):
@@ -205,11 +205,11 @@ class ImporterTextFile(HasTraits):
                 corner = varnames.pop(0)
                 objnames = pd[corner].view().reshape(len(pd),-1)
                 objnames = objnames[:,0].tolist()
-                self.ds.object_names = [unicode(on).decode('utf-8') for on in objnames]
+                self.ds.object_names = [unicode(on, 'utf-8') for on in objnames]
 
             dt = pd[varnames[0]].dtype
             pd = pd[varnames].view(dt).reshape(len(pd),-1)
-            self.ds.variable_names = [vn.decode('utf-8') for vn in varnames]
+            self.ds.variable_names = [unicode(vn, 'utf-8') for vn in varnames]
 
         self.ds.matrix = pd
         return self.ds
