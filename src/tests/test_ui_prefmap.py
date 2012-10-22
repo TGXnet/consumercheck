@@ -1,16 +1,18 @@
 """Test Prefmap plugin
 
 """
+import pytest
 
 # Stdlib imports
-import pytest
 import numpy as np
 
 # Local imports
-from ui_tab_prefmap import PrefmapModel, PrefmapModelViewHandler, prefmap_tree_view
+from ui_tab_prefmap import PrefmapPlugin
 
 
-def test_ui_mock(test_container):
-    test_container.test_subject = PrefmapModelViewHandler(PrefmapModel())
+def test_ui_mock(plugin_mother_mock):
+    plugin_mother_mock.test_subject = PrefmapPlugin(plugin_mother_mock)
+    # To force populating selection list
+    plugin_mother_mock.ds_event = True
     with np.errstate(invalid='ignore'):
-        ui = test_container.test_subject.configure_traits(view=prefmap_tree_view)
+        ui = plugin_mother_mock.test_subject.configure_traits()
