@@ -2,7 +2,8 @@
 
 Adds statistical methods, user inteface and plots for Prefmap
 """
-
+from traits.etsconfig.api import ETSConfig
+ETSConfig.toolkit = 'qt4'
 # Enthought imports
 from traits.api import HasTraits, Instance, Any
 from traitsui.api import View, Item, TreeEditor, TreeNode
