@@ -205,11 +205,11 @@ class ImporterTextFile(HasTraits):
                 corner = varnames.pop(0)
                 objnames = pd[corner].view().reshape(len(pd),-1)
                 objnames = objnames[:,0].tolist()
-                self.ds.object_names = [unicode(on, 'utf-8') for on in objnames]
+                self.ds.object_names = [unicode(str(on), 'utf-8') for on in objnames]
 
             dt = pd[varnames[0]].dtype
             pd = pd[varnames].view(dt).reshape(len(pd),-1)
-            self.ds.variable_names = [unicode(vn, 'utf-8') for vn in varnames]
+            self.ds.variable_names = [unicode(str(vn), 'utf-8') for vn in varnames]
 
         self.ds.matrix = pd
         return self.ds
