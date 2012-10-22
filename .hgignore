@@ -17,4 +17,3 @@ local
 .project
 .pydevproject
 .settings
-src/prefmap_mvc.py.orig
