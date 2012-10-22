@@ -55,13 +55,14 @@ class ImporterMain(HasTraits):
         )
 
 
-    def import_data(self, file_path, have_variable_names = True, have_object_names = True):
+    def import_data(self, file_path, have_variable_names = True, have_object_names = True, sep='\t'):
         """Read file and return DataSet objekt"""
         importer = self._make_importer(file_path)
         # importer.configure_traits()
         importer.make_ds_name()
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
+        importer.separator = sep
         importer.ds_type = self._pick_ds_type(file_path)
         ds = importer.import_data()
         ds = self._add_generic_name(ds, importer)
@@ -138,6 +139,9 @@ class ImporterMain(HasTraits):
             return ImporterXlsFile(file_path=path)
         elif fext in ['xlsx', 'xlsm']:
             return ImporterXlsxFile(file_path=path)
+        else:
+            return ImporterTextFile(file_path=path)
+
 
     def _pick_ds_type(self, filen):
         '''Available types:

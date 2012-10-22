@@ -122,6 +122,6 @@ tree_view = View(
 
 
 if __name__ == '__main__':
-    from tests.conftest import make_dsl_mock
-    dsl = make_dsl_mock()
+    from tests.conftest import dsc_mock
+    dsl = dsc_mock()
     ui = dsl.configure_traits(view=tree_view)

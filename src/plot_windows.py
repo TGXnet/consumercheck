@@ -174,6 +174,8 @@ class SinglePlotWindow(PlotWindow):
         resizable=True,
         handler=TitleHandler(),
         # kind = 'nonmodal',
+        width = 750,
+        height = 800,
         buttons = ["OK"]
         )
 
@@ -224,6 +226,8 @@ class LinePlotWindow(PlotWindow):
         resizable=True,
         handler=TitleHandler(),
         # kind = 'nonmodal',
+        width = 750,
+        height = 800,
         buttons = ["OK"]
         )
 
@@ -258,6 +262,8 @@ class MultiPlotWindow(HasTraits):
         resizable=True,
         handler=TitleHandler(),
         # kind = 'nonmodal',
+        width = 750,
+        height = 800,
         buttons = ["OK"]
         )
 

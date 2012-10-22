@@ -85,8 +85,8 @@ if __name__ == '__main__':
     print("Test start")
     import pickle
 #    from conjoint_machine import ConjointMachine
-#    from tests.conftest import make_dsl_mock
-#    dsl = make_dsl_mock()
+#    from tests.conftest import dsc_mock
+#    dsl = dsc_mock()
 #    consAttr = dsl.get_by_id('consumerattributes')
 #    odflLike = dsl.get_by_id('odour-flavour_liking')
 #    consistencyLike = dsl.get_by_id('consistency_liking')

@@ -119,7 +119,7 @@ if __name__ == '__main__':
     print("Interactive start")
     def test_print():
         print("Test")
-    from tests.conftest import make_dsl_mock
-    dsl = make_dsl_mock()
+    from tests.conftest import dsc_mock
+    dsl = dsc_mock()
     dsl.on_trait_change(test_print, 'ds_name_event')
     # dsl.print_traits()

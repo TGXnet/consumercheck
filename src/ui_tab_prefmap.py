@@ -84,9 +84,9 @@ class PrefmapPlugin(HasTraits):
 if __name__ == '__main__':
     print("Interactive start")
     import numpy as np
-    from tests.conftest import TestContainer
+    from tests.conftest import PluginMotherMock
 
-    container = TestContainer()
+    container = PluginMotherMock()
     prefmap_plugin = PrefmapPlugin(mother_ref=container)
     # To force populating selection list
     prefmap_plugin.prefmaps_handler.dsl_changed()

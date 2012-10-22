@@ -136,7 +136,7 @@ class MainUi(HasTraits):
 
 if __name__ == '__main__':
     import numpy as np
-    from tests.conftest import make_dsl_mock
+    from tests.conftest import dsc_mock
     lfn = __file__.split('.')[0]+'.log'
     logging.basicConfig(level=logging.INFO,
                         # format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
     logger.info('Start interactive')
 
-    dsl = make_dsl_mock()
+    dsl = dsc_mock()
     mother = MainUi(dsl=dsl)
     # mother = MainUi()
     with np.errstate(invalid='ignore'):

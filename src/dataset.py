@@ -40,7 +40,7 @@ class DataSet(HasTraits):
     """The number array"""
     
     # FIXME: Public
-    _ds_id = Str('unnamed', label = 'Dict key name')
+    _ds_id = Str('no_id', label = 'Dict key name')
     """A *technical* identity for this dataset.
 
     Should not be displayed to the user.

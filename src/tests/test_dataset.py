@@ -15,43 +15,67 @@ from numpy import array, array_equal, allclose
 from dataset import DataSet
 
 
-ref = array(
-    [[ 1.1, 1.2, 1.3],
-     [ 2.1, 2.2, 2.3],
-     [ 3.1, 3.2, 3.3],
-     [ 4.1, 4.2, 4.3]])
-
 refa = array(
     [[ 1.1, 1.2],
      [ 2.1, 2.2]])
 
 
-def test_empty_ds():
-    ds = DataSet()
-    assert ds.n_rows == 0
-    assert ds.n_cols == 0
+@pytest.fixture
+def void_ds():
+    return DataSet()
 
 
-def test_simple_ds():
-    ds = DataSet(matrix=ref)
-    assert ds.n_cols == 3
-    assert ds.n_rows == 4
-    assert len(ds.active_variables) == 3
-    assert len(ds.active_objects) == 4
+@pytest.fixture
+def syntetic_ds():
+    ref = array(
+        [[ 1.1, 1.2, 1.3],
+         [ 2.1, 2.2, 2.3],
+         [ 3.1, 3.2, 3.3],
+         [ 4.1, 4.2, 4.3]])
+    return DataSet(matrix=ref)
 
 
-def test_mod_ds():
-    ds = DataSet(matrix=ref)
-    assert ds.n_rows == 4
-    assert len(ds.active_objects) == 4
-    ds.matrix = refa
-    assert ds.n_rows == 2
-    assert len(ds.active_objects) == 2
+# FIXME:
+# Functionality to test
+# Dataset id uuid, check for uniq id
+# _dataset_type check for expected default type and only allowed types
+# var/obj name consistency, is alway read or generated
+# n_row/n_cols consistent with row and cols
+# Dataset should check consitency and make row/column names
+# active/selected var and objects
+# test subset()
+# Clean api for making consistent DS objet from numpy array
 
 
-def test_subset_ds():
-    ds = DataSet(matrix=ref)
-    ds.active_objects = [0,1]
-    ds.active_variables = [0,1]
-    out = ds.subset()
+
+def test_empty_ds(void_ds):
+    from traits.api import TraitError
+    assert void_ds.n_rows == 0
+    assert void_ds.n_cols == 0
+    assert void_ds.object_names == []
+    assert void_ds.variable_names == []
+    assert void_ds._dataset_type == 'Design variable'
+    with pytest.raises(TraitError):
+        void_ds._dataset_type = 'Tor'
+
+
+def test_simple_ds(syntetic_ds):
+    assert syntetic_ds.n_cols == 3
+    assert syntetic_ds.n_rows == 4
+    assert len(syntetic_ds.active_variables) == 3
+    assert len(syntetic_ds.active_objects) == 4
+
+
+def test_mod_ds(syntetic_ds):
+    assert syntetic_ds.n_rows == 4
+    assert len(syntetic_ds.active_objects) == 4
+    syntetic_ds.matrix = refa
+    assert syntetic_ds.n_rows == 2
+    assert len(syntetic_ds.active_objects) == 2
+
+
+def test_subset_ds(syntetic_ds):
+    syntetic_ds.active_objects = [0,1]
+    syntetic_ds.active_variables = [0,1]
+    out = syntetic_ds.subset()
     assert array_equal(out.matrix, refa)

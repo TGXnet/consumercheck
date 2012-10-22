@@ -379,8 +379,8 @@ a_prefmap_view = View(
 if __name__ == '__main__':
     import numpy as np
     from traits.api import Bool, Int
-    from tests.conftest import make_dsl_mock
-    dsl = make_dsl_mock()
+    from tests.conftest import dsc_mock
+    dsl = dsc_mock()
     dsx = dsl.get_by_id('consumerliking')
     dsy = dsl.get_by_id('sensorydata')
 
