@@ -188,3 +188,112 @@ def pytest_funcarg__simple_plot(request):
     ## sp.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
 
     return sp
+
+
+
+## More ideas
+'''
+# Taken fra a PyConAU presentation
+# http://www.youtube.com/watch?v=DTNejE9EraI
+# Examples
+# https://github.com/lunaryorn/pyudev/blob/develop/tests
+# skip examples
+import sys
+
+win32only = pytest.mark.skipif("sys.platform != 'win32'")
+
+@win32only
+def test_foo():
+    pass
+
+# Example markers
+@py.test.mark.slow
+@py.test.mark.dstAffected
+@py.test.mark.trac1543 # Refere to Trac bug ticket
+@py.test.mark.flaky
+@py.test.mark.unicode
+@py.test.mark.regression
+
+# test expected to fail
+@py.test.mark.xfail(reason='This is a bad idea')
+def test_foo4():
+    assert False
+
+
+# parameterize testing
+# ex to increate the ratio of missing data in a matrix
+@pytest.mark.parameterize(("input", "expected"), [
+        ("3+5", 8),
+        ("2+4", 6),
+        ("6*9", 42),
+])
+def test_eval(input, expected):
+    assert eval(input) == expected
+
+
+# org generate test functions
+
+# monkeypatching - can be problematic
+
+# funcargs - dependency injection
+# https://github.com/lunaryorn/pyudev/blob/develop/tests/test_libudev.py
+
+# Where shoud this code go to enable this
+def pytest_addoption(parser):
+    # pytest hook that adds a GFE specific option.
+
+    # Add options.
+    group = parser.getgroup('graphical forecast editor options')
+    group.addoption('--winpdb', dest='usewinpdb', action='store_true', default=False,
+                    help=('start the WinPDB Python debugger before calling each test function.'
+                          'Suggest only using this with a single test at a time (i.e. -k .'))
+
+
+def pytest_configure(config):
+    # Only do these if this process is the master.
+    if not hasattr(config, 'slaveinput'):
+        config.pluginmanager.register(WinPdbInvoke(), 'winpdb')
+
+
+class WinPdbInvoke(object):
+
+    def __init__(self):
+        print("initialising winpdb invoker")
+
+    def pytest_pyfunc_call(self, pyfuncitem):
+        import rpdb2
+        rpdb2.start_embedded_debugger('0')
+
+'''
+
+# Suggestion for how to simulate a user in testing
+'''
+import time
+import threading
+
+from test_ui import MyClass, MyController
+
+
+class MocAsyncTestUser(threading.Thread):
+
+    def __init__(self, app):
+        super(MocAsyncTestUser, self).__init__()
+        self.ts = app
+        self.in_test = True
+
+
+    def run(self):
+        while(self.in_test):
+            time.sleep(5)
+            self.ts.open_button = True
+            time.sleep(1,7)
+            for win in ts.uis:
+                win.dispose()
+
+
+ts = MyController(MyClass())
+tu = MocAsyncTestUser(ts)
+tu.start()
+ts.configure_traits()
+
+'''
