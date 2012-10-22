@@ -1,7 +1,4 @@
 
-from traits.etsconfig.api import ETSConfig
-ETSConfig.toolkit = 'qt4'
-
 from traits.api import HasTraits, Str, List, Bool, Any, Event, on_trait_change, Tuple
 from traitsui.api import View, Item, TableEditor
 from traitsui.table_column import ObjectColumn
