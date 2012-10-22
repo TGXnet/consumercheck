@@ -31,8 +31,24 @@ class TitleHandler(Handler):
         """
         info.ui.title = info.object.title_text
 
+    
+class PlotWindow(HasTraits):
+    mother_ref = Instance(HasTraits)    
+    
+    next_plot = Button('Next plot')
+    previous_plot = Button('Previous plot')
 
-class SinglePlotWindow(HasTraits):
+
+    @on_trait_change('next_plot')
+    def goto_next_plot(self, obj, name, new):
+        self.mother_ref.show_next_plot(self)
+
+    @on_trait_change('previous_plot')
+    def goto_previous_plot(self, obj, name, new):
+        self.mother_ref.show_previous_plot(self)
+
+
+class SinglePlotWindow(PlotWindow):
     """Window for embedding single plot
 
     """
@@ -149,6 +165,8 @@ class SinglePlotWindow(HasTraits):
                 Item('reset_xy', show_label=False),
                 Item('y_up', show_label=False),
                 Item('y_down', show_label=False),
+                Item('previous_plot', show_label=False),
+                Item('next_plot', show_label=False),
                 orientation="horizontal",
                 ),
             layout="normal",
@@ -160,7 +178,7 @@ class SinglePlotWindow(HasTraits):
         )
 
 
-class LinePlotWindow(HasTraits):
+class LinePlotWindow(PlotWindow):
     """Window for embedding line plot
 
     """
@@ -197,6 +215,8 @@ class LinePlotWindow(HasTraits):
             Label('Scroll to zoom and drag to pan in plot.'),
             Group(
                 Item('view_table', show_label=False),
+                Item('previous_plot', show_label=False),
+                Item('next_plot', show_label=False),
                 orientation="horizontal",
                 ),
             layout="normal",

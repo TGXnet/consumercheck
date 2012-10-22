@@ -155,7 +155,7 @@ class APrefmapHandler(ModelView):
         pc_tab = res.X_scores()
         labels = self.model.sub_dsX.object_names
         expl_vars_x = res.X_calExplVar()
-        plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores")
+        plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores", id="scores")
         if is_subplot:
             plot.add_left_down_action(self.plot_scores)
         return plot
@@ -184,7 +184,7 @@ class APrefmapHandler(ModelView):
             labels = self.model.sub_dsX.variable_names
         else:
             labels = self.model.sub_dsY.variable_names
-        plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings")
+        plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings", id="loadings_x")
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings_x)
         return plot
@@ -206,7 +206,7 @@ class APrefmapHandler(ModelView):
         yLP = res.Y_loadings()
         expl_vars = res.Y_calExplVar()
         labels = self.model.sub_dsY.variable_names
-        plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings")
+        plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings", id="loadings_y")
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings_y)
         return plot
@@ -238,7 +238,7 @@ class APrefmapHandler(ModelView):
         else:
             vnx = self.model.sub_dsY.variable_names
             vny = self.model.sub_dsX.variable_names
-        pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings")
+        pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings", id="corr_loading")
         pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
         if is_subplot:
             pcl.add_left_down_action(self.plot_corr_loading)
@@ -267,7 +267,7 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         sumCalX = res.X_cumCalExplVar()
         sumValX = res.X_cumValExplVar()
-        pl = EVLinePlot(sumCalX, 'darkviolet', 'Calibrated X', title = "Explained Variance X")
+        pl = EVLinePlot(sumCalX, 'darkviolet', 'Calibrated X', title = "Explained Variance X", id="expl_var_x")
         pl.add_EV_set(sumValX, 'darkgoldenrod', 'Validated X')
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var_x)
@@ -290,7 +290,7 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         sumCalY = res.Y_cumCalExplVar()
         sumValY = res.Y_cumValExplVar()
-        pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', title = "Explained Variance Y")
+        pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', title = "Explained Variance Y", id="expl_var_y")
         pl.add_EV_set(sumValY, 'darkgoldenrod', 'Validated Y')
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var_y)
@@ -299,6 +299,7 @@ class APrefmapHandler(ModelView):
 
     def _show_plot_window(self, plot_window):
         # FIXME: Setting parent forcing main ui to stay behind plot windows
+        plot_window.mother_ref = self
         if sys.platform == 'linux2':
             self.plot_uis.append( plot_window.edit_traits(kind='live') )
         elif sys.platform == 'win32':
@@ -310,6 +311,34 @@ class APrefmapHandler(ModelView):
         else:
             raise Exception("Not implemented for this platform: ".format(sys.platform))
 
+    def show_next_plot(self, window):
+            if 'scores' == window.plot.id:
+                window.plot = self._make_corr_load_plot()
+            elif 'corr_loading' == window.plot.id:
+                window.plot = self._make_expl_var_plot_x()
+            elif 'expl_var_x' == window.plot.id:
+                window.plot = self._make_expl_var_plot_y()
+            elif 'expl_var_y' == window.plot.id:
+                window.plot = self._make_loadings_plot_x()
+            elif 'loadings_x' == window.plot.id:
+                window.plot = self._make_loadings_plot_y()
+            elif 'loadings_y' == window.plot.id:
+                window.plot = self._make_scores_plot()             
+                
+
+    def show_previous_plot(self, window):
+            if 'scores' == window.plot.id:
+                window.plot = self._make_loadings_plot_y()
+            elif 'corr_loading' == window.plot.id:
+                window.plot = self._make_scores_plot()
+            elif 'expl_var_x' == window.plot.id:
+                window.plot = self._make_corr_load_plot()
+            elif 'expl_var_y' == window.plot.id:
+                window.plot = self._make_expl_var_plot_x()
+            elif 'loadings_x' == window.plot.id:
+                window.plot = self._make_expl_var_plot_y()
+            elif 'loadings_y' == window.plot.id:
+                window.plot = self._make_loadings_plot_x()
 
 
     ## def closed(self, info, is_ok):

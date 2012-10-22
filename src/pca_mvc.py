@@ -7,7 +7,6 @@ from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from traitsui.menu import OKButton
-from enable.api import BaseTool
 import numpy as np
 
 # Local imports
@@ -197,7 +196,7 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.scores()
         labels = self.model.sub_ds.object_names
-        plot = PCScatterPlot(pc_tab, labels, title="Scores")
+        plot = PCScatterPlot(pc_tab, labels, title="Scores", id='scores')
         if is_subplot:
             plot.add_left_down_action(self.plot_scores)
         return plot
@@ -223,7 +222,7 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.loadings()
         labels = self.model.sub_ds.variable_names
-        plot = PCScatterPlot(pc_tab, labels, title="Loadings")
+        plot = PCScatterPlot(pc_tab, labels, title="Loadings", id="loadings")
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings)
         return plot
@@ -250,7 +249,7 @@ class APCAHandler(ModelView):
         pc_tab = res.corrLoadings()
         expl_vars = res.calExplVar()
         labels = self.model.sub_ds.variable_names
-        pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings")
+        pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings", id="corr_loading")
         pcl.plot_circle(True)
         if is_subplot:
             pcl.add_left_down_action(self.plot_corr_loading)
@@ -278,7 +277,7 @@ class APCAHandler(ModelView):
         res = self.model.result
         sumCal = res.cumCalExplVar()
         sumVal = res.cumValExplVar()
-        pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated' ,title="Explained Variance")
+        pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated' ,title="Explained Variance", id="expl_var")
         pl.add_EV_set(sumVal, 'darkgoldenrod', 'Validated')
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var)
@@ -347,10 +346,33 @@ class APCAHandler(ModelView):
         for i in range(ind_var_msecv.shape[0]):
             tv.add_row(ind_var_msecv[i,:], 'MSECV')
         tv.configure_traits()
+    
+    
+    def show_next_plot(self, window):
+            if 'scores' == window.plot.id:
+                window.plot = self._make_loadings_plot()
+            elif 'loadings' == window.plot.id:
+                window.plot = self._make_corr_load_plot()
+            elif 'corr_loading' == window.plot.id:
+                window.plot = self._make_expl_var_plot()
+            elif 'expl_var' == window.plot.id:
+                window.plot = self._make_scores_plot()
 
 
+    def show_previous_plot(self, window):
+            if 'corr_loading' == window.plot.id:
+                window.plot = self._make_loadings_plot()
+            elif 'expl_var' == window.plot.id:
+                window.plot = self._make_corr_load_plot()
+            elif 'scores' == window.plot.id:
+                window.plot = self._make_expl_var_plot()
+            elif 'loadings' == window.plot.id:
+                window.plot = self._make_scores_plot()
+                
+                
     def _show_plot_window(self, plot_window):
         # FIXME: Setting parent forcing main ui to stay behind plot windows
+        plot_window.mother_ref = self
         if sys.platform == 'linux2':
             self.plot_uis.append( plot_window.edit_traits(kind='live') )
         elif sys.platform == 'win32':
