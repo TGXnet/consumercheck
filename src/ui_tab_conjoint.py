@@ -93,9 +93,9 @@ class ConjointPlugin(HasTraits):
 if __name__ == '__main__':
     print("Interactive start")
     import numpy as np
-    from tests.conftest import TestContainer
+    from tests.conftest import PluginMotherMock
 
-    container = TestContainer()
+    container = PluginMotherMock()
     conjoint_plugin = ConjointPlugin(mother_ref=container)
     conjoint_plugin.conjoints_handler._ds_changed(None)
     with np.errstate(invalid='ignore'):

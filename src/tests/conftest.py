@@ -1,4 +1,13 @@
 # Per directory py.test helper functions
+# FIXME: Update to py.test 2.3 funcargs
+# syntetic ds
+# vell know ds from file
+# pure random ds
+# Data set container/collection
+# All datasets
+# Related prefmap datasets
+# Related Conjoint datasets
+# Datasets with vaiable degree of missing data
 
 import pytest
 
@@ -42,7 +51,6 @@ from traits.api import HasTraits, Instance, Bool, Event, on_trait_change
 
 # Local imports
 from dataset import DataSet
-from plot_pc_scatter import PCScatterPlot
 from dataset_collection import DatasetCollection
 from importer_main import ImporterMain
 
@@ -55,69 +63,85 @@ def tdd():
     return osp.join(basedir, 'datasets')
 
 
+# Available test data
+# Format: folder, file_name, ds_name, ds_type
+
+CONJOINT = [
+    ('Conjoint', 'design.txt', 'Ham design', 'Design variable'),
+    ('Conjoint', 'consumerAttributes.txt', 'Consumers', 'Consumer attributes'),
+    ('Conjoint', 'overall_liking.txt', 'Overall', 'Consumer liking'),
+    ('Conjoint', 'odour-flavour_liking.txt', 'Odour-flavor', 'Consumer liking'),
+    ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),]
+
+
+VINE = [
+    ('Vine', 'A_labels.txt', 'Vine set A', 'Consumer liking'),
+    ('Vine', 'B_labels.txt', 'Vine set B', 'Consumer liking'),
+    ('Vine', 'C_labels.txt', 'Vine set C', 'Consumer liking'),
+    ('Vine', 'D_labels.txt', 'Vine set D', 'Consumer liking'),
+    ('Vine', 'E_labels.txt', 'Vine set E', 'Consumer liking'),]
+
+
+CHEESE = [
+    ('Cheese', 'ConsumerLiking.xls', 'Cheese liking', 'Consumer liking'),
+    ('Cheese', 'ConsumerValues.xls', 'Consumer info', 'Consumer attributes'),
+    ('Cheese', 'SensoryData.xls', 'Sensory profiling', 'Sensory profiling'),]
+
+
+
 @pytest.fixture
-def dsc_mock(tdd):
+def iris_ds(tdd):
+    '''Return the Iris dataset
+
+    http://archive.ics.uci.edu/ml/datasets/Iris
+    '''
+    importer = ImporterMain()
+    iris_url = osp.join(tdd, 'Iris', 'irisNoClass.data')
+    ds = importer.import_data(iris_url, False, False, ',')
+    return ds
+
+
+@pytest.fixture
+def conjoint_dsc():
+    '''Get Conjoint std. test datasets '''
+    dsc = DatasetCollection()
+
+    for mi in CONJOINT:
+        dsc.add_dataset(imp_ds(mi))
+
+    return dsc
+
+
+@pytest.fixture
+def all_dsc():
     '''Data set container/collection mock'''
-    dsl = DatasetCollection()
+    dsc = DatasetCollection()
+
+    ad = CONJOINT + VINE + CHEESE
+
+    for mi in ad:
+        dsc.add_dataset(imp_ds(mi))
+
+    return dsc
+
+
+def imp_ds(ds_meta_info):
+    folder, file_name, ds_name, ds_type = ds_meta_info
     importer = ImporterMain()
-    tdd = get_test_ds_path()
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Vine', 'A_labels.txt')))
-    dsl._datasets['a_labels']._ds_name = 'Set A tull'
-    dsl._datasets['a_labels']._dataset_type = 'Consumer liking'
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Vine', 'C_labels.txt')))
-    dsl._datasets['c_labels']._ds_name = 'Set C tull'
-    dsl._datasets['c_labels']._dataset_type = 'Sensory profiling'
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Cheese', 'ConsumerLiking.txt')))
-    dsl._datasets['consumerliking']._ds_name = 'Forbruker'
-    dsl._datasets['consumerliking']._dataset_type = 'Consumer liking'
-    dsl.add_dataset(importer.import_data(osp.join(tdd, 'Cheese', 'SensoryData.txt')))
-    dsl._datasets['sensorydata']._ds_name = 'Sensorikk'
-    dsl._datasets['sensorydata']._dataset_type = 'Sensory profiling'
-
-    # Conjoint test data
-    dsl.add_dataset(importer.import_data(
-        osp.join(tdd, 'Conjoint', 'design.txt')))
-    dsl._datasets['design']._ds_name = 'Conjoint design'
-    dsl._datasets['design']._dataset_type = 'Design variable'
-
-    dsl.add_dataset(importer.import_data(
-        osp.join(tdd, 'Conjoint', 'consumerAttributes.txt')))
-    dsl._datasets['consumerattributes']._ds_name = 'Consumer Attributes'
-    dsl._datasets['consumerattributes']._dataset_type = 'Consumer attributes'
-
-    dsl.add_dataset(importer.import_data(
-        osp.join(tdd, 'Conjoint', 'odour-flavour_liking.txt')))
-    dsl._datasets['odour-flavour_liking']._ds_name = 'Odour flavor liking'
-    dsl._datasets['odour-flavour_liking']._dataset_type = 'Consumer liking'
-
-    dsl.add_dataset(importer.import_data(
-        osp.join(tdd, 'Conjoint', 'consistency_liking.txt')))
-    dsl._datasets['consistency_liking']._ds_name = 'Consistency liking'
-    dsl._datasets['consistency_liking']._dataset_type = 'Consumer liking'
-
-    dsl.add_dataset(importer.import_data(
-        osp.join(tdd, 'Conjoint', 'overall_liking.txt')))
-    dsl._datasets['overall_liking']._ds_name = 'Overall liking'
-    dsl._datasets['overall_liking']._dataset_type = 'Consumer liking'
-
-    return dsl
-
-
-def make_ds_mock():
-    importer = ImporterMain()
-    tdd = get_test_ds_path()
-    ds = importer.import_data(osp.join(tdd, 'Data_1', 'Data_1_liking.xlsx'))
+    home = tdd()
+    ds_url = osp.join(home, folder, file_name)
+    ds = importer.import_data(ds_url)
+    ds._ds_name = ds_name
+    ds._dataset_type = ds_type
     return ds
 
 
-def make_non_ascii_ds_mock():
-    importer = ImporterMain()
-    tdd = get_test_ds_path()
-    ds = importer.import_data(osp.join(tdd, 'Polser_data_nordisk.xls'))
-    return ds
+@pytest.fixture
+def plugin_mother_mock():
+    return PluginMotherMock()
 
 
-class TestContainer(HasTraits):
+class PluginMotherMock(HasTraits):
     """Main frame for testing method tabs
     """
     test_subject = Instance(HasTraits)
@@ -127,7 +151,7 @@ class TestContainer(HasTraits):
     en_advanced = Bool(True)
 
     def _dsl_default(self):
-        return dsc_mock()
+        return all_dsc()
 
     def _test_subject_changed(self, old, new):
         if old is not None:
@@ -145,20 +169,12 @@ class TestContainer(HasTraits):
         self.ds_event = True
 
 
-    ## @on_trait_change('')
-    ## def _ds_name_updated(self, obj, name, new):
-    ##     print("main: ds name changed")
-    ##     self.dsname_event = True
 
-
-
-def pytest_funcarg__test_container(request):
-    return TestContainer()
-
-
+# FIXME: Old stuff
 
 def pytest_funcarg__simple_plot(request):
     """Yield a simple plot for testing plot windows"""
+    from plot_pc_scatter import PCScatterPlot
     set1 = np.array([
         [-0.3, 0.4, 0.9],
         [-0.1, 0.2, 0.7],
@@ -172,22 +188,3 @@ def pytest_funcarg__simple_plot(request):
     ## sp.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
 
     return sp
-
-
-
-
-# Update to py.test 2.3 funcargs
-
-import pytest
-
-# syntetic ds
-
-# vell know ds from file
-
-# pure random ds
-
-# Data set container/collection
-# All datasets
-# Related prefmap datasets
-# Related Conjoint datasets
-# Datasets with vaiable degree of missing data

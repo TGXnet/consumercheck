@@ -160,10 +160,10 @@ conjoints_view = View(
 if __name__ == '__main__':
     print("conjoint container script start")
     import numpy as np
-    from tests.conftest import TestContainer
+    from tests.conftest import PluginMotherMock
 
     with np.errstate(invalid='ignore'):
-        container = TestContainer()
+        container = PluginMotherMock()
         model = ConjointsContainer(mother_ref=container)
         handler = ConjointsHandler(model=model)
         container.test_subject = handler

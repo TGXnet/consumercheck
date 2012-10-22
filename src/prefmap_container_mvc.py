@@ -157,10 +157,10 @@ prefmaps_view = View(
 if __name__ == '__main__':
     print("prefmap container script start")
     import numpy as np
-    from tests.conftest import TestContainer
+    from tests.conftest import PluginMotherMock
 
     with np.errstate(invalid='ignore'):
-        container = TestContainer()
+        container = PluginMotherMock()
         model = PrefmapsContainer(mother_ref=container)
         handler = PrefmapsHandler(model=model)
         container.test_subject = handler

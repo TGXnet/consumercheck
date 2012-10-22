@@ -95,10 +95,10 @@ pcas_view = View(
 if __name__ == '__main__':
     print("pca container script start")
     import numpy as np
-    from tests.conftest import TestContainer
+    from tests.conftest import PluginMotherMock
 
     with np.errstate(invalid='ignore'):
-        container = TestContainer()
+        container = PluginMotherMock()
         model = PCAsContainer(mother_ref=container)
         handler = PCAsHandler(model=model)
         container.test_subject = handler

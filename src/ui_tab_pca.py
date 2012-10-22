@@ -57,8 +57,8 @@ class PCAPlugin(HasTraits):
     pcas_handler = Instance(PCAsHandler)
     selected_obj = Any()
 
-    def __init__(self, mother_ref, **kwargs):
-        super(PCAPlugin, self).__init__(**kwargs)
+    def __init__(self, mother_ref, *args, **kwargs):
+        super(PCAPlugin, self).__init__(*args, **kwargs)
         model = PCAsContainer(mother_ref=mother_ref)
         self.pcas_handler = PCAsHandler(model=model)
         self.selected_obj = self.pcas_handler
@@ -85,9 +85,9 @@ class PCAPlugin(HasTraits):
 if __name__ == '__main__':
     print("Interactive start")
     import numpy as np
-    from tests.conftest import TestContainer
+    from tests.conftest import PluginMotherMock
 
-    container = TestContainer()
+    container = PluginMotherMock()
     pca_plugin = PCAPlugin(mother_ref=container)
     # To force populating selection list
     pca_plugin.pcas_handler._ds_changed(None)
