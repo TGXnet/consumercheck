@@ -40,11 +40,11 @@ class CombinationTable(HasTraits):
     # FIXME: Implement automatic update of table based on
     # change to row and col set. But I need to implemnt this
     # and to preserv the selection already made.
-    ## @on_trait_change('row_set, col_set', post_init=True)
-    ## def _update_table(self, obj, name, new):
-    ##     print("Name list changed")
-    ##     # self._generate_combinations()
-    ##     self.update_names()
+    #@on_trait_change('row_set, col_set', post_init=True)
+    #def _update_table(self, obj, name, new):
+    #    print("Name list changed")
+    #    self._generate_combinations()
+    #    self.update_names()
 
 
     def get_selected_combinations(self):
@@ -67,9 +67,9 @@ class CombinationTable(HasTraits):
             self.cols[i+1].label = col[1]
 
 
-    @on_trait_change('selected_row')
-    def _selection_changed(self, new):
-        if new:
+    @on_trait_change('selected_row.')
+    def _selection_changed(self, obj, name, old, new):
+        if name != 'selected_row':
             self.combination_updated = True
 
 
