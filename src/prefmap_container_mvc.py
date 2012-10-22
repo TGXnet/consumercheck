@@ -21,16 +21,21 @@ class PrefmapsContainer(HasTraits):
     # Fitting parameters
     standardise = Bool(False)
     pc_to_calc = Int(2)
-    radio=Enum('Internal mapping', 'External mapping')
+    radio = Enum('Internal mapping', 'External mapping')
 
 
-    def add_mapping(self, id_x, id_y):
-        set_x = self.dsl.get_by_id(id_x)
-        set_y = self.dsl.get_by_id(id_y)
-        map_id = id_x+id_y
-        map_name = set_x._ds_name + ' - ' + set_y._ds_name
+    def add_mapping(self, id_c, id_s):
+        ''' Add a preference mapping object
+
+        id_c - Consumer dataset id
+        id_s - Sensory dataset id
+        '''
+        ds_c = self.dsl.get_by_id(id_c)
+        ds_s = self.dsl.get_by_id(id_s)
+        map_id = id_c+id_s
+        map_name = ds_c._ds_name + ' - ' + ds_s._ds_name
         mapping_model = APrefmapModel(
-            mother_ref=self, nid=map_id, name=map_name,  dsX=set_x, dsY=set_y)
+            mother_ref=self, nid=map_id, name=map_name,  ds_C=ds_c, ds_S=ds_s)
         mapping_handler = APrefmapHandler(mapping_model)
         self.mappings.append(mapping_handler)
         return map_name

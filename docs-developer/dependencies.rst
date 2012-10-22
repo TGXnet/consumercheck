@@ -1,39 +1,54 @@
+============================
+ ConsumerCheck dependencies
+============================
 
-ConsumerCheck dependencies
+Python libraries
 
-List:
-numpy==1.5.1
-(scipy==0.10.0)
+======== =========== ==============
+ Name     Tested ver  Function
+======== =========== ==============
+numpy     1.6.2       Baisis for statistics and datatype
+traits    4.2.0       Event and type automation for Traitsui and Chaco
+traitsui  4.2.0       Abstract GUI toolkit
+pyface    4.2.0       Traitsui nees this
+PySide    1.1.2       Python QT GUI toolkit backend
+chaco     4.2.0       Plotting library
+enable    4.2.0       Support for Chaco
+pyparsing 1.5.6       Needed by Enable, not installed automatic by pip
+xlrd      0.8.0       For reading XL spredsheet
+openpyxl  1.5.8       For reading XL spredsheet
+pytest    2.2.4       Testing framework
+pandas    0.8.0       Matrix container
+bbfreeze  1.0.0       Extracting stand alone innstalation for Windows
 
-traits==4.0.0
-traitsui==4.0.1
-chaco==4.0.0
 
-enable==4.0.0
+To build and install some Python libraries some tools and development libraries
+have to be installed on the development system
 
-EnthoughtBase==3.1.0
 
-xlrd==0.6.1
+=============== ===========
+Package          Needed by
+=============== ===========
+deb:cmake         PySide
+deb:libqt4-dev    PySide
+deb:swig          Enable
 
-openpyxl==1.5.6
 
-pyper==1.1.0
+wxPython is by now installed globaly on the development system.
+But the plan is to be independent from this GUI toolkit.
 
-pytest==2.2.1
 
-pandas==0.7.0rc1
+Some of the statistical modules is written in R statistical language.
+So we also need a running R environment.
 
-NB!!
-enable.savage.traits_defs.ui.svg_button avhenger av:
-pyparsing==1.5.6
+Last R ver tested is 2.14.1.
 
-som ikke blir automatisk innstaler
+Needed R packages.
 
-Vi er også avhengig av
-R v2.14.1 med pakkene:
-Alexandras
-mixed model som er avhengig av andre pakker:
+========= ================
+Name       Description
+========= ================
+mixmod     From Alexandra
 
-For MS Windows enduser distribution do we need:
-bbfreeze==1.0.0
-Windows Installer XML (WiX) toolset v3.6 (beta)
+
+Windows Installer XML (WiX) toolset v3.6 (beta) is used to generate windows installer.
