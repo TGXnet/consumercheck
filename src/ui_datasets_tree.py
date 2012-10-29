@@ -1,31 +1,29 @@
-
-
 # stdlib imports
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Str, List, Instance, on_trait_change, Event
+from traits.api import HasTraits, Str, List, Instance, Event
 from traitsui.api import Item, View, TreeEditor, Handler, TreeNode
 from traitsui.tree_node import TreeNode as TN
 # Local imports
 from ds_ui import DataSet, ds_list_tab
 from importer_main import DND
+from ds_matrix_view import matrix_view
 
 
 class Datasets(HasTraits):
     name     = Str( 'FIXME: Datasets default name' )
     imported = List( DataSet )
 
+
     def updateList(self, dcObj):
         self.imported = dcObj.get_dataset_list()
-
     # end Datasets
 
 
 class DatasetsTreeHandler(Handler):
     name    = Str( 'FIXME: This should not be shown' )
     collection = Instance( Datasets, Datasets(name = 'Datasets') )
-
     update_tree = Event()
 
     # Called when some value in object changes
@@ -46,7 +44,6 @@ class DatasetsTreeHandler(Handler):
 
     def _updateDatasetsList(self, obj):
         self.collection.updateList(obj)
-
 # end DatasetTreeHandler
 
 
@@ -80,29 +77,33 @@ class TreeNode(TN):
             return self.icon_open
         return self.icon_group
 
+def show_ds_table(obj):
+    obj.edit_traits(view=matrix_view)
+
 
 # Define the TreeEditor used to display the hierarchy:
 datasets_tree = TreeEditor(
     nodes = [
         TreeNode( node_for  = [ Datasets ],
-                  auto_open = True,
-                  children  = '',
-                  label     = 'name',
-                  view      = View( [ 'name' ] )
-                  ),
+                auto_open = True,
+                children  = '',
+                label     = 'name',
+                view      = View( [ 'name' ] )
+                ),
         TreeNode( node_for  = [ Datasets ],
-                  auto_open = True,
-                  children  = 'imported',
-                  label     = '=Imported',
-                  view      = no_view,
-                  add       = [ DataSet ],
-                  ),
+                auto_open = True,
+                children  = 'imported',
+                label     = '=Imported',
+                view      = no_view,
+                add       = [ DataSet ],
+                ),
         TreeNode( node_for  = [ DataSet ],
-                  auto_open = True,
-                  label     = '_ds_name',
-                  view      = ds_list_tab,
-                  icon_path = 'graphics',
-                  ),
+                auto_open = True,
+                label     = '_ds_name',
+                view      = ds_list_tab,
+                icon_path = 'graphics',
+                on_dclick = show_ds_table,
+                ),
         ],
     )
 
