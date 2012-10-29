@@ -152,6 +152,46 @@ def imp_ds(ds_meta_info):
 
 
 @pytest.fixture
+def conj_res():
+    import pickle
+
+    # Filename for result cache file
+    cache_fn = 'conj_cached.pkl'
+
+    try:
+        fp = open(cache_fn, 'r')
+        print("Read result data from: {0}.".format(cache_fn))
+        res = pickle.load(fp)
+        fp.close()
+    except IOError:
+        print("Cache file ({0}) not found".format(cache_fn))
+
+        from conjoint_machine import ConjointMachine
+        dsc = conjoint_dsc()
+        consAttr = dsc.get_by_id('consumerattributes')
+        odflLike = dsc.get_by_id('odour-flavour_liking')
+        consistencyLike = dsc.get_by_id('consistency_liking')
+        overallLike = dsc.get_by_id('overall_liking')
+        designVar = dsc.get_by_id('design')
+        selected_structure = 2
+        selected_consAttr = ['Sex']
+        selected_designVar = ['Flavour', 'Sugarlevel']
+        consLiking = odflLike
+
+        cm = ConjointMachine()
+        res = cm.synchronous_calculation(selected_structure,
+                                     consAttr, selected_consAttr,
+                                     designVar, selected_designVar,
+                                     consLiking)
+
+        with open(cache_fn, 'w') as fp:
+            pickle.dump(res, fp)
+
+    return res
+
+
+
+@pytest.fixture
 def plugin_mother_mock():
     from traits.api import HasTraits, Instance, Bool, Event, on_trait_change
 

@@ -83,33 +83,11 @@ class InteractionPlot(Plot):
 
 if __name__ == '__main__':
     print("Test start")
-    import pickle
-#    from conjoint_machine import ConjointMachine
-#    from tests.conftest import dsc_mock
-#    dsl = dsc_mock()
-#    consAttr = dsl.get_by_id('consumerattributes')
-#    odflLike = dsl.get_by_id('odour-flavour_liking')
-#    consistencyLike = dsl.get_by_id('consistency_liking')
-#    overallLike = dsl.get_by_id('overall_liking')
-#    designVar = dsl.get_by_id('design')
-#    selected_structure = 2
-#    selected_consAttr = ['Sex']
-#    selected_designVar = ['Flavour', 'Sugarlevel']
-#    consLiking = odflLike
-#
-#    cm = ConjointMachine()
-#    res = cm.synchronous_calculation(selected_structure,
-#                                 consAttr, selected_consAttr,
-#                                 designVar, selected_designVar,
-#                                 consLiking)
-#    with open('precomp.pkl', 'w') as fp:
-#        pickle.dump(res, fp)
-
-    with open('precomp.pkl', 'r') as fp:
-        res = pickle.load(fp)
+    from tests.conftest import conj_res
+    res = conj_res()
 
     mep = MainEffectsPlot(res, 'Sex')
     mep.new_window(True)
-#    iap = InteractionPlot(res, 'Sex', 'Sugarlevel')
-#    iap.new_window(True)
+    iap = InteractionPlot(res, 'Sex', 'Sugarlevel')
+    iap.new_window(True)
     print("The end")
