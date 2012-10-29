@@ -153,7 +153,7 @@ class ImporterMain(HasTraits):
             return 'Design variable'
         elif 'liking' in filen:
             return 'Consumer liking'
-        elif 'attribute' in filen:
+        elif 'attr' in filen:
             return 'Consumer attributes'
         elif 'sensory' in filen:
             return 'Sensory profiling'
