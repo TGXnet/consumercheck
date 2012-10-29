@@ -1,9 +1,7 @@
-from traits.etsconfig.api import ETSConfig
-ETSConfig.toolkit = 'qt4'
-
 # Std libs import
 
 # Enthough imports
+from traits.etsconfig.api import ETSConfig
 from traits.api import Button, Color, List, Font, Property
 from traitsui.api import Controller, View, Item, TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
