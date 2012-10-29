@@ -37,7 +37,6 @@ deb:swig          Enable
 wxPython is by now installed globaly on the development system.
 But the plan is to be independent from this GUI toolkit.
 
-
 Some of the statistical modules is written in R statistical language.
 So we also need a running R environment.
 
@@ -45,10 +44,16 @@ Last R ver tested is 2.14.1.
 
 Needed R packages.
 
+deb:r-base-core
+
 ========= ================
 Name       Description
 ========= ================
 mixmod     From Alexandra
+lme4       deb
+Hmisc      deb
+MASS       deb
+numDeriv   no deb
 
 
 Windows Installer XML (WiX) toolset v3.6 (beta) is used to generate windows installer.
