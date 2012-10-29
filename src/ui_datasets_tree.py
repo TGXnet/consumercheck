@@ -1,31 +1,29 @@
-
-
 # stdlib imports
 import logging
 
 # Enthought imports
-from traits.api import HasTraits, Str, List, Instance, on_trait_change, Event
+from traits.api import HasTraits, Str, List, Instance, Event
 from traitsui.api import Item, View, TreeEditor, Handler, TreeNode
 from traitsui.tree_node import TreeNode as TN
 # Local imports
 from ds_ui import DataSet, ds_list_tab
 from importer_main import DND
+from ds_matrix_view import TableViewer
 
 
 class Datasets(HasTraits):
     name     = Str( 'FIXME: Datasets default name' )
     imported = List( DataSet )
 
+
     def updateList(self, dcObj):
         self.imported = dcObj.get_dataset_list()
-
     # end Datasets
 
 
 class DatasetsTreeHandler(Handler):
     name    = Str( 'FIXME: This should not be shown' )
     collection = Instance( Datasets, Datasets(name = 'Datasets') )
-
     update_tree = Event()
 
     # Called when some value in object changes
@@ -46,22 +44,22 @@ class DatasetsTreeHandler(Handler):
 
     def _updateDatasetsList(self, obj):
         self.collection.updateList(obj)
-
 # end DatasetTreeHandler
 
 
 # Create an empty view for objects that have no data to display:
 no_view = View()
 
-#
-##Gjor saa denne returnerer importert funksjon fra importer_main som gjor nesten det samme som dialog_multi_import per fil i dropped_object
+
+#Gjor saa denne returnerer importert funksjon fra importer_main som gjor nesten
+# det samme som dialog_multi_import per fil i dropped_object
 class TreeNode(TN):
     def drop_object(self, object, dropped_object):
         file_path = dropped_object.path
         ds = DND.dnd_import_data(file_path)
         object.imported.append(ds)
-        
-    
+
+
     def get_icon ( self, object, is_expanded ):
         """ Returns custom icon name or the icon for a specified object.
         """
@@ -79,6 +77,11 @@ class TreeNode(TN):
         if is_expanded:
             return self.icon_open
         return self.icon_group
+
+
+def show_ds_table(obj):
+    tv = TableViewer(obj)
+    tv.edit_traits()
 
 
 # Define the TreeEditor used to display the hierarchy:
@@ -102,6 +105,7 @@ datasets_tree = TreeEditor(
                   label     = '_ds_name',
                   view      = ds_list_tab,
                   icon_path = 'graphics',
+                  on_dclick = show_ds_table,
                   ),
         ],
     )
@@ -122,6 +126,6 @@ tree_view = View(
 
 
 if __name__ == '__main__':
-    from tests.conftest import dsc_mock
-    dsl = dsc_mock()
-    ui = dsl.configure_traits(view=tree_view)
+    from tests.conftest import all_dsc
+    dsc = all_dsc()
+    ui = dsc.configure_traits(view=tree_view)
