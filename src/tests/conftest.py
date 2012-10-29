@@ -1,4 +1,5 @@
 # Per directory py.test helper functions
+'''
 # FIXME: Update to py.test 2.3 funcargs
 # syntetic ds
 # vell know ds from file
@@ -8,7 +9,7 @@
 # Related prefmap datasets
 # Related Conjoint datasets
 # Datasets with vaiable degree of missing data
-
+'''
 import pytest
 
 # Std lib imports
@@ -46,8 +47,6 @@ def gui_wx():
     from traits.etsconfig.api import ETSConfig
     ETSConfig.toolkit = 'wx'
 
-
-from traits.api import HasTraits, Instance, Bool, Event, on_trait_change
 
 # Local imports
 from dataset import DataSet
@@ -87,6 +86,22 @@ CHEESE = [
     ('Cheese', 'ConsumerValues.xls', 'Consumer info', 'Consumer attributes'),
     ('Cheese', 'SensoryData.xls', 'Sensory profiling', 'Sensory profiling'),]
 
+
+
+@pytest.fixture
+def simple_ds():
+    '''Makes a simple syntetic dataset'''
+
+    ds = DataSet()
+    ds.matrix = np.array([
+        [1.1, 1.2, 1.3],
+        [2.1, 2.2, 2.3],
+        [3.1, 3.2, 3.3]])
+
+    ds.variable_names = ['V1', 'V2', 'V3']
+    ds.object_names = ['O1', 'O2', 'O3']
+
+    return ds
 
 
 @pytest.fixture
@@ -138,36 +153,37 @@ def imp_ds(ds_meta_info):
 
 @pytest.fixture
 def plugin_mother_mock():
+    from traits.api import HasTraits, Instance, Bool, Event, on_trait_change
+
+    class PluginMotherMock(HasTraits):
+        """Main frame for testing method tabs
+        """
+        test_subject = Instance(HasTraits)
+        dsl = Instance(DatasetCollection)
+        ds_event = Event()
+        dsname_event = Event()
+        en_advanced = Bool(True)
+
+        def _dsl_default(self):
+            return all_dsc()
+
+        def _test_subject_changed(self, old, new):
+            if old is not None:
+                if hasattr(old, 'mother_ref'):
+                    old.mother_ref = None
+            if new is not None:
+                if hasattr(new, 'mother_ref'):
+                    new.mother_ref = self
+
+
+        # @on_trait_change('dsl', post_init=True)
+        @on_trait_change('dsl')
+        def _dsl_updated(self, obj, name, new):
+            print("main: dsl changed")
+            self.ds_event = True
+
+    
     return PluginMotherMock()
-
-
-class PluginMotherMock(HasTraits):
-    """Main frame for testing method tabs
-    """
-    test_subject = Instance(HasTraits)
-    dsl = Instance(DatasetCollection)
-    ds_event = Event()
-    dsname_event = Event()
-    en_advanced = Bool(True)
-
-    def _dsl_default(self):
-        return all_dsc()
-
-    def _test_subject_changed(self, old, new):
-        if old is not None:
-            if hasattr(old, 'mother_ref'):
-                old.mother_ref = None
-        if new is not None:
-            if hasattr(new, 'mother_ref'):
-                new.mother_ref = self
-
-
-    # @on_trait_change('dsl', post_init=True)
-    @on_trait_change('dsl')
-    def _dsl_updated(self, obj, name, new):
-        print("main: dsl changed")
-        self.ds_event = True
-
 
 
 # FIXME: Old stuff
