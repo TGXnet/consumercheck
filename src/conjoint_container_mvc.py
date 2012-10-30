@@ -1,6 +1,6 @@
 
 # Enthought imports
-from traits.api import HasTraits, Enum, Instance, List, Str, DelegatesTo, on_trait_change
+from traits.api import HasTraits, Enum, Instance, List, Str, DelegatesTo, on_trait_change, Event
 from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor, EnumEditor
 
 # Local imports
@@ -57,6 +57,8 @@ class ConjointsHandler(ModelView):
     available_consumer_attrs = List()
     available_consumer_attr_vars = List()
     available_consumer_likings = List()
+
+    update_conjoint_tree = Event()
 
 
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')

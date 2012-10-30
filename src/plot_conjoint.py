@@ -86,7 +86,7 @@ if __name__ == '__main__':
     from tests.conftest import conj_res
     res = conj_res()
 
-    mep = MainEffectsPlot(res, 'Sex')
+    mep = MainEffectsPlot(res, 'Flavour')
     mep.new_window(True)
     iap = InteractionPlot(res, 'Sex', 'Sugarlevel')
     iap.new_window(True)

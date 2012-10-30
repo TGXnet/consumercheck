@@ -98,7 +98,7 @@ class AConjointHandler(ModelView):
 
     win_uis = List()
     table_win_launchers = List()
-    me_plot_launchers = List()
+    me_plot_launchers = List(Instance(WindowLauncher))
     int_plot_launchers = List()
 
 
@@ -124,6 +124,20 @@ class AConjointHandler(ModelView):
         self.table_win_launchers = [
             WindowLauncher(owner_ref=self, node_name=nn, func_name=fn)
             for nn, fn in table_win_launchers]
+        
+        #FIXME: remove test lines under this line
+        vn = []
+#        for name in self.model.result['lsmeansTable']['data'].dtype.names:
+#            if name != ' Estimate ':
+#                vn.append(name)
+#            else:
+#                print "///else///"
+#                break
+        self.me_plot_launchers = [
+            WindowLauncher(
+                owner_ref=self, node_name=name,
+                func_name='plot_main_effects', func_parms=tuple([name]))
+            for name in vn]
 
 
     # @on_trait_change('model:ccs:is_done')
@@ -153,6 +167,9 @@ class AConjointHandler(ModelView):
                     owner_ref=self, node_name=nn,
                     func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
                 for nn, p_one, p_two in int_plot_launchers]
+            self.print_traits()
+            print"#self.me_plot_launchers:"
+            print self.me_plot_launchers
 
 
     def show_random(self):
@@ -183,6 +200,8 @@ class AConjointHandler(ModelView):
 
 
     def plot_main_effects(self, attr_name):
+        print "starting plot main effects"
+        print attr_name
         mep = MainEffectsPlot(self.model.result, attr_name)
         mep.new_window(True)
 
