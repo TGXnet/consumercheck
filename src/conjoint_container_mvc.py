@@ -45,6 +45,7 @@ class ConjointsContainer(HasTraits):
 
     def remove_mapping(self, mapping_id):
         del(self.mappings[self.mappings.index(mapping_id)])
+        print(len(self.mappings))
 
 
 class ConjointsHandler(ModelView):
@@ -83,7 +84,7 @@ class ConjointsHandler(ModelView):
         self.model.design_set = obj.dsl.get_by_name(new)
         obj.chosen_design_vars = []
         self.available_design_vars = self.model.design_set.variable_names
-
+        
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):

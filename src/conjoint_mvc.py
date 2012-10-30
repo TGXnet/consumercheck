@@ -104,7 +104,7 @@ class AConjointHandler(ModelView):
 
     def __init__(self, *args, **kwargs):
         super(AConjointHandler, self).__init__(*args, **kwargs)
-        self._populate_win_launchers()
+        self._update_nodes()
 
 
     def __eq__(self, other):
@@ -113,26 +113,30 @@ class AConjointHandler(ModelView):
 
     def __ne__(self, other):
         return self.nid != other
+    
+        
+    @on_trait_change('model.mother_ref.chosen_design_vars')
+    def _handle_design_vars(self):
+        self._update_nodes()
+        
+        
+    @on_trait_change('model.mother_ref.chosen_consumer_attr_vars')
+    def _handle_consumer_attr_vars(self):
+        self._update_nodes()
 
 
-    def _populate_win_launchers(self):
+    def _update_nodes(self):
         table_win_launchers = [
             ("LS means", 'show_means'),
             ("Fixed effects", 'show_fixed'),
             ("Random effects", 'show_random')]
-
+    
         self.table_win_launchers = [
             WindowLauncher(owner_ref=self, node_name=nn, func_name=fn)
             for nn, fn in table_win_launchers]
         
-        #FIXME: remove test lines under this line
-        vn = []
-#        for name in self.model.result['lsmeansTable']['data'].dtype.names:
-#            if name != ' Estimate ':
-#                vn.append(name)
-#            else:
-#                print "///else///"
-#                break
+        vn = self.model.chosen_design_vars + self.model.chosen_consumer_attr_vars
+        print vn
         self.me_plot_launchers = [
             WindowLauncher(
                 owner_ref=self, node_name=name,
@@ -140,8 +144,7 @@ class AConjointHandler(ModelView):
             for name in vn]
 
 
-    # @on_trait_change('model:ccs:is_done')
-    def _update_plot_launchers(self, new=True):
+    def _update_launchers(self, new=True):
         if new:
             vn = []
             for name in self.model.result['lsmeansTable']['data'].dtype.names:
@@ -167,16 +170,14 @@ class AConjointHandler(ModelView):
                     owner_ref=self, node_name=nn,
                     func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
                 for nn, p_one, p_two in int_plot_launchers]
-            self.print_traits()
-            print"#self.me_plot_launchers:"
-            print self.me_plot_launchers
+            self.model.mother_ref.update_conjoint_tree = True
 
 
     def show_random(self):
         logger.info('Show randomTable')
         cj_dm = self.cj_res_ds_adapter(self.model.result['randomTable'], (self.name +
                                        ' - ANOVA table for random effects'))
-        self._update_plot_launchers()
+        self._update_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.configure_traits(view=dstv.get_view())
 
@@ -185,7 +186,7 @@ class AConjointHandler(ModelView):
         logger.info('Show fixed ANOVA table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['anovaTable'], (self.name +
                                        ' - ANOVA table for fixed effects'))
-        self._update_plot_launchers()
+        self._update_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.configure_traits(view=dstv.get_view())
 
@@ -194,7 +195,7 @@ class AConjointHandler(ModelView):
         logger.info('Show LS mean ANOVA table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'], (self.name +
                                        ' - LS means (main effect and interaction)'))
-        self._update_plot_launchers()
+        self._update_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.configure_traits(view=dstv.get_view())
 
