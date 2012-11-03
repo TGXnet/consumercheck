@@ -1,6 +1,6 @@
 
 # Enthought imports
-from traits.api import HasTraits, Enum, Instance, List, Str, DelegatesTo, on_trait_change
+from traits.api import HasTraits, Enum, Instance, List, Str, DelegatesTo, on_trait_change, Event
 from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor, EnumEditor
 
 # Local imports
@@ -45,6 +45,7 @@ class ConjointsContainer(HasTraits):
 
     def remove_mapping(self, mapping_id):
         del(self.mappings[self.mappings.index(mapping_id)])
+        print(len(self.mappings))
 
 
 class ConjointsHandler(ModelView):
@@ -57,6 +58,8 @@ class ConjointsHandler(ModelView):
     available_consumer_attrs = List()
     available_consumer_attr_vars = List()
     available_consumer_likings = List()
+
+    update_conjoint_tree = Event()
 
 
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
@@ -81,7 +84,7 @@ class ConjointsHandler(ModelView):
         self.model.design_set = obj.dsl.get_by_name(new)
         obj.chosen_design_vars = []
         self.available_design_vars = self.model.design_set.variable_names
-
+        
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):

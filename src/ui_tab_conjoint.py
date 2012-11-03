@@ -54,6 +54,7 @@ conjoint_tree = TreeEditor(
             on_dclick = dclk_activator,
             ),
         ],
+     refresh='update_conjoint_tree',
      hide_root=True,
      editable=False,
      selected='selected_obj',
@@ -93,9 +94,9 @@ class ConjointPlugin(HasTraits):
 if __name__ == '__main__':
     print("Interactive start")
     import numpy as np
-    from tests.conftest import PluginMotherMock
+    from tests.conftest import plugin_mother_mock
 
-    container = PluginMotherMock()
+    container = plugin_mother_mock()
     conjoint_plugin = ConjointPlugin(mother_ref=container)
     conjoint_plugin.conjoints_handler._ds_changed(None)
     with np.errstate(invalid='ignore'):
