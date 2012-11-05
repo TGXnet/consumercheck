@@ -4,7 +4,7 @@ Created on Sep 11, 2012
 @author: Thomas Graff <graff.thomas@gmail.com>
 '''
 
-from traits.api import HasTraits, Any, Str, Tuple
+from traits.api import HasTraits, Str, Tuple, WeakRef
 
 
 def dclk_activator(obj):
@@ -19,5 +19,5 @@ def dclk_activator(obj):
 class WindowLauncher(HasTraits):
     node_name = Str()
     func_name = Str()
-    owner_ref = Any()
+    owner_ref = WeakRef()
     func_parms = Tuple()

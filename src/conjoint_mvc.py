@@ -97,9 +97,9 @@ class AConjointHandler(ModelView):
     nid = DelegatesTo('model')
 
     win_uis = List()
-    table_win_launchers = List()
-    me_plot_launchers = List(Instance(WindowLauncher))
-    int_plot_launchers = List()
+    table_win_launchers = List(WindowLauncher)
+    me_plot_launchers = List(WindowLauncher)
+    int_plot_launchers = List(WindowLauncher)
 
 
     def __init__(self, *args, **kwargs):

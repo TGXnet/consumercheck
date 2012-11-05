@@ -1,4 +1,8 @@
 
+# Std lib imports
+import sys
+import objgraph
+
 # Enthought imports
 from traits.api import HasTraits, Enum, Instance, List, Str, DelegatesTo, on_trait_change, Event
 from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor, EnumEditor
@@ -45,7 +49,6 @@ class ConjointsContainer(HasTraits):
 
     def remove_mapping(self, mapping_id):
         del(self.mappings[self.mappings.index(mapping_id)])
-        print(len(self.mappings))
 
 
 class ConjointsHandler(ModelView):
