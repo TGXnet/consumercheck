@@ -12,7 +12,7 @@ from plugin_tree_helper import WindowLauncher
 
 
 class MainEffectsPlot(Plot):
-    pl_ref = List(WindowLauncher)
+    #pl_ref = List(WindowLauncher)
 
     def __init__(self, conj_res, attr_name, pl_ref):
         super(MainEffectsPlot, self).__init__()
@@ -39,9 +39,36 @@ class MainEffectsPlot(Plot):
         apd = ArrayPlotData()
         apd.set_data('index', [int(val) for val in selected[attr_name]])
         apd.set_data('values', [float(val) for val in selected[' Estimate ']])
+        apd.set_data('min1', [float(val)-1 for val in selected[' Estimate ']])
+        apd.set_data('min2', [float(val)-2 for val in selected[' Estimate ']])
+        apd.set_data('max1', [float(val)+1 for val in selected[' Estimate ']])
+        apd.set_data('max2', [float(val)+2 for val in selected[' Estimate ']])
+    
         self.data = apd
-        self.plot(('index', 'values'), type='line')
-
+        self.legend.visible = False
+        
+        # Extend the plot's list of drawing layers
+        ndx = self.draw_order.index("plot")
+        self.draw_order[ndx:ndx] = ['line', 'scatter', 'candle']
+        
+        y_name = "line"
+        renderer = self.plot(('index', 'values'), color="black", name=y_name, line_width=1)[0]
+        renderer.set(draw_layer = "line", unified_draw=True)
+        
+        y_name = "scatter"
+        renderer = self.plot(('index', 'values'), color="blue", type='scatter', marker_size=5, name=y_name, line_width=1)[0]
+        renderer.set(draw_layer = "scatter", unified_draw=True)
+        
+        
+        
+        # Create candle plot
+        renderer = self.candle_plot(("index", "min2", "min1", "values", "max1", "max2"),
+            color = "lightgray",
+            bar_line_color = "black",
+            stem_color = "blue",
+            center_color = "red",
+            center_width = 2)
+        #renderer.set(draw_layer = "candle", unified_draw=True)
 
 
 class InteractionPlot(Plot):
