@@ -3,10 +3,8 @@
 import numpy as np
 
 # Enthought library imports
-from chaco.api import Plot, ArrayPlotData, PlotAxis, LabelAxis
-from traits.api import List, HasTraits, implements, String
-from enable.api import ColorTrait
-from chaco.tools.api import ZoomTool, PanTool
+from chaco.api import Plot, ArrayPlotData, LabelAxis
+from traits.api import List
 
 from plugin_tree_helper import WindowLauncher
 
