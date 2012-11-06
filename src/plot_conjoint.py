@@ -3,8 +3,8 @@
 import numpy as np
 
 # Enthought library imports
-from chaco.api import Plot, ArrayPlotData
-from traits.api import List, HasTraits, implements
+from chaco.api import Plot, ArrayPlotData, PlotAxis, LabelAxis
+from traits.api import List, HasTraits, implements, String
 from enable.api import ColorTrait
 from chaco.tools.api import ZoomTool, PanTool
 
@@ -12,7 +12,7 @@ from plugin_tree_helper import WindowLauncher
 
 
 class MainEffectsPlot(Plot):
-    #pl_ref = List(WindowLauncher)
+    pl_ref = List(WindowLauncher)
 
     def __init__(self, conj_res, attr_name, pl_ref):
         super(MainEffectsPlot, self).__init__()
@@ -22,6 +22,7 @@ class MainEffectsPlot(Plot):
 
     def _adapt_conj_main_effect_data(self, conj_res, attr_name):
         ls_means = conj_res['lsmeansTable']['data']
+        ls_means_labels = conj_res['lsmeansTable']['rowNames']
         cn = list(conj_res['lsmeansTable']['colNames'])
         nli = cn.index('Estimate')
         cn = cn[:nli]
@@ -33,16 +34,21 @@ class MainEffectsPlot(Plot):
                 exclude.append(ls_means[col] != 'NA')
         picker = ls_means[attr_name] != 'NA'
         
+        
         for out in exclude:
             picker = np.logical_and(picker, np.logical_not(out))
         selected = ls_means[picker][[attr_name, ' Estimate ']]
+        selected_labels = ls_means_labels[picker]
+                
+        ls_label_names = []
+        ls_label_pos = []
+        for i, pl in enumerate(selected_labels):
+            ls_label_names.append(pl)
+            ls_label_pos.append(i+1)
+        
         apd = ArrayPlotData()
         apd.set_data('index', [int(val) for val in selected[attr_name]])
         apd.set_data('values', [float(val) for val in selected[' Estimate ']])
-        apd.set_data('min1', [float(val)-1 for val in selected[' Estimate ']])
-        apd.set_data('min2', [float(val)-2 for val in selected[' Estimate ']])
-        apd.set_data('max1', [float(val)+1 for val in selected[' Estimate ']])
-        apd.set_data('max2', [float(val)+2 for val in selected[' Estimate ']])
     
         self.data = apd
         self.legend.visible = False
@@ -58,17 +64,14 @@ class MainEffectsPlot(Plot):
         y_name = "scatter"
         renderer = self.plot(('index', 'values'), color="blue", type='scatter', marker_size=5, name=y_name, line_width=1)[0]
         renderer.set(draw_layer = "scatter", unified_draw=True)
-        
-        
-        
-        # Create candle plot
-        renderer = self.candle_plot(("index", "min2", "min1", "values", "max1", "max2"),
-            color = "lightgray",
-            bar_line_color = "black",
-            stem_color = "blue",
-            center_color = "red",
-            center_width = 2)
-        #renderer.set(draw_layer = "candle", unified_draw=True)
+                
+        self.x_axis = LabelAxis(self,
+                            orientation="bottom",
+                            tick_weight=1,
+                            tick_label_rotate_angle = 90,
+                            labels=ls_label_names,
+                            positions = ls_label_pos,
+                            )
 
 
 class InteractionPlot(Plot):
