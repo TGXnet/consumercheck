@@ -1,4 +1,3 @@
-
 # stdlib imports
 import sys
 import logging
@@ -25,6 +24,7 @@ from traitsui.menu import OKButton
 # Local imports
 from dataset import DataSet
 from ds_table_view import DSTableViewer
+from plot_windows import LinePlotWindow
 # from ds_matrix_view import matrix_view
 from conjoint_machine import ConjointMachine
 from plot_conjoint import MainEffectsPlot, InteractionPlot
@@ -136,7 +136,6 @@ class AConjointHandler(ModelView):
             for nn, fn in table_win_launchers]
         
         vn = self.model.chosen_design_vars + self.model.chosen_consumer_attr_vars
-        print vn
         self.me_plot_launchers = [
             WindowLauncher(
                 owner_ref=self, node_name=name,
@@ -152,7 +151,6 @@ class AConjointHandler(ModelView):
                     vn.append(name)
                 else:
                     break
-
             self.me_plot_launchers = [
                 WindowLauncher(
                     owner_ref=self, node_name=name,
@@ -198,14 +196,41 @@ class AConjointHandler(ModelView):
         self._update_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.edit_traits(view=dstv.get_view())
+        
 
+    def plot_main_effects(self, attr_name,):
+        mep = MainEffectsPlot(self.model.result, attr_name.encode('ascii'), self.me_plot_launchers)
+        spw = LinePlotWindow(
+            plot=mep,
+            title_text=attr_name,
+            vistog=False
+            )
+        self._show_plot_window(spw)
+        
+        
+    def show_next_plot(self, window):
+        next_pos=0
+        for i, pl in enumerate(window.plot.pl_ref):
+            if pl.node_name == window.title_text:
+                next_pos = i+1
+        if next_pos>=len(window.plot.pl_ref):
+            next_pos=0
+        next_name = window.plot.pl_ref[next_pos].node_name
+        window.title_text = next_name
+        window.plot = MainEffectsPlot(self.model.result, next_name.encode('ascii') , self.me_plot_launchers)
+        
 
-    def plot_main_effects(self, attr_name):
-        print "starting plot main effects"
-        print attr_name
-        mep = MainEffectsPlot(self.model.result, attr_name)
-        mep.new_window(True)
-
+    def show_previous_plot(self, window):
+        next_pos=0
+        for i, pl in enumerate(window.plot.pl_ref):
+            if pl.node_name == window.title_text:
+                next_pos = i-1
+        if next_pos<0:
+            next_pos=len(window.plot.pl_ref)-1
+        next_name = window.plot.pl_ref[next_pos].node_name
+        window.title_text = next_name
+        window.plot = MainEffectsPlot(self.model.result, next_name.encode('ascii') , self.me_plot_launchers)
+        
 
     def plot_interaction(self, attr_one, attr_two):
         mep = InteractionPlot(self.model.result, attr_one, attr_two)
@@ -224,6 +249,7 @@ class AConjointHandler(ModelView):
 
 
     def _show_plot_window(self, plot_window):
+        plot_window.mother_ref = self
         # FIXME: Setting parent forcing main ui to stay behind plot windows
         if sys.platform == 'linux2':
             self.win_uis.append( plot_window.edit_traits(kind='live') )
@@ -282,8 +308,8 @@ a_conjoint_view = View(
 
 
 if __name__ == '__main__':
-    from tests.conftest import dsc_mock
-    dsl = dsc_mock()
+    from tests.conftest import conjoint_dsc
+    dsl = conjoint_dsc()
 
 
     class MocMother(HasTraits):
@@ -309,6 +335,7 @@ if __name__ == '__main__':
         bt_show_random = Button('Show random table')
         bt_show_fixed = Button('Show fixed table')
         bt_show_means = Button('Show means table')
+        bt_show_flavour_plot = Button('Show flavour plot')
 
 
         @on_trait_change('bt_show_random')
@@ -322,6 +349,10 @@ if __name__ == '__main__':
         @on_trait_change('bt_show_means')
         def _on_bsm(self, obj, name, new):
             self.show_means()
+            
+        @on_trait_change('bt_show_flavour_plot')
+        def _on_bsp(self, obj, name, new):
+            self.plot_main_effects('Flavour')
 
 
         traits_view = View(
@@ -333,6 +364,8 @@ if __name__ == '__main__':
                     Item('bt_show_fixed',
                          show_label=False),
                     Item('bt_show_means',
+                         show_label=False),
+                    Item('bt_show_flavour_plot',
                          show_label=False),
                     show_border=True,
                     ),
