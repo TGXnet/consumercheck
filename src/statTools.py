@@ -345,7 +345,11 @@ class arrayIO:
                 # Convert strings into floats
                 floatList = []
                 for item in rowObjectsList:
-                    floatList.append(float(item))
+                    try:
+                        floatList.append(float(item))
+                    
+                    except ValueError:
+                        floatList.append(numpy.nan)
                     
                 data.append(floatList)
             
@@ -355,4 +359,3 @@ class arrayIO:
         self.varNames = varNames[:]
         self.objNames = objNames[:]
         self.data = numpy.array(data)
-        
