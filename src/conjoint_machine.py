@@ -28,6 +28,10 @@ class ConjointMachine(object):
 
 
     def __init__(self, run_state=None):
+        # Set root folder for R
+        self.r_origo = os.path.dirname(os.path.abspath(__file__))
+        ## self.r_origo = os.getcwd()
+
         if run_state:
             self.run_state=run_state
         else:
@@ -38,9 +42,7 @@ class ConjointMachine(object):
 
 
     def _start_r_interpreter(self):
-#        home = os.path.dirname(os.path.abspath(__file__))
-        home = os.getcwd()
-        Rbin = os.path.join(home, 'R-2.15.1', 'bin', 'R.exe')
+        Rbin = os.path.join(self.r_origo, 'R-2.15.1', 'bin', 'R.exe')
         try:
             self.r = pyper.R(Rbin)
         # On MSWIN is an WindowsError which is a subclass of OSError raised.
@@ -52,9 +54,9 @@ class ConjointMachine(object):
         self.r('library(MixMod)')
         self.r('library(Hmisc)')
         self.r('library(lme4)')
-#        self.r('dir<-"/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27"')
-#        self.r('setwd(dir)')
-        self.r('source(paste(getwd(),"/pgm/conjoint.r",sep=""))')
+        # Set R working directory independent of Python working directory
+        self.r('setwd("{0}")'.format(self.r_origo))
+        self.r('source("pgm/conjoint.r")'.format(self.r_origo))
         print(self.r('.libPaths()'))
         print(self.r('search()'))
         print(self.r('objects()'))
