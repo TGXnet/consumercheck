@@ -57,16 +57,16 @@ class ConjointMachine(object):
         # Set R working directory independent of Python working directory
         self.r('setwd("{0}")'.format(self.r_origo))
         self.r('source("pgm/conjoint.r")'.format(self.r_origo))
+        # Diagnostic output
         print(self.r('.libPaths()'))
         print(self.r('search()'))
         print(self.r('objects()'))
 
 
     def synchronous_calculation(self, structure,
-                             consAtts, selected_consAtts,
-                             design, selected_designVars,
-                             consLiking):
-        pass
+                                consAtts, selected_consAtts,
+                                design, selected_designVars,
+                                consLiking):
         """Doc here"""
         self.structure = structure
         self.consAtts = consAtts
@@ -77,7 +77,8 @@ class ConjointMachine(object):
 
         # Generate consumer liking tag acceptable for R
         # Make list of character to trow away
-        throw_chrs = string.maketrans(string.ascii_letters, ' '*len(string.ascii_letters))
+        throw_chrs = string.maketrans(
+            string.ascii_letters, ' '*len(string.ascii_letters))
         # Filter dataset name
         liking_name = consLiking._ds_name.encode('ascii', 'ignore')
         self.consLikingTag = liking_name.translate(None, throw_chrs)
@@ -103,7 +104,8 @@ class ConjointMachine(object):
 
         # Generate consumer liking tag acceptable for R
         # Make list of character to trow away
-        throw_chrs = string.maketrans(string.ascii_letters, ' '*len(string.ascii_letters))
+        throw_chrs = string.maketrans(
+            string.ascii_letters, ' '*len(string.ascii_letters))
         # Filter dataset name
         liking_name = consLiking._ds_name.encode('ascii', 'ignore')
         self.consLikingTag = liking_name.translate(None, throw_chrs)
