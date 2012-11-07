@@ -3,8 +3,8 @@
 import numpy as np
 
 # Enthought library imports
-from chaco.api import Plot, ArrayPlotData
-from traits.api import List, HasTraits, implements
+from chaco.api import Plot, ArrayPlotData, PlotAxis, LabelAxis
+from traits.api import List, HasTraits, implements, String
 from enable.api import ColorTrait
 from chaco.tools.api import ZoomTool, PanTool
 
@@ -22,6 +22,7 @@ class MainEffectsPlot(Plot):
 
     def _adapt_conj_main_effect_data(self, conj_res, attr_name):
         ls_means = conj_res['lsmeansTable']['data']
+        ls_means_labels = conj_res['lsmeansTable']['rowNames']
         cn = list(conj_res['lsmeansTable']['colNames'])
         nli = cn.index('Estimate')
         cn = cn[:nli]
@@ -33,15 +34,44 @@ class MainEffectsPlot(Plot):
                 exclude.append(ls_means[col] != 'NA')
         picker = ls_means[attr_name] != 'NA'
         
+        
         for out in exclude:
             picker = np.logical_and(picker, np.logical_not(out))
         selected = ls_means[picker][[attr_name, ' Estimate ']]
+        selected_labels = ls_means_labels[picker]
+                
+        ls_label_names = []
+        ls_label_pos = []
+        for i, pl in enumerate(selected_labels):
+            ls_label_names.append(pl)
+            ls_label_pos.append(i+1)
+        
         apd = ArrayPlotData()
         apd.set_data('index', [int(val) for val in selected[attr_name]])
         apd.set_data('values', [float(val) for val in selected[' Estimate ']])
+    
         self.data = apd
-        self.plot(('index', 'values'), type='line')
-
+        self.legend.visible = False
+        
+        # Extend the plot's list of drawing layers
+        ndx = self.draw_order.index("plot")
+        self.draw_order[ndx:ndx] = ['line', 'scatter', 'candle']
+        
+        y_name = "line"
+        renderer = self.plot(('index', 'values'), color="black", name=y_name, line_width=1)[0]
+        renderer.set(draw_layer = "line", unified_draw=True)
+        
+        y_name = "scatter"
+        renderer = self.plot(('index', 'values'), color="blue", type='scatter', marker_size=5, name=y_name, line_width=1)[0]
+        renderer.set(draw_layer = "scatter", unified_draw=True)
+                
+        self.x_axis = LabelAxis(self,
+                            orientation="bottom",
+                            tick_weight=1,
+                            tick_label_rotate_angle = 90,
+                            labels=ls_label_names,
+                            positions = ls_label_pos,
+                            )
 
 
 class InteractionPlot(Plot):
