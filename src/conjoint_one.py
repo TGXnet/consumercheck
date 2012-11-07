@@ -9,6 +9,7 @@ Wraps Alexandra's conjoint function and accesses it via pyper
 """
 
 # Import necessary modules
+import os.path
 import pyper
 import numpy as np
 
@@ -24,9 +25,10 @@ r('library(lme4)')
 # Set working directory where latest version of Alexandra's conjoint package
 # is stored. SPECIFIC FOR OLI'S PC 
 # r('dir<-"//ad.local/dfs/AAS-Users/oliver.tomic/Documents/Work/ConsumerCheck/ConjointConsumerCheck/ConjointClassNew"')
-r('dir<-"~/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_27_04_2012"')
-r('setwd(dir)')
-r('source(paste(getwd(),"/pgm/conjoint.r",sep=""))')
+# r('dir<-"~/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_27_04_2012"')
+r_origo = os.path.dirname(os.path.abspath(__file__))
+r('setwd("{0}")'.format(r_origo))
+r('source("pgm/conjoint.r")')
 
 
 
@@ -322,7 +324,7 @@ class RConjoint:
         #print; print '----- 8 -----'; print
         
         
-        rCommand_runAnalysis = 'res <- conjoint(structure={0}, conjDF, response, fixed, random, facs)'.format(structure)
+        rCommand_runAnalysis = 'res <- ConjointNoMerge(structure={0}, conjDF, response, fixed, random, facs)'.format(structure)
 
 
         #rCommand_runAnalysis = 'res.gm <- conjoint(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(structure)
