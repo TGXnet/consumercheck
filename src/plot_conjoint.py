@@ -12,7 +12,7 @@ from plugin_tree_helper import WindowLauncher
 
 
 class MainEffectsPlot(Plot):
-    pl_ref = List(WindowLauncher)
+    ## pl_ref = List(WindowLauncher)
 
     def __init__(self, conj_res, attr_name, pl_ref):
         super(MainEffectsPlot, self).__init__()
