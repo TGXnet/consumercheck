@@ -17,7 +17,7 @@ class ConjointCalcThread(Thread):
     def run(self):
         self.run_state.is_done = False
         self.run_state.messages = 'Starts calculating\n'
-        rCommand_runAnalysis = 'res.gm <- conjoint(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
+        rCommand_runAnalysis = 'res.gm <- ConjointMerge(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
         self.run_state.messages += self.r(rCommand_runAnalysis)
         self.run_state.messages += 'End calculation\n'
         self.run_state.is_done = True
@@ -191,7 +191,7 @@ class ConjointMachine(object):
 
 
     def _run_conjoint(self):
-        rCommand_runAnalysis = 'res.gm <- conjoint(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
+        rCommand_runAnalysis = 'res.gm <- ConjointMerge(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
         print(self.r(rCommand_runAnalysis))
 
 
