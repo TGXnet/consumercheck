@@ -7,23 +7,6 @@ import numpy as np
 from threading import Thread
 
 
-def asciify(names):
-    """Take a list of unicodes an tur each elemet into ascii strings"""
-    return [n.encode('ascii', 'ignore') for n in names]
-
-
-class ConjointCalcThread(Thread):
-
-    def run(self):
-        self.run_state.is_done = False
-        self.run_state.messages = 'Starts calculating\n'
-        rCommand_runAnalysis = 'res.gm <- ConjointMerge(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
-        self.run_state.messages += self.r(rCommand_runAnalysis)
-        self.run_state.messages += 'End calculation\n'
-        self.run_state.is_done = True
-
-
-
 class ConjointMachine(object):
 
 
@@ -280,6 +263,22 @@ class ConjointMachine(object):
         residTableDict['colNames'] = self.consLiking.variable_names
 
         return residTableDict
+
+
+class ConjointCalcThread(Thread):
+
+    def run(self):
+        self.run_state.is_done = False
+        self.run_state.messages = 'Starts calculating\n'
+        rCommand_runAnalysis = 'res.gm <- ConjointMerge(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
+        self.run_state.messages += self.r(rCommand_runAnalysis)
+        self.run_state.messages += 'End calculation\n'
+        self.run_state.is_done = True
+
+
+def asciify(names):
+    """Take a list of unicodes an tur each elemet into ascii strings"""
+    return [n.encode('ascii', 'ignore') for n in names]
 
 
 if __name__ == '__main__':
