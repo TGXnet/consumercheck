@@ -37,9 +37,9 @@ class RConjoint:
     A wrapper around Alexandra's conjoint function in R
     """
     
-    def __init__(self, structure, \
-                 consAtts, selected_consAtts, \
-                 design, selected_designVars, \
+    def __init__(self, structure,
+                 consAtts, selected_consAtts,
+                 design, selected_designVars,
                  consLiking, consLikingTag):
         """
         Input:
@@ -59,6 +59,15 @@ class RConjoint:
         
         type <consLikngTag>: string (data array tag from ConsumerCheck)
         """
+
+        self.structure = structure
+        self.consAtts = consAtts
+        self.selected_consAtts = selected_consAtts
+        self.design = design
+        self.selected_designVars = selected_designVars
+        self.consLiking = consLiking
+        self.consLikingTag = consLikingTag
+
         
         #print; print '----- 1 -----'; print
         
@@ -70,31 +79,37 @@ class RConjoint:
         print 'Response:', consLikingTag
         
         #print; print '----- 2 -----'; print
-        
-        
-        # Merge data from the following data arrays: consumer liking, 
+
+        self._data_merge()
+        self._handle_missing_values()
+        self._configure_conjoint()
+        self._run_conjoint()
+
+
+
+    def _data_merge(self):
+        # Merge data from the following data arrays: consumer liking,
         # consumer attributes and design
         
         # Get content from design array
-        desData = design.data
-        desVarNames = design.varNames
-        desObjNames = design.objNames
+        desData = self.design.data
+        desVarNames = self.design.varNames
+        desObjNames = self.design.objNames
         
         # Get content form cosumer liking array
-        consData = consLiking.data
-        consVarNames = consLiking.varNames
+        consData = self.consLiking.data
+        consVarNames = self.consLiking.varNames
         
         # Get content from consumer attributes array
-        attrData = consAtts.data
-        attrVarNames = consAtts.varNames
+        attrData = self.consAtts.data
+        attrVarNames = self.consAtts.varNames
         
         # Make list with column names
-        headerList = ['Consumer', consLikingTag]
-        headerList.extend(desVarNames)
-        headerList.extend(attrVarNames)
-        
-        
-        
+        self.headerList = ['Consumer', self.consLikingTag]
+        self.headerList.extend(desVarNames)
+        self.headerList.extend(attrVarNames)
+
+
         # Now construct conjoint matrix
         # -----------------------------
         
@@ -113,9 +128,7 @@ class RConjoint:
         for ind, item in enumerate(desObjNames):
             infoDict['product names'][ind] = item
         
-        
         self.infoLabelDict = infoDict
-        
         
         allConsList = []
         consRows = np.shape(desData)[0]
@@ -132,11 +145,11 @@ class RConjoint:
             consList.append(consData[:,consInd].reshape(-1,1))
             
             # Append design matrix
-            consList.append(desData)    
+            consList.append(desData)
         
             # Append consumer attributes for each row (there are as many rows as there
             # are products for the specific consumer)   
-            attrBlockList = []    
+            attrBlockList = []
             attrList = attrData[consInd,:]
             for rowInd in range(consRows):
                 attrBlockList.append(attrList)
@@ -156,17 +169,19 @@ class RConjoint:
         #print; print '----- 3 -----'; print
 
 
+    def _handle_missing_values(self):
+
         # Now check if the array has missing values. If it has, then missing values 
         # need to replaced with some floats (1234.1234) before submission to R. 
         # PypeR does not handle missing values properly, which is why the 
         # missing values are replaced
         # with floats. The missing values are then re-inserted in R.
-        fD_bool = np.isnan(finalData)
+        fD_bool = np.isnan(self.finalData)
         
         # Make a copy of the original final data array that then will be submitted to
         # R. If it is without missing data it will be submitted as is. If missing 
         # values are present, then the copy of final data array will be modified. 
-        finalData_copy = np.copy(finalData)
+        finalData_copy = np.copy(self.finalData)
         
         if True in fD_bool:
             print 'There are missing values'
@@ -177,7 +192,7 @@ class RConjoint:
             # Loop through the construced array and detect where missing values are
             # positioned and replace missing value with a float in the copy of the
             # constructed matrix.
-            for ind, item in np.ndenumerate(finalData):
+            for ind, item in np.ndenumerate(self.finalData):
                 
                 if np.isnan(item) == True:
                     nanPos.append([ind[0]+1, ind[1]+1])
@@ -193,6 +208,8 @@ class RConjoint:
         
         # Transfer consumer attribute data from Python to R and build data 
         # frame in R space
+
+        # TODO: new functionality
         
         # Transfer consumer attribute data from Python to R and build data 
         # frame in R space
@@ -204,12 +221,12 @@ class RConjoint:
                 print pos
                 r('conjData[{0},{1}] <- NA'.format(pos[0],pos[1]))
         
-        r['conjDataVarNames'] = headerList
+        r['conjDataVarNames'] = self.headerList
         r('conjDF <- as.data.frame(conjData)')
         r('colnames(conjDF) <- conjDataVarNames')        
         
-        
-        
+
+        # FIXME: Old non merge code
 #        # Transfer data from Python to R and build data 
 #        # frame in R space
 #        r['dataMat'] = finalData
@@ -253,7 +270,6 @@ class RConjoint:
         # Make row and column names for class function '.residualsTable',
         # since the R function provides only a long vector instad of an array
         # with row and column names.
-        self.consLiking = consLiking
         
 
 
@@ -268,32 +284,35 @@ class RConjoint:
         #print; print '----- 6 -----'; print
         
         # Construct R list with R lists of product design variables as well as
-        # consumer attributes.        
-        
+        # consumer attributes.
+
+
+    def _configure_conjoint(self):
+        # FIXME: New functionality
         # Construct string holding design variables that is needed for 
         # construction of rCommand_fixedFactors
-        for desInd, desVar in enumerate(selected_designVars):
+        for desInd, desVar in enumerate(self.selected_designVars):
             
             if desInd == 0:
-                selDesVarStr = '"{0}"'.format(selected_designVars[desInd])
+                selDesVarStr = '"{0}"'.format(self.selected_designVars[desInd])
             
             else:
-                newStrPart = '"{0}"'.format(selected_designVars[desInd])
+                newStrPart = '"{0}"'.format(self.selected_designVars[desInd])
                 selDesVarStr = selDesVarStr + ',' + newStrPart
         
        
         # Construct string holding consumer attributes that is needed for 
         # construction of rCommand_fixedFactors
-        for consInd, consAtt in enumerate(selected_consAtts):
+        for consInd, consAtt in enumerate(self.selected_consAtts):
             
             if consInd == 0:
-                selConsAttStr = '"{0}"'.format(selected_consAtts[consInd])
+                selConsAttStr = '"{0}"'.format(self.selected_consAtts[consInd])
             
             else:
-                newStrPart = '"{0}"'.format(selected_consAtts[consInd])
+                newStrPart = '"{0}"'.format(self.selected_consAtts[consInd])
                 selConsAttStr = selConsAttStr + ',' + newStrPart
         
-        if len(selected_consAtts) == 1:    
+        if len(self.selected_consAtts) == 1:    
             rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer={1})'.format(selDesVarStr, selConsAttStr)
         else:
             rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer=c({1}))'.format(selDesVarStr, selConsAttStr)
@@ -310,11 +329,11 @@ class RConjoint:
         # factors, both random and fixed. Define also response since the
         # name will be used in result tables.
         r['random'] = 'Consumer'
-        r['response'] = consLikingTag
+        r['response'] = self.consLikingTag
         
         facs = ['Consumer']
-        facs.extend(selected_designVars)
-        facs.extend(selected_consAtts)
+        facs.extend(self.selected_designVars)
+        facs.extend(self.selected_consAtts)
         r['facs'] = facs
         
         #print(r('random'))
@@ -322,9 +341,10 @@ class RConjoint:
         #print(r('facs'))
         
         #print; print '----- 8 -----'; print
-        
-        
-        rCommand_runAnalysis = 'res <- ConjointNoMerge(structure={0}, conjDF, response, fixed, random, facs)'.format(structure)
+
+
+    def _run_conjoint(self):
+        rCommand_runAnalysis = 'res <- ConjointNoMerge(structure={0}, conjDF, response, fixed, random, facs)'.format(self.structure)
 
 
         #rCommand_runAnalysis = 'res.gm <- conjoint(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(structure)
