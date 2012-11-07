@@ -20,15 +20,15 @@ import statTools as st
 #==============================================================================
 
 # Consumer attributes
-consAttr = st.arrayIO('consumerAttributes.txt')
+consAttr = st.arrayIO('datasets/Conjoint/consumerAttributes.txt')
 
 # Three different types of liking
-odflLike = st.arrayIO('odour-flavour_liking.txt')
-consistencyLike = st.arrayIO('consistency_liking.txt')
-overallLike = st.arrayIO('overall_liking.txt')
+odflLike = st.arrayIO('datasets/Conjoint/odour-flavour_liking.txt')
+consistencyLike = st.arrayIO('datasets/Conjoint/consistency_liking.txt')
+overallLike = st.arrayIO('datasets/Conjoint/overall_liking.txt')
 
 # Design
-designVar = st.arrayIO('design.txt')
+designVar = st.arrayIO('datasets/Conjoint/design.txt')
 
 
 #==============================================================================
@@ -76,5 +76,3 @@ lsmeansTable = conjMod.lsmeansTable()
 lsmeansDiffTable = conjMod.lsmeansDiffTable()
 residualsTable = conjMod.residualsTable()
 infoDict = conjMod.infoDict()
-
-
