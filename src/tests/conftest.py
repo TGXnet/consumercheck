@@ -17,6 +17,7 @@ import logging
 
 # Configure logging
 logging.basicConfig(
+    # level=logging.WARNING,
     level=logging.INFO,
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
     # datefmt='%m-%d %H:%M',
