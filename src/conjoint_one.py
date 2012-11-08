@@ -81,6 +81,8 @@ class RConjoint:
         #print; print '----- 2 -----'; print
 
         self._data_merge()
+        # Oliver started to implement this
+        # self._category_conversion()
         self._handle_missing_values()
         self._configure_conjoint()
         self._run_conjoint()
@@ -112,23 +114,6 @@ class RConjoint:
 
         # Now construct conjoint matrix
         # -----------------------------
-        
-        # The final data matrix needs to be numerical, when submitted to R via PypeR 
-        # and should not be mixed with strings and numbers. Therefore the link between
-        # the number representing a consumer ID, consumer attribute, design factor or
-        # product name is stored here. 
-        infoDict = {}
-        infoDict['consumer ID'] = {}
-        infoDict['consumer attributes'] = {}
-        infoDict['product names'] = {}
-        
-        for ind, item in enumerate(consVarNames):
-            infoDict['consumer ID'][item] = ind
-        
-        for ind, item in enumerate(desObjNames):
-            infoDict['product names'][ind] = item
-        
-        self.infoLabelDict = infoDict
         
         allConsList = []
         consRows = np.shape(desData)[0]
@@ -167,6 +152,27 @@ class RConjoint:
         #print finalData
 
         #print; print '----- 3 -----'; print
+
+
+
+    def _category_conversion(self):
+        # The final data matrix needs to be numerical, when submitted to R via PypeR 
+        # and should not be mixed with strings and numbers. Therefore the link between
+        # the number representing a consumer ID, consumer attribute, design factor or
+        # product name is stored here. 
+        infoDict = {}
+        infoDict['consumer ID'] = {}
+        infoDict['consumer attributes'] = {}
+        infoDict['product names'] = {}
+        
+        for ind, item in enumerate(consVarNames):
+            infoDict['consumer ID'][item] = ind
+        
+        for ind, item in enumerate(desObjNames):
+            infoDict['product names'][ind] = item
+        
+        self.infoLabelDict = infoDict
+
 
 
     def _handle_missing_values(self):
