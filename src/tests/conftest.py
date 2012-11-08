@@ -116,7 +116,7 @@ def iris_ds(tdd):
     return ds
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def conjoint_dsc():
     '''Get Conjoint std. test datasets '''
     dsc = DatasetCollection()
@@ -127,7 +127,7 @@ def conjoint_dsc():
     return dsc
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def all_dsc():
     '''Data set container/collection mock'''
     dsc = DatasetCollection()
