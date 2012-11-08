@@ -36,7 +36,7 @@ designVar = st.arrayIO('datasets/Conjoint/design.txt')
 #==============================================================================
 
 # From radio button box choose model structure (possible choices are 1, 2 or 3)
-selected_structure = 2
+selected_structure = 1
 
 # From check box list submit selected consumer attributes.
 # They are found in consAtt.varNames
@@ -75,4 +75,5 @@ anovaTable = conjMod.anovaTable()
 lsmeansTable = conjMod.lsmeansTable()
 lsmeansDiffTable = conjMod.lsmeansDiffTable()
 residualsTable = conjMod.residualsTable()
-infoDict = conjMod.infoDict()
+# infoDict = conjMod.infoDict()
+print(lsmeansTable.keys())
