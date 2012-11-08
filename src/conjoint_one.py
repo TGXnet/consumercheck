@@ -83,7 +83,8 @@ class RConjoint:
         self._data_merge()
         # Oliver started to implement this
         # self._category_conversion()
-        self._handle_missing_values()
+        # self._handle_missing_values()
+        self._move_data_to_r()
         self._configure_conjoint()
         self._run_conjoint()
 
@@ -229,9 +230,24 @@ class RConjoint:
         
         r['conjDataVarNames'] = self.headerList
         r('conjDF <- as.data.frame(conjData)')
-        r('colnames(conjDF) <- conjDataVarNames')        
-        
+        r('colnames(conjDF) <- conjDataVarNames')
 
+
+
+
+    def _move_data_to_r(self):
+        # Transfer consumer attribute data from Python to R and build data 
+        # frame in R space
+        r['conjData'] = self.finalData
+        r['conjDataVarNames'] = self.headerList
+        r('conjDF <- as.data.frame(conjData)')
+        r('colnames(conjDF) <- conjDataVarNames')
+
+
+
+
+    def _old_code(self):
+        pass
         # FIXME: Old non merge code
 #        # Transfer data from Python to R and build data 
 #        # frame in R space
@@ -291,6 +307,10 @@ class RConjoint:
         
         # Construct R list with R lists of product design variables as well as
         # consumer attributes.
+
+
+
+
 
 
     def _configure_conjoint(self):
