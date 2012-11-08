@@ -1,7 +1,6 @@
 
 # Std lib imports
 import sys
-import objgraph
 
 # Enthought imports
 from traits.api import HasTraits, Enum, Instance, List, Str, DelegatesTo, on_trait_change, Event
