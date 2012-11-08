@@ -17,8 +17,8 @@ import logging
 
 # Configure logging
 logging.basicConfig(
-    # level=logging.WARNING,
-    level=logging.INFO,
+    level=logging.WARNING,
+    # level=logging.INFO,
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
     # datefmt='%m-%d %H:%M',
     datefmt='%y%m%dT%H:%M:%S',
@@ -75,11 +75,14 @@ def tdd():
 # Format: folder, file_name, ds_name, ds_type
 
 CONJOINT = [
-    ('Conjoint', 'design.txt', 'Ham design', 'Design variable'),
+    ('Conjoint', 'design.txt', 'Tine yogurt design', 'Design variable'),
     ('Conjoint', 'consumerAttributes.txt', 'Consumers', 'Consumer attributes'),
     ('Conjoint', 'overall_liking.txt', 'Overall', 'Consumer liking'),
     ('Conjoint', 'odour-flavour_liking.txt', 'Odour-flavor', 'Consumer liking'),
-    ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),]
+    ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),
+    ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Design variable'),
+    ('BarleyBread', 'BB_E_consAttr.txt', 'Estland? consumers', 'Consumer attributes'),
+    ('BarleyBread', 'BB_E_liking.txt', 'Estland? liking data', 'Consumer liking'),]
 
 
 VINE = [
