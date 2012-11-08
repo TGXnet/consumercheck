@@ -17,7 +17,7 @@ else:
 class ConjointMachine(object):
 
     def __init__(self, run_state=None):
-        self.show = False
+        self.show = True
         # Set root folder for R
         self.r_origo = os.path.dirname(os.path.abspath(__file__))
         ## self.r_origo = os.getcwd()
@@ -29,15 +29,15 @@ class ConjointMachine(object):
         self.conjoint_calc_thread = None
         self._start_r_interpreter()
         self._load_conjoint_resources()
+        if self.show: print("R env setup completed")
 
 
     def _start_r_interpreter(self):
         Rbin = os.path.join(self.r_origo, 'R-2.15.1', 'bin', 'R.exe')
-        try:
-            self.r = pyper.R(Rbin, use_pandas=False)
-        # On MSWIN is an WindowsError which is a subclass of OSError raised.
-        except OSError:
-            self.r = pyper.R(use_pandas=False)
+        if not os.path.exists(Rbin):
+            Rbin = 'R'
+            if self.show: print("We are depending on systemwide R instalation")
+        self.r = pyper.R(RCMD=Rbin, use_pandas=False)
 
 
     def _load_conjoint_resources(self):
@@ -70,6 +70,43 @@ class ConjointMachine(object):
          * py_merge: bool Indicated whether the merge of the data should happend
          in python or in R.
         """
+        self._prepare_data(structure, consAtts, selected_consAtts,
+                           design, selected_designVars, consLiking, py_merge)
+        self._run_conjoint()
+        return self.get_result()
+
+
+    def schedule_calculation(self, structure,
+                             consAtts, selected_consAtts,
+                             design, selected_designVars,
+                             consLiking, py_merge=True):
+        """Starts a conjoint calculation and return when the result is ready
+        Parameters:
+         * structure: 1, 2 or 3
+         * consAttrs: ds type
+         * selected_consAttrs: List with consAttrs column names
+         * design: ds type
+         * selected_designVars: List with design column names
+         * consLiking: ds type
+         * py_merge: bool Indicated whether the merge of the data should happend
+         in python or in R.
+        """
+
+        if self.conjoint_calc_thread and self.conjoint_calc_thread.is_alive():
+            print("Calculation is already running")
+        else:
+            self._prepare_data(structure, consAtts, selected_consAtts,
+                               design, selected_designVars, consLiking, py_merge)
+            self.conjoint_calc_thread = ConjointCalcThread(target=None, args=(), kwargs={})
+            self.conjoint_calc_thread.conj = self
+            self.conjoint_calc_thread.run_state = self.run_state
+            self.conjoint_calc_thread.start()
+
+
+
+    def _prepare_data(self, structure, consAtts, selected_consAtts,
+                      design, selected_designVars, consLiking, py_merge):
+
         self.structure = structure
         self.consAtts = consAtts
         self.selected_consAtts = asciify(selected_consAtts)
@@ -89,43 +126,7 @@ class ConjointMachine(object):
         if self.py_merge:
             self._data_merge()
         self._copy_values_into_r_env()
-        self._run_conjoint()
-        return self.get_result()
 
-
-
-
-    def schedule_calculation(self, structure,
-                             consAtts, selected_consAtts,
-                             design, selected_designVars,
-                             consLiking):
-        """Doc here"""
-        self.structure = structure
-        self.consAtts = consAtts
-        self.selected_consAtts = asciify(selected_consAtts)
-        self.design = design
-        self.selected_designVars = asciify(selected_designVars)
-        self.consLiking = consLiking
-
-        # Generate consumer liking tag acceptable for R
-        # Make list of character to trow away
-        throw_chrs = string.maketrans(
-            string.ascii_letters, ' '*len(string.ascii_letters))
-        # Filter dataset name
-        liking_name = consLiking._ds_name.encode('ascii', 'ignore')
-        self.consLikingTag = liking_name.translate(None, throw_chrs)
-
-        self._copy_values_into_r_env()
-
-        if self.conjoint_calc_thread and self.conjoint_calc_thread.is_alive():
-            print("Calculation is already running")
-        else:
-            self.conjoint_calc_thread = ConjointCalcThread(target=None, args=(), kwargs={})
-            self.conjoint_calc_thread.r = self.r
-            self.conjoint_calc_thread.run_state = self.run_state
-            self.conjoint_calc_thread.structure = self.structure
-            self.conjoint_calc_thread.start()
-        # self._run_conjoint()
 
 
     def _data_merge(self):
@@ -250,7 +251,7 @@ class ConjointMachine(object):
 
         # rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer={1})'.format(selDesVarStr, selConsAttStr)
 
-        if len(self.selected_consAtts) == 1:    
+        if len(self.selected_consAtts) == 1:
             rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer={1})'.format(selDesVarStr, selConsAttStr)
         else:
             rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer=c({1}))'.format(selDesVarStr, selConsAttStr)
@@ -269,15 +270,19 @@ class ConjointMachine(object):
         self.r['facs'] = facs
 
 
-
     def _run_conjoint(self):
+        rCommand_runAnalysis = self.get_conj_r_cmd()
+        r_resp = self.r(rCommand_runAnalysis)
+        if self.show:
+            print(r_resp)
+
+
+    def get_conj_r_cmd(self):
         if self.py_merge:
             rCommand_runAnalysis = 'res.gm <- ConjointNoMerge(structure={0}, conjDF, response, fixed, random, facs)'.format(self.structure)
         else:
             rCommand_runAnalysis = 'res.gm <- ConjointMerge(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
-        r_resp = self.r(rCommand_runAnalysis)
-        if self.show:
-            print(r_resp)
+        return rCommand_runAnalysis
 
 
     def get_result(self):
@@ -372,8 +377,8 @@ class ConjointCalcThread(Thread):
     def run(self):
         self.run_state.is_done = False
         self.run_state.messages = 'Starts calculating\n'
-        rCommand_runAnalysis = 'res.gm <- ConjointMerge(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
-        self.run_state.messages += self.r(rCommand_runAnalysis)
+        rCommand_runAnalysis = self.conj.get_conj_r_cmd()
+        self.run_state.messages += self.conj.r(rCommand_runAnalysis)
         self.run_state.messages += 'End calculation\n'
         self.run_state.is_done = True
 
