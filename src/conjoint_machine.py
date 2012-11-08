@@ -225,32 +225,19 @@ class ConjointMachine(object):
 
         # Construct string holding design variables that is needed for 
         # construction of rCommand_fixedFactors
-        for desInd, desVar in enumerate(self.selected_designVars):
-
-            if desInd == 0:
-                selDesVarStr = '"{0}"'.format(self.selected_designVars[desInd])
-
-            else:
-                newStrPart = '"{0}"'.format(self.selected_designVars[desInd])
-                selDesVarStr = selDesVarStr + ',' + newStrPart
+        selDesVarStr = ', '.join(
+            ['"{0}"'.format(var) for var in self.selected_designVars])
 
         # Construct string holding consumer attributes that is needed for 
         # construction of rCommand_fixedFactors
-        for consInd, consAtt in enumerate(self.selected_consAtts):
+        selConsAttStr = ', '.join(
+            ['"{0}"'.format(attr) for attr in self.selected_consAtts])
 
-            if consInd == 0:
-                selConsAttStr = '"{0}"'.format(self.selected_consAtts[consInd])
-
-            else:
-                newStrPart = '"{0}"'.format(self.selected_consAtts[consInd])
-                selConsAttStr = selConsAttStr + ',' + newStrPart
-
-        # rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer={1})'.format(selDesVarStr, selConsAttStr)
-
-        if len(self.selected_consAtts) == 1:
-            rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer={1})'.format(selDesVarStr, selConsAttStr)
-        else:
-            rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer=c({1}))'.format(selDesVarStr, selConsAttStr)
+        ## if len(self.selected_consAtts) == 1:
+        ##     rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer={1})'.format(selDesVarStr, selConsAttStr)
+        ## else:
+        ##     rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer=c({1}))'.format(selDesVarStr, selConsAttStr)
+        rCommand_fixedFactors = 'fixed <- list(Product=c({0}), Consumer=c({1}))'.format(selDesVarStr, selConsAttStr)
 
         self.r(rCommand_fixedFactors)
 
