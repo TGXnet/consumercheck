@@ -14,8 +14,16 @@ import pytest
 
 # Std lib imports
 import logging
+
 # Configure logging
-logging.basicConfig(leve=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+    # datefmt='%m-%d %H:%M',
+    datefmt='%y%m%dT%H:%M:%S',
+    # filename='/temp/myapp.log',
+    # filemode='w',
+    )
 logging.info("Test start")
 
 import numpy as np

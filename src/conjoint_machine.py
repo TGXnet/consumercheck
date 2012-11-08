@@ -5,12 +5,19 @@ import string
 import pyper
 import numpy as np
 from threading import Thread
+import logging
+
+# Setup logging
+if __name__ == '__main__':
+    logger = logging.getLogger('tgxnet.nofima.cc.' + __file__.split('.')[0])
+else:
+    logger = logging.getLogger(__name__)
 
 
 class ConjointMachine(object):
 
-
     def __init__(self, run_state=None):
+        self.show = False
         # Set root folder for R
         self.r_origo = os.path.dirname(os.path.abspath(__file__))
         ## self.r_origo = os.getcwd()
@@ -41,10 +48,11 @@ class ConjointMachine(object):
         self.r('setwd("{0}")'.format(self.r_origo))
         self.r('source("pgm/conjoint.r")'.format(self.r_origo))
         # Diagnostic output
-        print(self.r('getwd()'))
-        print(self.r('.libPaths()'))
-        print(self.r('search()'))
-        print(self.r('objects()'))
+        if self.show:
+            print(self.r('getwd()'))
+            print(self.r('.libPaths()'))
+            print(self.r('search()'))
+            print(self.r('objects()'))
 
 
     def synchronous_calculation(self, structure,
@@ -175,8 +183,8 @@ class ConjointMachine(object):
         
         # Put all information into the final data array
         self.finalData = np.vstack(allConsList)
-        ## print(self.finalData)
-        ## print(self.finalData.shape)
+        if self.show:
+            print(self.finalData.shape)
 
 
     def _copy_values_into_r_env(self):
@@ -267,7 +275,9 @@ class ConjointMachine(object):
             rCommand_runAnalysis = 'res.gm <- ConjointNoMerge(structure={0}, conjDF, response, fixed, random, facs)'.format(self.structure)
         else:
             rCommand_runAnalysis = 'res.gm <- ConjointMerge(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
-        print(self.r(rCommand_runAnalysis))
+        r_resp = self.r(rCommand_runAnalysis)
+        if self.show:
+            print(r_resp)
 
 
     def get_result(self):
