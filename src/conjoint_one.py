@@ -147,8 +147,7 @@ class RConjoint:
         
         
         # Put all information into the final data array
-        finalData = np.vstack(allConsList)
-        self.finalData = finalData.copy()
+        self.finalData = np.vstack(allConsList)
         
         #print finalData
 
