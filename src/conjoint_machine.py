@@ -17,7 +17,6 @@ else:
 class ConjointMachine(object):
 
     def __init__(self, run_state=None):
-        self.show = True
         # Set root folder for R
         self.r_origo = os.path.dirname(os.path.abspath(__file__))
         ## self.r_origo = os.getcwd()
@@ -29,14 +28,14 @@ class ConjointMachine(object):
         self.conjoint_calc_thread = None
         self._start_r_interpreter()
         self._load_conjoint_resources()
-        if self.show: print("R env setup completed")
+        logger.info("R env setup completed")
 
 
     def _start_r_interpreter(self):
         Rbin = os.path.join(self.r_origo, 'R-2.15.1', 'bin', 'R.exe')
         if not os.path.exists(Rbin):
             Rbin = 'R'
-            if self.show: print("We are depending on systemwide R instalation")
+            logger.info("We are depending on systemwide R instalation")
         self.r = pyper.R(RCMD=Rbin, use_pandas=False)
 
 
@@ -48,11 +47,12 @@ class ConjointMachine(object):
         self.r('setwd("{0}")'.format(self.r_origo))
         self.r('source("pgm/conjoint.r")'.format(self.r_origo))
         # Diagnostic output
-        if self.show:
-            print(self.r('getwd()'))
-            print(self.r('.libPaths()'))
-            print(self.r('search()'))
-            print(self.r('objects()'))
+        r_env = 'R environment\n'
+        r_env += self.r('getwd()')
+        r_env += self.r('.libPaths()')
+        r_env += self.r('search()')
+        r_env += self.r('objects()')
+        logger.info(r_env)
 
 
     def synchronous_calculation(self, structure,
@@ -103,7 +103,6 @@ class ConjointMachine(object):
             self.conjoint_calc_thread.start()
 
 
-
     def _prepare_data(self, structure, consAtts, selected_consAtts,
                       design, selected_designVars, consLiking, py_merge):
 
@@ -126,7 +125,6 @@ class ConjointMachine(object):
         if self.py_merge:
             self._data_merge()
         self._copy_values_into_r_env()
-
 
 
     def _data_merge(self):
@@ -157,7 +155,7 @@ class ConjointMachine(object):
         consRows = np.shape(desData)[0]
         
         # First loop through all consumers
-        for consInd, cons in enumerate(consVarNames):            
+        for consInd, cons in enumerate(consVarNames):
             consList = []
             
             # Construct and append ID for the specific consumer
@@ -184,8 +182,6 @@ class ConjointMachine(object):
         
         # Put all information into the final data array
         self.finalData = np.vstack(allConsList)
-        if self.show:
-            print(self.finalData.shape)
 
 
     def _copy_values_into_r_env(self):
@@ -268,13 +264,16 @@ class ConjointMachine(object):
         facs.extend(self.selected_designVars)
         facs.extend(self.selected_consAtts)
         self.r['facs'] = facs
+        # Diagnostics
+        r_state = 'Object in R after all data is transferred\n'
+        r_state += self.r('objects()')
+        logger.info(r_state)
 
 
     def _run_conjoint(self):
         rCommand_runAnalysis = self.get_conj_r_cmd()
         r_resp = self.r(rCommand_runAnalysis)
-        if self.show:
-            print(r_resp)
+        logger.info(r_resp)
 
 
     def get_conj_r_cmd(self):
