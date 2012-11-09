@@ -127,6 +127,22 @@ class ConjointMachine(object):
         self._copy_values_into_r_env()
 
 
+    def _numeric_category_vector(self, str_categories):
+        """FIXME: Not used yet"""
+        # Categories Set
+        cs = frozenset(str_categories)
+        # Check if all categories is unique
+        if len(cs) == len(str_categories):
+            return range(len(str_categories))
+        # Unique Categories List
+        ucl = list(cs)
+        # FIXME: I should try to implements som quasi string numeric sorting
+        # to handle values like:
+        # u'E-1', u'E-2', u'E-3',...,u'E-118'
+        ucl.sort()
+        return [ucl.index(el) for el in str_categories]
+
+
     def _data_merge(self):
         # Merge data from the following data arrays: consumer liking,
         # consumer attributes and design
