@@ -1,4 +1,3 @@
-
 from traits.api import HasTraits, Str, List, Bool, Any, Event, on_trait_change, Tuple
 from traitsui.api import View, Item, TableEditor
 from traitsui.table_column import ObjectColumn
@@ -67,10 +66,9 @@ class CombinationTable(HasTraits):
             self.cols[i+1].label = col[1]
 
 
-    @on_trait_change('selected_row.')
+    @on_trait_change('rows.ck+')
     def _selection_changed(self, obj, name, old, new):
-        if name != 'selected_row':
-            self.combination_updated = True
+        self.combination_updated = True
 
 
     def _generate_combinations(self):
