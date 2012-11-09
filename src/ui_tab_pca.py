@@ -85,9 +85,9 @@ class PCAPlugin(HasTraits):
 if __name__ == '__main__':
     print("Interactive start")
     import numpy as np
-    from tests.conftest import PluginMotherMock
+    from tests.conftest import plugin_mother_mock
 
-    container = PluginMotherMock()
+    container = plugin_mother_mock()
     pca_plugin = PCAPlugin(mother_ref=container)
     # To force populating selection list
     pca_plugin.pcas_handler._ds_changed(None)
