@@ -294,6 +294,7 @@ class ConjointMachine(object):
         result['lsmeansTable'] = self._lsmeansTable()
         result['lsmeansDiffTable'] = self._lsmeansDiffTable()
         result['residualsTable'] = self._residualsTable()
+        result['meanLiking'] = self._calcMeanLiking()
 
         return result
 
@@ -372,6 +373,10 @@ class ConjointMachine(object):
         residTableDict['colNames'] = self.consLiking.variable_names
 
         return residTableDict
+
+
+    def _calcMeanLiking(self):
+        return np.mean(self.consLiking.matrix)
 
 
 class ConjointCalcThread(Thread):
