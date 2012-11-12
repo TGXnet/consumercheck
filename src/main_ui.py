@@ -1,6 +1,8 @@
 
 # stdlib imports
 import logging
+import webbrowser
+from os import path, pardir
 logger = logging.getLogger(__name__)
 
 # Enthought imports
@@ -40,7 +42,9 @@ class MainViewHandler(Handler):
 
     def view_about(self, info):
         ConsumerCheckAbout().edit_traits()
-
+        
+    def view_user_manual(self, info):
+        webbrowser.open(path.join(pardir, "docs-user", 'build', 'html', 'index.html'))
 
     def init(self, info):
         # Force update of plugin windows for preimported datasets
@@ -87,6 +91,7 @@ class MainUi(HasTraits):
     # Create an action that exits the application.
     exit_action = Action(name='E&xit', action='_on_close')
     about_action = Action(name='&About', action='view_about')
+    user_manual_action = Action(name='&User manual', action='view_user_manual')
     close_action = Action(name='&Remove Datasets', action='_close_ds')
     advanced_action = Action(name='&Advanced settings', checked_when='en_advanced',
                              style='toggle', action='_toggle_advanced')
@@ -132,7 +137,7 @@ class MainUi(HasTraits):
         menubar = MenuBar(
             Menu(import_action, close_action, exit_action, name='&File'),
 #            Menu(advanced_action, name='&Settings'),
-            Menu(about_action, name='&Help'),
+            Menu(about_action, user_manual_action, name='&Help'),
             ),
         handler = MainViewHandler
         )
