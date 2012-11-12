@@ -2,7 +2,7 @@
 # stdlib imports
 import logging
 import webbrowser
-from os import sep, pardir
+from os import path, pardir
 logger = logging.getLogger(__name__)
 
 # Enthought imports
@@ -44,7 +44,7 @@ class MainViewHandler(Handler):
         ConsumerCheckAbout().edit_traits()
         
     def view_user_manual(self, info):
-        webbrowser.open(pardir+sep+"docs-user"+sep+'build'+sep+'html'+sep+'index.html')
+        webbrowser.open(path.join(pardir, "docs-user", 'build', 'html', 'index.html'))
 
     def init(self, info):
         # Force update of plugin windows for preimported datasets
