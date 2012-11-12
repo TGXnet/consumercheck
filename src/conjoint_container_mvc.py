@@ -1,7 +1,12 @@
 
+# Std lib imports
+import sys
+
 # Enthought imports
-from traits.api import HasTraits, Enum, Instance, List, Str, DelegatesTo, on_trait_change, Event
-from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor, EnumEditor
+from traits.api import (HasTraits, Enum, Instance, List, Str, DelegatesTo,
+                        on_trait_change, Event)
+from traitsui.api import (View, Group, Item, Spring, ModelView, CheckListEditor,
+                          EnumEditor, HTMLEditor)
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
@@ -45,7 +50,6 @@ class ConjointsContainer(HasTraits):
 
     def remove_mapping(self, mapping_id):
         del(self.mappings[self.mappings.index(mapping_id)])
-        print(len(self.mappings))
 
 
 class ConjointsHandler(ModelView):
@@ -60,6 +64,17 @@ class ConjointsHandler(ModelView):
     available_consumer_likings = List()
 
     update_conjoint_tree = Event()
+
+    model_desc = Str(
+        '''
+        Consumer attributes and design values can only be categorical values.<br /><br />
+        Model structure descriptions:
+        <ul>
+        <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
+        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones).</li>
+        <li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part).</li>
+        </ul>
+        ''')
 
 
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
@@ -153,6 +168,11 @@ conjoints_view = View(
             Spring(),
             orientation='horizontal',
             ),
+        Group(
+            Item('model_desc',
+                 editor=HTMLEditor(),
+                 show_label=False),
+            ),
         orientation='vertical',
         ),
     resizable=True,
@@ -163,10 +183,10 @@ conjoints_view = View(
 if __name__ == '__main__':
     print("conjoint container script start")
     import numpy as np
-    from tests.conftest import PluginMotherMock
+    from tests.conftest import plugin_mother_mock
 
     with np.errstate(invalid='ignore'):
-        container = PluginMotherMock()
+        container = plugin_mother_mock()
         model = ConjointsContainer(mother_ref=container)
         handler = ConjointsHandler(model=model)
         container.test_subject = handler

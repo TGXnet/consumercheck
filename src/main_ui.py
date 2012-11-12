@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Event, Bool
+from traits.api import HasTraits, Instance, Any, Event, Bool
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
@@ -46,6 +46,8 @@ class MainViewHandler(Handler):
         # Force update of plugin windows for preimported datasets
         info.object.ds_event = True
         # Close splash window
+        info.object.parent_win = info.ui.control
+        print(info.object.parent_win)
         try:
             info.object.splash.close()
         except AttributeError:
@@ -61,7 +63,9 @@ class MainUi(HasTraits):
     dsl = DatasetCollection()
     ds_event = Event()
     dsname_event = Event()
-#    en_advanced = Bool(False)
+    # en_advanced = Bool(False)
+    parent_win = Any()
+
 
     def _toggle_advanced(self):
         self.en_advanced = not self.en_advanced

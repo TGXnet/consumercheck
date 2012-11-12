@@ -6,6 +6,7 @@ docs*/*build
 R-2*
 *.log
 consumercheck-*
+explore_*
 CCWinPack
 bin
 build

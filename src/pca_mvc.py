@@ -316,7 +316,7 @@ class APCAHandler(ModelView):
         tv = TableViewController(title="MSEE total")
         tv.set_col_names([str(i) for i in range(msee.shape[0])])
         tv.add_row(msee, 'MSEE')
-        tv.configure_traits()
+        tv.edit_traits()
 
 
     def show_msee_ind(self):
@@ -326,7 +326,7 @@ class APCAHandler(ModelView):
         tv.set_col_names([str(i) for i in range(ind_var_msee.shape[1])])
         for i in range(ind_var_msee.shape[0]):
             tv.add_row(ind_var_msee[i,:], 'MSEE')
-        tv.configure_traits()
+        tv.edit_traits()
 
 
     def show_msecv_tot(self):
@@ -335,7 +335,7 @@ class APCAHandler(ModelView):
         tv = TableViewController(title="MSECV total")
         tv.set_col_names([str(i) for i in range(msecv.shape[0])])
         tv.add_row(msecv, 'MSECV')
-        tv.configure_traits()
+        tv.edit_traits()
 
 
     def show_msecv_ind(self):
@@ -345,7 +345,7 @@ class APCAHandler(ModelView):
         tv.set_col_names([str(i) for i in range(ind_var_msecv.shape[1])])
         for i in range(ind_var_msecv.shape[0]):
             tv.add_row(ind_var_msecv[i,:], 'MSECV')
-        tv.configure_traits()
+        tv.edit_traits()
     
     
     def show_next_plot(self, window):
@@ -372,14 +372,15 @@ class APCAHandler(ModelView):
                 
     def _show_plot_window(self, plot_window):
         # FIXME: Setting parent forcing main ui to stay behind plot windows
+        print(self.model.mother_ref.mother_ref.parent_win)
         plot_window.mother_ref = self
         if sys.platform == 'linux2':
-            self.plot_uis.append( plot_window.edit_traits(kind='live') )
+            self.plot_uis.append( plot_window.edit_traits(parent=self.model.mother_ref.mother_ref.parent_win, kind='live') )
         elif sys.platform == 'win32':
             # FIXME: Investigate more here
             self.plot_uis.append(
-                # plot_window.edit_traits(parent=self.info.ui.control, kind='nonmodal')
-                plot_window.edit_traits(kind='live')
+                plot_window.edit_traits(parent=self.model.mother_ref.mother_ref.parent_win, kind='live')
+                # plot_window.edit_traits(kind='live')
                 )
         else:
             raise Exception("Not implemented for this platform: ".format(sys.platform))

@@ -97,9 +97,9 @@ class AConjointHandler(ModelView):
     nid = DelegatesTo('model')
 
     win_uis = List()
-    table_win_launchers = List()
-    me_plot_launchers = List(Instance(WindowLauncher))
-    int_plot_launchers = List()
+    table_win_launchers = List(WindowLauncher)
+    me_plot_launchers = List(WindowLauncher)
+    int_plot_launchers = List(WindowLauncher)
 
 
     def __init__(self, *args, **kwargs):
@@ -177,7 +177,7 @@ class AConjointHandler(ModelView):
                                        ' - ANOVA table for random effects'))
         self._update_launchers()
         dstv = DSTableViewer(cj_dm)
-        dstv.configure_traits(view=dstv.get_view())
+        dstv.edit_traits(view=dstv.get_view())
 
 
     def show_fixed(self):
@@ -186,7 +186,7 @@ class AConjointHandler(ModelView):
                                        ' - ANOVA table for fixed effects'))
         self._update_launchers()
         dstv = DSTableViewer(cj_dm)
-        dstv.configure_traits(view=dstv.get_view())
+        dstv.edit_traits(view=dstv.get_view())
 
 
     def show_means(self):
@@ -195,7 +195,7 @@ class AConjointHandler(ModelView):
                                        ' - LS means (main effect and interaction)'))
         self._update_launchers()
         dstv = DSTableViewer(cj_dm)
-        dstv.configure_traits(view=dstv.get_view())
+        dstv.edit_traits(view=dstv.get_view())
         
 
     def plot_main_effects(self, attr_name,):

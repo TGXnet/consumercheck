@@ -58,7 +58,6 @@ class ImporterMain(HasTraits):
     def import_data(self, file_path, have_variable_names = True, have_object_names = True, sep='\t'):
         """Read file and return DataSet objekt"""
         importer = self._make_importer(file_path)
-        # importer.configure_traits()
         importer.make_ds_name()
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
@@ -72,7 +71,7 @@ class ImporterMain(HasTraits):
     def dnd_import_data(self, path):
         """Open dialog for selecting a file, import and return the DataSet"""
         importer = self._make_importer(path)
-        importer.configure_traits()
+        importer.edit_traits()
         ds = importer.import_data()
         ds = self._add_generic_name(ds, importer)
         return ds
@@ -88,7 +87,7 @@ class ImporterMain(HasTraits):
             importer = self._make_importer(filen)
             #importer.ds_type_list, importer.ds_type = self._pick_ds_type(importer.ds_type_list,filen)
             importer.ds_type = self._pick_ds_type(filen)
-            importer.configure_traits()
+            importer.edit_traits()
             ds = importer.import_data()
             ds = self._add_generic_name(ds, importer)
             self._datasets.append(ds)

@@ -14,8 +14,17 @@ import pytest
 
 # Std lib imports
 import logging
+
 # Configure logging
-logging.basicConfig(leve=logging.INFO)
+logging.basicConfig(
+    level=logging.WARNING,
+    # level=logging.INFO,
+    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+    # datefmt='%m-%d %H:%M',
+    datefmt='%y%m%dT%H:%M:%S',
+    # filename='/temp/myapp.log',
+    # filemode='w',
+    )
 logging.info("Test start")
 
 import numpy as np
@@ -66,11 +75,14 @@ def tdd():
 # Format: folder, file_name, ds_name, ds_type
 
 CONJOINT = [
-    ('Conjoint', 'design.txt', 'Ham design', 'Design variable'),
+    ('Conjoint', 'design.txt', 'Tine yogurt design', 'Design variable'),
     ('Conjoint', 'consumerAttributes.txt', 'Consumers', 'Consumer attributes'),
     ('Conjoint', 'overall_liking.txt', 'Overall', 'Consumer liking'),
     ('Conjoint', 'odour-flavour_liking.txt', 'Odour-flavor', 'Consumer liking'),
-    ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),]
+    ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),
+    ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Design variable'),
+    ('BarleyBread', 'BB_E_consAttr.txt', 'Estland? consumers', 'Consumer attributes'),
+    ('BarleyBread', 'BB_E_liking.txt', 'Estland? liking data', 'Consumer liking'),]
 
 
 VINE = [
@@ -116,7 +128,7 @@ def iris_ds(tdd):
     return ds
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def conjoint_dsc():
     '''Get Conjoint std. test datasets '''
     dsc = DatasetCollection()
@@ -127,7 +139,7 @@ def conjoint_dsc():
     return dsc
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def all_dsc():
     '''Data set container/collection mock'''
     dsc = DatasetCollection()
