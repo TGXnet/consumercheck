@@ -47,12 +47,18 @@ class MainEffectsPlot(OverlayPlotContainer):
             self.ls_label_names.append(pl)
             self.ls_label_pos.append(i+1)
             
+        #Find the average estimate
+        self.avg_x = 0
+        for val in selected[' Estimate ']:
+            self.avg_x += val
+        self.avg_x /= len(selected[' Estimate '])
+        
         self.apd = ArrayPlotData()
         self.apd.set_data('index', [int(val) for val in selected[attr_name]])
         self.apd.set_data('values', [float(val) for val in selected[' Estimate ']])
         self.apd.set_data('ylow', [float(val) for val in selected[' Lower CI ']])
         self.apd.set_data('yhigh', [float(val) for val in selected[' Upper CI ']])
-        self.apd.print_traits()
+        self.apd.set_data('average', [float(self.avg_x) for val in selected[attr_name]])
         self.data = self.apd
 
   
@@ -62,6 +68,7 @@ class MainEffectsPlot(OverlayPlotContainer):
         y = ArrayDataSource(self.apd['values'])
         ylow = ArrayDataSource(self.apd['ylow'])
         yhigh = ArrayDataSource(self.apd['yhigh'])
+        yaverage = ArrayDataSource(self.apd['average'])
         
         index_mapper = LinearMapper(range=DataRange1D(x, tight_bounds=False, margin=0.05))
         value_mapper = LinearMapper(range=DataRange1D(ylow, yhigh, tight_bounds=False))
@@ -92,6 +99,15 @@ class MainEffectsPlot(OverlayPlotContainer):
         plot_err.underlays.append(x_axis)
         plot_err.underlays.append(y_axis)
         add_default_grids(plot_err)
+        
+        #Create averageplot
+        y_name='average'
+        plot_y_average = LinePlot(index=x,
+                         index_mapper=index_mapper,
+                         value=yaverage,
+                         name=y_name,
+                         color='green',
+                         value_mapper=value_mapper)
 
         #Create lineplot
         y_name='line'
@@ -115,7 +131,7 @@ class MainEffectsPlot(OverlayPlotContainer):
         zoom = ZoomTool(plot_err, tool_mode="box", always_on=False)
         plot_err.tools.append(PanTool(plot_err))
         plot_err.overlays.append(zoom)  
-        self.add(plot_err ,plot_line, plot_scatter)
+        self.add(plot_y_average, plot_err ,plot_line, plot_scatter)
 
     
 class InteractionPlot(Plot):
