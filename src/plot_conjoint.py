@@ -1,29 +1,24 @@
-
 # SciPy imports
 import numpy as np
 
 # Enthought library imports
-from chaco.api import Plot, ArrayPlotData, LabelAxis, OverlayPlotContainer, ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D, add_default_axes, add_default_grids
-from chaco.tools.api import ZoomTool
+from chaco.api import Plot, ArrayPlotData, LabelAxis, OverlayPlotContainer, ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D, add_default_grids, ScatterPlot, LinePlot, PlotAxis
+from chaco.tools.api import ZoomTool, PanTool
 
-from plugin_tree_helper import WindowLauncher
-from IPython.utils.traitlets import HasTraits
-from plot_windows import SinglePlotWindow, LinePlotWindow
-
-
+#Local imports
+from plot_windows import LinePlotWindow
 
 
 class MainEffectsPlot(OverlayPlotContainer):
     def __init__(self, conj_res, attr_name, pl_ref):
         super(MainEffectsPlot, self).__init__()
+        self.padding = 50
+        self.fill_padding = True
         self.bgcolor = "lightgray"
         self.use_backbuffer=True
-        
         self.pl_ref = pl_ref
         self._adapt_conj_main_effect_data(conj_res, attr_name)
-        self._create_lineplot()
-        self._create_errorplot()
-        self._create_dottplott()
+        self._create_plot()
         
 
     def _adapt_conj_main_effect_data(self, conj_res, attr_name):
@@ -31,6 +26,7 @@ class MainEffectsPlot(OverlayPlotContainer):
         ls_means_labels = conj_res['lsmeansTable']['rowNames']
         cn = list(conj_res['lsmeansTable']['colNames'])
         nli = cn.index('Estimate')
+        
         cn = cn[:nli]
         exclude = []
         for col in cn:
@@ -42,7 +38,7 @@ class MainEffectsPlot(OverlayPlotContainer):
         
         for out in exclude:
             picker = np.logical_and(picker, np.logical_not(out))
-        selected = ls_means[picker][[attr_name, ' Estimate ']]
+        selected = ls_means[picker]
         selected_labels = ls_means_labels[picker]
                 
         self.ls_label_names = []
@@ -50,58 +46,79 @@ class MainEffectsPlot(OverlayPlotContainer):
         for i, pl in enumerate(selected_labels):
             self.ls_label_names.append(pl)
             self.ls_label_pos.append(i+1)
-        
+            
         self.apd = ArrayPlotData()
         self.apd.set_data('index', [int(val) for val in selected[attr_name]])
         self.apd.set_data('values', [float(val) for val in selected[' Estimate ']])
-        self.apd.set_data('ylow', [float(val)-.1 for val in selected[' Estimate ']])
-        self.apd.set_data('yhigh', [float(val)+.1 for val in selected[' Estimate ']])
-        self.ads_x = ArrayDataSource(self.apd.arrays['index'])
-        self.ads_y = ArrayDataSource(self.apd.arrays['values'])
-        self.ads_yl = ArrayDataSource(self.apd.arrays['ylow'])
-        self.ads_yh = ArrayDataSource(self.apd.arrays['yhigh'])
+        self.apd.set_data('ylow', [float(val) for val in selected[' Lower CI ']])
+        self.apd.set_data('yhigh', [float(val) for val in selected[' Upper CI ']])
+        self.apd.print_traits()
+        self.data = self.apd
 
+  
+    def _create_plot(self):
+        #Prepare data for plots
+        x = ArrayDataSource(self.apd['index'])
+        y = ArrayDataSource(self.apd['values'])
+        ylow = ArrayDataSource(self.apd['ylow'])
+        yhigh = ArrayDataSource(self.apd['yhigh'])
         
-    def _create_lineplot(self):
-        plot1 = Plot(self.apd)
-        plot1.legend.visible = False
-        y_name = "line"
-        plot1.plot(('index', 'values'), color="black", name=y_name, line_width=1)            
-        self.x_axis = plot1.x_axis = LabelAxis(plot1,
-                            orientation="bottom",
-                            tick_weight=1,
-                            tick_label_rotate_angle = 90,
-                            labels=self.ls_label_names,
-                            positions = self.ls_label_pos,
+        index_mapper = LinearMapper(range=DataRange1D(x, tight_bounds=False, margin=0.05))
+        value_mapper = LinearMapper(range=DataRange1D(ylow, yhigh, tight_bounds=False))
+        
+        #Create a plot of the vertical error            
+        y_name='error'
+        plot_err = ErrorBarPlot(index=x,
+                           index_mapper=index_mapper,
+                           name=y_name,
+                           value_low = ylow,
+                           value_high = yhigh,
+                           value_mapper = value_mapper,
+                           bgcolor = "white",
+                           border_visible = True)
+        
+        #Append label and grid
+        x_axis = LabelAxis(plot_err,
+                    orientation="bottom",
+                    tick_weight=1,
+                    tick_label_rotate_angle = 90,
+                    name=y_name,
+                    labels=self.ls_label_names,
+                    positions = self.ls_label_pos,)
+        y_axis = PlotAxis(orientation='left',
+                    title= '',
+                    mapper=plot_err.value_mapper,
+                    component=plot_err)
+        plot_err.underlays.append(x_axis)
+        plot_err.underlays.append(y_axis)
+        add_default_grids(plot_err)
+
+        #Create lineplot
+        y_name='line'
+        plot_line = LinePlot(index=x,
+                         index_mapper=index_mapper,
+                         value=y,
+                         name=y_name,
+                         value_mapper=value_mapper)
+        
+        #Create ScatterPlot
+        y_name='scatter'
+        plot_scatter = ScatterPlot(index=x,
+                            index_mapper=index_mapper,
+                            value=y,
+                            value_mapper=value_mapper,
+                            color="blue",
+                            name=y_name,
+                            marker_size=5,
                             )
-        self.add(plot1)
-        
-    def _create_errorplot(self):
-        index_range = DataRange1D(self.ads_x)
-        index_mapper = LinearMapper(range=index_range)
-        value_range = DataRange1D(self.ads_yl, self.ads_yh)
-        value_mapper = LinearMapper(range=value_range)
-        plot2 = ErrorBarPlot(index= self.ads_x, index_mapper=index_mapper,
-                         value_low =  self.ads_yl,
-                         value_high =  self.ads_yh,
-                         value_mapper = value_mapper,
-                         border_visible = True,
-                        )
-        add_default_axes(plot2)
-        add_default_grids(plot2)
-        self.add(plot2)
-        
 
-    def _create_dottplott(self):
-        plot3 = Plot(self.apd)
-        plot3.legend.visible = False
-        y_name='points'
-        plot3.plot(('index', 'values'), color="blue", type='scatter', marker_size=5, name=y_name, line_width=1)[0]
-        plot3.x_axis = self.x_axis
-        self.add(plot3)     
+        zoom = ZoomTool(plot_err, tool_mode="box", always_on=False)
+        plot_err.tools.append(PanTool(plot_err))
+        plot_err.overlays.append(zoom)  
+        self.add(plot_err ,plot_line, plot_scatter)
+
     
 class InteractionPlot(Plot):
-
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
         self._adapt_conj_interaction_data(conj_res, attr_one_name, attr_two_name)
@@ -148,7 +165,6 @@ if __name__ == '__main__':
     
     pw = LinePlotWindow(plot=mep)
     pw.configure_traits()
-    #mep.new_window(True)
 #    iap = InteractionPlot(res, 'Sex', 'Sugarlevel')
 #    iap.new_window(True)
     print("The end")
