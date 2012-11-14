@@ -5,9 +5,10 @@ import string
 import pyper
 import numpy as np
 from threading import Thread
-import logging
+from itertools import combinations
 
 # Setup logging
+import logging
 if __name__ == '__main__':
     logger = logging.getLogger('tgxnet.nofima.cc.' + __file__.split('.')[0])
 else:
@@ -16,7 +17,7 @@ else:
 
 class ConjointMachine(object):
 
-    def __init__(self, run_state=None):
+    def __init__(self, run_state=None, start_r=True):
         # Set root folder for R
         self.r_origo = os.path.dirname(os.path.abspath(__file__))
         ## self.r_origo = os.getcwd()
@@ -26,9 +27,10 @@ class ConjointMachine(object):
         else:
             self.run_state=None
         self.conjoint_calc_thread = None
-        self._start_r_interpreter()
-        self._load_conjoint_resources()
-        logger.info("R env setup completed")
+        if start_r:
+            self._start_r_interpreter()
+            self._load_conjoint_resources()
+            logger.info("R env setup completed")
 
 
     def _start_r_interpreter(self):
@@ -72,6 +74,7 @@ class ConjointMachine(object):
         """
         self._prepare_data(structure, consAtts, selected_consAtts,
                            design, selected_designVars, consLiking, py_merge)
+        self._copy_values_into_r_env()
         self._run_conjoint()
         return self.get_result()
 
@@ -97,6 +100,7 @@ class ConjointMachine(object):
         else:
             self._prepare_data(structure, consAtts, selected_consAtts,
                                design, selected_designVars, consLiking, py_merge)
+            self._copy_values_into_r_env()
             self.conjoint_calc_thread = ConjointCalcThread(target=None, args=(), kwargs={})
             self.conjoint_calc_thread.conj = self
             self.conjoint_calc_thread.run_state = self.run_state
@@ -122,9 +126,19 @@ class ConjointMachine(object):
         liking_name = consLiking._ds_name.encode('ascii', 'ignore')
         self.consLikingTag = liking_name.translate(None, throw_chrs)
 
+        self._check_completeness()
         if self.py_merge:
             self._data_merge()
-        self._copy_values_into_r_env()
+
+
+    def _check_completeness(self):
+        '''FIXME: What is a proper name for this'''
+        from pprint import pprint
+        pprint(self.selected_consAtts)
+        pprint(self.consAtts.variable_names)
+        pprint(self.consAtts.matrix)
+        oorf = combinations(self.selected_consAtts, 2)
+        print([o for o in oorf])
 
 
     def _numeric_category_vector(self, str_categories):

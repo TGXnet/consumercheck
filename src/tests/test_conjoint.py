@@ -69,6 +69,22 @@ def test_category_strings(conjoint_dsc):
     print(res['lsmeansTable']['colNames'])
 
 
+def test_completeness(conjoint_dsc):
+    e_attr = conjoint_dsc.get_by_id('bb_e_consattr')
+    e_liking = conjoint_dsc.get_by_id('bb_e_liking')
+    design = conjoint_dsc.get_by_id('bb_design')
+    selected_structure = 1
+    # [u'Sex', u'Age', u'WB', u'BB', u'Edu', u'Health']
+    selected_consAttr = ['Sex', 'Age', 'Edu']
+    # [u'Barley', u'Salt']
+    selected_designVar = ['Barley', 'Salt']
+
+    cm = ConjointMachine(start_r=False)
+    cm._prepare_data(
+        selected_structure, e_attr, selected_consAttr,
+        design, selected_designVar, e_liking, False)
+
+
 # test async calculation
 @pytest.mark.parametrize("merge", [True, False])
 def test_async_calc(conjoint_dsc, merge):
