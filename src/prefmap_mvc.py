@@ -303,12 +303,14 @@ class APrefmapHandler(ModelView):
         # FIXME: Setting parent forcing main ui to stay behind plot windows
         plot_window.mother_ref = self
         if sys.platform == 'linux2':
-            self.plot_uis.append( plot_window.edit_traits(kind='live') )
+            self.plot_uis.append(
+                plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
+                )
         elif sys.platform == 'win32':
             # FIXME: Investigate more here
             self.plot_uis.append(
-                # plot_window.edit_traits(parent=self.info.ui.control, kind='nonmodal')
-                plot_window.edit_traits(kind='live')
+                plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
+                # plot_window.edit_traits(kind='live')
                 )
         else:
             raise Exception("Not implemented for this platform: ".format(sys.platform))

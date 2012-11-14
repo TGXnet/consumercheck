@@ -3,7 +3,7 @@
 import sys
 
 # Enthought imports
-from traits.api import (HasTraits, Enum, Instance, List, Str, DelegatesTo,
+from traits.api import (HasTraits, Any, Enum, Instance, List, Str, DelegatesTo,
                         on_trait_change, Event)
 from traitsui.api import (View, Group, Item, Spring, ModelView, CheckListEditor,
                           EnumEditor, HTMLEditor)
@@ -16,6 +16,7 @@ from dataset import DataSet
 class ConjointsContainer(HasTraits):
     """Conjoint plugin container."""
     name = Str('Conjoint results')
+    win_handle = Any()
     mother_ref = Instance(HasTraits)
     dsl = DelegatesTo('mother_ref')
     mappings = List(AConjointHandler)
@@ -75,6 +76,10 @@ class ConjointsHandler(ModelView):
         <li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part).</li>
         </ul>
         ''')
+
+
+    def init(self, info):
+        self.model.win_handle = info.ui.control
 
 
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')

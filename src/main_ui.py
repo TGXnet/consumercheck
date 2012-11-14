@@ -33,6 +33,7 @@ class MainViewHandler(Handler):
             info.object.dsl.add_dataset(ds)
             logger.info("importDataset: internal name = %s", ds._ds_id)
 
+
     def _close_ds(self, info):
         datasets = []
         for i in info.object.dsl._datasets:
@@ -40,18 +41,20 @@ class MainViewHandler(Handler):
         for a in datasets:
             info.object.dsl.delete_dataset(a)
 
+
     def view_about(self, info):
         ConsumerCheckAbout().edit_traits()
-        
+
+
     def view_user_manual(self, info):
         webbrowser.open(path.join(pardir, "docs-user", 'build', 'html', 'index.html'))
+
 
     def init(self, info):
         # Force update of plugin windows for preimported datasets
         info.object.ds_event = True
         # Close splash window
-        info.object.parent_win = info.ui.control
-        print(info.object.parent_win)
+        info.object.win_handle = info.ui.control
         try:
             info.object.splash.close()
         except AttributeError:

@@ -372,14 +372,15 @@ class APCAHandler(ModelView):
                 
     def _show_plot_window(self, plot_window):
         # FIXME: Setting parent forcing main ui to stay behind plot windows
-        print(self.model.mother_ref.mother_ref.parent_win)
         plot_window.mother_ref = self
         if sys.platform == 'linux2':
-            self.plot_uis.append( plot_window.edit_traits(parent=self.model.mother_ref.mother_ref.parent_win, kind='live') )
+            self.plot_uis.append(
+                plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
+                )
         elif sys.platform == 'win32':
             # FIXME: Investigate more here
             self.plot_uis.append(
-                plot_window.edit_traits(parent=self.model.mother_ref.mother_ref.parent_win, kind='live')
+                plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
                 # plot_window.edit_traits(kind='live')
                 )
         else:
