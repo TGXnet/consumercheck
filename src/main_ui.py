@@ -6,7 +6,7 @@ from os import path, pardir
 logger = logging.getLogger(__name__)
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Any, Event, Bool
+from traits.api import HasTraits, Instance, Any, Event
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
@@ -47,7 +47,12 @@ class MainViewHandler(Handler):
 
 
     def view_user_manual(self, info):
-        webbrowser.open(path.join(pardir, "docs-user", 'build', 'html', 'index.html'))
+        dev_path = path.join(pardir, "docs-user", 'build', 'html', 'index.html')
+        inst_path = path.join('help-docs', 'index.html')
+        if path.exists(inst_path):
+            webbrowser.open(inst_path)
+        else:
+            webbrowser.open(dev_path)
 
 
     def init(self, info):
