@@ -7,10 +7,7 @@ from chaco.api import Plot, ArrayPlotData, LabelAxis, OverlayPlotContainer, Erro
 from chaco.tools.api import ZoomTool
 
 from plugin_tree_helper import WindowLauncher
-from IPython.utils.traitlets import HasTraits
 from plot_windows import SinglePlotWindow, LinePlotWindow
-
-
 
 
 class MainEffectsPlot(OverlayPlotContainer):
