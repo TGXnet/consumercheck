@@ -1,6 +1,6 @@
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Str, List, Int,DelegatesTo, Bool, on_trait_change, Set
+from traits.api import HasTraits, Any, Instance, Str, List, Int,DelegatesTo, Bool, on_trait_change, Set
 from traitsui.api import View, Group, Item, ModelView, CheckListEditor, RangeEditor
 
 # Local imports
@@ -10,6 +10,7 @@ from pca_mvc import APCAHandler, APCAModel
 class PCAsContainer(HasTraits):
     """PCA plugin container."""
     name = Str('PCA results')
+    win_handle = Any()
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
@@ -44,12 +45,17 @@ class PCAsHandler(ModelView):
     last_selected = Set()
 
 
+    def init(self, info):
+        self.model.win_handle = info.ui.control
+
+
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
     def _ds_changed(self, info):
         data = []
         for i in self.model.dsl.name_id_mapping:
             data.append((self.model.dsl.name_id_mapping[i],i))
         self.data = data
+
 
     @on_trait_change('selected')
     def handle_selected(self, obj, ref, old, new):

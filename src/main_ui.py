@@ -6,7 +6,7 @@ from os import path, pardir
 logger = logging.getLogger(__name__)
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Any, Event, Bool
+from traits.api import HasTraits, Instance, Any, Event
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
@@ -33,6 +33,7 @@ class MainViewHandler(Handler):
             info.object.dsl.add_dataset(ds)
             logger.info("importDataset: internal name = %s", ds._ds_id)
 
+
     def _close_ds(self, info):
         datasets = []
         for i in info.object.dsl._datasets:
@@ -40,18 +41,25 @@ class MainViewHandler(Handler):
         for a in datasets:
             info.object.dsl.delete_dataset(a)
 
+
     def view_about(self, info):
         ConsumerCheckAbout().edit_traits()
-        
+
+
     def view_user_manual(self, info):
-        webbrowser.open(path.join(pardir, "docs-user", 'build', 'html', 'index.html'))
+        dev_path = path.join(pardir, "docs-user", 'build', 'html', 'index.html')
+        inst_path = path.join('help-docs', 'index.html')
+        if path.exists(inst_path):
+            webbrowser.open(inst_path)
+        else:
+            webbrowser.open(dev_path)
+
 
     def init(self, info):
         # Force update of plugin windows for preimported datasets
         info.object.ds_event = True
         # Close splash window
-        info.object.parent_win = info.ui.control
-        print(info.object.parent_win)
+        info.object.win_handle = info.ui.control
         try:
             info.object.splash.close()
         except AttributeError:

@@ -1,6 +1,6 @@
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Int, Str, List, DelegatesTo, Bool, Set, on_trait_change, Enum
+from traits.api import HasTraits, Any, Instance, Int, Str, List, DelegatesTo, Bool, Set, on_trait_change, Enum
 from traitsui.api import View, Group, Item, ModelView, InstanceEditor, RangeEditor, EnumEditor
 
 
@@ -12,6 +12,7 @@ from prefmap_mvc import APrefmapHandler, APrefmapModel
 class PrefmapsContainer(HasTraits):
     """Prefmap plugin container."""
     name = Str('Prefmap results')
+    win_handle = Any()
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
@@ -54,8 +55,12 @@ class PrefmapsHandler(ModelView):
     radio = DelegatesTo('model')
     # [('a_labels','c_labels'),('sensorydata','consumerliking')]
     last_selection = Set()
-       
-        
+
+
+    def init(self, info):
+        self.model.win_handle = info.ui.control
+
+
     @on_trait_change('model:mother_ref:dsname_event')
     def dsname_changed(self):
         self._update_comb()

@@ -30,7 +30,7 @@ matrix_editor=TabularEditor(
     adapter=DSArrayAdapter(),
     operations=[],
     editable=False,
-    show_row_titles = ETSConfig.toolkit == 'qt4',
+#    show_row_titles = ETSConfig.toolkit == 'qt4',
     )
 
 
