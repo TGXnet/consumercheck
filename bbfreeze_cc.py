@@ -4,7 +4,7 @@ import shutil
 
 from bbfreeze import Freezer
 
-FREEZE_VERSION = '0.7.0'
+FREEZE_VERSION = '0.7.5'
 R_VER = '2.15.1'
 # freeze folder
 ff = "consumercheck-" + FREEZE_VERSION
@@ -40,9 +40,9 @@ freeze.include_py = True
 freeze()    # starts the freezing process
 
 # Copy testdata
-ds_source = os.path.abspath(os.path.join('src', 'datasets'))
-ds_dest = os.path.abspath(os.path.join(ff, 'datasets'))
-shutil.copytree(ds_source, ds_dest)
+#ds_source = os.path.abspath(os.path.join('src', 'datasets'))
+#ds_dest = os.path.abspath(os.path.join(ff, 'datasets'))
+#shutil.copytree(ds_source, ds_dest)
 
 # Copy images
 cc_imgs = ['ConsumerCheckLogo.png', 'reset_xy.svg', 'save.svg', 'x_down.svg', 'x_up.svg', 'y_down.svg', 'y_up.svg']
@@ -68,6 +68,10 @@ rss = os.path.join(hf, 'src', 'pgm')
 rsdst = os.path.join(ff, 'pgm')
 shutil.copytree(rss, rsdst)
 
+# User documentation
+doc_source = os.path.join(hf, 'docs-user', 'build', 'html')
+doc_dest = os.path.join(ff, 'help-docs')
+shutil.copytree(doc_source, doc_dest)
 
 # Dependency investigation
 #gr = freeze.mf.graph
