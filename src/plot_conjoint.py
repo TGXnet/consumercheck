@@ -19,7 +19,7 @@ class MainEffectsPlot(OverlayPlotContainer):
         self.pl_ref = pl_ref
         self._adapt_conj_main_effect_data(conj_res, attr_name)
         self._create_plot()
-        
+
 
     def _adapt_conj_main_effect_data(self, conj_res, attr_name):
         ls_means = conj_res['lsmeansTable']['data']
@@ -46,22 +46,16 @@ class MainEffectsPlot(OverlayPlotContainer):
         for i, pl in enumerate(selected_labels):
             self.ls_label_names.append(pl)
             self.ls_label_pos.append(i+1)
-            
-        #Find the average estimate
-        self.avg_x = 0
-        for val in selected[' Estimate ']:
-            self.avg_x += val
-        self.avg_x /= len(selected[' Estimate '])
-        
+
         self.apd = ArrayPlotData()
         self.apd.set_data('index', [int(val) for val in selected[attr_name]])
         self.apd.set_data('values', [float(val) for val in selected[' Estimate ']])
         self.apd.set_data('ylow', [float(val) for val in selected[' Lower CI ']])
         self.apd.set_data('yhigh', [float(val) for val in selected[' Upper CI ']])
-        self.apd.set_data('average', [float(self.avg_x) for val in selected[attr_name]])
+        self.apd.set_data('average', [conj_res['meanLiking'] for val in selected[attr_name]])
         self.data = self.apd
 
-  
+
     def _create_plot(self):
         #Prepare data for plots
         x = ArrayDataSource(self.apd['index'])
