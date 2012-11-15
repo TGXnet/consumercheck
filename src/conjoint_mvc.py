@@ -177,7 +177,7 @@ class AConjointHandler(ModelView):
                                        ' - ANOVA table for random effects'))
         self._update_launchers()
         dstv = DSTableViewer(cj_dm)
-        dstv.edit_traits(view=dstv.get_view())
+        dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
 
 
     def show_fixed(self):
@@ -186,7 +186,7 @@ class AConjointHandler(ModelView):
                                        ' - ANOVA table for fixed effects'))
         self._update_launchers()
         dstv = DSTableViewer(cj_dm)
-        dstv.edit_traits(view=dstv.get_view())
+        dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
 
 
     def show_means(self):
@@ -195,7 +195,7 @@ class AConjointHandler(ModelView):
                                        ' - LS means (main effect and interaction)'))
         self._update_launchers()
         dstv = DSTableViewer(cj_dm)
-        dstv.edit_traits(view=dstv.get_view())
+        dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
         
 
     def plot_main_effects(self, attr_name,):
