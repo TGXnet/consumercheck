@@ -5,12 +5,14 @@ import optparse
 import numpy as np
 
 # Enthought imports
-from traits.etsconfig.api import ETSConfig
-ETSConfig.toolkit = 'qt4'
+#from traits.etsconfig.api import ETSConfig
+#ETSConfig.toolkit = 'qt4'
 
 import traits.has_traits
 # 0: no check, 1: log warings, 2: error
 traits.has_traits.CHECK_INTERFACES = 0
+
+# Set custom exception handler
 from traits.api import push_exception_handler
 
 # Local imports
