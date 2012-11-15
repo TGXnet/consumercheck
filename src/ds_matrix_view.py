@@ -15,7 +15,7 @@ class DSArrayAdapter(TabularAdapter):
     columns = [('dummy', 0)]
 
     # format = '%.4f'
-    # width = 100
+    width = 50
     # index_text = Property()
     # index_bg_color = Property()
     # bg_color = Color(0xE0E0E0)
@@ -66,8 +66,8 @@ class TableViewer(Controller):
              show_label=False),
         Item('handler.cp_clip', show_label=False),
         buttons = OKCancelButtons,
-        width=600,
-        height=200,
+        width=.5,
+        height=.5,
         resizable=True,
         )
 

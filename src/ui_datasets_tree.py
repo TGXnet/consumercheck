@@ -10,6 +10,8 @@ from ds_ui import DataSet, ds_list_tab
 from importer_main import DND
 from ds_matrix_view import TableViewer
 
+# FIXME: This is dirty
+ds_tree_win_handle = None
 
 class Datasets(HasTraits):
     name     = Str( 'FIXME: Datasets default name' )
@@ -33,8 +35,10 @@ class DatasetsTreeHandler(Handler):
 
 
     # Called when the the window is created
-    def init(self, uiInfo):
-        self._updateDatasetsList(uiInfo.object)
+    def init(self, info):
+        global ds_tree_win_handle
+        self._updateDatasetsList(info.object)
+        ds_tree_win_handle = info.ui.control
 
 
     def object_datasets_event_changed(self, uiInfo):
@@ -81,7 +85,7 @@ class TreeNode(TN):
 
 def show_ds_table(obj):
     tv = TableViewer(obj)
-    tv.edit_traits()
+    tv.edit_traits(parent=ds_tree_win_handle)
 
 
 # Define the TreeEditor used to display the hierarchy:
