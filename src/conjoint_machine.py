@@ -126,7 +126,7 @@ class ConjointMachine(object):
         liking_name = consLiking._ds_name.encode('ascii', 'ignore')
         self.consLikingTag = liking_name.translate(None, throw_chrs)
 
-        self._check_completeness()
+        # self._check_completeness()
         if self.py_merge:
             self._data_merge()
 
