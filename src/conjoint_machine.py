@@ -133,12 +133,37 @@ class ConjointMachine(object):
 
     def _check_completeness(self):
         '''FIXME: What is a proper name for this'''
+        for comb in combinations(self.selected_consAtts, 2):
+            self._check2d_interaction(*comb)
+
+
+    def _check2d_interaction(self, attr1, attr2):
         from pprint import pprint
-        pprint(self.selected_consAtts)
-        pprint(self.consAtts.variable_names)
-        pprint(self.consAtts.matrix)
-        oorf = combinations(self.selected_consAtts, 2)
-        print([o for o in oorf])
+        print(attr1, attr2)
+        vns = self.consAtts.variable_names
+        mat = self.consAtts.matrix
+        ind1 = vns.index(attr1)
+        ind2 = vns.index(attr2)
+        uniq1 = np.unique(mat[:,ind1])
+        uniq2 = np.unique(mat[:,ind2])
+        if len(uniq1) < len(uniq2):
+            xuniq, yuniq = uniq1, uniq2
+        else:
+            yuniq, xuniq = uniq1, uniq2
+        hist = []
+        for val in xuniq:
+            mask = mat[:,ind1] == val
+            vec = mat[mask,ind2]
+            hst = np.bincount(vec, minlength=(len(yuniq)+1))
+            hist.append(hst[1:])
+        up = np.array(hist)
+        pprint(up)
+        if not np.all(up, axis=None):
+            print("Feilet test")
+            fm = np.all(up, axis=0)
+            fm = np.logical_not(fm)
+            print(up[:,fm])
+
 
 
     def _numeric_category_vector(self, str_categories):
