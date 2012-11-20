@@ -2,7 +2,7 @@
 import numpy as np
 
 # Enthought library imports
-from chaco.api import (Plot, ArrayPlotData, LabelAxis, OverlayPlotContainer,
+from chaco.api import (Plot, ArrayPlotData, LabelAxis, DataView,
                        ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
                        add_default_grids, ScatterPlot, LinePlot, PlotAxis)
 from chaco.tools.api import ZoomTool, PanTool
@@ -11,13 +11,9 @@ from chaco.tools.api import ZoomTool, PanTool
 from plot_windows import LinePlotWindow
 
 
-class MainEffectsPlot(OverlayPlotContainer):
+class MainEffectsPlot(DataView):
     def __init__(self, conj_res, attr_name, pl_ref):
         super(MainEffectsPlot, self).__init__()
-        self.padding = 50
-        self.fill_padding = True
-        self.bgcolor = "lightgray"
-        self.use_backbuffer=True
         self.pl_ref = pl_ref
         self._adapt_conj_main_effect_data(conj_res, attr_name)
         self._create_plot()
@@ -72,8 +68,8 @@ class MainEffectsPlot(OverlayPlotContainer):
         value_mapper = LinearMapper(
             range=DataRange1D(ylow, yhigh, tight_bounds=False))
         
-        #Create a plot of the vertical error            
-        y_name='error'
+        #Create vertical bars to indicate confidence interval
+        y_name='CIbars'
         plot_err = ErrorBarPlot(index=x,
                            index_mapper=index_mapper,
                            name=y_name,
@@ -90,7 +86,7 @@ class MainEffectsPlot(OverlayPlotContainer):
                     tick_label_rotate_angle = 90,
                     name=y_name,
                     labels=self.ls_label_names,
-                    positions = self.ls_label_pos,)
+                    positions = self.ls_label_pos)
 
         y_axis = PlotAxis(orientation='left',
                     title= '',
