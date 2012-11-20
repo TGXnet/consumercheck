@@ -45,13 +45,11 @@ class MainEffectsPlot(DataView):
         selected = ls_means[picker]
         selected_labels = ls_means_labels[picker]
 
-
         self.ls_label_names = []
         self.ls_label_pos = []
         for i, pl in enumerate(selected_labels):
             self.ls_label_names.append(pl)
-            self.ls_label_pos.append(i+1)
-
+            self.ls_label_pos.append(i + 1)
 
         self.apd = ArrayPlotData()
         self.apd.set_data('index', [int(val) for val in selected[attr_name]])
@@ -146,10 +144,12 @@ class InteractionPlot(Plot):
         attr_two_name: Default lines
         flip: Decide which attribute to be index and which to be lines
         """
+        from pprint import pprint
         if not flip:
             self.index_attr, self.line_attr = self.attr_one_name, self.attr_two_name
         else:
             self.index_attr, self.line_attr = self.attr_two_name, self.attr_one_name
+
         ls_means = self.conj_res['lsmeansTable']['data']
 
         picker_one = ls_means[self.index_attr] != 'NA'
@@ -157,12 +157,27 @@ class InteractionPlot(Plot):
         # Picker is an boolean selction vector
         picker = np.logical_and(picker_one, picker_two)
         self.selected = ls_means[picker][[self.index_attr, self.line_attr, ' Estimate ']]
-        lines = set(self.selected[self.line_attr])
 
-        self.data = ArrayPlotData()
-        line_data_picker = self.selected[self.line_attr] == list(lines)[0]
-        line_data = self.selected[line_data_picker]
-        self.data.set_data('index', [int(val) for val in line_data[self.index_attr]])
+        lines = sorted(list(set(self.selected[self.line_attr])))
+        print("Lines", lines)
+        indexes = sorted(list(set(self.selected[self.index_attr])))
+        print("indexes", indexes)
+        self.index_labels = ['{0} {1}'.format(self.index_attr, i) for i in indexes]
+        
+        self.data = ArrayPlotData(index=[int(val) for val in indexes])
+
+        #Append label and grid
+        x_axis = LabelAxis(
+            self,
+            # name=y_name,
+            orientation="bottom",
+            tick_weight=1,
+            tick_label_rotate_angle = 90,
+            labels=self.index_labels,
+            positions = [int(val) for val in indexes],
+            )
+
+        self.underlays.append(x_axis)
 
         for line in lines:
             self._plot_line(line)
@@ -175,16 +190,17 @@ class InteractionPlot(Plot):
         self.plot(('index', 'line{}'.format(line)), type='line', name='lp{}'.format(line))
 
 
+
 if __name__ == '__main__':
     print("Test start")
     from tests.conftest import conj_res
     res = conj_res()
 
-    # mep = MainEffectsPlot(res, 'Flavour', None)
-    # pw = LinePlotWindow(plot=mep)
-    # pw.configure_traits()
-    # iap = InteractionPlot(res, 'Sex', 'Flavour')
-    iap = InteractionPlot(res, 'Flavour', 'Sex')
-    pw = LinePlotWindow(plot=iap)
+    mep = MainEffectsPlot(res, 'Flavour', None)
+    pw = LinePlotWindow(plot=mep)
     pw.configure_traits()
+    # iap = InteractionPlot(res, 'Sex', 'Flavour')
+    # iap = InteractionPlot(res, 'Flavour', 'Sex')
+    # pw = LinePlotWindow(plot=iap)
+    # pw.configure_traits()
     print("The end")
