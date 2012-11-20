@@ -1,5 +1,4 @@
 # stdlib imports
-# import os
 import logging
 import optparse
 import numpy as np

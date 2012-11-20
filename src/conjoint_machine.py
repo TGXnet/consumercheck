@@ -1,6 +1,6 @@
 
 # Import necessary modules
-import os
+import os.path as op
 import string
 import pyper
 import numpy as np
@@ -19,8 +19,9 @@ class ConjointMachine(object):
 
     def __init__(self, run_state=None, start_r=True):
         # Set root folder for R
-        self.r_origo = os.path.dirname(os.path.abspath(__file__))
-        ## self.r_origo = os.getcwd()
+        # When this is bbfreeze'ed this file is packed into the
+        # library.zip file
+        self.r_origo = op.dirname(op.dirname(op.abspath(__file__)))
 
         if run_state:
             self.run_state=run_state
@@ -34,10 +35,13 @@ class ConjointMachine(object):
 
 
     def _start_r_interpreter(self):
-        Rbin = os.path.join(self.r_origo, 'R-2.15.1', 'bin', 'R.exe')
-        if not os.path.exists(Rbin):
+        Rbin = op.join(self.r_origo, 'R-2.15.1', 'bin', 'R.exe')
+        logger.info("Try R path: {0}".format(Rbin))
+        if op.exists(Rbin):
+            logger.info("R.exe found")
+        else:
             Rbin = 'R'
-            logger.info("We are depending on systemwide R instalation")
+            logger.info("R.exe not found, so we are depending on system wide R installation")
         self.r = pyper.R(RCMD=Rbin, use_pandas=False)
 
 
