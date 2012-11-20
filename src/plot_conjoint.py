@@ -20,30 +20,38 @@ class MainEffectsPlot(DataView):
 
 
     def _adapt_conj_main_effect_data(self, conj_res, attr_name):
+        """FIXME: Can this bee extracted as an utility function
+        that will return an result object but only with the needed values?
+        """
         ls_means = conj_res['lsmeansTable']['data']
         ls_means_labels = conj_res['lsmeansTable']['rowNames']
         cn = list(conj_res['lsmeansTable']['colNames'])
         nli = cn.index('Estimate')
-
         cn = cn[:nli]
-        exclude = []
-        for col in cn:
-            if col == attr_name:
-                continue
-            else:
-                exclude.append(ls_means[col] != 'NA')
+
+        # The folowing logic is about selecting rows from the result sets.
+        # The picker i an boolean vector that selects the rows i will plot.
+
+        # First; select all rows where the given attribute have an index value
         picker = ls_means[attr_name] != 'NA'
-        
+
+        # Then; exclude all the interaction rows where the given attribute
+        # is a part of the interaction
+        exclude = [ls_means[col] != 'NA' for col in cn if col != attr_name]
         for out in exclude:
             picker = np.logical_and(picker, np.logical_not(out))
+
+        # Use the boolean selection vector to select the wanted rows from the result set
         selected = ls_means[picker]
         selected_labels = ls_means_labels[picker]
+
 
         self.ls_label_names = []
         self.ls_label_pos = []
         for i, pl in enumerate(selected_labels):
             self.ls_label_names.append(pl)
             self.ls_label_pos.append(i+1)
+
 
         self.apd = ArrayPlotData()
         self.apd.set_data('index', [int(val) for val in selected[attr_name]])
@@ -126,39 +134,42 @@ class MainEffectsPlot(DataView):
 class InteractionPlot(Plot):
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
-        self._adapt_conj_interaction_data(conj_res, attr_one_name, attr_two_name)
-
-
-    def _adapt_conj_interaction_data(self, conj_res, attr_one_name, attr_two_name):
-        """
-        attr_one_name: Index axis
-        attr_two_name: Lines
-        """
-        from pprint import pprint
+        self.conj_res = conj_res
         self.attr_one_name = attr_one_name
         self.attr_two_name = attr_two_name
-        ls_means = conj_res['lsmeansTable']['data']
-        pprint(ls_means)
-        print(attr_one_name, attr_two_name)
-        picker_one = ls_means[attr_one_name] != 'NA'
-        picker_two = ls_means[attr_two_name] != 'NA'
+        self._adapt_conj_interaction_data()
+
+
+    def _adapt_conj_interaction_data(self, flip=False):
+        """
+        attr_one_name: Default index axis
+        attr_two_name: Default lines
+        flip: Decide which attribute to be index and which to be lines
+        """
+        if not flip:
+            self.index_attr, self.line_attr = self.attr_one_name, self.attr_two_name
+        else:
+            self.index_attr, self.line_attr = self.attr_two_name, self.attr_one_name
+        ls_means = self.conj_res['lsmeansTable']['data']
+
+        picker_one = ls_means[self.index_attr] != 'NA'
+        picker_two = ls_means[self.line_attr] != 'NA'
+        # Picker is an boolean selction vector
         picker = np.logical_and(picker_one, picker_two)
-        self.selected = ls_means[picker][[attr_one_name, attr_two_name, ' Estimate ']]
-        pprint(self.selected)
-        lines = set(self.selected[attr_two_name])
-        pprint(lines)
+        self.selected = ls_means[picker][[self.index_attr, self.line_attr, ' Estimate ']]
+        lines = set(self.selected[self.line_attr])
 
         self.data = ArrayPlotData()
-        line_data_picker = self.selected[self.attr_two_name] == list(lines)[0]
+        line_data_picker = self.selected[self.line_attr] == list(lines)[0]
         line_data = self.selected[line_data_picker]
-        self.data.set_data('index', [int(val) for val in line_data[attr_one_name]])
+        self.data.set_data('index', [int(val) for val in line_data[self.index_attr]])
 
         for line in lines:
             self._plot_line(line)
 
 
     def _plot_line(self, line):
-        line_data_picker = self.selected[self.attr_two_name] == line
+        line_data_picker = self.selected[self.line_attr] == line
         line_data = self.selected[line_data_picker]
         self.data.set_data('line{}'.format(line), [float(val) for val in line_data[' Estimate ']])
         self.plot(('index', 'line{}'.format(line)), type='line', name='lp{}'.format(line))
@@ -168,12 +179,12 @@ if __name__ == '__main__':
     print("Test start")
     from tests.conftest import conj_res
     res = conj_res()
-    
-    ## mep = MainEffectsPlot(res, 'Flavour', None)
-    ## pw = LinePlotWindow(plot=mep)
-    ## pw.configure_traits()
-    iap = InteractionPlot(res, 'Sex', 'Flavour')
-    # iap = InteractionPlot(res, 'Flavour', 'Sex')
+
+    # mep = MainEffectsPlot(res, 'Flavour', None)
+    # pw = LinePlotWindow(plot=mep)
+    # pw.configure_traits()
+    # iap = InteractionPlot(res, 'Sex', 'Flavour')
+    iap = InteractionPlot(res, 'Flavour', 'Sex')
     pw = LinePlotWindow(plot=iap)
     pw.configure_traits()
     print("The end")
