@@ -70,59 +70,52 @@ class MainEffectsPlot(DataView):
         
         #Create vertical bars to indicate confidence interval
         y_name='CIbars'
-        plot_err = ErrorBarPlot(index=x,
-                           index_mapper=index_mapper,
-                           name=y_name,
-                           value_low = ylow,
-                           value_high = yhigh,
-                           value_mapper = value_mapper,
-                           bgcolor = "white",
-                           border_visible = True)
-        
-        #Append label and grid
-        x_axis = LabelAxis(plot_err,
-                    orientation="bottom",
-                    tick_weight=1,
-                    tick_label_rotate_angle = 90,
-                    name=y_name,
-                    labels=self.ls_label_names,
-                    positions = self.ls_label_pos)
+        plot_err = ErrorBarPlot(
+            index=x, index_mapper=index_mapper,
+            value_low = ylow, value_high = yhigh,
+            value_mapper = value_mapper,
+            name=y_name,
+            bgcolor = "white", border_visible = True)
 
-        y_axis = PlotAxis(orientation='left',
-                    title= '',
-                    mapper=plot_err.value_mapper,
-                    component=plot_err)
+        #Append label and grid
+        x_axis = LabelAxis(
+            plot_err, name=y_name,
+            orientation="bottom",
+            tick_weight=1, tick_label_rotate_angle = 90,
+            labels=self.ls_label_names,
+            positions = self.ls_label_pos)
+
+        y_axis = PlotAxis(
+            orientation='left', title= '',
+            mapper=plot_err.value_mapper,
+            component=plot_err)
+
         plot_err.underlays.append(x_axis)
         plot_err.underlays.append(y_axis)
         add_default_grids(plot_err)
         
         #Create averageplot
         y_name='average'
-        plot_y_average = LinePlot(index=x,
-                         index_mapper=index_mapper,
-                         value=yaverage,
-                         name=y_name,
-                         color='green',
-                         value_mapper=value_mapper)
+        plot_y_average = LinePlot(
+            index=x, index_mapper=index_mapper,
+            value=yaverage, value_mapper=value_mapper,
+            name=y_name,
+            color='green')
 
         #Create lineplot
         y_name='line'
-        plot_line = LinePlot(index=x,
-                         index_mapper=index_mapper,
-                         value=y,
-                         name=y_name,
-                         value_mapper=value_mapper)
+        plot_line = LinePlot(
+            index=x, index_mapper=index_mapper,
+            value=y, value_mapper=value_mapper,
+            name=y_name)
         
         #Create ScatterPlot
         y_name='scatter'
-        plot_scatter = ScatterPlot(index=x,
-                            index_mapper=index_mapper,
-                            value=y,
-                            value_mapper=value_mapper,
-                            color="blue",
-                            name=y_name,
-                            marker_size=5,
-                            )
+        plot_scatter = ScatterPlot(
+            index=x, index_mapper=index_mapper,
+            value=y, value_mapper=value_mapper,
+            name=y_name,
+            color="blue", marker_size=5)
 
         zoom = ZoomTool(plot_err, tool_mode="box", always_on=False)
         plot_err.tools.append(PanTool(plot_err))
@@ -141,16 +134,19 @@ class InteractionPlot(Plot):
         attr_one_name: Index axis
         attr_two_name: Lines
         """
+        from pprint import pprint
         self.attr_one_name = attr_one_name
         self.attr_two_name = attr_two_name
         ls_means = conj_res['lsmeansTable']['data']
-        print(ls_means)
+        pprint(ls_means)
         print(attr_one_name, attr_two_name)
         picker_one = ls_means[attr_one_name] != 'NA'
         picker_two = ls_means[attr_two_name] != 'NA'
         picker = np.logical_and(picker_one, picker_two)
         self.selected = ls_means[picker][[attr_one_name, attr_two_name, ' Estimate ']]
+        pprint(self.selected)
         lines = set(self.selected[attr_two_name])
+        pprint(lines)
 
         self.data = ArrayPlotData()
         line_data_picker = self.selected[self.attr_two_name] == list(lines)[0]
@@ -173,10 +169,11 @@ if __name__ == '__main__':
     from tests.conftest import conj_res
     res = conj_res()
     
-    mep = MainEffectsPlot(res, 'Flavour', None)
-    
-    pw = LinePlotWindow(plot=mep)
+    ## mep = MainEffectsPlot(res, 'Flavour', None)
+    ## pw = LinePlotWindow(plot=mep)
+    ## pw.configure_traits()
+    iap = InteractionPlot(res, 'Sex', 'Flavour')
+    # iap = InteractionPlot(res, 'Flavour', 'Sex')
+    pw = LinePlotWindow(plot=iap)
     pw.configure_traits()
-#    iap = InteractionPlot(res, 'Sex', 'Sugarlevel')
-#    iap.new_window(True)
     print("The end")
