@@ -2,7 +2,9 @@
 import numpy as np
 
 # Enthought library imports
-from chaco.api import Plot, ArrayPlotData, LabelAxis, OverlayPlotContainer, ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D, add_default_grids, ScatterPlot, LinePlot, PlotAxis
+from chaco.api import (Plot, ArrayPlotData, LabelAxis, OverlayPlotContainer,
+                       ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
+                       add_default_grids, ScatterPlot, LinePlot, PlotAxis)
 from chaco.tools.api import ZoomTool, PanTool
 
 #Local imports
@@ -26,7 +28,7 @@ class MainEffectsPlot(OverlayPlotContainer):
         ls_means_labels = conj_res['lsmeansTable']['rowNames']
         cn = list(conj_res['lsmeansTable']['colNames'])
         nli = cn.index('Estimate')
-        
+
         cn = cn[:nli]
         exclude = []
         for col in cn:
@@ -40,7 +42,7 @@ class MainEffectsPlot(OverlayPlotContainer):
             picker = np.logical_and(picker, np.logical_not(out))
         selected = ls_means[picker]
         selected_labels = ls_means_labels[picker]
-                
+
         self.ls_label_names = []
         self.ls_label_pos = []
         for i, pl in enumerate(selected_labels):
@@ -52,7 +54,8 @@ class MainEffectsPlot(OverlayPlotContainer):
         self.apd.set_data('values', [float(val) for val in selected[' Estimate ']])
         self.apd.set_data('ylow', [float(val) for val in selected[' Lower CI ']])
         self.apd.set_data('yhigh', [float(val) for val in selected[' Upper CI ']])
-        self.apd.set_data('average', [conj_res['meanLiking'] for val in selected[attr_name]])
+        self.apd.set_data('average', [conj_res['meanLiking'] for
+                                      val in selected[attr_name]])
         self.data = self.apd
 
 
@@ -64,8 +67,10 @@ class MainEffectsPlot(OverlayPlotContainer):
         yhigh = ArrayDataSource(self.apd['yhigh'])
         yaverage = ArrayDataSource(self.apd['average'])
         
-        index_mapper = LinearMapper(range=DataRange1D(x, tight_bounds=False, margin=0.05))
-        value_mapper = LinearMapper(range=DataRange1D(ylow, yhigh, tight_bounds=False))
+        index_mapper = LinearMapper(
+            range=DataRange1D(x, tight_bounds=False, margin=0.05))
+        value_mapper = LinearMapper(
+            range=DataRange1D(ylow, yhigh, tight_bounds=False))
         
         #Create a plot of the vertical error            
         y_name='error'
@@ -86,6 +91,7 @@ class MainEffectsPlot(OverlayPlotContainer):
                     name=y_name,
                     labels=self.ls_label_names,
                     positions = self.ls_label_pos,)
+
         y_axis = PlotAxis(orientation='left',
                     title= '',
                     mapper=plot_err.value_mapper,
@@ -127,7 +133,7 @@ class MainEffectsPlot(OverlayPlotContainer):
         plot_err.overlays.append(zoom)  
         self.add(plot_y_average, plot_err ,plot_line, plot_scatter)
 
-    
+
 class InteractionPlot(Plot):
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
