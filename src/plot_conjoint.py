@@ -89,7 +89,8 @@ class MainEffectsPlot(DataView):
             orientation="bottom",
             tick_weight=1, tick_label_rotate_angle = 90,
             labels=self.ls_label_names,
-            positions = self.ls_label_pos)
+            positions = self.ls_label_pos,
+            )
 
         y_axis = PlotAxis(
             orientation='left', title= '',
@@ -177,6 +178,7 @@ class InteractionPlot(Plot):
             positions = [int(val) for val in indexes],
             )
 
+        self.underlays.remove(self.index_axis)
         self.underlays.append(x_axis)
 
         for line in lines:
@@ -196,11 +198,11 @@ if __name__ == '__main__':
     from tests.conftest import conj_res
     res = conj_res()
 
-    mep = MainEffectsPlot(res, 'Flavour', None)
-    pw = LinePlotWindow(plot=mep)
-    pw.configure_traits()
-    # iap = InteractionPlot(res, 'Sex', 'Flavour')
-    # iap = InteractionPlot(res, 'Flavour', 'Sex')
-    # pw = LinePlotWindow(plot=iap)
+    # mep = MainEffectsPlot(res, 'Flavour', None)
+    # pw = LinePlotWindow(plot=mep)
     # pw.configure_traits()
+    iap = InteractionPlot(res, 'Sex', 'Flavour')
+    # iap = InteractionPlot(res, 'Flavour', 'Sex')
+    pw = LinePlotWindow(plot=iap)
+    pw.configure_traits()
     print("The end")
