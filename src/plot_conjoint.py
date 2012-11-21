@@ -2,6 +2,17 @@
 import numpy as np
 
 # Enthought library imports
+
+# Enthought library imports
+from enable.api import Component, ComponentEditor
+from traits.api import Instance, Bool, Str, Button, on_trait_change
+from traitsui.api import View, Group, Item, Label, Handler
+#Local imports
+from ui_results import TableViewController
+
+
+
+
 from chaco.api import (ArrayPlotData, LabelAxis, DataView, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
                        add_default_grids, ScatterPlot, LinePlot, PlotAxis)
@@ -9,7 +20,8 @@ from chaco.tools.api import ZoomTool, PanTool, LegendTool
 from chaco.example_support import COLOR_PALETTE
 
 #Local imports
-from plot_windows import LinePlotWindow
+from plot_windows import PlotWindow
+
 
 
 class MainEffectsPlot(DataView):
@@ -163,7 +175,16 @@ class InteractionPlot(DataView):
         lines = sorted(list(set(selected[self.line_attr])))
         indexes = sorted(list(set(selected[self.index_attr])))
         index_labels = ['{0} {1}'.format(self.index_attr, i) for i in indexes]
-        
+
+        # Nullify all plot related list to make shure we can
+        # make the ploting idempotent
+        self.plot_components = []
+        self.index_range.sources = []
+        self.value_range.sources = []
+        self.tools = []
+        self.overlays = []
+        self.print_traits()
+
         idx = ArrayDataSource([int(val) for val in indexes])
         self.index_range.sources.append(idx)
 
@@ -201,6 +222,7 @@ class InteractionPlot(DataView):
             plots["{0} {1}".format(self.line_attr, line)] = plot
 
         legend.plots = plots
+
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self))
         # Add the title at the top
@@ -213,6 +235,85 @@ class InteractionPlot(DataView):
         # self.tools.append(TraitsTool(self))
 
 
+#===============================================================================
+# Attributes to use for the plot view.
+size = (850, 650)
+bg_color="white"
+#===============================================================================
+
+class TitleHandler(Handler):
+    """ Change the title on the UI.
+
+    """
+    def object_title_text_changed(self, info):
+        """ Called whenever the title_text attribute changes on the handled object.
+
+        """
+        info.ui.title = info.object.title_text
+
+
+
+class InteractionPlotWindow(PlotWindow):
+    """Window for embedding line plot
+
+    """
+    plot = Instance(Component)
+    eq_axis = Bool(False)
+    show_labels = Bool(True)
+    view_table = Button('View result table')
+    title_text = Str("ConsumerCheck")
+    flip = Bool(False)
+
+    @on_trait_change('show_labels')
+    def switch_labels(self, obj, name, new):
+        # ds_id = name.partition('_')[2]
+        obj.plot.show_labels(show=new)
+
+    @on_trait_change('eq_axis')
+    def switch_axis(self, obj, name, new):
+        obj.plot.toggle_eq_axis(new)
+
+    @on_trait_change('view_table')
+    def show_table(self, obj, name, new):
+        tvc = TableViewController(model=obj.plot)
+        tvc.configure_traits()
+
+    @on_trait_change('flip')
+    def flip_interaction(self, obj, name, new):
+        print("Flipped", new)
+        obj.plot._adapt_conj_interaction_data(new)
+
+
+    traits_view = View(
+        Group(
+            Group(
+                Item('plot',
+                     editor=ComponentEditor(
+                         size = size,
+                         bgcolor = bg_color),
+                     show_label=False),
+                orientation = "vertical"
+                ),
+            Label('Scroll to zoom and drag to pan in plot.'),
+            Group(
+                Item('view_table', show_label=False),
+                Item('previous_plot', show_label=False),
+                Item('next_plot', show_label=False),
+                Item('flip', show_label=True),
+                orientation="horizontal",
+                ),
+            layout="normal",
+            ),
+        resizable=True,
+        handler=TitleHandler(),
+        # kind = 'nonmodal',
+        width = .5,
+        height = .7,
+        buttons = ["OK"]
+        )
+
+
+
 if __name__ == '__main__':
     print("Test start")
     from tests.conftest import conj_res
@@ -223,6 +324,6 @@ if __name__ == '__main__':
     # pw.configure_traits()
     # iap = InteractionPlot(res, 'Sex', 'Flavour')
     iap = InteractionPlot(res, 'Flavour', 'Sex')
-    pw = LinePlotWindow(plot=iap)
+    pw = InteractionPlotWindow(plot=iap)
     pw.configure_traits()
     print("The end")
