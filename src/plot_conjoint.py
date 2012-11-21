@@ -130,7 +130,8 @@ class MainEffectsPlot(DataView):
         self.add(plot_y_average, plot_err ,plot_line, plot_scatter)
 
 
-class InteractionPlot(Plot):
+class InteractionPlot(DataView):
+
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
         self.conj_res = conj_res
@@ -157,40 +158,45 @@ class InteractionPlot(Plot):
         picker_two = ls_means[self.line_attr] != 'NA'
         # Picker is an boolean selction vector
         picker = np.logical_and(picker_one, picker_two)
-        self.selected = ls_means[picker][[self.index_attr, self.line_attr, ' Estimate ']]
+        selected = ls_means[picker][[self.index_attr, self.line_attr, ' Estimate ']]
 
-        lines = sorted(list(set(self.selected[self.line_attr])))
+        lines = sorted(list(set(selected[self.line_attr])))
         print("Lines", lines)
-        indexes = sorted(list(set(self.selected[self.index_attr])))
+        indexes = sorted(list(set(selected[self.index_attr])))
         print("indexes", indexes)
-        self.index_labels = ['{0} {1}'.format(self.index_attr, i) for i in indexes]
+        index_labels = ['{0} {1}'.format(self.index_attr, i) for i in indexes]
         
-        self.data = ArrayPlotData(index=[int(val) for val in indexes])
+        idx = ArrayDataSource([int(val) for val in indexes])
+        self.index_range.sources.append(idx)
+        print(self.index_range.sources)
 
         #Append label and grid
         x_axis = LabelAxis(
             self,
-            # name=y_name,
             orientation="bottom",
             tick_weight=1,
             tick_label_rotate_angle = 90,
-            labels=self.index_labels,
+            labels=index_labels,
             positions = [int(val) for val in indexes],
             )
 
-        self.underlays.remove(self.index_axis)
-        self.underlays.append(x_axis)
+        self.index_axis = x_axis
+
+        # for hvert nytt plot trenger vi bare et nytt dataset
 
         for line in lines:
-            self._plot_line(line)
+            line_data_picker = selected[self.line_attr] == line
+            line_data = selected[line_data_picker]
+            vals = ArrayDataSource([float(val) for val in line_data[' Estimate ']])
+            self.value_range.sources.append(vals)
+            plot = LinePlot(index=idx, value=vals,
+                            index_mapper=LinearMapper(range=self.index_range),
+                            value_mapper=LinearMapper(range=self.value_range),
+                            )
+            self.add(plot)
 
-
-    def _plot_line(self, line):
-        line_data_picker = self.selected[self.line_attr] == line
-        line_data = self.selected[line_data_picker]
-        self.data.set_data('line{}'.format(line), [float(val) for val in line_data[' Estimate ']])
-        self.plot(('index', 'line{}'.format(line)), type='line', name='lp{}'.format(line))
-
+        self.tools.append(PanTool(self))
+        self.overlays.append(ZoomTool(self))
 
 
 if __name__ == '__main__':
