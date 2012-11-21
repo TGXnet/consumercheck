@@ -2,10 +2,11 @@
 import numpy as np
 
 # Enthought library imports
-from chaco.api import (Plot, ArrayPlotData, LabelAxis, DataView,
+from chaco.api import (ArrayPlotData, LabelAxis, DataView, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
                        add_default_grids, ScatterPlot, LinePlot, PlotAxis)
-from chaco.tools.api import ZoomTool, PanTool
+from chaco.tools.api import ZoomTool, PanTool, LegendTool
+from chaco.example_support import COLOR_PALETTE
 
 #Local imports
 from plot_windows import LinePlotWindow
@@ -146,7 +147,6 @@ class InteractionPlot(DataView):
         attr_two_name: Default lines
         flip: Decide which attribute to be index and which to be lines
         """
-        from pprint import pprint
         if not flip:
             self.index_attr, self.line_attr = self.attr_one_name, self.attr_two_name
         else:
@@ -161,14 +161,11 @@ class InteractionPlot(DataView):
         selected = ls_means[picker][[self.index_attr, self.line_attr, ' Estimate ']]
 
         lines = sorted(list(set(selected[self.line_attr])))
-        print("Lines", lines)
         indexes = sorted(list(set(selected[self.index_attr])))
-        print("indexes", indexes)
         index_labels = ['{0} {1}'.format(self.index_attr, i) for i in indexes]
         
         idx = ArrayDataSource([int(val) for val in indexes])
         self.index_range.sources.append(idx)
-        print(self.index_range.sources)
 
         #Append label and grid
         x_axis = LabelAxis(
@@ -182,9 +179,15 @@ class InteractionPlot(DataView):
 
         self.index_axis = x_axis
 
+        # Add a legend in the upper right corner, and make it relocatable
+        plots = {}
+        legend = Legend(component=self, padding=10, align="ur")
+        legend.tools.append(LegendTool(legend, drag_button="right"))
+        self.overlays.append(legend)
+
         # for hvert nytt plot trenger vi bare et nytt dataset
 
-        for line in lines:
+        for i, line in enumerate(lines):
             line_data_picker = selected[self.line_attr] == line
             line_data = selected[line_data_picker]
             vals = ArrayDataSource([float(val) for val in line_data[' Estimate ']])
@@ -192,11 +195,22 @@ class InteractionPlot(DataView):
             plot = LinePlot(index=idx, value=vals,
                             index_mapper=LinearMapper(range=self.index_range),
                             value_mapper=LinearMapper(range=self.value_range),
+                            color=COLOR_PALETTE[i],
                             )
             self.add(plot)
+            plots["{0} {1}".format(self.line_attr, line)] = plot
 
+        legend.plots = plots
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self))
+        # Add the title at the top
+        self.overlays.append(PlotLabel("Conjoint interaction plot",
+                                       component=self,
+                                       font = "swiss 16",
+                                       overlay_position="top"))
+
+        # Add the traits inspector tool to the container
+        # self.tools.append(TraitsTool(self))
 
 
 if __name__ == '__main__':
@@ -207,8 +221,8 @@ if __name__ == '__main__':
     # mep = MainEffectsPlot(res, 'Flavour', None)
     # pw = LinePlotWindow(plot=mep)
     # pw.configure_traits()
-    iap = InteractionPlot(res, 'Sex', 'Flavour')
-    # iap = InteractionPlot(res, 'Flavour', 'Sex')
+    # iap = InteractionPlot(res, 'Sex', 'Flavour')
+    iap = InteractionPlot(res, 'Flavour', 'Sex')
     pw = LinePlotWindow(plot=iap)
     pw.configure_traits()
     print("The end")
