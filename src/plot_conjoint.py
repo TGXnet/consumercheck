@@ -145,8 +145,9 @@ class MainEffectsPlot(DataView):
 
 class InteractionPlot(DataView):
 
-    def __init__(self, conj_res, attr_one_name, attr_two_name):
+    def __init__(self, conj_res, attr_one_name, attr_two_name, pl_ref):
         super(InteractionPlot, self).__init__()
+        self.pl_ref = pl_ref
         self.conj_res = conj_res
         self.attr_one_name = attr_one_name
         self.attr_two_name = attr_two_name
@@ -183,7 +184,9 @@ class InteractionPlot(DataView):
         self.value_range.sources = []
         self.tools = []
         self.overlays = []
-        self.print_traits()
+
+        self.index_range.tight_bounds = False
+        self.value_range.tight_bounds = False
 
         idx = ArrayDataSource([int(val) for val in indexes])
         self.index_range.sources.append(idx)
@@ -280,7 +283,6 @@ class InteractionPlotWindow(PlotWindow):
 
     @on_trait_change('flip')
     def flip_interaction(self, obj, name, new):
-        print("Flipped", new)
         obj.plot._adapt_conj_interaction_data(new)
 
 
