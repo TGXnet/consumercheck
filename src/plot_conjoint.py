@@ -2,26 +2,19 @@
 import numpy as np
 
 # Enthought library imports
-
-# Enthought library imports
 from enable.api import Component, ComponentEditor
 from traits.api import Instance, Bool, Str, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
-#Local imports
-from ui_results import TableViewController
-
-
-
-
 from chaco.api import (ArrayPlotData, LabelAxis, DataView, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
                        add_default_grids, ScatterPlot, LinePlot, PlotAxis)
 from chaco.tools.api import ZoomTool, PanTool, LegendTool
 from chaco.example_support import COLOR_PALETTE
 
+
 #Local imports
 from plot_windows import PlotWindow
-
+from ui_results import TableViewController
 
 
 class MainEffectsPlot(DataView):
