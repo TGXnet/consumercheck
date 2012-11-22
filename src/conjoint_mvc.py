@@ -1,5 +1,7 @@
 # stdlib imports
 import sys
+import numpy as np
+from itertools import combinations
 import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -13,7 +15,6 @@ if __name__ == '__main__':
 else:
     logger = logging.getLogger(__name__)
 
-import numpy as np
 
 # Enthought imports
 from traits.api import (HasTraits, Button, Bool, Enum, Instance, List, Str,
@@ -27,7 +28,7 @@ from ds_table_view import DSTableViewer
 from plot_windows import LinePlotWindow
 # from ds_matrix_view import matrix_view
 from conjoint_machine import ConjointMachine
-from plot_conjoint import MainEffectsPlot, InteractionPlot
+from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
 from plugin_tree_helper import WindowLauncher
 
 
@@ -113,69 +114,65 @@ class AConjointHandler(ModelView):
 
     def __ne__(self, other):
         return self.nid != other
-    
-        
+
+
     @on_trait_change('model.mother_ref.chosen_design_vars')
     def _handle_design_vars(self):
         self._update_nodes()
-        
-        
+
+
     @on_trait_change('model.mother_ref.chosen_consumer_attr_vars')
     def _handle_consumer_attr_vars(self):
         self._update_nodes()
 
 
+    @on_trait_change('model.mother_ref.model_structure_type')
+    def _handle_model_struct(self):
+        self._update_nodes()
+
+
     def _update_nodes(self):
+        # Populate table windows launchers
         table_win_launchers = [
             ("LS means", 'show_means'),
             ("Fixed effects", 'show_fixed'),
             ("Random effects", 'show_random')]
-    
+
         self.table_win_launchers = [
             WindowLauncher(owner_ref=self, node_name=nn, func_name=fn)
             for nn, fn in table_win_launchers]
-        
-        vn = self.model.chosen_design_vars + self.model.chosen_consumer_attr_vars
+
+        # Populate main effects plot launchers
+        vn = [n.encode('ascii') for n
+              in self.model.chosen_design_vars + self.model.chosen_consumer_attr_vars]
+
         self.me_plot_launchers = [
             WindowLauncher(
                 owner_ref=self, node_name=name,
                 func_name='plot_main_effects', func_parms=tuple([name]))
             for name in vn]
 
-
-    def _update_launchers(self, new=True):
-        if new:
-            vn = []
-            for name in self.model.result['lsmeansTable']['data'].dtype.names:
-                if name != ' Estimate ':
-                    vn.append(name)
-                else:
-                    break
-            self.me_plot_launchers = [
-                WindowLauncher(
-                    owner_ref=self, node_name=name,
-                    func_name='plot_main_effects', func_parms=tuple([name]))
-                for name in vn]
-
+        # Populate interaction plot launchers
+        if self.model.model_structure_type == 2:
             int_plot_launchers = [
-                ("Flavour:Sugarlevel", 'Flavour', 'Sugarlevel'),
-                ("Flavour:Sex", 'Flavour', 'Sex'),
-                ("Sugarlevel:Sex", 'Sugarlevel', 'Sex'),
-                ]
+                ("{0}:{1}".format(*comb), comb[0], comb[1])
+                for comb in combinations(vn, 2)]
+        else:
+            int_plot_launchers = []
 
-            self.int_plot_launchers = [
-                WindowLauncher(
-                    owner_ref=self, node_name=nn,
-                    func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
-                for nn, p_one, p_two in int_plot_launchers]
-            self.model.mother_ref.update_conjoint_tree = True
+        self.int_plot_launchers = [
+            WindowLauncher(
+                owner_ref=self, node_name=nn,
+                func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
+            for nn, p_one, p_two in int_plot_launchers]
+
+        # self.model.mother_ref.update_conjoint_tree = True
 
 
     def show_random(self):
         logger.info('Show randomTable')
         cj_dm = self.cj_res_ds_adapter(self.model.result['randomTable'], (self.name +
                                        ' - ANOVA table for random effects'))
-        self._update_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
 
@@ -184,7 +181,6 @@ class AConjointHandler(ModelView):
         logger.info('Show fixed ANOVA table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['anovaTable'], (self.name +
                                        ' - ANOVA table for fixed effects'))
-        self._update_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
 
@@ -193,48 +189,63 @@ class AConjointHandler(ModelView):
         logger.info('Show LS mean ANOVA table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'], (self.name +
                                        ' - LS means (main effect and interaction)'))
-        self._update_launchers()
         dstv = DSTableViewer(cj_dm)
         dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
-        
+
 
     def plot_main_effects(self, attr_name,):
-        mep = MainEffectsPlot(self.model.result, attr_name.encode('ascii'), self.me_plot_launchers)
+        mep = MainEffectsPlot(self.model.result, attr_name, self.me_plot_launchers)
         spw = LinePlotWindow(
             plot=mep,
             title_text=attr_name,
             vistog=False
             )
         self._show_plot_window(spw)
-        
-        
+
+
     def show_next_plot(self, window):
-        next_pos=0
+        next_pos = 0
         for i, pl in enumerate(window.plot.pl_ref):
             if pl.node_name == window.title_text:
-                next_pos = i+1
-        if next_pos>=len(window.plot.pl_ref):
-            next_pos=0
-        next_name = window.plot.pl_ref[next_pos].node_name
-        window.title_text = next_name
-        window.plot = MainEffectsPlot(self.model.result, next_name.encode('ascii') , self.me_plot_launchers)
-        
+                next_pos = i + 1
+        if next_pos >= len(window.plot.pl_ref):
+            next_pos = 0
+        # Next Plot Launcher
+        npl = window.plot.pl_ref[next_pos]
+        window.title_text = npl.node_name
+        if npl.func_name == 'plot_main_effects':
+            window.plot = MainEffectsPlot(self.model.result, *npl.func_parms, pl_ref=window.plot.pl_ref)
+        elif npl.func_name == 'plot_interaction':
+            window.plot = InteractionPlot(self.model.result, *npl.func_parms, pl_ref=window.plot.pl_ref)
+
 
     def show_previous_plot(self, window):
-        next_pos=0
+        next_pos = 0
         for i, pl in enumerate(window.plot.pl_ref):
             if pl.node_name == window.title_text:
-                next_pos = i-1
-        if next_pos<0:
-            next_pos=len(window.plot.pl_ref)-1
-        next_name = window.plot.pl_ref[next_pos].node_name
-        window.title_text = next_name
-        window.plot = MainEffectsPlot(self.model.result, next_name.encode('ascii') , self.me_plot_launchers)
-        
+                next_pos = i - 1
+        if next_pos < 0:
+            next_pos = len(window.plot.pl_ref) - 1
+        # Previous Plot Launcher
+        ppl = window.plot.pl_ref[next_pos]
+        window.title_text = ppl.node_name
+        if ppl.func_name == 'plot_main_effects':
+            window.plot = MainEffectsPlot(self.model.result, *ppl.func_parms, pl_ref=window.plot.pl_ref)
+        elif ppl.func_name == 'plot_interaction':
+            window.plot = InteractionPlot(self.model.result, *ppl.func_parms, pl_ref=window.plot.pl_ref)
+
 
     def plot_interaction(self, attr_one, attr_two):
-        mep = InteractionPlot(self.model.result, attr_one, attr_two)
-        mep.new_window(True)
+        plot = InteractionPlot(self.model.result,
+                               attr_one, attr_two,
+                               self.int_plot_launchers)
+        spw = InteractionPlotWindow(
+            plot=plot,
+            title_text="{0}:{1}".format(attr_one, attr_two),
+            vistog=False,
+            )
+        self._show_plot_window(spw)
+
 
 
     def cj_res_ds_adapter(self, cj_res, name='Dataset Viewer'):
@@ -351,7 +362,7 @@ if __name__ == '__main__':
         @on_trait_change('bt_show_means')
         def _on_bsm(self, obj, name, new):
             self.show_means()
-            
+
         @on_trait_change('bt_show_flavour_plot')
         def _on_bsp(self, obj, name, new):
             self.plot_main_effects('Flavour')

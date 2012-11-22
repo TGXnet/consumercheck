@@ -49,6 +49,11 @@ conjoint_tree = TreeEditor(
             label = '=Main effects plots',
             ),
         TreeNode(
+            node_for = [AConjointHandler],
+            children = 'int_plot_launchers',
+            label = '=Interaction plots',
+            ),
+        TreeNode(
             node_for = [WindowLauncher],
             label = 'node_name',
             on_dclick = dclk_activator,
