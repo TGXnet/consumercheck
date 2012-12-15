@@ -6,7 +6,6 @@ Read a file and make a dataset object.
 # Stdlib imports
 import os.path
 
-# stdlib imports
 # import logging
 # Log everything, and send it to stderr.
 # http://docs.python.org/howto/logging-cookbook.html
@@ -20,11 +19,12 @@ from traitsui.menu import OKButton, CancelButton
 from pyface.api import FileDialog, OK, CANCEL
 
 # Local imports
+import cc_config as conf
 from dataset import DataSet
-from config import AppConf
 from importer_text_file import ImporterTextFile
 from importer_xls_file import ImporterXlsFile
 from importer_xlsx_file import ImporterXlsxFile
+
 
 __all__ = ['ImporterMain']
 
@@ -32,7 +32,6 @@ __all__ = ['ImporterMain']
 class ImporterMain(HasTraits):
     """Importer class"""
 
-    _conf = Instance(AppConf, AppConf('QPCPrefmap'))
     _file_path = File()
     _files_path = List(File)
     _datasets = List(DataSet)
@@ -79,19 +78,18 @@ class ImporterMain(HasTraits):
 
     def dialog_multi_import(self):
         """Open dialog for selecting multiple files and return a list of DataSet's"""
-        self._file_path = self._conf.read_work_dir()
+        self._file_path = conf.get_option('work_dir')
         status = self._show_file_selector()
         if status == CANCEL:
             return []
         for filen in self._files_path:
             importer = self._make_importer(filen)
-            #importer.ds_type_list, importer.ds_type = self._pick_ds_type(importer.ds_type_list,filen)
             importer.ds_type = self._pick_ds_type(filen)
             importer.edit_traits()
             ds = importer.import_data()
             ds = self._add_generic_name(ds, importer)
             self._datasets.append(ds)
-        self._conf.save_work_dir(filen)
+        conf.set_option('work_dir', filen)
         return self._datasets
 
 
