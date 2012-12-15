@@ -22,3 +22,8 @@ def test_update_option():
     print(hold, check)
     conf.set_option('work_dir', hold)
     assert(check == os.getcwd())
+
+
+def test_missing():
+    wanted = conf.get_option('plot_height')
+    print(wanted)
