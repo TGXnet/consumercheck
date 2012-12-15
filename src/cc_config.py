@@ -10,21 +10,19 @@ APP_NAME = "ConsumerCheck"
 
 NEW_CFG_TEMPLATE = """
 [UI]
-# Initial widht and height for plot windows
-plotHeight: 800
-plotWidth: 800
-# Show advanced options in the UI
-advOptins: false
+plot_height: 800
+plot_width: 800
+adv_options: false
 
 [RuntimeSettings]
-workDir: .
+work_dir: .
 """
 
-option_section = {
-    'plotHeight': 'UI',
-    'plotWidth': 'UI',
-    'advOptions': 'UI',
-    'workDir': 'RuntimeSettings',
+options_map = {
+    'plot_height': 'UI',
+    'plot_width': 'UI',
+    'adv_options': 'UI',
+    'work_dir': 'RuntimeSettings',
     }
 
 
@@ -80,17 +78,17 @@ _conf = CCConf()
 
 
 def get_option(option):
-    section  = option_section[option]
+    section  = options_map[option]
     return _conf.get(section, option)
 
 
-def set_optin(option, value):
-    section  = option_section[option]
-    _conf.set(section, option, value)
+def set_option(option, value):
+    section  = options_map[option]
+    _conf.set_and_write(section, option, value)
 
 
 def list_options():
     options = []
-    for section in list(set(option_section.values())):
+    for section in list(set(options_map.values())):
         options += _conf.items(section)
     return options
