@@ -51,7 +51,7 @@ class ConjointMachine(object):
         self.r('library(lme4)')
         # Set R working directory independent of Python working directory
         self.r('setwd("{0}")'.format(self.r_origo))
-        self.r('source("pgm/conjoint.r")'.format(self.r_origo))
+        self.r('source("pgm/conjoint.r")')
         # Diagnostic output
         r_env = 'R environment\n'
         r_env += self.r('getwd()')

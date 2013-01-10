@@ -77,6 +77,8 @@ pcas_view = View(
                 Item('selected',
                      editor=CheckListEditor(name='data'),
                      style='custom',
+                     width=100,
+                     height=200,
                      show_label=False),
                 label='Select dataset',
                 show_border=True,

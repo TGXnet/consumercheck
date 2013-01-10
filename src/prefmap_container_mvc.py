@@ -114,6 +114,8 @@ prefmaps_view = View(
             Group(
                 Item('comb', editor=InstanceEditor(),
                      style='custom',
+                     width=100,
+                     height=150,
                      show_label=False),
                 label='Select Prefmap combinations',
                 show_border=True,
