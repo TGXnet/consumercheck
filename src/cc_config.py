@@ -30,13 +30,12 @@ class CCConf(_CP.SafeConfigParser):
 
     def __init__(self, defaults):
         _CP.RawConfigParser.__init__(self, defaults)
-        print("Config init")
         self.cfg_file_name = self._get_conf_file_name()
         try:
             fp = open(self.cfg_file_name, 'r')
             self.readfp(fp)
             fp.close()
-        except (IOError):
+        except (IOError, _CP.ParsingError):
             self._init_conf_file()
 
 
