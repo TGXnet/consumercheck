@@ -22,6 +22,7 @@ class ConjointMachine(object):
         # When this is bbfreeze'ed this file is packed into the
         # library.zip file
         self.r_origo = op.dirname(op.dirname(op.abspath(__file__)))
+        # self.r_origo = op.dirname(op.abspath(__file__))
 
         if run_state:
             self.run_state=run_state
