@@ -1,9 +1,7 @@
 syntax: glob
 *.pyc
-TAGS
 analyse
 docs*/*build
-R-2*
 *.log
 consumercheck-*
 explore_*
@@ -19,3 +17,5 @@ share
 .project
 .pydevproject
 .settings
+Rdist
+ETSpackages
