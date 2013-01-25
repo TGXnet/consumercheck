@@ -13,7 +13,7 @@ setwd(dir)
 library(MixMod)
 library(lme4)
 library(Hmisc)
-source(paste(getwd(),"/pgm/conjoint.r",sep=""))
+source(paste(getwd(),"/rsrc/conjoint.r",sep=""))
 
 ###########################################################################
 # example from the book: Ham data

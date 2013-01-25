@@ -120,7 +120,7 @@ class PCScatterPlot(PlotBase):
 
         self._add_zero_axis()
         self.tools.append(PanTool(self))
-        self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
+        self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
         
 
     def add_PC_set(self, matrix, labels=None, color=None, expl_vars=None):
@@ -244,8 +244,8 @@ class PCScatterPlot(PlotBase):
             except IndexError:
                 pass
         if len(tx)==3:
-            self.x_axis.title = tx[0]+'=X'+tx[1]+', Y'+tx[2]
-            self.y_axis.title = ty[0]+'=X'+ty[1]+', Y'+ty[2]
+            self.x_axis.title = tx[0]+' X'+tx[1]+', Y'+tx[2]
+            self.y_axis.title = ty[0]+' X'+ty[1]+', Y'+ty[2]
         else:
             self.x_axis.title = ' '.join(tx)  
             self.y_axis.title = ' '.join(ty)           

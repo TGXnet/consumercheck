@@ -1,5 +1,6 @@
 
 # Import necessary modules
+import __builtin__
 import os.path as op
 import string
 import pyper
@@ -21,7 +22,12 @@ class ConjointMachine(object):
         # Set root folder for R
         # When this is bbfreeze'ed this file is packed into the
         # library.zip file
-        self.r_origo = op.dirname(op.dirname(op.abspath(__file__)))
+        # self.r_origo = op.dirname(op.dirname(op.abspath(__file__)))
+        # cc_base_dir from __builtin__ set in consumercheck
+        if hasattr(__builtin__, "cc_base_dir"):
+            self.r_origo = __builtin__.cc_base_dir
+        else:
+            self.r_origo = op.dirname(op.abspath(__file__))
 
         if run_state:
             self.run_state=run_state
@@ -51,7 +57,7 @@ class ConjointMachine(object):
         self.r('library(lme4)')
         # Set R working directory independent of Python working directory
         self.r('setwd("{0}")'.format(self.r_origo))
-        self.r('source("pgm/conjoint.r")'.format(self.r_origo))
+        self.r('source("rsrc/conjoint.r")')
         # Diagnostic output
         r_env = 'R environment\n'
         r_env += self.r('getwd()')

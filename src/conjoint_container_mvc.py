@@ -137,6 +137,7 @@ conjoints_view = View(
                 Item('model.chosen_design_vars',
                      editor=CheckListEditor(name='handler.available_design_vars'),
                      style='custom',
+                     height=150,
                      show_label=False),
                 label='Consumer Design',
                 show_border=True,
@@ -145,6 +146,7 @@ conjoints_view = View(
                 Item('model.chosen_consumer_likings',
                      editor=CheckListEditor(name='handler.available_consumer_likings'),
                      style='custom',
+                     height=150,
                      show_label=False),
                 label='Consumer Liking',
                 show_border=True,
@@ -158,6 +160,7 @@ conjoints_view = View(
                 Item('model.chosen_consumer_attr_vars',
                      editor=CheckListEditor(name='handler.available_consumer_attr_vars'),
                      style='custom',
+                     height=150,
                      show_label=False),
                 label='Consumer Attributes',
                 show_border=True,
@@ -166,7 +169,7 @@ conjoints_view = View(
             ),
         Group(
             Group(
-                Item('model.model_structure_type', show_label=False, width=150),
+                Item('model.model_structure_type', show_label=False, width=100),
                 show_border=True,
                 label='Model structure',
                 ),

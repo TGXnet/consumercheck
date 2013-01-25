@@ -28,7 +28,6 @@ logging.basicConfig(
 logging.info("Test start")
 
 import numpy as np
-# from os.path import dirname, abspath, join
 import os.path as osp
 
 

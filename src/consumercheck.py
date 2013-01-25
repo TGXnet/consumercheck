@@ -1,7 +1,9 @@
 # stdlib imports
 import logging
+import os.path as op
 import optparse
 import numpy as np
+import __builtin__
 
 # Enthought imports
 #from traits.etsconfig.api import ETSConfig
@@ -29,6 +31,9 @@ LOGGING_LEVELS = {
     'debug': logging.DEBUG,
     }
 LOG_FILENAME = 'cc.log'
+
+# FIXME: Global var hack
+__builtin__.cc_base_dir = op.dirname(op.abspath(__file__))
 
 
 def main():
