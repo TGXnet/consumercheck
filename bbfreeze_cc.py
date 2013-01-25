@@ -64,8 +64,8 @@ rdst = os.path.join(ff, rf)
 shutil.copytree(rsource, rdst)
 
 # Conjoint R scripts
-rss = os.path.join(hf, 'src', 'pgm')
-rsdst = os.path.join(ff, 'pgm')
+rss = os.path.join(hf, 'src', 'rsrc')
+rsdst = os.path.join(ff, 'rsrc')
 shutil.copytree(rss, rsdst)
 
 # User documentation
