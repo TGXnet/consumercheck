@@ -57,7 +57,7 @@ class APCAModel(HasTraits):
     result = Property()
 
     def _get_max_pc(self):
-        return (min(self.ds.n_rows,self.ds.n_cols)-1)
+        return (min(self.ds.n_rows, self.ds.n_cols)-2)
 
 
     def _check_std_dev(self):

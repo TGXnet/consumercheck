@@ -4,7 +4,7 @@ Adds statistical methods, user inteface and plots for PCA
 """
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Any
+from traits.api import HasTraits, Instance, Any, on_trait_change
 from traitsui.api import View, Group, Item, InstanceEditor, TreeEditor, TreeNode
 
 # Local imports
@@ -62,6 +62,13 @@ class PCAPlugin(HasTraits):
         model = PCAsContainer(mother_ref=mother_ref)
         self.pcas_handler = PCAsHandler(model=model)
         self.selected_obj = self.pcas_handler
+
+
+    @on_trait_change('selected_obj')
+    def _sel_obj_changed(self, obj, name, new, old):
+        print("Selected updated")
+        
+        obj.pcas_handler.model.selected_pca = new
 
 
     traits_view = View(
