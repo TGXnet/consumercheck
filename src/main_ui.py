@@ -140,7 +140,7 @@ class MainUi(HasTraits):
             ), # end UI tabs group
         resizable = True,
         width=800,
-        height=400,
+        height=600,
         title = 'Consumer Check',
         menubar = MenuBar(
             Menu(import_action, close_action, exit_action, name='&File'),

@@ -5,7 +5,7 @@ import sys
 # Enthought imports
 from traits.api import (HasTraits, Any, Enum, Instance, List, Str, DelegatesTo,
                         on_trait_change, Event)
-from traitsui.api import (View, Group, Item, Spring, ModelView, CheckListEditor,
+from traitsui.api import (View, Group, Item, Spring, spring, ModelView, CheckListEditor,
                           EnumEditor, HTMLEditor)
 
 # Local imports
@@ -147,10 +147,12 @@ conjoints_view = View(
                      editor=CheckListEditor(name='handler.available_consumer_likings'),
                      style='custom',
                      height=150,
+                     width=150,
+                     resizable=False,
                      show_label=False),
                 label='Consumer Liking',
                 show_border=True,
-                springy=True,
+                springy=False,
                 ),
             Group(
                 Item('model.selected_consumer_attr',
@@ -176,12 +178,15 @@ conjoints_view = View(
             Spring(),
             orientation='horizontal',
             ),
-        Group(
-            Item('model_desc',
-                 editor=HTMLEditor(),
-                 show_label=False),
-            ),
-        orientation='vertical',
+          Group(
+                Item('model_desc',
+                     editor=HTMLEditor(),
+                     height=200,
+                     width=600,
+                     resizable=False,
+                     show_label=False),
+                orientation='horizontal',
+                ),
         ),
     resizable=True,
     )
