@@ -181,8 +181,8 @@ conjoints_view = View(
           Group(
                 Item('model_desc',
                      editor=HTMLEditor(),
-                     height=200,
-                     width=600,
+                     height=220,
+                     width=450,
                      resizable=False,
                      show_label=False),
                 orientation='horizontal',

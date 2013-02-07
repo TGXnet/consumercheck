@@ -139,7 +139,7 @@ class MainUi(HasTraits):
             layout='tabbed'
             ), # end UI tabs group
         resizable = True,
-        width=800,
+        width=1000,
         height=600,
         title = 'Consumer Check',
         menubar = MenuBar(
