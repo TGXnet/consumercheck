@@ -7,6 +7,7 @@ from traits.api import (HasTraits, Any, Enum, Instance, List, Str, DelegatesTo,
                         on_trait_change, Event)
 from traitsui.api import (View, Group, Item, Spring, spring, ModelView, CheckListEditor,
                           EnumEditor, HTMLEditor)
+from traitsui.menu import OKButton
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
@@ -126,6 +127,13 @@ class ConjointsHandler(ModelView):
             obj.add_mapping(list(ndiff)[0])
 
 
+    @on_trait_change('model:chosen_consumer_attr_vars')
+    def _check_consumer_attr_warning(self, obj, ref, old, new):
+        if len(new) > 2 and len(old) == 2:
+            warn = CAWarning()
+            warn.edit_traits()
+
+
 conjoints_view = View(
     Group(
         Group(
@@ -195,6 +203,20 @@ conjoints_view = View(
     resizable=True,
     )
 
+
+class CAWarning(HasTraits):
+    warning = Str(
+        'Too many consumer characteristics variables may result in complicated model and computations may not finish.')
+    traits_view = View(
+        Item('warning',
+             width=250,
+             height=100,
+             style='readonly',
+             show_label=False
+             ),
+        title='Warning',
+        buttons=[OKButton],
+        )
 
 
 if __name__ == '__main__':
