@@ -75,7 +75,7 @@ class TreeNode(TN):
                     return 'sensory_profiling.ico'
                 elif object._dataset_type == 'Consumer liking':
                     return 'customer_liking.ico'
-                elif object._dataset_type == 'Consumer attributes':
+                elif object._dataset_type == 'Consumer characteristics':
                     return 'customer_attributes.ico'
             return self.icon_item 
         if is_expanded:

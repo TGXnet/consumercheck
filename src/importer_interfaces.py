@@ -27,7 +27,7 @@ class IDataImporter(Interface):
         ('Design variable',
          'Sensory profiling',
          'Consumer liking',
-         'Consumer attributes',)
+         'Consumer characteristics',)
         )
     """The dataset type for this dataset."""
 

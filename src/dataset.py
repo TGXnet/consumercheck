@@ -14,7 +14,7 @@ from traits.api import (HasTraits, Array, Str, Int, Enum, File,
 DS_TYPES = ['Design variable',
             'Sensory profiling',
             'Consumer liking',
-            'Consumer attributes']
+            'Consumer characteristics']
 
 
 class DataSet(HasTraits):

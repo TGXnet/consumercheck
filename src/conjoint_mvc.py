@@ -295,7 +295,7 @@ gr_sel = Group(
                  show_label=False,
                  ),
             show_border=True,
-            label='Consumer attributes',
+            label='Consumer characteristics',
             ),
         orientation='horizontal',
         ),

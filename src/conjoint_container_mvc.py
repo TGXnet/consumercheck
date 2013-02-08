@@ -68,7 +68,7 @@ class ConjointsHandler(ModelView):
 
     model_desc = Str(
         '''
-        Consumer attributes and design values can only be categorical values.<br /><br />
+        Consumer characteristics and design values can only be categorical values.<br /><br />
         Model structure descriptions:
         <ul>
         <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
@@ -94,7 +94,7 @@ class ConjointsHandler(ModelView):
         self.available_designs = [name_from_id(i)
                                   for i in id_by_type('Design variable')]
         self.available_consumer_attrs = [name_from_id(i)
-                                         for i in id_by_type('Consumer attributes')]
+                                         for i in id_by_type('Consumer characteristics')]
         self.available_consumer_likings = [(i, name_from_id(i))
                                            for i in id_by_type('Consumer liking')]
 
@@ -166,7 +166,7 @@ conjoints_view = View(
                      style='custom',
                      height=150,
                      show_label=False),
-                label='Consumer Attributes',
+                label='Consumer Characteristics',
                 padding=5,
                 show_border=True,
                 ),
@@ -186,7 +186,7 @@ conjoints_view = View(
                 Item('model_desc',
                      editor=HTMLEditor(),
                      height=220,
-                     width=450,
+                     width=460,
                      resizable=False,
                      show_label=False),
                 orientation='horizontal',
