@@ -1,21 +1,16 @@
 syntax: glob
 *.pyc
-analyse
 docs*/*build
 *.log
 consumercheck-*
-explore_*
-CCWinPack
 bin
 build
 include
 lib
 local
 share
-.installed.cfg
 .ropeproject
 .project
-.pydevproject
 .settings
 *.wixobj
 *.wxs
