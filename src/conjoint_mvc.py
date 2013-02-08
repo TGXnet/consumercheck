@@ -86,8 +86,8 @@ class AConjointModel(HasTraits):
 
         self.cm.schedule_calculation(
             self.model_structure_type,
-            self.consumer_attr_set, self.chosen_consumer_attr_vars,
-            self.design_set, self.chosen_design_vars,
+            self.consumer_attr_set, sorted(self.chosen_consumer_attr_vars),
+            self.design_set, sorted(self.chosen_design_vars),
             self.cons_liking)
         self.ccs.edit_traits(kind='livemodal')
         return self.cm.get_result()
