@@ -90,8 +90,8 @@ class ConjointPlugin(HasTraits):
                              orientation='horizontal',
                              ),
         resizable=True,
-        height=300,
-        width=600,
+        height=700,
+        width=1200,
         )
 
 
