@@ -190,6 +190,28 @@ class InteractionPlot(DataView):
         indexes = sorted(list(set(selected[self.index_attr])))
         index_labels = ['{0} {1}'.format(self.index_attr, i) for i in indexes]
 
+
+        # Get p value for attribute
+        anova_values = self.conj_res['anovaTable']['data']
+        anova_names = self.conj_res['anovaTable']['rowNames']
+        attr_name = "{0}:{1}".format(self.attr_one_name, self.attr_two_name)
+        picker = anova_names == attr_name
+        p_value = anova_values[picker, 3][0]
+        self.p_value = p_value
+
+        # Set border color
+        self.border_width = 10
+
+        if self.p_value < 0.001:
+            self.border_color = (1.0, 0.0, 0.0, 0.8)
+        elif self.p_value < 0.01:
+            self.border_color = (0.0, 1.0, 0.0, 0.8)
+        elif self.p_value < 0.05:
+            self.border_color = (1.0, 1.0, 0.0, 0.8)
+        else:
+            self.border_color = (0.5, 0.5, 0.5, 0.8)
+
+
         # Nullify all plot related list to make shure we can
         # make the ploting idempotent
         self.plot_components = []
@@ -250,11 +272,7 @@ class InteractionPlot(DataView):
         # Add the traits inspector tool to the container
         # self.tools.append(TraitsTool(self))
 
-#===============================================================================
-# Attributes to use for the plot view.
-size = (850, 650)
-bg_color="white"
-#===============================================================================
+
 
 class TitleHandler(Handler):
     """ Change the title on the UI.
@@ -303,8 +321,8 @@ class InteractionPlotWindow(PlotWindow):
             Group(
                 Item('plot',
                      editor=ComponentEditor(
-                         size = size,
-                         bgcolor = bg_color),
+                         size = (850, 650),
+                         bgcolor="white"),
                      show_label=False),
                 orientation = "vertical"
                 ),
