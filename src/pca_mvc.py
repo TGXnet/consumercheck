@@ -312,7 +312,7 @@ class APCAHandler(ModelView):
 
     def show_msee_tot(self):
         print("MSEE total")
-        msee = self.model.result.MSEE_total()
+        msee = self.model.result.MSEE()
         tv = TableViewController(title="MSEE total")
         tv.set_col_names([str(i) for i in range(msee.shape[0])])
         tv.add_row(msee, 'MSEE')
@@ -331,7 +331,7 @@ class APCAHandler(ModelView):
 
     def show_msecv_tot(self):
         print("MSECV total")
-        msecv = self.model.result.MSECV_total()
+        msecv = self.model.result.MSECV()
         tv = TableViewController(title="MSECV total")
         tv.set_col_names([str(i) for i in range(msecv.shape[0])])
         tv.add_row(msecv, 'MSECV')
