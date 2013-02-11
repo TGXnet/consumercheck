@@ -9,8 +9,7 @@ include
 lib
 local
 share
-.ropeproject
-.project
+.*project
 .settings
 *.wixobj
 *.wxs
