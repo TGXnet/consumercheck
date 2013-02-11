@@ -100,26 +100,28 @@ class ConjointsHandler(ModelView):
         if self.model.selected_design and (self.model.selected_design not in self.available_designs):
             self.model.chosen_design_vars = []
             self.available_design_vars = []
-            # self.model.selected_design = ''
+            self.model.selected_design = ''
         # Reset consumer chararcteristics when dataset i removed
         if self.model.selected_consumer_attr and (self.model.selected_consumer_attr not in self.available_consumer_attrs):
             self.model.choosen_consumer_attr_vars = []
             self.available_consumer_attr_vars = []
-            # self.model.selected_consumer_attr = ''
+            self.model.selected_consumer_attr = ''
 
 
     @on_trait_change('model:selected_design')
     def _handle_design_choice(self, obj, ref, new):
-        self.model.design_set = obj.dsl.get_by_name(new)
-        obj.chosen_design_vars = []
-        self.available_design_vars = self.model.design_set.variable_names
+        if new:
+            self.model.design_set = obj.dsl.get_by_name(new)
+            obj.chosen_design_vars = []
+            self.available_design_vars = self.model.design_set.variable_names
 
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):
-        self.model.consumer_attr_set = obj.dsl.get_by_name(new)
-        obj.chosen_consumer_attr_vars = []
-        self.available_consumer_attr_vars = self.model.consumer_attr_set.variable_names
+        if new:
+            self.model.consumer_attr_set = obj.dsl.get_by_name(new)
+            obj.chosen_consumer_attr_vars = []
+            self.available_consumer_attr_vars = self.model.consumer_attr_set.variable_names
 
 
     @on_trait_change('model:chosen_consumer_likings')
