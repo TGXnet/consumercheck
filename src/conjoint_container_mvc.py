@@ -1,11 +1,8 @@
 
-# Std lib imports
-import sys
-
 # Enthought imports
 from traits.api import (HasTraits, Any, Enum, Instance, List, Str, DelegatesTo,
                         on_trait_change, Event)
-from traitsui.api import (View, Group, Item, Spring, spring, ModelView, CheckListEditor,
+from traitsui.api import (View, Group, Item, spring, ModelView, CheckListEditor,
                           EnumEditor, HTMLEditor)
 from traitsui.menu import OKButton
 
@@ -99,13 +96,24 @@ class ConjointsHandler(ModelView):
         self.available_consumer_likings = [(i, name_from_id(i))
                                            for i in id_by_type('Consumer liking')]
 
+        # Reset design whne dataset is removed
+        if self.model.selected_design and (self.model.selected_design not in self.available_designs):
+            self.model.chosen_design_vars = []
+            self.available_design_vars = []
+            # self.model.selected_design = ''
+        # Reset consumer chararcteristics when dataset i removed
+        if self.model.selected_consumer_attr and (self.model.selected_consumer_attr not in self.available_consumer_attrs):
+            self.model.choosen_consumer_attr_vars = []
+            self.available_consumer_attr_vars = []
+            # self.model.selected_consumer_attr = ''
+
 
     @on_trait_change('model:selected_design')
     def _handle_design_choice(self, obj, ref, new):
         self.model.design_set = obj.dsl.get_by_name(new)
         obj.chosen_design_vars = []
         self.available_design_vars = self.model.design_set.variable_names
-        
+
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):
@@ -187,7 +195,7 @@ conjoints_view = View(
                 label='Model structure',
                 padding=5,
                 ),
-            Spring(),
+            spring,
             orientation='horizontal',
             ),
           Group(
