@@ -196,10 +196,19 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.scores()
         labels = self.model.sub_ds.object_names
-        plot = PCScatterPlot(pc_tab, labels, title="Scores", id='scores')
+
+        # Make table view dataset
+        score_ds = DataSet()
+        score_ds._ds_name = self.model.sub_ds._ds_name
+        score_ds.matrix = pc_tab
+        score_ds.object_names = labels
+        score_ds.variable_names = ["PC-{0}".format(i+1) for i in range(score_ds.n_cols)]
+
+        plot = PCScatterPlot(pc_tab, labels, view_data=score_ds, title="Scores", id='scores')
         if is_subplot:
             plot.add_left_down_action(self.plot_scores)
         return plot
+
 
 
     def plot_loadings(self):
@@ -415,8 +424,10 @@ if __name__ == '__main__':
     # Things to fix for testing
     # mother_ref: standardise, pc_to_calc
     from traits.api import Bool, Int
-    from tests.conftest import simple_ds
-    ds = simple_ds()
+    from tests.conftest import simple_ds, imp_ds
+
+    ds_meta = ('Vine', 'A_labels.txt', 'Vine set A', 'Consumer liking')
+    ds = imp_ds(ds_meta)
 
 
     class MocMother(HasTraits):
