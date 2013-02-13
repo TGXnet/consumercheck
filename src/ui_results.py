@@ -11,6 +11,7 @@ from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton
 from pyface.api import clipboard
 
+
 class ArrayAdapter(TabularAdapter):
     index = List()
     # font = 'Courier 10'
@@ -25,6 +26,7 @@ class ArrayAdapter(TabularAdapter):
 
     def _get_index_text(self, name):
         return self.index[self.row]
+
 
 
 class TableViewController(ModelView):
@@ -60,6 +62,7 @@ class TableViewController(ModelView):
         buttons=[OKButton],
         )
 
+
     def init_info(self, info):
         la = []
         self.ad.index = self.model.data.list_data()
@@ -79,12 +82,14 @@ class TableViewController(ModelView):
             self.ad.columns.append((str(i), i))
         # self.ad.columns=[('en', 0), ('to', 1), ('tre', 2)]
 
+
     def object_cp_clip_changed(self, info):
         tf = tempfile.TemporaryFile()
         savetxt(tf, self.table, fmt='%.2f', delimiter='\t', newline='\n')
         tf.seek(0)
         txt_mat = tf.read()
         clipboard.data = txt_mat
+
 
 
 if __name__ == '__main__':

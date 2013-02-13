@@ -415,12 +415,14 @@ if __name__ == '__main__':
     # Things to fix for testing
     # mother_ref: standardise, pc_to_calc
     from traits.api import Bool, Int
-    from tests.conftest import make_ds_mock
-    ds = make_ds_mock()
+    from tests.conftest import simple_ds
+    ds = simple_ds()
+
 
     class MocMother(HasTraits):
         standardise = Bool(False)
         pc_to_calc = Int(2)
+        win_handle = None
 
     moc_mother = MocMother()
 
@@ -428,6 +430,7 @@ if __name__ == '__main__':
         name='Tore test',
         ds=ds,
         mother_ref=moc_mother)
+
 
     class APCATestHandler(APCAHandler):
         bt_plot_overview = Button('Plot overview')
