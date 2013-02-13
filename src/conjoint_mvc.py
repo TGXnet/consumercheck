@@ -137,8 +137,8 @@ class AConjointHandler(ModelView):
             ("LS means", 'show_means'),
             ("Fixed effects", 'show_fixed'),
             ("Random effects", 'show_random'),
-            ("LS difference", 'show_diff'),
-            ("LS residuals", 'show_residu'),
+            ("Pair-wise differences", 'show_diff'),
+            ("Residuals", 'show_residu'),
             ]
 
         self.table_win_launchers = [
@@ -199,7 +199,7 @@ class AConjointHandler(ModelView):
     def show_diff(self):
         logger.info('Show difference table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansDiffTable'], (self.name +
-                                       ' - LS difference'))
+                                       ' - Pair-wise differences'))
         dstv = DSTableViewer(cj_dm)
         dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
 
@@ -207,7 +207,7 @@ class AConjointHandler(ModelView):
     def show_residu(self):
         logger.info('Show residuals table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['residualsTable'], (self.name +
-                                       ' - LS residuals'))
+                                       ' - Residuals'))
         dstv = DSTableViewer(cj_dm)
         dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
 
