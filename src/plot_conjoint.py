@@ -194,9 +194,14 @@ class InteractionPlot(DataView):
         # Get p value for attribute
         anova_values = self.conj_res['anovaTable']['data']
         anova_names = self.conj_res['anovaTable']['rowNames']
-        attr_name = "{0}:{1}".format(self.attr_one_name, self.attr_two_name)
-        picker = anova_names == attr_name
-        p_value = anova_values[picker, 3][0]
+        try:
+            attr_name = "{0}:{1}".format(self.attr_one_name, self.attr_two_name)
+            picker = anova_names == attr_name
+            p_value = anova_values[picker, 3][0]
+        except IndexError:
+            attr_name = "{0}:{1}".format(self.attr_two_name, self.attr_one_name)
+            picker = anova_names == attr_name
+            p_value = anova_values[picker, 3][0]
         self.p_value = p_value
 
         # Set border color
