@@ -15,6 +15,8 @@ from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 #Local imports
 from ui_results import TableViewController
+from ds_matrix_view import TableViewer
+
 
 #===============================================================================
 # Attributes to use for the plot view.
@@ -51,12 +53,9 @@ class PlotWindow(HasTraits):
 
     @on_trait_change('view_table')
     def show_table(self, obj, name, new):
-        try:
-            tvc = TableViewController(model=obj.plot)
-            tvc.configure_traits()
-        except (ValueError):
-            tw = TableWarning()
-            tw.edit_traits()
+        tv = TableViewer(obj.plot.data.pc_ds[0].view_data)
+        tv.edit_traits()
+
 
 
 
@@ -305,17 +304,6 @@ class FileEditor(HasTraits):
                 self._save_img(obj)
 
 
-class TableWarning(HasTraits):
-    message = Str("No table is implemented for this plot yet")
-    traits_view = View(
-        Item('message',
-             style='readonly',
-             show_label=False,
-             height=50,
-             width=200,
-             ),
-        buttons=[OKButton],
-        )
 
 
 if __name__ == '__main__':
