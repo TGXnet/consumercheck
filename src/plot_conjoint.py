@@ -57,8 +57,14 @@ class MainEffectsPlot(DataView):
             self.ls_label_names.append(pl)
             self.ls_label_pos.append(i + 1)
 
+        # Create a longer index line for average line
+        idx = [int(val) for val in selected[attr_name]]
+        span = idx[-1] - idx[0]
+        avg_idx = [idx[0] - span, idx[-1] + span]
+
         self.apd = ArrayPlotData()
-        self.apd.set_data('index', [int(val) for val in selected[attr_name]])
+        self.apd.set_data('index', idx)
+        self.apd.set_data('avg_index', avg_idx)
         self.apd.set_data('values', [float(val) for val in selected[' Estimate ']])
         self.apd.set_data('ylow', [float(val) for val in selected[' Lower CI ']])
         self.apd.set_data('yhigh', [float(val) for val in selected[' Upper CI ']])
@@ -78,6 +84,7 @@ class MainEffectsPlot(DataView):
     def _create_plot(self):
         #Prepare data for plots
         x = ArrayDataSource(self.apd['index'])
+        xx = ArrayDataSource(self.apd['avg_index'])
         y = ArrayDataSource(self.apd['values'])
         ylow = ArrayDataSource(self.apd['ylow'])
         yhigh = ArrayDataSource(self.apd['yhigh'])
@@ -117,7 +124,7 @@ class MainEffectsPlot(DataView):
         #Create averageplot
         y_name='average'
         plot_y_average = LinePlot(
-            index=x, index_mapper=index_mapper,
+            index=xx, index_mapper=index_mapper,
             value=yaverage, value_mapper=value_mapper,
             name=y_name,
             color='green')
