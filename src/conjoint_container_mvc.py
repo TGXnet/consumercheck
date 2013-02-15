@@ -1,12 +1,10 @@
 
-# Std lib imports
-import sys
-
 # Enthought imports
 from traits.api import (HasTraits, Any, Enum, Instance, List, Str, DelegatesTo,
                         on_trait_change, Event)
-from traitsui.api import (View, Group, Item, Spring, ModelView, CheckListEditor,
+from traitsui.api import (View, Group, Item, spring, ModelView, CheckListEditor,
                           EnumEditor, HTMLEditor)
+from traitsui.menu import OKButton
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
@@ -68,7 +66,7 @@ class ConjointsHandler(ModelView):
 
     model_desc = Str(
         '''
-        Consumer attributes and design values can only be categorical values.<br /><br />
+        Consumer characteristics and design values can only be categorical values.<br /><br />
         Model structure descriptions:
         <ul>
         <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
@@ -94,9 +92,20 @@ class ConjointsHandler(ModelView):
         self.available_designs = [name_from_id(i)
                                   for i in id_by_type('Design variable')]
         self.available_consumer_attrs = [name_from_id(i)
-                                         for i in id_by_type('Consumer attributes')]
+                                         for i in id_by_type('Consumer characteristics')]
         self.available_consumer_likings = [(i, name_from_id(i))
                                            for i in id_by_type('Consumer liking')]
+
+        # Reset design whne dataset is removed
+        if self.model.selected_design and (self.model.selected_design not in self.available_designs):
+            self.model.chosen_design_vars = []
+            self.available_design_vars = []
+            # self.model.selected_design = ''
+        # Reset consumer chararcteristics when dataset i removed
+        if self.model.selected_consumer_attr and (self.model.selected_consumer_attr not in self.available_consumer_attrs):
+            self.model.choosen_consumer_attr_vars = []
+            self.available_consumer_attr_vars = []
+            # self.model.selected_consumer_attr = ''
 
 
     @on_trait_change('model:selected_design')
@@ -104,7 +113,7 @@ class ConjointsHandler(ModelView):
         self.model.design_set = obj.dsl.get_by_name(new)
         obj.chosen_design_vars = []
         self.available_design_vars = self.model.design_set.variable_names
-        
+
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):
@@ -126,6 +135,13 @@ class ConjointsHandler(ModelView):
             obj.add_mapping(list(ndiff)[0])
 
 
+    @on_trait_change('model:chosen_consumer_attr_vars')
+    def _check_consumer_attr_warning(self, obj, ref, old, new):
+        if len(new) > 2 and len(old) == 2:
+            warn = CAWarning()
+            warn.edit_traits()
+
+
 conjoints_view = View(
     Group(
         Group(
@@ -140,6 +156,7 @@ conjoints_view = View(
                      height=150,
                      show_label=False),
                 label='Consumer Design',
+                padding=5,
                 show_border=True,
                 ),
             Group(
@@ -147,10 +164,13 @@ conjoints_view = View(
                      editor=CheckListEditor(name='handler.available_consumer_likings'),
                      style='custom',
                      height=150,
+                     width=150,
+                     resizable=False,
                      show_label=False),
                 label='Consumer Liking',
+                padding=5,
                 show_border=True,
-                springy=True,
+                springy=False,
                 ),
             Group(
                 Item('model.selected_consumer_attr',
@@ -162,7 +182,8 @@ conjoints_view = View(
                      style='custom',
                      height=150,
                      show_label=False),
-                label='Consumer Attributes',
+                label='Consumer Characteristics',
+                padding=5,
                 show_border=True,
                 ),
             orientation='horizontal',
@@ -172,20 +193,38 @@ conjoints_view = View(
                 Item('model.model_structure_type', show_label=False, width=100),
                 show_border=True,
                 label='Model structure',
+                padding=5,
                 ),
-            Spring(),
+            spring,
             orientation='horizontal',
             ),
-        Group(
-            Item('model_desc',
-                 editor=HTMLEditor(),
-                 show_label=False),
-            ),
-        orientation='vertical',
+          Group(
+                Item('model_desc',
+                     editor=HTMLEditor(),
+                     height=220,
+                     width=460,
+                     resizable=False,
+                     show_label=False),
+                orientation='horizontal',
+                ),
         ),
     resizable=True,
     )
 
+
+class CAWarning(HasTraits):
+    warning = Str(
+        'Too many consumer characteristics variables may result in complicated model and computations may not finish.')
+    traits_view = View(
+        Item('warning',
+             width=250,
+             height=100,
+             style='readonly',
+             show_label=False
+             ),
+        title='Warning',
+        buttons=[OKButton],
+        )
 
 
 if __name__ == '__main__':

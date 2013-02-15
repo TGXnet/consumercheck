@@ -139,8 +139,8 @@ class MainUi(HasTraits):
             layout='tabbed'
             ), # end UI tabs group
         resizable = True,
-        width=800,
-        height=400,
+        width=1000,
+        height=600,
         title = 'Consumer Check',
         menubar = MenuBar(
             Menu(import_action, close_action, exit_action, name='&File'),
@@ -153,7 +153,7 @@ class MainUi(HasTraits):
 
 if __name__ == '__main__':
     import numpy as np
-    from tests.conftest import dsc_mock
+    from tests.conftest import all_dsc
     lfn = __file__.split('.')[0]+'.log'
     logging.basicConfig(level=logging.INFO,
                         # format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     logger.info('Start interactive')
 
-    dsl = dsc_mock()
+    dsl = all_dsc()
     mother = MainUi(dsl=dsl)
     # mother = MainUi()
     with np.errstate(invalid='ignore'):

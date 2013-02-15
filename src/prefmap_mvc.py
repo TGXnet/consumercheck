@@ -7,6 +7,7 @@ import logging
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
+import numpy as np
 
 # Local imports
 from plsr import nipalsPLS2 as pls
@@ -27,7 +28,9 @@ class APrefmapModel(HasTraits):
     # but who comes first?
     mother_ref = Instance(HasTraits)
     
+    # Consumer liking
     ds_C = DataSet()
+    # Sensory profiling
     ds_S = DataSet()
     sub_ds_C = DataSet()
     sub_ds_S = DataSet()
@@ -157,7 +160,15 @@ class APrefmapHandler(ModelView):
         pc_tab = res.X_scores()
         labels = self.model.sub_ds_C.object_names
         expl_vars_x = res.X_calExplVar()
-        plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, title="Scores", id="scores")
+
+        # Make table view dataset
+        score_ds = DataSet()
+        score_ds._ds_name = self.model.sub_ds_C._ds_name
+        score_ds.matrix = pc_tab
+        score_ds.object_names = labels
+        score_ds.variable_names = ["PC-{0}".format(i+1) for i in range(score_ds.n_cols)]
+
+        plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, view_data=score_ds, title="Scores", id="scores")
         if is_subplot:
             plot.add_left_down_action(self.plot_scores)
         return plot
@@ -182,11 +193,22 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         xLP = res.X_loadings()
         expl_vars = res.X_calExplVar()
+
+        # Make table view dataset
+        loadings_ds = DataSet()
+        loadings_ds.matrix = xLP
+
         if self.model.mother_ref.radio == 'Internal mapping':
             labels = self.model.sub_ds_C.variable_names
+            loadings_ds._ds_name = self.model.sub_ds_C._ds_name
         else:
             labels = self.model.sub_ds_S.variable_names
-        plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, title="X Loadings", id="loadings_x")
+            loadings_ds._ds_name = self.model.sub_ds_S._ds_name
+
+        loadings_ds.object_names = labels
+        loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
+
+        plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, view_data=loadings_ds, title="X Loadings", id="loadings_x")
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings_x)
         return plot
@@ -208,7 +230,15 @@ class APrefmapHandler(ModelView):
         yLP = res.Y_loadings()
         expl_vars = res.Y_calExplVar()
         labels = self.model.sub_ds_S.variable_names
-        plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, title="Y Loadings", id="loadings_y")
+
+        # Make table view dataset
+        loadings_ds = DataSet()
+        loadings_ds._ds_name = self.model.sub_ds_S._ds_name
+        loadings_ds.matrix = yLP
+        loadings_ds.object_names = labels
+        loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
+
+        plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, view_data=loadings_ds, title="Y Loadings", id="loadings_y")
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings_y)
         return plot
@@ -269,7 +299,16 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         sumCalX = res.X_cumCalExplVar()
         sumValX = res.X_cumValExplVar()
-        pl = EVLinePlot(sumCalX, 'darkviolet', 'Calibrated X', title = "Explained Variance X", id="expl_var_x")
+
+        # Make table view dataset
+        ev_ds = DataSet()
+        ev_ds._ds_name = self.model.sub_ds_C._ds_name
+        pc_tab = np.array([sumCalX, sumValX])
+        ev_ds.matrix = pc_tab.T
+        ev_ds.object_names = ["PC-{0}".format(i) for i in range(ev_ds.n_rows)]
+        ev_ds.variable_names = ["calibrated", "validated"]
+
+        pl = EVLinePlot(sumCalX, 'darkviolet', 'Calibrated X', view_data=ev_ds, title = "Explained Variance X", id="expl_var_x")
         pl.add_EV_set(sumValX, 'darkgoldenrod', 'Validated X')
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var_x)
@@ -292,7 +331,17 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         sumCalY = res.Y_cumCalExplVar()
         sumValY = res.Y_cumValExplVar()
-        pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', title = "Explained Variance Y", id="expl_var_y")
+
+        # Make table view dataset
+        ev_ds = DataSet()
+        ev_ds._ds_name = self.model.sub_ds_S._ds_name
+
+        pc_tab = np.array([sumCalY, sumValY])
+        ev_ds.matrix = pc_tab.T
+        ev_ds.object_names = ["PC-{0}".format(i) for i in range(ev_ds.n_rows)]
+        ev_ds.variable_names = ["calibrated", "validated"]
+
+        pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', view_data=ev_ds, title = "Explained Variance Y", id="expl_var_y")
         pl.add_EV_set(sumValY, 'darkgoldenrod', 'Validated Y')
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var_y)
@@ -379,10 +428,9 @@ a_prefmap_view = View(
 
 
 if __name__ == '__main__':
-    import numpy as np
     from traits.api import Bool, Int
-    from tests.conftest import dsc_mock
-    dsl = dsc_mock()
+    from tests.conftest import all_dsc
+    dsl = all_dsc()
     dsx = dsl.get_by_id('consumerliking')
     dsy = dsl.get_by_id('sensorydata')
 

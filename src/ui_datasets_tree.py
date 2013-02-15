@@ -75,7 +75,7 @@ class TreeNode(TN):
                     return 'sensory_profiling.ico'
                 elif object._dataset_type == 'Consumer liking':
                     return 'customer_liking.ico'
-                elif object._dataset_type == 'Consumer attributes':
+                elif object._dataset_type == 'Consumer characteristics':
                     return 'customer_attributes.ico'
             return self.icon_item 
         if is_expanded:
@@ -95,7 +95,8 @@ datasets_tree = TreeEditor(
                   auto_open = True,
                   children  = '',
                   label     = 'name',
-                  view      = View( [ 'name' ] )
+                  view      = View( [ 'name' ] ),
+                  menu      = False,
                   ),
         TreeNode( node_for  = [ Datasets ],
                   auto_open = True,
@@ -103,6 +104,7 @@ datasets_tree = TreeEditor(
                   label     = '=Imported',
                   view      = no_view,
                   add       = [ DataSet ],
+                  menu      = False,
                   ),
         TreeNode( node_for  = [ DataSet ],
                   auto_open = True,
@@ -110,6 +112,7 @@ datasets_tree = TreeEditor(
                   view      = ds_list_tab,
                   icon_path = 'graphics',
                   on_dclick = show_ds_table,
+                  menu      = False,
                   ),
         ],
     )

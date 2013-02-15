@@ -11,13 +11,14 @@ import numpy as np
 # Enthought library imports
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Callable, Int, List, HasTraits, implements
+from traits.api import Bool, Int, List, HasTraits, implements
 from enable.api import ColorTrait
 
 
 # Local imports
-from plot_interface import IPCScatterPlot
+from dataset import DataSet
 from plot_base import PlotBase
+from plot_interface import IPCScatterPlot
 
 
 class PCDataSet(HasTraits):
@@ -32,6 +33,7 @@ class PCDataSet(HasTraits):
     color = ColorTrait('darkviolet')
     expl_vars = List()
     selected = List()
+    view_data = DataSet()
 
 
 class PCPlotData(ArrayPlotData):
@@ -53,7 +55,7 @@ class PCPlotData(ArrayPlotData):
     y_no = Int()
 
 
-    def add_PC_set(self, values, labels, color, expl_vars):
+    def add_PC_set(self, values, labels, color, expl_vars, view_data):
         """Add a PC dataset with metadata"""
 
         set_n = len(self.pc_ds)
@@ -74,6 +76,8 @@ class PCPlotData(ArrayPlotData):
             pcds.color = color
         if expl_vars is not None:
             pcds.expl_vars = expl_vars
+        if view_data is not None:
+            pcds.view_data = view_data
         self.pc_ds.append(pcds)
         return set_n+1
 
@@ -95,7 +99,7 @@ class PCScatterPlot(PlotBase):
     visible_datasets = Int(3)
 
 
-    def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None, **kwtraits):
+    def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None, view_data=None, **kwtraits):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -116,14 +120,14 @@ class PCScatterPlot(PlotBase):
         self._adjust_range()
 
         if pc_matrix is not None:
-            self.add_PC_set(pc_matrix, labels, color, expl_vars)
+            self.add_PC_set(pc_matrix, labels, color, expl_vars, view_data)
 
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
         
 
-    def add_PC_set(self, matrix, labels=None, color=None, expl_vars=None):
+    def add_PC_set(self, matrix, labels=None, color=None, expl_vars=None, view_data=None):
         """Add a PC dataset with metadata.
 
         Args:
@@ -133,7 +137,7 @@ class PCScatterPlot(PlotBase):
 
         """
         matrix_t = matrix.transpose()
-        set_id = self.data.add_PC_set(matrix_t, labels, color, expl_vars)
+        set_id = self.data.add_PC_set(matrix_t, labels, color, expl_vars, view_data)
         self._plot_PC(set_id)
 
 

@@ -142,7 +142,7 @@ class ImporterMain(HasTraits):
 
     def _pick_ds_type(self, filen):
         '''Available types:
-        ['Design variable', 'Sensory profiling', 'Consumer liking', 'Consumer attributes']
+        ['Design variable', 'Sensory profiling', 'Consumer liking', 'Consumer characteristics']
         Defined in dataset.py
         '''
         filen = filen.lower()
@@ -151,7 +151,7 @@ class ImporterMain(HasTraits):
         elif 'liking' in filen:
             return 'Consumer liking'
         elif 'attr' in filen:
-            return 'Consumer attributes'
+            return 'Consumer characteristics'
         elif 'sensory' in filen:
             return 'Sensory profiling'
         elif 'qda' in filen:

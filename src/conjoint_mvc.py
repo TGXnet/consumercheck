@@ -86,8 +86,8 @@ class AConjointModel(HasTraits):
 
         self.cm.schedule_calculation(
             self.model_structure_type,
-            self.consumer_attr_set, self.chosen_consumer_attr_vars,
-            self.design_set, self.chosen_design_vars,
+            self.consumer_attr_set, sorted(self.chosen_consumer_attr_vars),
+            self.design_set, sorted(self.chosen_design_vars),
             self.cons_liking)
         self.ccs.edit_traits(kind='livemodal')
         return self.cm.get_result()
@@ -136,7 +136,10 @@ class AConjointHandler(ModelView):
         table_win_launchers = [
             ("LS means", 'show_means'),
             ("Fixed effects", 'show_fixed'),
-            ("Random effects", 'show_random')]
+            ("Random effects", 'show_random'),
+            ("Pair-wise differences", 'show_diff'),
+            ("Residuals", 'show_residu'),
+            ]
 
         self.table_win_launchers = [
             WindowLauncher(owner_ref=self, node_name=nn, func_name=fn)
@@ -189,6 +192,22 @@ class AConjointHandler(ModelView):
         logger.info('Show LS mean ANOVA table')
         cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansTable'], (self.name +
                                        ' - LS means (main effect and interaction)'))
+        dstv = DSTableViewer(cj_dm)
+        dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
+
+
+    def show_diff(self):
+        logger.info('Show difference table')
+        cj_dm = self.cj_res_ds_adapter(self.model.result['lsmeansDiffTable'], (self.name +
+                                       ' - Pair-wise differences'))
+        dstv = DSTableViewer(cj_dm)
+        dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
+
+
+    def show_residu(self):
+        logger.info('Show residuals table')
+        cj_dm = self.cj_res_ds_adapter(self.model.result['residualsTable'], (self.name +
+                                       ' - Residuals'))
         dstv = DSTableViewer(cj_dm)
         dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
 
@@ -295,7 +314,7 @@ gr_sel = Group(
                  show_label=False,
                  ),
             show_border=True,
-            label='Consumer attributes',
+            label='Consumer characteristics',
             ),
         orientation='horizontal',
         ),

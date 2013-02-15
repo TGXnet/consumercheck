@@ -13,7 +13,7 @@ from chaco.example_support import COLOR_PALETTE
 
 
 #Local imports
-from plot_windows import PlotWindow
+from plot_windows import PlotWindow, LinePlotWindow
 from ui_results import TableViewController
 
 
@@ -67,6 +67,14 @@ class MainEffectsPlot(DataView):
         self.data = self.apd
 
 
+        # Get p value for attribute
+        anova_values = conj_res['anovaTable']['data']
+        anova_names = conj_res['anovaTable']['rowNames']
+        picker = anova_names == attr_name
+        p_value = anova_values[picker, 3][0]
+        self.p_value = p_value
+
+
     def _create_plot(self):
         #Prepare data for plots
         x = ArrayDataSource(self.apd['index'])
@@ -87,7 +95,7 @@ class MainEffectsPlot(DataView):
             value_low = ylow, value_high = yhigh,
             value_mapper = value_mapper,
             name=y_name,
-            bgcolor = "white", border_visible = True)
+            border_visible = True)
 
         #Append label and grid
         x_axis = LabelAxis(
@@ -95,8 +103,7 @@ class MainEffectsPlot(DataView):
             orientation="bottom",
             tick_weight=1, tick_label_rotate_angle = 90,
             labels=self.ls_label_names,
-            positions = self.ls_label_pos,
-            )
+            positions = self.ls_label_pos)
 
         y_axis = PlotAxis(
             orientation='left', title= '',
@@ -132,8 +139,21 @@ class MainEffectsPlot(DataView):
 
         zoom = ZoomTool(plot_err, tool_mode="box", always_on=False)
         plot_err.tools.append(PanTool(plot_err))
-        plot_err.overlays.append(zoom)  
+        plot_err.overlays.append(zoom)
         self.add(plot_y_average, plot_err ,plot_line, plot_scatter)
+
+        # Set border color
+        self.border_width = 10
+
+        if self.p_value < 0.001:
+            self.border_color = (1.0, 0.0, 0.0, 0.8)
+        elif self.p_value < 0.01:
+            self.border_color = (0.0, 1.0, 0.0, 0.8)
+        elif self.p_value < 0.05:
+            self.border_color = (1.0, 1.0, 0.0, 0.8)
+        else:
+            self.border_color = (0.5, 0.5, 0.5, 0.8)
+
 
 
 class InteractionPlot(DataView):
@@ -169,6 +189,33 @@ class InteractionPlot(DataView):
         lines = sorted(list(set(selected[self.line_attr])))
         indexes = sorted(list(set(selected[self.index_attr])))
         index_labels = ['{0} {1}'.format(self.index_attr, i) for i in indexes]
+
+
+        # Get p value for attribute
+        anova_values = self.conj_res['anovaTable']['data']
+        anova_names = self.conj_res['anovaTable']['rowNames']
+        try:
+            attr_name = "{0}:{1}".format(self.attr_one_name, self.attr_two_name)
+            picker = anova_names == attr_name
+            p_value = anova_values[picker, 3][0]
+        except IndexError:
+            attr_name = "{0}:{1}".format(self.attr_two_name, self.attr_one_name)
+            picker = anova_names == attr_name
+            p_value = anova_values[picker, 3][0]
+        self.p_value = p_value
+
+        # Set border color
+        self.border_width = 10
+
+        if self.p_value < 0.001:
+            self.border_color = (1.0, 0.0, 0.0, 0.8)
+        elif self.p_value < 0.01:
+            self.border_color = (0.0, 1.0, 0.0, 0.8)
+        elif self.p_value < 0.05:
+            self.border_color = (1.0, 1.0, 0.0, 0.8)
+        else:
+            self.border_color = (0.5, 0.5, 0.5, 0.8)
+
 
         # Nullify all plot related list to make shure we can
         # make the ploting idempotent
@@ -231,11 +278,6 @@ class InteractionPlot(DataView):
         # self.tools.append(TraitsTool(self))
 
 
-#===============================================================================
-# Attributes to use for the plot view.
-size = (850, 650)
-bg_color="white"
-#===============================================================================
 
 class TitleHandler(Handler):
     """ Change the title on the UI.
@@ -284,8 +326,8 @@ class InteractionPlotWindow(PlotWindow):
             Group(
                 Item('plot',
                      editor=ComponentEditor(
-                         size = size,
-                         bgcolor = bg_color),
+                         size = (850, 650),
+                         bgcolor="white"),
                      show_label=False),
                 orientation = "vertical"
                 ),
@@ -314,11 +356,11 @@ if __name__ == '__main__':
     from tests.conftest import conj_res
     res = conj_res()
 
-    # mep = MainEffectsPlot(res, 'Flavour', None)
-    # pw = LinePlotWindow(plot=mep)
-    # pw.configure_traits()
-    # iap = InteractionPlot(res, 'Sex', 'Flavour')
-    iap = InteractionPlot(res, 'Flavour', 'Sex')
-    pw = InteractionPlotWindow(plot=iap)
+    mep = MainEffectsPlot(res, 'Flavour', None)
+    pw = LinePlotWindow(plot=mep)
     pw.configure_traits()
+    # iap = InteractionPlot(res, 'Sex', 'Flavour')
+    ## iap = InteractionPlot(res, 'Flavour', 'Sex', None)
+    ## pw = InteractionPlotWindow(plot=iap)
+    ## pw.configure_traits()
     print("The end")

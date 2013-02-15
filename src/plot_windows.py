@@ -8,12 +8,15 @@ from os.path import join as pjoin
 from enable.api import Component, ComponentEditor
 from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
+from traitsui.menu import OKButton
 from chaco.api import Plot, GridPlotContainer
 from pyface.api import FileDialog, OK
 from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 #Local imports
 from ui_results import TableViewController
+from ds_matrix_view import TableViewer
+
 
 #===============================================================================
 # Attributes to use for the plot view.
@@ -31,13 +34,14 @@ class TitleHandler(Handler):
         """
         info.ui.title = info.object.title_text
 
-    
+
+
 class PlotWindow(HasTraits):
-    mother_ref = Instance(HasTraits)    
-    
+    mother_ref = Instance(HasTraits)
+
     next_plot = Button('Next plot')
     previous_plot = Button('Previous plot')
-
+    view_table = Button('View result table')
 
     @on_trait_change('next_plot')
     def goto_next_plot(self, obj, name, new):
@@ -47,24 +51,33 @@ class PlotWindow(HasTraits):
     def goto_previous_plot(self, obj, name, new):
         self.mother_ref.show_previous_plot(self)
 
+    @on_trait_change('view_table')
+    def show_table(self, obj, name, new):
+        tv = TableViewer(obj.plot.data.pc_ds[0].view_data)
+        tv.edit_traits()
+
+
+
 
 class SinglePlotWindow(PlotWindow):
     """Window for embedding single plot
 
+    FIXME: Or should the name be PC plot window
     """
     plot = Instance(Plot)
+
+    # Buttons
     eq_axis = Bool(False)
     show_labels = Bool(True)
-    view_table = Button('View result table')
     save_plot = Button('Save plot image')
     vis_toggle = Button('Visibility')
     vistog = Bool(False)
-    
-    x_up = Button('X+')
-    x_down = Button('X-')
-    y_up = Button('Y+')
-    y_down = Button('Y-')
-    reset_xy = Button('Reset axis')
+
+    ## x_up = Button('X+')
+    ## x_down = Button('X-')
+    ## y_up = Button('Y+')
+    ## y_down = Button('Y-')
+    ## reset_xy = Button('Reset axis')
     save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
                           width=32, height=32)
     y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
@@ -128,11 +141,6 @@ class SinglePlotWindow(PlotWindow):
             y = n
         obj.plot.set_x_y_pc(x, y)
 
-    @on_trait_change('view_table')
-    def show_table(self, obj, name, new):
-        tvc = TableViewController(model=obj.plot)
-        tvc.configure_traits()
-
     @on_trait_change('save_plot')
     def render_plot(self, obj, name, old, new):
         fe = FileEditor()
@@ -158,7 +166,7 @@ class SinglePlotWindow(PlotWindow):
                 Item('eq_axis', label="Orthonormal axis"),
                 Item('show_labels', label="Show labels"),
                 Item('vis_toggle', show_label=False, defined_when='vistog'),
-#                Item('view_table', show_label=False),
+                Item('view_table', show_label=False),
                 Item('save_plot', show_label=False),
                 Item('x_down', show_label=False),
                 Item('x_up', show_label=False),
@@ -180,6 +188,7 @@ class SinglePlotWindow(PlotWindow):
         )
 
 
+
 class LinePlotWindow(PlotWindow):
     """Window for embedding line plot
 
@@ -187,7 +196,6 @@ class LinePlotWindow(PlotWindow):
     plot = Instance(Component)
     eq_axis = Bool(False)
     show_labels = Bool(True)
-    view_table = Button('View result table')
     title_text = Str("ConsumerCheck")
 
     @on_trait_change('show_labels')
@@ -199,10 +207,6 @@ class LinePlotWindow(PlotWindow):
     def switch_axis(self, obj, name, new):
         obj.plot.toggle_eq_axis(new)
 
-    @on_trait_change('view_table')
-    def show_table(self, obj, name, new):
-        tvc = TableViewController(model=obj.plot)
-        tvc.configure_traits()
 
     traits_view = View(
         Group(
@@ -230,6 +234,7 @@ class LinePlotWindow(PlotWindow):
         height = .7,
         buttons = ["OK"]
         )
+
 
 
 class MultiPlotWindow(HasTraits):
@@ -272,6 +277,7 @@ class MultiPlotWindow(HasTraits):
         return container
 
 
+
 class FileEditor(HasTraits):
     
     file_name = File()
@@ -296,6 +302,7 @@ class FileEditor(HasTraits):
             self.file_name = fd.path
             if self.file_name != '':
                 self._save_img(obj)
+
 
 
 

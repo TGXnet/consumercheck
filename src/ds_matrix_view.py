@@ -60,16 +60,18 @@ class TableViewer(Controller):
         clipboard.data = txt.encode('utf_8')
 
 
-    traits_view = View(
-        Item('matrix',
-             editor=matrix_editor,
-             show_label=False),
-        Item('handler.cp_clip', show_label=False),
-        buttons = OKCancelButtons,
-        width=.5,
-        height=.5,
-        resizable=True,
-        )
+    def default_traits_view(self):
+        return View(
+                    Item('matrix',
+                         editor=matrix_editor,
+                         show_label=False),
+                    Item('handler.cp_clip', show_label=False),
+                    buttons = OKCancelButtons,
+                    width=.5,
+                    height=.5,
+                    resizable=True,
+                    title=self.model._ds_name,
+                    )
 
 
 if __name__ == '__main__':

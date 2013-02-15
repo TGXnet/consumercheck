@@ -75,12 +75,12 @@ def tdd():
 
 CONJOINT = [
     ('Conjoint', 'design.txt', 'Tine yogurt design', 'Design variable'),
-    ('Conjoint', 'consumerAttributes.txt', 'Consumers', 'Consumer attributes'),
+    ('Conjoint', 'consumerAttributes.txt', 'Consumers', 'Consumer characteristics'),
     ('Conjoint', 'overall_liking.txt', 'Overall', 'Consumer liking'),
     ('Conjoint', 'odour-flavour_liking.txt', 'Odour-flavor', 'Consumer liking'),
     ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),
     ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Design variable'),
-    ('BarleyBread', 'BB_E_consAttr.txt', 'Estland? consumers', 'Consumer attributes'),
+    ('BarleyBread', 'BB_E_consAttr.txt', 'Estland? consumers', 'Consumer characteristics'),
     ('BarleyBread', 'BB_E_liking.txt', 'Estland? liking data', 'Consumer liking'),]
 
 
@@ -94,7 +94,7 @@ VINE = [
 
 CHEESE = [
     ('Cheese', 'ConsumerLiking.xls', 'Cheese liking', 'Consumer liking'),
-    ('Cheese', 'ConsumerValues.xls', 'Consumer info', 'Consumer attributes'),
+    ('Cheese', 'ConsumerValues.xls', 'Consumer info', 'Consumer characteristics'),
     ('Cheese', 'SensoryData.xls', 'Sensory profiling', 'Sensory profiling'),]
 
 

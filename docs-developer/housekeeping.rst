@@ -52,6 +52,7 @@ Procedure:
  #. Release management
  #. mercurial verion tag
  #. track version tag for tickets
+ #. generate user documentation
  #. update version info in about_consumercheck
  #. update freeze script
  #. update pacakge build script

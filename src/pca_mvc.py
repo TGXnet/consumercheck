@@ -196,10 +196,19 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.scores()
         labels = self.model.sub_ds.object_names
-        plot = PCScatterPlot(pc_tab, labels, title="Scores", id='scores')
+
+        # Make table view dataset
+        score_ds = DataSet()
+        score_ds._ds_name = self.model.sub_ds._ds_name
+        score_ds.matrix = pc_tab
+        score_ds.object_names = labels
+        score_ds.variable_names = ["PC-{0}".format(i+1) for i in range(score_ds.n_cols)]
+
+        plot = PCScatterPlot(pc_tab, labels, view_data=score_ds, title="Scores", id='scores')
         if is_subplot:
             plot.add_left_down_action(self.plot_scores)
         return plot
+
 
 
     def plot_loadings(self):
@@ -222,7 +231,15 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.loadings()
         labels = self.model.sub_ds.variable_names
-        plot = PCScatterPlot(pc_tab, labels, title="Loadings", id="loadings")
+
+        # Make table view dataset
+        loadings_ds = DataSet()
+        loadings_ds._ds_name = self.model.sub_ds._ds_name
+        loadings_ds.matrix = pc_tab
+        loadings_ds.object_names = labels
+        loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
+
+        plot = PCScatterPlot(pc_tab, labels, view_data=loadings_ds, title="Loadings", id="loadings")
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings)
         return plot
@@ -249,7 +266,15 @@ class APCAHandler(ModelView):
         pc_tab = res.corrLoadings()
         expl_vars = res.calExplVar()
         labels = self.model.sub_ds.variable_names
-        pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings", id="corr_loading")
+
+        # Make table view dataset
+        corr_loadings_ds = DataSet()
+        corr_loadings_ds._ds_name = self.model.sub_ds._ds_name
+        corr_loadings_ds.matrix = pc_tab
+        corr_loadings_ds.object_names = labels
+        corr_loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(corr_loadings_ds.n_cols)]
+
+        pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, view_data=corr_loadings_ds, title="Correlation Loadings", id="corr_loading")
         pcl.plot_circle(True)
         if is_subplot:
             pcl.add_left_down_action(self.plot_corr_loading)
@@ -277,7 +302,17 @@ class APCAHandler(ModelView):
         res = self.model.result
         sumCal = res.cumCalExplVar()
         sumVal = res.cumValExplVar()
-        pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated' ,title="Explained Variance", id="expl_var")
+
+        # Make table view dataset
+        ev_ds = DataSet()
+        ev_ds._ds_name = self.model.sub_ds._ds_name
+
+        pc_tab = np.array([sumCal, sumVal])
+        ev_ds.matrix = pc_tab.T
+        ev_ds.object_names = ["PC-{0}".format(i) for i in range(ev_ds.n_rows)]
+        ev_ds.variable_names = ["calibrated", "validated"]
+
+        pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated', view_data=ev_ds, title="Explained Variance", id="expl_var")
         pl.add_EV_set(sumVal, 'darkgoldenrod', 'Validated')
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var)
@@ -312,7 +347,7 @@ class APCAHandler(ModelView):
 
     def show_msee_tot(self):
         print("MSEE total")
-        msee = self.model.result.MSEE_total()
+        msee = self.model.result.MSEE()
         tv = TableViewController(title="MSEE total")
         tv.set_col_names([str(i) for i in range(msee.shape[0])])
         tv.add_row(msee, 'MSEE')
@@ -331,7 +366,7 @@ class APCAHandler(ModelView):
 
     def show_msecv_tot(self):
         print("MSECV total")
-        msecv = self.model.result.MSECV_total()
+        msecv = self.model.result.MSECV()
         tv = TableViewController(title="MSECV total")
         tv.set_col_names([str(i) for i in range(msecv.shape[0])])
         tv.add_row(msecv, 'MSECV')
@@ -415,12 +450,16 @@ if __name__ == '__main__':
     # Things to fix for testing
     # mother_ref: standardise, pc_to_calc
     from traits.api import Bool, Int
-    from tests.conftest import make_ds_mock
-    ds = make_ds_mock()
+    from tests.conftest import simple_ds, imp_ds
+
+    ds_meta = ('Vine', 'A_labels.txt', 'Vine set A', 'Consumer liking')
+    ds = imp_ds(ds_meta)
+
 
     class MocMother(HasTraits):
         standardise = Bool(False)
         pc_to_calc = Int(2)
+        win_handle = None
 
     moc_mother = MocMother()
 
@@ -428,6 +467,7 @@ if __name__ == '__main__':
         name='Tore test',
         ds=ds,
         mother_ref=moc_mother)
+
 
     class APCATestHandler(APCAHandler):
         bt_plot_overview = Button('Plot overview')

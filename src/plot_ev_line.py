@@ -10,8 +10,9 @@ from chaco.tools.api import ZoomTool, PanTool
 
 
 # Local imports
-from plot_interface import IEVLinePlot
+from dataset import DataSet
 from plot_base import PlotBase
+from plot_interface import IEVLinePlot
 
 
 class EVDataSet(HasTraits):
@@ -21,6 +22,8 @@ class EVDataSet(HasTraits):
     """
     # (0.8, 0.2, 0.1, 1.0)
     color = ColorTrait('darkviolet')
+    view_data = DataSet()
+
 
 
 class EVPlotData(ArrayPlotData):
@@ -32,16 +35,16 @@ class EVPlotData(ArrayPlotData):
     """
 
     #List with datasets
-    l_ds = List(EVDataSet())
+    pc_ds = List(EVDataSet())
     
     #Plot name
     pn = List()
 
 
-    def add_line_ds(self, values, color):
+    def add_line_ds(self, values, color, view_data):
         """Add dataset for a EV line plot"""
         
-        set_n = len(self.l_ds)
+        set_n = len(self.pc_ds)
         
         try:
             self.arrays['index'] = range(max(len(self.arrays['index']), len(values)))
@@ -54,8 +57,11 @@ class EVPlotData(ArrayPlotData):
         lds = EVDataSet()
         if color is not None:
             lds.color = color
-        self.l_ds.append(lds)
+        if view_data is not None:
+            lds.view_data = view_data
+        self.pc_ds.append(lds)
         return set_n+1
+
 
 
 class EVLinePlot(PlotBase):
@@ -65,7 +71,7 @@ class EVLinePlot(PlotBase):
     implements(IEVLinePlot)
 
 
-    def __init__(self, ev_vector=None, color=None, legend=None, **kwtraits):
+    def __init__(self, ev_vector=None, color=None, legend=None, view_data=None, **kwtraits):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -85,7 +91,7 @@ class EVLinePlot(PlotBase):
         super(EVLinePlot, self).__init__(data, **kwtraits)
 
         if ev_vector is not None:
-            self.add_EV_set(ev_vector, color, legend)
+            self.add_EV_set(ev_vector, color, legend, view_data)
 
         self.x_axis.title = "# of principal components"
         self.y_axis.title = "Explained variance [%]"
@@ -95,7 +101,7 @@ class EVLinePlot(PlotBase):
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
 
 
-    def add_EV_set(self, ev_vector, color=None, legend=None):
+    def add_EV_set(self, ev_vector, color=None, legend=None, view_data=None):
         """Add a PC dataset with metadata.
 
         Args:
@@ -107,7 +113,7 @@ class EVLinePlot(PlotBase):
         #Insert a 0 to start vector in origo
         # ev_vector = np.insert(ev_vector,0,0)
         
-        set_id = self.data.add_line_ds(ev_vector, color)
+        set_id = self.data.add_line_ds(ev_vector, color, view_data)
         self._plot_EV(set_id,legend)
 
 
@@ -139,7 +145,7 @@ class EVLinePlot(PlotBase):
 
         #plot
         rl = self.plot(pd, type='line', name=pn,
-                       color=self.data.l_ds[set_id-1].color)
+                       color=self.data.pc_ds[set_id-1].color)
 
         self.plots.values()[0][0].index._data = self.data.arrays['index']
         
