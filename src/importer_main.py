@@ -11,6 +11,8 @@ import os.path
 # http://docs.python.org/howto/logging-cookbook.html
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
+# Log what the importe is going to do
+# And log operation completed if success
 
 # Enthought imports
 from traits.api import HasTraits, File, List, Instance
@@ -29,29 +31,13 @@ from importer_xlsx_file import ImporterXlsxFile
 __all__ = ['ImporterMain']
 
 
+
 class ImporterMain(HasTraits):
     """Importer class"""
 
-    _file_path = File()
+    _last_open_path = File()
     _files_path = List(File)
     _datasets = List(DataSet)
-
-    # Dialog for selecting single file
-    one_view = View(
-        UCustom(
-            name='_file_path',
-            editor=FileEditor(
-                filter=['*.csv;*.txt;*.xls;*.xlsx'],
-                ),
-            resizable=True,
-            full_size=True,
-            ),
-        resizable=True,
-        kind='modal',
-        height=600,
-        width=600,
-        buttons=[OKButton, CancelButton],
-        )
 
 
     def import_data(self, file_path, have_variable_names = True, have_object_names = True, sep='\t'):
@@ -78,7 +64,7 @@ class ImporterMain(HasTraits):
 
     def dialog_multi_import(self):
         """Open dialog for selecting multiple files and return a list of DataSet's"""
-        self._file_path = conf.get_option('work_dir')
+        self._last_open_path = conf.get_option('work_dir')
         status = self._show_file_selector()
         if status == CANCEL:
             return []
@@ -118,7 +104,7 @@ class ImporterMain(HasTraits):
     def _show_file_selector(self):
         dlg = FileDialog(
             action='open files',
-            default_directory=self._file_path,
+            default_directory=self._last_open_path,
             title='Import data')
         status = dlg.open()
         if status == OK:
@@ -158,9 +144,12 @@ class ImporterMain(HasTraits):
             return 'Sensory profiling'
         return 'Sensory profiling'
 
+
     def _identify_filetype(self, path):
         fn = os.path.basename(path)
         return fn.partition('.')[2].lower()
+
+
 
 #Instantiate DND
 DND = ImporterMain()
