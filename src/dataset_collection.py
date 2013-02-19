@@ -75,7 +75,7 @@ class DatasetCollection(HasTraits):
             return self._datasets.keys()
         ids = []
         for ds in self._datasets.values():
-            if ds._dataset_type == ds_type:
+            if ds.ds_type == ds_type:
                 ids.append(ds.id)
         return ids
 
@@ -85,7 +85,7 @@ class DatasetCollection(HasTraits):
         logging.info("Update id_name_list")
         ids = []
         for sn, so in self._datasets.iteritems():
-            tu = (sn, so._ds_name)
+            tu = (sn, so.display_name)
             ids.append(tu)
         return ids
 
@@ -94,7 +94,7 @@ class DatasetCollection(HasTraits):
         logging.info("Update name_id_mapping")
         id_names = {}
         for si, so in self._datasets.iteritems():
-            id_names[so._ds_name] = si
+            id_names[so.display_name] = si
         return id_names
 
     @on_trait_change('_datasets:id')
@@ -105,11 +105,11 @@ class DatasetCollection(HasTraits):
         self.datasets_event = True
         logging.info("dictNameChange: %s change from %s to %s", name, old, new)
 
-    @on_trait_change('_datasets:_dataset_type')
+    @on_trait_change('_datasets:ds_type')
     def _ds_change(self, obj, name, old, new):
         self.datasets_event = True
 
-    @on_trait_change('_datasets:_ds_name')
+    @on_trait_change('_datasets:display_name')
     def _name_change(self, obj, name, old, new):
         self.ds_name_event = True
         logging.info("displayNameChange: %s changed: %s to %s", name, old, new)

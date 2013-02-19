@@ -17,7 +17,7 @@ from traitsui.menu import OKButton, CancelButton
 
 # Local imports
 from importer_interfaces import IDataImporter
-from dataset import DS_TYPES, DataSet
+from dataset_ng import DS_TYPES, DataSet
 
 #Import NumPy
 import numpy as np
@@ -111,9 +111,8 @@ class ImporterXlsFile(HasTraits):
 
     def import_data(self):
         self.ds = DataSet(
-            _dataset_type=self.ds_type,
-            _ds_id=self.ds_id,
-            _ds_name=self.ds_name,
+            ds_type=self.ds_type,
+            display_name=self.ds_name,
             _source_file=self.file_path)
         
         raw_data = xlrd.open_workbook(self.file_path)

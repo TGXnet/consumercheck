@@ -11,7 +11,7 @@ import numpy as np
 
 # Local imports
 from pca import nipalsPCA as PCA
-from dataset import DataSet
+from dataset_ng import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
@@ -199,7 +199,7 @@ class APCAHandler(ModelView):
 
         # Make table view dataset
         score_ds = DataSet()
-        score_ds._ds_name = self.model.sub_ds._ds_name
+        score_ds.display_name = self.model.sub_ds.display_name
         score_ds.matrix = pc_tab
         score_ds.object_names = labels
         score_ds.variable_names = ["PC-{0}".format(i+1) for i in range(score_ds.n_cols)]
@@ -234,7 +234,7 @@ class APCAHandler(ModelView):
 
         # Make table view dataset
         loadings_ds = DataSet()
-        loadings_ds._ds_name = self.model.sub_ds._ds_name
+        loadings_ds.display_name = self.model.sub_ds.display_name
         loadings_ds.matrix = pc_tab
         loadings_ds.object_names = labels
         loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
@@ -269,7 +269,7 @@ class APCAHandler(ModelView):
 
         # Make table view dataset
         corr_loadings_ds = DataSet()
-        corr_loadings_ds._ds_name = self.model.sub_ds._ds_name
+        corr_loadings_ds.display_name = self.model.sub_ds.display_name
         corr_loadings_ds.matrix = pc_tab
         corr_loadings_ds.object_names = labels
         corr_loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(corr_loadings_ds.n_cols)]
@@ -305,7 +305,7 @@ class APCAHandler(ModelView):
 
         # Make table view dataset
         ev_ds = DataSet()
-        ev_ds._ds_name = self.model.sub_ds._ds_name
+        ev_ds.display_name = self.model.sub_ds.display_name
 
         pc_tab = np.array([sumCal, sumVal])
         ev_ds.matrix = pc_tab.T
@@ -423,7 +423,7 @@ class APCAHandler(ModelView):
 
 
     def _wind_title(self):
-        ds_name = self.model.ds._ds_name
+        ds_name = self.model.ds.display_name
         dstype = self.model.plot_type
         return "{0} | PCA - {1} - ConsumerCheck".format(ds_name, dstype)
 

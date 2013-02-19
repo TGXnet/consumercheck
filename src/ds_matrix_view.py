@@ -70,7 +70,7 @@ class TableViewer(Controller):
                     width=.5,
                     height=.5,
                     resizable=True,
-                    title=self.model._ds_name,
+                    title=self.model.display_name,
                     )
 
 

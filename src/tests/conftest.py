@@ -28,6 +28,7 @@ logging.basicConfig(
 logging.info("Test start")
 
 import numpy as np
+import pandas as pd
 import os.path as osp
 
 
@@ -57,7 +58,7 @@ def gui_wx():
 
 
 # Local imports
-from dataset import DataSet
+from dataset_ng import DataSet
 from dataset_collection import DatasetCollection
 from importer_main import ImporterMain
 
@@ -81,7 +82,8 @@ CONJOINT = [
     ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),
     ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Design variable'),
     ('BarleyBread', 'BB_E_consAttr.txt', 'Estland? consumers', 'Consumer characteristics'),
-    ('BarleyBread', 'BB_E_liking.txt', 'Estland? liking data', 'Consumer liking'),]
+    ('BarleyBread', 'BB_E_liking.txt', 'Estland? liking data', 'Consumer liking'),
+    ]
 
 
 VINE = [
@@ -89,13 +91,15 @@ VINE = [
     ('Vine', 'B_labels.txt', 'Vine set B', 'Consumer liking'),
     ('Vine', 'C_labels.txt', 'Vine set C', 'Consumer liking'),
     ('Vine', 'D_labels.txt', 'Vine set D', 'Consumer liking'),
-    ('Vine', 'E_labels.txt', 'Vine set E', 'Consumer liking'),]
+    ('Vine', 'E_labels.txt', 'Vine set E', 'Consumer liking'),
+    ]
 
 
 CHEESE = [
     ('Cheese', 'ConsumerLiking.xls', 'Cheese liking', 'Consumer liking'),
     ('Cheese', 'ConsumerValues.xls', 'Consumer info', 'Consumer characteristics'),
-    ('Cheese', 'SensoryData.xls', 'Sensory profiling', 'Sensory profiling'),]
+    ('Cheese', 'SensoryData.xls', 'Sensory profiling', 'Sensory profiling'),
+    ]
 
 
 
@@ -104,25 +108,26 @@ def simple_ds():
     '''Makes a simple syntetic dataset'''
 
     ds = DataSet()
-    ds.matrix = np.array([
+    ds.matrix = pd.DataFrame([
         [1.1, 1.2, 1.3],
         [2.1, 2.2, 2.3],
         [3.1, 3.2, 3.3]])
 
-    ds.variable_names = ['V1', 'V2', 'V3']
-    ds.object_names = ['O1', 'O2', 'O3']
+    ds.matrix.columns = ['V1', 'V2', 'V3']
+    ds.matrix.index = ['O1', 'O2', 'O3']
 
     return ds
 
 
 @pytest.fixture
-def iris_ds(tdd):
+def iris_ds():
     '''Return the Iris dataset
 
     http://archive.ics.uci.edu/ml/datasets/Iris
     '''
+    home = tdd()
     importer = ImporterMain()
-    iris_url = osp.join(tdd, 'Iris', 'irisNoClass.data')
+    iris_url = osp.join(home, 'Iris', 'irisNoClass.data')
     ds = importer.import_data(iris_url, False, False, ',')
     return ds
 
@@ -143,7 +148,8 @@ def all_dsc():
     '''Data set container/collection mock'''
     dsc = DatasetCollection()
 
-    ad = CONJOINT + VINE + CHEESE
+    # ad = CONJOINT + VINE + CHEESE
+    ad = CONJOINT + VINE
 
     for mi in ad:
         dsc.add_dataset(imp_ds(mi))
@@ -157,8 +163,8 @@ def imp_ds(ds_meta_info):
     home = tdd()
     ds_url = osp.join(home, folder, file_name)
     ds = importer.import_data(ds_url)
-    ds._ds_name = ds_name
-    ds._dataset_type = ds_type
+    ds.display_name = ds_name
+    ds.ds_type = ds_type
     return ds
 
 

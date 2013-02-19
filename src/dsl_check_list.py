@@ -27,7 +27,7 @@ class CheckListController(Controller):
     @on_trait_change('model.[ds_name_event,datasets_event]')
     def _update_selection(self, obj, name, new):
         datasets = self.model.get_dataset_list()
-        self.sel_list =  [(ds._ds_id, ds._ds_name) for ds in datasets]
+        self.sel_list =  [(ds.id, ds.display_name) for ds in datasets]
 
     def _selected_changed(self, old, new):
         logging.info("Selection list changed from {0} to {1}".format(old, new))

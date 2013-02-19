@@ -23,7 +23,7 @@ from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor
 from traitsui.menu import OKButton
 
 # Local imports
-from dataset import DataSet
+from dataset_ng import DataSet
 from ds_table_view import DSTableViewer
 from plot_windows import LinePlotWindow
 # from ds_matrix_view import matrix_view
@@ -268,7 +268,7 @@ class AConjointHandler(ModelView):
 
 
     def cj_res_ds_adapter(self, cj_res, name='Dataset Viewer'):
-        dm = DataSet(_ds_name=name)
+        dm = DataSet(display_name=name)
         logger.debug(cj_res['data'])
         dm.matrix = cj_res['data']
         logger.debug(cj_res['colNames'])

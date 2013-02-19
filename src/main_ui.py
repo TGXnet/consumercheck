@@ -31,7 +31,7 @@ class MainViewHandler(Handler):
         imported = importer.dialog_multi_import()
         for ds in imported:
             info.object.dsl.add_dataset(ds)
-            logger.info("importDataset: internal name = %s", ds._ds_id)
+            logger.info("importDataset: internal name = %s", ds.id)
 
 
     def _close_ds(self, info):

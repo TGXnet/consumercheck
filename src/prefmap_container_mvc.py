@@ -34,7 +34,7 @@ class PrefmapsContainer(HasTraits):
         ds_c = self.dsl.get_by_id(id_c)
         ds_s = self.dsl.get_by_id(id_s)
         map_id = id_c+id_s
-        map_name = ds_c._ds_name + ' - ' + ds_s._ds_name
+        map_name = ds_c.display_name + ' - ' + ds_s.display_name
         mapping_model = APrefmapModel(
             mother_ref=self, nid=map_id, name=map_name,  ds_C=ds_c, ds_S=ds_s)
         mapping_handler = APrefmapHandler(mapping_model)
@@ -78,9 +78,9 @@ class PrefmapsHandler(ModelView):
         cons_list = []
         
         for a in self.model.dsl.get_id_list_by_type('Sensory profiling'):
-            sens_list.append((a, self.model.dsl.get_by_id(a)._ds_name))
+            sens_list.append((a, self.model.dsl.get_by_id(a).display_name))
         for b in self.model.dsl.get_id_list_by_type('Consumer liking'):
-            cons_list.append((b, self.model.dsl.get_by_id(b)._ds_name))
+            cons_list.append((b, self.model.dsl.get_by_id(b).display_name))
         self.comb.col_set = sens_list
         self.comb.row_set = cons_list
             

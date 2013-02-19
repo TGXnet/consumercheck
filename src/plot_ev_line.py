@@ -10,7 +10,7 @@ from chaco.tools.api import ZoomTool, PanTool
 
 
 # Local imports
-from dataset import DataSet
+from dataset_ng import DataSet
 from plot_base import PlotBase
 from plot_interface import IEVLinePlot
 

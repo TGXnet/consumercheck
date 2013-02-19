@@ -8,7 +8,7 @@ from traitsui.menu import OKButton
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
-from dataset import DataSet
+from dataset_ng import DataSet
 
 
 class ConjointsContainer(HasTraits):
@@ -35,8 +35,8 @@ class ConjointsContainer(HasTraits):
             return self.dsl.get_by_id(set_id)
 
         liking_set = get_set(liking_set_id)
-        map_name = liking_set._ds_name
-        map_id = liking_set._ds_id
+        map_name = liking_set.display_name
+        map_id = liking_set.id
         mapping_model = AConjointModel(
             mother_ref=self,
             nid=map_id, name=map_name,
@@ -87,7 +87,7 @@ class ConjointsHandler(ModelView):
             return self.model.dsl.get_id_list_by_type(ds_type)
 
         def name_from_id(ds_id):
-            return self.model.dsl.get_by_id(ds_id)._ds_name
+            return self.model.dsl.get_by_id(ds_id).display_name
 
         self.available_designs = [name_from_id(i)
                                   for i in id_by_type('Design variable')]

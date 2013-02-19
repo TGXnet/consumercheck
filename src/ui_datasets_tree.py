@@ -69,16 +69,16 @@ class TreeNode(TN):
         """ Returns custom icon name or the icon for a specified object.
         """
         if not self.allows_children( object ):
-            if hasattr(object, '_dataset_type'):
-                if object._dataset_type == 'Design variable':
+            if hasattr(object, 'ds_type'):
+                if object.ds_type == 'Design variable':
                     return 'design_variable.ico'
-                elif object._dataset_type == 'Sensory profiling':
+                elif object.ds_type == 'Sensory profiling':
                     return 'sensory_profiling.ico'
-                elif object._dataset_type == 'Consumer liking':
+                elif object.ds_type == 'Consumer liking':
                     return 'customer_liking.ico'
-                elif object._dataset_type == 'Consumer characteristics':
+                elif object.ds_type == 'Consumer characteristics':
                     return 'customer_attributes.ico'
-            return self.icon_item 
+            return self.icon_item
         if is_expanded:
             return self.icon_open
         return self.icon_group
@@ -109,7 +109,7 @@ datasets_tree = TreeEditor(
                   ),
         TreeNode( node_for  = [ DataSet ],
                   auto_open = True,
-                  label     = '_ds_name',
+                  label     = 'display_name',
                   view      = ds_list_tab,
                   icon_path = 'graphics',
                   on_dclick = show_ds_table,

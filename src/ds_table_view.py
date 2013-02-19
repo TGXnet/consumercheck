@@ -23,7 +23,7 @@ class DSTableViewer(Controller):
     col_names = List()
     header = Property()
     cp_clip = Button('Copy to clipboard')
-    _ds_name = Str()
+    display_name = Str()
 
     def _get_header(self):
         varnames = [('Names', 'index')]
@@ -49,8 +49,8 @@ class DSTableViewer(Controller):
 
     def get_view(self):
         
-        if self.model._ds_name:
-            header_txt=self.model._ds_name
+        if self.model.display_name:
+            header_txt=self.model.display_name
         else:
             header_txt=''
         

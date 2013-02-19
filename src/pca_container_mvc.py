@@ -24,8 +24,8 @@ class PCAsContainer(HasTraits):
 
     def add_mapping(self, ds_id):
         set_ds = self.dsl.get_by_id(ds_id)
-        map_name = set_ds._ds_name
-        map_id = set_ds._ds_id
+        map_name = set_ds.display_name
+        map_id = set_ds.id
         mapping_model = APCAModel(mother_ref=self, nid=map_id, name=map_name,ds=set_ds)
         mapping_handler = APCAHandler(mapping_model)
         self.mappings.append(mapping_handler)

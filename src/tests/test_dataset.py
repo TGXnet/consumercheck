@@ -12,7 +12,7 @@ import pytest
 from numpy import array, array_equal, allclose
 
 # Local imports
-from dataset import DataSet
+from dataset_ng import DataSet
 
 
 refa = array(
@@ -38,7 +38,7 @@ def syntetic_ds():
 # FIXME:
 # Functionality to test
 # Dataset id uuid, check for uniq id
-# _dataset_type check for expected default type and only allowed types
+# ds_type check for expected default type and only allowed types
 # var/obj name consistency, is alway read or generated
 # n_row/n_cols consistent with row and cols
 # Dataset should check consitency and make row/column names
@@ -54,9 +54,9 @@ def test_empty_ds(void_ds):
     assert void_ds.n_cols == 0
     assert void_ds.object_names == []
     assert void_ds.variable_names == []
-    assert void_ds._dataset_type == 'Design variable'
+    assert void_ds.ds_type == 'Design variable'
     with pytest.raises(TraitError):
-        void_ds._dataset_type = 'Tor'
+        void_ds.ds_type = 'Tor'
 
 
 def test_simple_ds(syntetic_ds):

@@ -11,7 +11,7 @@ import numpy as np
 
 # Local imports
 from plsr import nipalsPLS2 as pls
-from dataset import DataSet
+from dataset_ng import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
@@ -52,7 +52,7 @@ class APrefmapModel(HasTraits):
         return (min(self.ds_C.n_rows,self.ds_C.n_cols))
 
     def _get_result(self):
-        logging.info("Run pls for: Consumer: {0} ,Sensory: {1}".format(self.ds_C._ds_id, self.ds_S._ds_id))
+        logging.info("Run pls for: Consumer: {0} ,Sensory: {1}".format(self.ds_C.id, self.ds_S.id))
         self.ds_S.active_objects = self.ds_C.active_objects
         self.sub_ds_C = self.ds_C.subset()
         self.sub_ds_S = self.ds_S.subset()
@@ -163,7 +163,7 @@ class APrefmapHandler(ModelView):
 
         # Make table view dataset
         score_ds = DataSet()
-        score_ds._ds_name = self.model.sub_ds_C._ds_name
+        score_ds.display_name = self.model.sub_ds_C.display_name
         score_ds.matrix = pc_tab
         score_ds.object_names = labels
         score_ds.variable_names = ["PC-{0}".format(i+1) for i in range(score_ds.n_cols)]
@@ -200,10 +200,10 @@ class APrefmapHandler(ModelView):
 
         if self.model.mother_ref.radio == 'Internal mapping':
             labels = self.model.sub_ds_C.variable_names
-            loadings_ds._ds_name = self.model.sub_ds_C._ds_name
+            loadings_ds.display_name = self.model.sub_ds_C.display_name
         else:
             labels = self.model.sub_ds_S.variable_names
-            loadings_ds._ds_name = self.model.sub_ds_S._ds_name
+            loadings_ds.display_name = self.model.sub_ds_S.display_name
 
         loadings_ds.object_names = labels
         loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
@@ -233,7 +233,7 @@ class APrefmapHandler(ModelView):
 
         # Make table view dataset
         loadings_ds = DataSet()
-        loadings_ds._ds_name = self.model.sub_ds_S._ds_name
+        loadings_ds.display_name = self.model.sub_ds_S.display_name
         loadings_ds.matrix = yLP
         loadings_ds.object_names = labels
         loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
@@ -302,7 +302,7 @@ class APrefmapHandler(ModelView):
 
         # Make table view dataset
         ev_ds = DataSet()
-        ev_ds._ds_name = self.model.sub_ds_C._ds_name
+        ev_ds.display_name = self.model.sub_ds_C.display_name
         pc_tab = np.array([sumCalX, sumValX])
         ev_ds.matrix = pc_tab.T
         ev_ds.object_names = ["PC-{0}".format(i) for i in range(ev_ds.n_rows)]
@@ -334,7 +334,7 @@ class APrefmapHandler(ModelView):
 
         # Make table view dataset
         ev_ds = DataSet()
-        ev_ds._ds_name = self.model.sub_ds_S._ds_name
+        ev_ds.display_name = self.model.sub_ds_S.display_name
 
         pc_tab = np.array([sumCalY, sumValY])
         ev_ds.matrix = pc_tab.T
@@ -401,8 +401,8 @@ class APrefmapHandler(ModelView):
 
 
     def _wind_title(self):
-        dsx_name = self.model.ds_C._ds_name
-        dsy_name = self.model.ds_S._ds_name
+        dsx_name = self.model.ds_C.display_name
+        dsy_name = self.model.ds_S.display_name
         dstype = self.model.plot_type
         return "({0}) X ~ Y ({1}) | Prefmap - {2} - ConsumerCheck".format(dsx_name, dsy_name, dstype)
 

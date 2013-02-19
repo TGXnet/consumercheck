@@ -133,7 +133,7 @@ class ConjointMachine(object):
         throw_chrs = string.maketrans(
             string.ascii_letters, ' '*len(string.ascii_letters))
         # Filter dataset name
-        liking_name = consLiking._ds_name.encode('ascii', 'ignore')
+        liking_name = consLiking.display_name.encode('ascii', 'ignore')
         self.consLikingTag = liking_name.translate(None, throw_chrs)
 
         # self._check_completeness()
