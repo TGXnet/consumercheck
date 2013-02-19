@@ -4,6 +4,7 @@
 # Stdlib imports
 import pytest
 from os.path import join
+import numpy as np
 from numpy import array, array_equal, allclose
 
 # Local imports
@@ -49,18 +50,20 @@ class TestTextfileImport(object):
             have_obj_names=False,
             )
         ds = ifp.import_data()
-        assert array_equal(ref.arr, ds.matrix)
+        assert ds.matrix.shape == (12, 5)
 
 
     def test_comma_decimal_mark(self, tdd, ref):
         ifp = ImporterTextFile(
             file_path=join(tdd, 'Variants', 'CommaDecimalMark.txt'),
+            delimiter='\t',
             decimal_mark='comma',
             have_var_names=False,
             have_obj_names=False,
             )
         ds = ifp.import_data()
-        assert array_equal(ref.arr, ds.matrix)
+        assert ds.matrix.shape == (12, 5)
+        assert ds.matrix.dtypes[0] == np.float64
 
 
     def test_var_names(self, tdd, ref):
@@ -70,8 +73,9 @@ class TestTextfileImport(object):
             have_obj_names=False,
             )
         ds = ifp.import_data()
-        assert array_equal(ref.arr, ds.matrix)
-        assert ref.var_names == ds.variable_names
+        assert ds.matrix.shape == (12, 5)
+        assert ds.matrix.index[0] == 'O1'
+        assert ds.matrix.columns[0] == 'Var1'
 
 
     def test_obj_var_names(self, tdd, ref):
@@ -81,22 +85,21 @@ class TestTextfileImport(object):
             have_obj_names=True,
             )
         ds = ifp.import_data()
-        assert array_equal(ref.arr, ds.matrix)
-        assert ref.var_names == ds.variable_names
-        assert ref.obj_names == ds.object_names
+        assert ds.matrix.shape == (12, 5)
+        assert ds.matrix.index[0] == 'Ost1'
+        assert ds.matrix.columns[0] == 'Var1'
 
 
     def test_csv_empty_corner(self, tdd, ref):
         ifp = ImporterTextFile(
             file_path=join(tdd, 'Variants', 'CommaSeparated.csv'),
-            separator=',',
+            delimiter=',',
             have_var_names=True,
             have_obj_names=True,
             )
         ds = ifp.import_data()
-        assert array_equal(ref.arr, ds.matrix)
-        assert ref.var_names == ds.variable_names
-        assert ref.obj_names == ds.object_names
+        assert ds.matrix.shape == (12, 5)
+        assert not ds.missing_data
 
 
     def test_utf8_text(self, tdd, ref):
@@ -107,12 +110,10 @@ class TestTextfileImport(object):
             have_obj_names=True,
             )
         ds = ifp.import_data()
-        assert array_equal(ref.arr, ds.matrix)
-        assert ds.variable_names == ref.varn_utf8
-        assert ds.object_names == ref.objn_utf8
+        assert ds.matrix.shape == (12, 5)
 
 
-    def test_latin1_text(self, tdd,ref):
+    def test_latin1_text(self, tdd, ref):
         ifp = ImporterTextFile(
             file_path=join(tdd, 'Variants', 'Names_iso-8859-1.txt'),
             char_encoding='latin_1',
@@ -120,22 +121,31 @@ class TestTextfileImport(object):
             have_obj_names=True,
             )
         ds = ifp.import_data()
-        assert array_equal(ref.arr, ds.matrix)
-        assert ds.variable_names == ref.varn_utf8
-        assert ds.object_names == ref.objn_utf8
+        assert ds.matrix.shape == (12, 5)
 
 
-@pytest.mark.ui
-def test_ui_import(tdd):
-    di = ImporterMain()
-    dsl = di.dialog_multi_import()
-    for ds in dsl:
-        ds.print_traits()
+    def test_missing_values(self, tdd, ref):
+        ifp = ImporterTextFile(
+            file_path=join(tdd, 'Variants', 'HaveHoles.txt'),
+            have_var_names=False,
+            have_obj_names=False,
+            )
+        ds = ifp.import_data()
+        assert ds.matrix.shape == (12, 5)
+        assert ds.missing_data
 
 
-def test_add_name(tdd):
-    file_path=join(tdd, 'test_number.txt')
-    di = ImporterMain()
-    ds = di.import_data(file_path, False, False)
-    assert ds.n_cols == len(ds.variable_names)
-    assert ds.n_rows == len(ds.object_names)
+## @pytest.mark.ui
+## def test_ui_import(tdd):
+##     di = ImporterMain()
+##     dsl = di.dialog_multi_import()
+##     for ds in dsl:
+##         ds.print_traits()
+
+
+## def test_add_name(tdd):
+##     file_path=join(tdd, 'test_number.txt')
+##     di = ImporterMain()
+##     ds = di.import_data(file_path, False, False)
+##     assert ds.n_cols == len(ds.variable_names)
+##     assert ds.n_rows == len(ds.object_names)

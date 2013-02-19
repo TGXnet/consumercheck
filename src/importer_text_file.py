@@ -1,21 +1,14 @@
 
 # StdLib imports
 import os.path
-from StringIO import StringIO
-from codecs import open as unicode_open
 import logging
 # Log everything, and send it to stderr.
 # http://docs.python.org/howto/logging-cookbook.html
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
 
-# About text encoding
-# There are 2 ways of determin the encodings for text files.
-# 1. To know in advance
-# 2. To make a correct guess
-
 # SciPy imports
-from numpy import genfromtxt
+import pandas as _pd
 
 # Enthought imports
 from traits.api import HasTraits, Event, Str, Unicode, Int, Bool, File, List, Enum
@@ -25,8 +18,9 @@ from traitsui.tabular_adapter import TabularAdapter
 from traits.api import implements
 
 # Local imports
-from dataset import DS_TYPES, DataSet
+from dataset_ng import DS_TYPES, DataSet
 from importer_interfaces import IDataImporter
+
 
 
 class RawLineAdapter(TabularAdapter):
@@ -51,6 +45,7 @@ class RawLineAdapter(TabularAdapter):
         self.columns = [("col{}".format(i), i) for i in range(self.ncols)]
 
 
+
 class PreviewTableEditor(TabularEditor):
     update_cells = Event()
 
@@ -73,6 +68,7 @@ preview_table = PreviewTableEditor(
     )
 
 
+
 class FilePreviewer(Handler):
     _raw_lines = List(Str)
     _unicode_lines = List(Unicode)
@@ -80,7 +76,6 @@ class FilePreviewer(Handler):
 
 
     def init(self, info):
-        info.object.make_ds_name()
         self._probe_read(info.object)
         self._decode_chars(info.object.char_encoding)
 
@@ -90,12 +85,12 @@ class FilePreviewer(Handler):
         preview_table.update_cells = True
 
 
-    def object_separator_changed(self, info):
-        self._split_table(info.object.separator)
+    def object_delimiter_changed(self, info):
+        self._split_table(info.object.delimiter)
 
 
-    def _split_table(self, separator):
-        preview_matrix = [line.split(separator) for line in self._unicode_lines]
+    def _split_table(self, delimiter):
+        preview_matrix = [line.split(delimiter) for line in self._unicode_lines]
         max_cols = 7
         for row in preview_matrix:
             max_cols = min(max_cols, len(row))
@@ -105,7 +100,7 @@ class FilePreviewer(Handler):
 
     def object_char_encoding_changed(self, info):
         self._decode_chars(info.object.char_encoding)
-        self._split_table(info.object.separator)
+        self._split_table(info.object.delimiter)
 
 
     def _decode_chars(self, encoding):
@@ -139,11 +134,12 @@ class FilePreviewer(Handler):
 preview_handler = FilePreviewer()
 
 
+
 class ImporterTextFile(HasTraits):
     implements(IDataImporter)
 
     file_path = File()
-    separator = Enum('\t', ',', ' ')
+    delimiter = Enum('\t', ',', ' ')
     decimal_mark = Enum('period', 'comma')
     char_encoding = Enum(
         ('ascii', 'utf_8', 'latin_1')
@@ -151,77 +147,85 @@ class ImporterTextFile(HasTraits):
     transpose = Bool(False)
     have_var_names = Bool(True)
     have_obj_names = Bool(True)
-    ds_id = Str()
-    ds_name = Str()
+    ds_name = Str('Unnamed dataset')
     ds_type = Str('Design variable')
     ds_type_list = List(DS_TYPES)
 
-    def make_ds_name(self):
+
+    def import_data(self):
+        """Do the importing of a dataset"""
+
+        if self.have_var_names:
+            header = 'infer'
+        else:
+            header = None
+        if self.have_obj_names:
+            index_col = 0
+        else:
+            index_col = None
+
+        dsdf = _pd.read_csv(
+            filepath_or_buffer=self.file_path,
+            delimiter=self.delimiter,
+            header=header,
+            index_col=index_col,
+            keep_default_na=True,
+            na_values=['?'],
+            encoding=self.char_encoding,
+            )
+
+        # FIXME: This is hackish
+        if self.decimal_mark == 'comma':
+
+            def commatofloat(anum):
+                return float(anum.replace(',', '.'))
+
+            convs = {}
+            for i in range(dsdf.shape[1]):
+                convs[i] = commatofloat
+
+                dsdf = _pd.read_csv(
+                    filepath_or_buffer=self.file_path,
+                    delimiter=self.delimiter,
+                    header=header,
+                    index_col=index_col,
+                    keep_default_na=True,
+                    na_values=['?'],
+                    encoding=self.char_encoding,
+                    converters=convs,
+                    )
+
+
+        if not self.have_var_names:
+            dsdf.columns = ["V{0}".format(i+1) for i in range(dsdf.shape[1])]
+        if not self.have_obj_names:
+            dsdf.index = ["O{0}".format(i+1) for i in range(dsdf.shape[0])]
+
+        # Make DataSet
+        ds = DataSet(
+            matrix=dsdf,
+            display_name=self.ds_name,
+            ds_type=self.ds_type,
+            )
+        return ds
+
+
+    def _ds_name_default(self):
         # FIXME: Find a better more general solution
         fn = os.path.basename(self.file_path)
         fn = fn.partition('.')[0]
         fn = fn.lower()
-        self.ds_id = self.ds_name = fn
+        return fn
 
-    def import_data(self):
-        self.ds = DataSet(
-            _dataset_type=self.ds_type,
-            _ds_id=self.ds_id,
-            _ds_name=self.ds_name,
-            _source_file=self.file_path)
 
-        # Read data from file
-        with unicode_open(self.file_path,
-                          encoding=self.char_encoding,
-                          errors='strict') as fp:
-            unicode_data = fp.read()
-        utf_8_data = unicode_data.encode('utf-8', 'strict')
-
-        # Preprocess file utf_8_data
-        if self.decimal_mark == 'comma':
-            if self.separator == ',':
-                raise Exception('Ambiguous fileformat')
-            utf_8_data = utf_8_data.replace(',', '.')
-
-        # Do we have variable names
-        names = None
-        skip_header = 0
-        if self.have_var_names:
-            # names = True
-            fl, rest = utf_8_data.split('\n', 1)
-            names = fl.split(self.separator)
-            skip_header = 1
-
-        pd = genfromtxt(
-            StringIO(utf_8_data),
-            dtype=None,
-            delimiter=self.separator,
-            skip_header = skip_header,
-            names=names)
-
-        if self.have_var_names:
-            varnames = list(pd.dtype.names)
-            if self.have_obj_names:
-                corner = varnames.pop(0)
-                objnames = pd[corner].view().reshape(len(pd),-1)
-                objnames = objnames[:,0].tolist()
-                self.ds.object_names = [unicode(str(on), 'utf-8') for on in objnames]
-
-            dt = pd[varnames[0]].dtype
-            pd = pd[varnames].view(dt).reshape(len(pd),-1)
-            self.ds.variable_names = [unicode(str(vn), 'utf-8') for vn in varnames]
-
-        self.ds.matrix = pd
-        return self.ds
-
-    pre_view = View(
+    traits_view = View(
         Group(
             Item('file_path', style='readonly'),
             Item('handler._parsed_data',
                  id='table',
                  editor=preview_table),
             Item('char_encoding'),
-            Item('separator',
+            Item('delimiter',
                  editor=EnumEditor(
                      values={
                          '\t': '1:Tab',
@@ -253,10 +257,11 @@ class ImporterTextFile(HasTraits):
 
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
-    test = ImporterTextFile()
-    test.file_path = 'datasets/Variants/ObjVarNames.txt'
-    # test.file_path = 'datasets/Variants/Names_UTF-8.txt'
-    # test.file_path = 'datasets/Variants/Names_iso-8859-1.txt'
-    test.configure_traits()
-    ds = test.import_data()
+    itf = ImporterTextFile(
+        file_path='datasets/Variants/CommaSeparated.csv',
+        delimiter=',',
+        decimal_mark='period',
+        char_encoding='ascii',
+        )
+    ds = itf.import_data()
     ds.print_traits()
