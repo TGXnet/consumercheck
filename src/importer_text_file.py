@@ -29,7 +29,7 @@ class RawLineAdapter(TabularAdapter):
     #Temporary column to avoid crash
     columns = ['tmp']
     
-    width = 20
+    width = 70
     # have_var_names = Bool(True)
     
 #    # font = 'Courier 10'
@@ -254,7 +254,7 @@ class ImporterTextFile(HasTraits):
         resizable=True,
         buttons=[CancelButton, OKButton],
         handler=preview_handler,
-        # kind='livemodal',
+        kind='livemodal',
         )
 
 
