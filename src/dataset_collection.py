@@ -10,11 +10,11 @@ Datasets can be imported or genrated.
 import logging
 
 # Enthought traits imports
-from traits.api import (HasTraits, Dict, Str, Event, Property,
+from traits.api import (HasTraits, Dict, Int, Event, Property,
                         on_trait_change, property_depends_on)
 
 # Local imports
-from dataset import DataSet
+from dataset_ng import DataSet
 
 
 class DatasetCollection(HasTraits):
@@ -28,7 +28,7 @@ class DatasetCollection(HasTraits):
 
     """
     # Dictionary to hold dataset and a editor to select dataset
-    _datasets = Dict(Str, DataSet)
+    _datasets = Dict(Int, DataSet)
 
     # Events for dataset namechanges
     ds_name_event = Event
@@ -53,7 +53,7 @@ class DatasetCollection(HasTraits):
 
     def add_dataset(self, ds):
         """Add or update dataset"""
-        name = ds._ds_id
+        name = ds.id
         if self._datasets.__contains__(name):
             raise Exception("Key ({0}) already exists".format(name))
         self._datasets[name] = ds
@@ -76,7 +76,7 @@ class DatasetCollection(HasTraits):
         ids = []
         for ds in self._datasets.values():
             if ds._dataset_type == ds_type:
-                ids.append(ds._ds_id)
+                ids.append(ds.id)
         return ids
 
 
@@ -97,7 +97,7 @@ class DatasetCollection(HasTraits):
             id_names[so._ds_name] = si
         return id_names
 
-    @on_trait_change('_datasets:_ds_id')
+    @on_trait_change('_datasets:id')
     def _id_change(self, obj, name, old, new):
         """Update dictionary name"""
         moving = self._datasets.pop(old)

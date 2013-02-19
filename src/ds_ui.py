@@ -5,7 +5,7 @@ from traitsui.api import Handler, View, Item
 from traitsui.menu import OKButton, CancelButton
 
 # Local imports
-from dataset import DataSet
+from dataset_ng import DataSet
 from ds_slicer_view import ds_slicer_view
 
 
@@ -18,10 +18,10 @@ class DSListTabHandler(Handler):
 
 
 ds_list_tab = View(
-    Item('_ds_name'),
-    Item('_dataset_type'),
-    Item('n_rows', style='readonly'),
-    Item('n_cols', style='readonly'),
+    Item('display_name'),
+    Item('ds_type'),
+    # Item('n_rows', style='readonly'),
+    # Item('n_cols', style='readonly'),
     Item('handler.show_slicer'),
     handler=DSListTabHandler(),
     )
