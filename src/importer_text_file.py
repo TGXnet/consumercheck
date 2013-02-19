@@ -29,7 +29,8 @@ class RawLineAdapter(TabularAdapter):
     #Temporary column to avoid crash
     columns = ['tmp']
     
-    have_var_names = Bool(True)
+    width = 20
+    # have_var_names = Bool(True)
     
 #    # font = 'Courier 10'
 #    bg_color  = Property()
@@ -45,7 +46,6 @@ class RawLineAdapter(TabularAdapter):
         self.columns = [("col{}".format(i), i) for i in range(self.ncols)]
 
 
-
 class PreviewTableEditor(TabularEditor):
     update_cells = Event()
 
@@ -54,6 +54,8 @@ preview_table = PreviewTableEditor(
     adapter = RawLineAdapter(),
     operations = [],
     # Can the user edit the values?
+    show_titles = True,
+    show_row_titles = False,
     editable = False,
     # The optional extended name of the trait used to indicate that a complete
     # table update is needed:
@@ -81,7 +83,7 @@ class FilePreviewer(Handler):
 
 
     def object_have_var_names_changed(self, info):
-        preview_table.adapter.have_var_names = info.object.have_var_names
+        # preview_table.adapter.have_var_names = info.object.have_var_names
         preview_table.update_cells = True
 
 
@@ -222,8 +224,10 @@ class ImporterTextFile(HasTraits):
         Group(
             Item('file_path', style='readonly'),
             Item('handler._parsed_data',
+                 editor=preview_table,
                  id='table',
-                 editor=preview_table),
+                 show_label=False,
+                 ),
             Item('char_encoding'),
             Item('delimiter',
                  editor=EnumEditor(
@@ -236,7 +240,6 @@ class ImporterTextFile(HasTraits):
                  ),
             Item('decimal_mark'),
             ## Item('transpose'),
-            Item('ds_id', style='readonly', label='File name'),
             Item('ds_name', label='Dataset name'),
             Item('ds_type', editor=EnumEditor(name='ds_type_list'), label='Dataset type'),
             Item('have_var_names', label='Existing variable names',
@@ -251,7 +254,7 @@ class ImporterTextFile(HasTraits):
         resizable=True,
         buttons=[CancelButton, OKButton],
         handler=preview_handler,
-        kind='livemodal',
+        # kind='livemodal',
         )
 
 
@@ -259,9 +262,11 @@ class ImporterTextFile(HasTraits):
 if __name__ == '__main__':
     itf = ImporterTextFile(
         file_path='datasets/Variants/CommaSeparated.csv',
-        delimiter=',',
-        decimal_mark='period',
-        char_encoding='ascii',
         )
+    itf.configure_traits()
     ds = itf.import_data()
-    ds.print_traits()
+    print(ds.display_name)
+    print(ds.matrix.shape)
+    print(ds.matrix.index)
+    print(ds.matrix.columns)
+    print(ds.matrix.dtypes)
