@@ -30,21 +30,18 @@ class APrefmapModel(HasTraits):
     # Shoud be Instance(PrefmapsContainer)
     # but who comes first?
     mother_ref = Instance(HasTraits)
-    
+
     # Consumer liking
     ds_C = DataSet()
     # Sensory profiling
     ds_S = DataSet()
-    sel_var_C = List()
-    sel_var_S = List()
-    sel_obj = List()
 
     #checkbox bool for standardised results
     standardise = DelegatesTo('mother_ref')
     pc_to_calc = DelegatesTo('mother_ref')
     min_pc = 2
     max_pc = Property()
-    
+
     # depends_on
     result = Property()
 
@@ -53,9 +50,6 @@ class APrefmapModel(HasTraits):
 
     def _get_result(self):
         logging.info("Run pls for: Consumer: {0} ,Sensory: {1}".format(self.ds_C.id, self.ds_S.id))
-        ## self.ds_S.active_objects = self.ds_C.active_objects
-        ## self.sub_ds_C = self.ds_C.subset()
-        ## self.sub_ds_S = self.ds_S.subset()
         if self.mother_ref.radio == 'Internal mapping':
             return pls(
                        self.ds_C.matrix,
@@ -79,32 +73,17 @@ class APrefmapHandler(ModelView):
     name = DelegatesTo('model')
     nid = DelegatesTo('model')
 
-    show_sel_obj = Button('Objects')
-    show_sel_c_var = Button('Consumer Variables')
-    show_sel_s_var = Button('Sensory Variables')
-
     window_launchers = List(Instance(WindowLauncher))
-    
-    
+
+
     def __init__(self, *args, **kwargs):
         super(APrefmapHandler, self).__init__(*args, **kwargs)
         self._populate_window_launchers()
 
-    
-    @on_trait_change('show_sel_obj')
-    def _act_show_sel_obj(self, obj, name, new):
-        obj.model.ds_C.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
-
-    @on_trait_change('show_sel_c_var')
-    def _act_show_sel_x_var(self, obj, name, new):
-        obj.model.ds_C.edit_traits(view=ds_var_slicer_view, kind='livemodal')
-
-    @on_trait_change('show_sel_s_var')
-    def _act_show_sel_y_var(self, obj, name, new):
-        obj.model.ds_S.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     def __eq__(self, other):
         return self.nid == other
+
 
     def __ne__(self, other):
         return self.nid != other
@@ -162,12 +141,6 @@ class APrefmapHandler(ModelView):
         expl_vars_x = res.X_calExplVar()
 
         # Make table view dataset
-        ## score_ds = DataSet()
-        ## score_ds.display_name = self.model.ds_C.display_name
-        ## score_ds.matrix = pc_tab
-        ## score_ds.object_names = labels
-        ## score_ds.variable_names = ["PC-{0}".format(i+1) for i in range(score_ds.n_cols)]
-        # Make table view dataset
         pc_df = pd.DataFrame(
             pc_tab,
             index=labels,
@@ -201,20 +174,6 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         xLP = res.X_loadings()
         expl_vars = res.X_calExplVar()
-
-        # Make table view dataset
-        ## loadings_ds = DataSet()
-        ## loadings_ds.matrix = xLP
-
-        ## if self.model.mother_ref.radio == 'Internal mapping':
-        ##     labels = self.model.ds_C.variable_names
-        ##     loadings_ds.display_name = self.model.ds_C.display_name
-        ## else:
-        ##     labels = self.model.ds_S.variable_names
-        ##     loadings_ds.display_name = self.model.ds_S.display_name
-
-        ## loadings_ds.object_names = labels
-        ## loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
 
         # Make table view dataset
         pc_df = pd.DataFrame(xLP)
@@ -253,22 +212,25 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         yLP = res.Y_loadings()
         expl_vars = res.Y_calExplVar()
-        labels = self.model.ds_S.variable_names
+        # labels = self.model.ds_S.variable_names
 
         # Make table view dataset
-        ## loadings_ds = DataSet()
-        ## loadings_ds.display_name = self.model.ds_S.display_name
-        ## loadings_ds.matrix = yLP
-        ## loadings_ds.object_names = labels
-        ## loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
+        col_names = ["PC-{0}".format(i+1) for i in range(yLP.shape[1])]
+
+        if self.model.mother_ref.radio == 'Internal mapping':
+            labels = self.model.ds_S.variable_names
+            display_name = self.model.ds_S.display_name
+        else:
+            labels = self.model.ds_C.variable_names
+            display_name = self.model.ds_C.display_name
 
         pc_df = pd.DataFrame(
             yLP,
             index=labels,
-            columns=["PC-{0}".format(i+1) for i in range(yLP.shape[1])])
+            columns=col_names)
         loadings_ds = DataSet(
             matrix=pc_df,
-            display_name=self.model.ds_S.display_name)
+            display_name=display_name)
 
         plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, view_data=loadings_ds, title="Y Loadings", id="loadings_y")
         if is_subplot:
@@ -333,14 +295,6 @@ class APrefmapHandler(ModelView):
         sumValX = res.X_cumValExplVar()
 
         # Make table view dataset
-        ## ev_ds = DataSet()
-        ## ev_ds.display_name = self.model.ds_C.display_name
-        ## pc_tab = np.array([sumCalX, sumValX])
-        ## ev_ds.matrix = pc_tab.T
-        ## ev_ds.object_names = ["PC-{0}".format(i) for i in range(ev_ds.n_rows)]
-        ## ev_ds.variable_names = ["calibrated", "validated"]
-
-        # Make table view dataset
         pc_tab = np.array([sumCalX, sumValX]).T
         pc_df = pd.DataFrame(
             pc_tab,
@@ -375,15 +329,6 @@ class APrefmapHandler(ModelView):
         sumValY = res.Y_cumValExplVar()
 
         # Make table view dataset
-        ## ev_ds = DataSet()
-        ## ev_ds.display_name = self.model.ds_S.display_name
-
-        ## pc_tab = np.array([sumCalY, sumValY])
-        ## ev_ds.matrix = pc_tab.T
-        ## ev_ds.object_names = ["PC-{0}".format(i) for i in range(ev_ds.n_rows)]
-        ## ev_ds.variable_names = ["calibrated", "validated"]
-
-        # Make table view dataset
         pc_tab = np.array([sumCalY, sumValY]).T
         pc_df = pd.DataFrame(
             pc_tab,
@@ -401,14 +346,12 @@ class APrefmapHandler(ModelView):
 
 
     def _show_plot_window(self, plot_window):
-        # FIXME: Setting parent forcing main ui to stay behind plot windows
         plot_window.mother_ref = self
         if sys.platform == 'linux2':
             self.plot_uis.append(
                 plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
                 )
         elif sys.platform == 'win32':
-            # FIXME: Investigate more here
             self.plot_uis.append(
                 plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
                 # plot_window.edit_traits(kind='live')
@@ -469,9 +412,6 @@ a_prefmap_view = View(
                      low_name='model.min_pc',
                      high_name='model.max_pc',
                      mode='spinner')),
-            Item('show_sel_obj'),
-            Item('show_sel_x_var'),
-            Item('show_sel_y_var'),
             ),
         Item('', springy=True),
         orientation='horizontal',
@@ -545,9 +485,6 @@ if __name__ == '__main__':
                              low_name='model.min_pc',
                              high_name='model.max_pc',
                              mode='spinner')),
-                    Item('show_sel_obj'),
-                    Item('show_sel_c_var'),
-                    Item('show_sel_s_var'),
                     orientation='vertical',
                     ),
                 Item('', springy=True),
