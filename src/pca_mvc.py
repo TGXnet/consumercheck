@@ -1,13 +1,16 @@
 
-# stdlib imports
+# std lib imports
 import sys
+
+# Scipy libs imports
+import numpy as np
+import pandas as pd
 
 # Enthought imports
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from traitsui.menu import OKButton
-import numpy as np
 
 # Local imports
 from pca import nipalsPCA as PCA
@@ -40,7 +43,6 @@ class APCAModel(HasTraits):
     # but who comes first?
     mother_ref = Instance(HasTraits)
     ds = DataSet()
-    sub_ds = DataSet()
     # List of variable names with zero variance in the data vector
     zero_variance = List()
     # FIXME: To be replaced by groups
@@ -57,29 +59,28 @@ class APCAModel(HasTraits):
     result = Property()
 
     def _get_max_pc(self):
-        return (min(self.ds.n_rows, self.ds.n_cols)-2)
+        return (min(self.ds.n_rows, self.ds.n_cols) - 2)
 
 
     def _check_std_dev(self):
-        sv = self.sub_ds.matrix.std(0)
+        sv = self.ds.matrix.std(axis=0)
         std_limit = 0.001
         dm = sv < std_limit
         if np.any(dm):
-            vv = np.array(self.sub_ds.variable_names)
+            vv = np.array(self.ds.variable_names)
             self.zero_variance = list(vv[np.nonzero(dm)])
         else:
             self.zero_variance = []
 
 
     def _get_result(self):
-        self.sub_ds = self.ds.subset()
         std_ds = 'cent'
         if self.standardise:
             std_ds = 'stand'
         self._check_std_dev()
         if self.zero_variance and self.standardise:
             raise InComputeable('PCA: matrix have vectors with zero variance')
-        return PCA(self.sub_ds.matrix,
+        return PCA(self.ds.matrix,
                    numPC=self.pc_to_calc,
                    mode=std_ds,
                    cvType=["loo"])
@@ -195,14 +196,16 @@ class APCAHandler(ModelView):
     def _make_scores_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.scores()
-        labels = self.model.sub_ds.object_names
+        labels = self.model.ds.object_names
 
         # Make table view dataset
-        score_ds = DataSet()
-        score_ds.display_name = self.model.sub_ds.display_name
-        score_ds.matrix = pc_tab
-        score_ds.object_names = labels
-        score_ds.variable_names = ["PC-{0}".format(i+1) for i in range(score_ds.n_cols)]
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=labels,
+            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
+        score_ds = DataSet(
+            matrix=pc_df,
+            display_name=self.model.ds.display_name)
 
         plot = PCScatterPlot(pc_tab, labels, view_data=score_ds, title="Scores", id='scores')
         if is_subplot:
@@ -230,14 +233,16 @@ class APCAHandler(ModelView):
     def _make_loadings_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.loadings()
-        labels = self.model.sub_ds.variable_names
+        labels = self.model.ds.variable_names
 
         # Make table view dataset
-        loadings_ds = DataSet()
-        loadings_ds.display_name = self.model.sub_ds.display_name
-        loadings_ds.matrix = pc_tab
-        loadings_ds.object_names = labels
-        loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=labels,
+            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
+        loadings_ds = DataSet(
+            matrix=pc_df,
+            display_name=self.model.ds.display_name)
 
         plot = PCScatterPlot(pc_tab, labels, view_data=loadings_ds, title="Loadings", id="loadings")
         if is_subplot:
@@ -265,14 +270,16 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.corrLoadings()
         expl_vars = res.calExplVar()
-        labels = self.model.sub_ds.variable_names
+        labels = self.model.ds.variable_names
 
         # Make table view dataset
-        corr_loadings_ds = DataSet()
-        corr_loadings_ds.display_name = self.model.sub_ds.display_name
-        corr_loadings_ds.matrix = pc_tab
-        corr_loadings_ds.object_names = labels
-        corr_loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(corr_loadings_ds.n_cols)]
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=labels,
+            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
+        corr_loadings_ds = DataSet(
+            matrix=pc_df,
+            display_name=self.model.ds.display_name)
 
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, view_data=corr_loadings_ds, title="Correlation Loadings", id="corr_loading")
         pcl.plot_circle(True)
@@ -304,13 +311,14 @@ class APCAHandler(ModelView):
         sumVal = res.cumValExplVar()
 
         # Make table view dataset
-        ev_ds = DataSet()
-        ev_ds.display_name = self.model.sub_ds.display_name
-
-        pc_tab = np.array([sumCal, sumVal])
-        ev_ds.matrix = pc_tab.T
-        ev_ds.object_names = ["PC-{0}".format(i) for i in range(ev_ds.n_rows)]
-        ev_ds.variable_names = ["calibrated", "validated"]
+        pc_tab = np.array([sumCal, sumVal]).T
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
+            columns=["calibrated", "validated"])
+        ev_ds = DataSet(
+            matrix=pc_df,
+            display_name=self.model.ds.display_name)
 
         pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated', view_data=ev_ds, title="Explained Variance", id="expl_var")
         pl.add_EV_set(sumVal, 'darkgoldenrod', 'Validated')
@@ -450,7 +458,7 @@ if __name__ == '__main__':
     # Things to fix for testing
     # mother_ref: standardise, pc_to_calc
     from traits.api import Bool, Int
-    from tests.conftest import simple_ds, imp_ds
+    from tests.conftest import imp_ds
 
     ds_meta = ('Vine', 'A_labels.txt', 'Vine set A', 'Consumer liking')
     ds = imp_ds(ds_meta)

@@ -54,7 +54,7 @@ class PCAsHandler(ModelView):
     def _ds_changed(self, info):
         data = []
         for i in self.model.dsl.name_id_mapping:
-            data.append((self.model.dsl.name_id_mapping[i],i))
+            data.append((self.model.dsl.name_id_mapping[i], i))
         self.data = data
 
 
