@@ -81,8 +81,11 @@ CONJOINT = [
     ('Conjoint', 'odour-flavour_liking.txt', 'Odour-flavor', 'Consumer liking'),
     ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),
     ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Design variable'),
-    ('BarleyBread', 'BB_E_consAttr.txt', 'Estland? consumers', 'Consumer characteristics'),
-    ('BarleyBread', 'BB_E_liking.txt', 'Estland? liking data', 'Consumer liking'),
+    ('BarleyBread', 'BB_E_consAttr.txt', 'Estland consumers', 'Consumer characteristics'),
+    ('BarleyBread', 'BB_E_liking.txt', 'Estland liking data', 'Consumer liking'),
+    ('HamData', 'Ham_consumer_attributes.txt', 'Ham-cons char.', 'Consumer characteristics'),
+    ('HamData', 'Ham_consumer_liking.txt', 'Ham-liking', 'Consumer liking'),
+    ('HamData', 'Ham_design.txt', 'Ham-design', 'Design variable'),
     ]
 
 
