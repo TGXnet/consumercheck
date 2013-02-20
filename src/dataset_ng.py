@@ -21,7 +21,8 @@ class DataSet(_traits.HasTraits):
     '''
     matrix = _traits.Instance(_pd.DataFrame)
 
-    id = _traits.Int()
+    _id = _traits.Int()
+    id = _traits.Property()
     new_id = _itr.count(start=101).next
 
     display_name = _traits.Str('Unnamed dataset')
@@ -35,13 +36,17 @@ class DataSet(_traits.HasTraits):
     missing_data = _traits.Property(_traits.Bool)
 
 
-    def _id_default(self):
+    def __id_default(self):
         return DataSet.new_id()
+
+
+    def _get_id(self):
+        return str(self._id)
 
 
     def _get_missing_data(self):
         return _np.any(_np.isnan(self.matrix.values))
-
+    
 
 
 if __name__ == '__main__':

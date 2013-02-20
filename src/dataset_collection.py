@@ -10,7 +10,7 @@ Datasets can be imported or genrated.
 import logging
 
 # Enthought traits imports
-from traits.api import (HasTraits, Dict, Int, Event, Property,
+from traits.api import (HasTraits, Dict, Str, Event, Property,
                         on_trait_change, property_depends_on)
 
 # Local imports
@@ -28,7 +28,7 @@ class DatasetCollection(HasTraits):
 
     """
     # Dictionary to hold dataset and a editor to select dataset
-    _datasets = Dict(Int, DataSet)
+    _datasets = Dict(Str, DataSet)
 
     # Events for dataset namechanges
     ds_name_event = Event
