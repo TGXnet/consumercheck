@@ -18,7 +18,9 @@ DS_TYPES = ['Design variable',
 
 
 def deprecation(message):
-    warnings.warn(message, DeprecationWarning, stacklevel=2)
+    # stacklevel=3, relates the warning to the place in the code
+    # that tries to use the deprecated interface
+    warnings.warn(message, DeprecationWarning, stacklevel=3)
 
 
 class DataSet(_traits.HasTraits):
