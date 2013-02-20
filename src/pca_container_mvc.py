@@ -19,7 +19,6 @@ class PCAsContainer(HasTraits):
     # Fitting parameters
     standardise = Bool(False)
     pc_to_calc = Int(2)
-    selected_pca = Instance(APCAModel)
 
 
     def add_mapping(self, ds_id):
@@ -87,7 +86,7 @@ pcas_view = View(
             Group(
                 Item('model.standardise'),
                 Item('pc_to_calc',
-                     editor=RangeEditor(low='2', high='10',mode='spinner', is_float=False)),
+                     editor=RangeEditor(low='2',high='20',mode='spinner',is_float=False)),
                 label='Default PC #',
                 show_border=True,
                 ),
