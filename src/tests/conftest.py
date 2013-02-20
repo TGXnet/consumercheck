@@ -99,9 +99,9 @@ VINE = [
 
 
 CHEESE = [
-    ('Cheese', 'ConsumerLiking.xls', 'Cheese liking', 'Consumer liking'),
-    ('Cheese', 'ConsumerValues.xls', 'Consumer info', 'Consumer characteristics'),
-    ('Cheese', 'SensoryData.xls', 'Sensory profiling', 'Sensory profiling'),
+    ('Cheese', 'ConsumerLiking.txt', 'Cheese liking', 'Consumer liking'),
+    ('Cheese', 'ConsumerValues.txt', 'Consumer info', 'Consumer characteristics'),
+    ('Cheese', 'SensoryData.txt', 'Sensory profiling', 'Sensory profiling'),
     ]
 
 
@@ -141,6 +141,17 @@ def conjoint_dsc():
     dsc = DatasetCollection()
 
     for mi in CONJOINT:
+        dsc.add_dataset(imp_ds(mi))
+
+    return dsc
+
+
+@pytest.fixture(scope="module")
+def prefmap_dsc():
+    '''Get Conjoint std. test datasets '''
+    dsc = DatasetCollection()
+
+    for mi in CHEESE:
         dsc.add_dataset(imp_ds(mi))
 
     return dsc
@@ -225,7 +236,7 @@ def plugin_mother_mock():
         en_advanced = Bool(True)
 
         def _dsl_default(self):
-            return all_dsc()
+            return prefmap_dsc()
 
         def _test_subject_changed(self, old, new):
             if old is not None:
