@@ -1,17 +1,20 @@
 
-# stdlib imports
+# std lib imports
 import sys
+
+# Scipy libs imports
+import numpy as np
+import pandas as pd
 
 # Enthought imports
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
 from traitsui.menu import OKButton
-import numpy as np
 
 # Local imports
 from pca import nipalsPCA as PCA
-from dataset import DataSet
+from dataset_ng import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
@@ -40,7 +43,6 @@ class APCAModel(HasTraits):
     # but who comes first?
     mother_ref = Instance(HasTraits)
     ds = DataSet()
-    sub_ds = DataSet()
     # List of variable names with zero variance in the data vector
     zero_variance = List()
     # FIXME: To be replaced by groups
@@ -57,29 +59,28 @@ class APCAModel(HasTraits):
     result = Property()
 
     def _get_max_pc(self):
-        return (min(self.ds.n_rows,self.ds.n_cols)-1)
+        return (min(self.ds.n_rows, self.ds.n_cols) - 2)
 
 
     def _check_std_dev(self):
-        sv = self.sub_ds.matrix.std(0)
+        sv = self.ds.matrix.std(axis=0)
         std_limit = 0.001
         dm = sv < std_limit
         if np.any(dm):
-            vv = np.array(self.sub_ds.variable_names)
+            vv = np.array(self.ds.variable_names)
             self.zero_variance = list(vv[np.nonzero(dm)])
         else:
             self.zero_variance = []
 
 
     def _get_result(self):
-        self.sub_ds = self.ds.subset()
         std_ds = 'cent'
         if self.standardise:
             std_ds = 'stand'
         self._check_std_dev()
         if self.zero_variance and self.standardise:
             raise InComputeable('PCA: matrix have vectors with zero variance')
-        return PCA(self.sub_ds.matrix,
+        return PCA(self.ds.matrix,
                    numPC=self.pc_to_calc,
                    mode=std_ds,
                    cvType=["loo"])
@@ -195,11 +196,22 @@ class APCAHandler(ModelView):
     def _make_scores_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.scores()
-        labels = self.model.sub_ds.object_names
-        plot = PCScatterPlot(pc_tab, labels, title="Scores", id='scores')
+        labels = self.model.ds.object_names
+
+        # Make table view dataset
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=labels,
+            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
+        score_ds = DataSet(
+            matrix=pc_df,
+            display_name=self.model.ds.display_name)
+
+        plot = PCScatterPlot(pc_tab, labels, view_data=score_ds, title="Scores", id='scores')
         if is_subplot:
             plot.add_left_down_action(self.plot_scores)
         return plot
+
 
 
     def plot_loadings(self):
@@ -221,8 +233,18 @@ class APCAHandler(ModelView):
     def _make_loadings_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.loadings()
-        labels = self.model.sub_ds.variable_names
-        plot = PCScatterPlot(pc_tab, labels, title="Loadings", id="loadings")
+        labels = self.model.ds.variable_names
+
+        # Make table view dataset
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=labels,
+            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
+        loadings_ds = DataSet(
+            matrix=pc_df,
+            display_name=self.model.ds.display_name)
+
+        plot = PCScatterPlot(pc_tab, labels, view_data=loadings_ds, title="Loadings", id="loadings")
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings)
         return plot
@@ -248,8 +270,18 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.corrLoadings()
         expl_vars = res.calExplVar()
-        labels = self.model.sub_ds.variable_names
-        pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, title="Correlation Loadings", id="corr_loading")
+        labels = self.model.ds.variable_names
+
+        # Make table view dataset
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=labels,
+            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
+        corr_loadings_ds = DataSet(
+            matrix=pc_df,
+            display_name=self.model.ds.display_name)
+
+        pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, view_data=corr_loadings_ds, title="Correlation Loadings", id="corr_loading")
         pcl.plot_circle(True)
         if is_subplot:
             pcl.add_left_down_action(self.plot_corr_loading)
@@ -277,7 +309,18 @@ class APCAHandler(ModelView):
         res = self.model.result
         sumCal = res.cumCalExplVar()
         sumVal = res.cumValExplVar()
-        pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated' ,title="Explained Variance", id="expl_var")
+
+        # Make table view dataset
+        pc_tab = np.array([sumCal, sumVal]).T
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
+            columns=["calibrated", "validated"])
+        ev_ds = DataSet(
+            matrix=pc_df,
+            display_name=self.model.ds.display_name)
+
+        pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated', view_data=ev_ds, title="Explained Variance", id="expl_var")
         pl.add_EV_set(sumVal, 'darkgoldenrod', 'Validated')
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var)
@@ -312,7 +355,7 @@ class APCAHandler(ModelView):
 
     def show_msee_tot(self):
         print("MSEE total")
-        msee = self.model.result.MSEE_total()
+        msee = self.model.result.MSEE()
         tv = TableViewController(title="MSEE total")
         tv.set_col_names([str(i) for i in range(msee.shape[0])])
         tv.add_row(msee, 'MSEE')
@@ -331,7 +374,7 @@ class APCAHandler(ModelView):
 
     def show_msecv_tot(self):
         print("MSECV total")
-        msecv = self.model.result.MSECV_total()
+        msecv = self.model.result.MSECV()
         tv = TableViewController(title="MSECV total")
         tv.set_col_names([str(i) for i in range(msecv.shape[0])])
         tv.add_row(msecv, 'MSECV')
@@ -388,7 +431,7 @@ class APCAHandler(ModelView):
 
 
     def _wind_title(self):
-        ds_name = self.model.ds._ds_name
+        ds_name = self.model.ds.display_name
         dstype = self.model.plot_type
         return "{0} | PCA - {1} - ConsumerCheck".format(ds_name, dstype)
 
@@ -415,12 +458,16 @@ if __name__ == '__main__':
     # Things to fix for testing
     # mother_ref: standardise, pc_to_calc
     from traits.api import Bool, Int
-    from tests.conftest import make_ds_mock
-    ds = make_ds_mock()
+    from tests.conftest import imp_ds
+
+    ds_meta = ('Vine', 'A_labels.txt', 'Vine set A', 'Consumer liking')
+    ds = imp_ds(ds_meta)
+
 
     class MocMother(HasTraits):
         standardise = Bool(False)
         pc_to_calc = Int(2)
+        win_handle = None
 
     moc_mother = MocMother()
 
@@ -428,6 +475,7 @@ if __name__ == '__main__':
         name='Tore test',
         ds=ds,
         mother_ref=moc_mother)
+
 
     class APCATestHandler(APCAHandler):
         bt_plot_overview = Button('Plot overview')
