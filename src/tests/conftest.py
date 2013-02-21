@@ -162,8 +162,7 @@ def all_dsc():
     '''Data set container/collection mock'''
     dsc = DatasetCollection()
 
-    # ad = CONJOINT + VINE + CHEESE
-    ad = CONJOINT + VINE
+    ad = CONJOINT + VINE + CHEESE
 
     for mi in ad:
         dsc.add_dataset(imp_ds(mi))
@@ -236,7 +235,7 @@ def plugin_mother_mock():
         en_advanced = Bool(True)
 
         def _dsl_default(self):
-            return prefmap_dsc()
+            return all_dsc()
 
         def _test_subject_changed(self, old, new):
             if old is not None:
