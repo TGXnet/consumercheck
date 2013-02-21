@@ -13,7 +13,7 @@ class ArrayAdapter(TabularAdapter):
     obj_names = List()
 
     def _get_index_text(self, name):
-        return self.obj_names[self.row]
+        return str(self.obj_names[self.row])
 
 
 
