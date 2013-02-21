@@ -1,6 +1,5 @@
-# stdlib imports
+# std lib imports
 import sys
-import numpy as np
 from itertools import combinations
 import logging
 logging.basicConfig(level=logging.INFO,
@@ -15,6 +14,9 @@ if __name__ == '__main__':
 else:
     logger = logging.getLogger(__name__)
 
+# Scipy lib imports
+import numpy as np
+import pandas as pd
 
 # Enthought imports
 from traits.api import (HasTraits, Button, Bool, Enum, Instance, List, Str,
@@ -268,13 +270,16 @@ class AConjointHandler(ModelView):
 
 
     def cj_res_ds_adapter(self, cj_res, name='Dataset Viewer'):
-        dm = DataSet(display_name=name)
-        logger.debug(cj_res['data'])
-        dm.matrix = cj_res['data']
-        logger.debug(cj_res['colNames'])
-        dm.variable_names = list(cj_res['colNames'])
-        logger.debug(cj_res['rowNames'])
-        dm.object_names = list(cj_res['rowNames'])
+        cj_df = pd.DataFrame(cj_res['data'])
+        cj_df.index = cj_res['rowNames']
+        cj_df.columns = cj_res['colNames']
+        dm = DataSet(matrix=cj_df, display_name=name)
+        ## logger.debug(cj_res['data'])
+        ## dm.matrix = cj_res['data']
+        ## logger.debug(cj_res['colNames'])
+        ## dm.variable_names = list(cj_res['colNames'])
+        ## logger.debug(cj_res['rowNames'])
+        ## dm.object_names = list(cj_res['rowNames'])
         return dm
 
 
