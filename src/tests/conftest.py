@@ -39,27 +39,9 @@ def check_trait_interface():
     traits.has_traits.CHECK_INTERFACES = 1
 
 
-# @pytest.fixture(params=['wx', 'qt'])
-# def ets_gui_toolkit(request):
-#     from traits.etsconfig.api import ETSConfig
-#     ETSConfig.toolkit = request.param
-
-
-@pytest.fixture
-def gui_qt():
-    from traits.etsconfig.api import ETSConfig
-    ETSConfig.toolkit = 'qt'
-
-
-@pytest.fixture
-def gui_wx():
-    from traits.etsconfig.api import ETSConfig
-    ETSConfig.toolkit = 'wx'
-
-
 # Local imports
 from dataset_ng import DataSet
-from dataset_collection import DatasetCollection
+from dataset_container import DatasetContainer
 from importer_main import ImporterMain
 
 
@@ -138,10 +120,10 @@ def iris_ds():
 @pytest.fixture(scope="module")
 def conjoint_dsc():
     '''Get Conjoint std. test datasets '''
-    dsc = DatasetCollection()
+    dsc = DatasetContainer()
 
     for mi in CONJOINT:
-        dsc.add_dataset(imp_ds(mi))
+        dsc.add(imp_ds(mi))
 
     return dsc
 
@@ -149,10 +131,10 @@ def conjoint_dsc():
 @pytest.fixture(scope="module")
 def prefmap_dsc():
     '''Get Conjoint std. test datasets '''
-    dsc = DatasetCollection()
+    dsc = DatasetContainer()
 
     for mi in CHEESE:
-        dsc.add_dataset(imp_ds(mi))
+        dsc.add(imp_ds(mi))
 
     return dsc
 
@@ -160,12 +142,12 @@ def prefmap_dsc():
 @pytest.fixture(scope="module")
 def all_dsc():
     '''Data set container/collection mock'''
-    dsc = DatasetCollection()
+    dsc = DatasetContainer()
 
     ad = CONJOINT + VINE + CHEESE
 
     for mi in ad:
-        dsc.add_dataset(imp_ds(mi))
+        dsc.add(imp_ds(mi))
 
     return dsc
 
@@ -229,7 +211,7 @@ def plugin_mother_mock():
         """Main frame for testing method tabs
         """
         test_subject = Instance(HasTraits)
-        dsl = Instance(DatasetCollection)
+        dsl = Instance(DatasetContainer)
         ds_event = Event()
         dsname_event = Event()
         en_advanced = Bool(True)
@@ -246,7 +228,6 @@ def plugin_mother_mock():
                     new.mother_ref = self
 
 
-        # @on_trait_change('dsl', post_init=True)
         @on_trait_change('dsl')
         def _dsl_updated(self, obj, name, new):
             print("main: dsl changed")
@@ -254,27 +235,6 @@ def plugin_mother_mock():
 
     
     return PluginMotherMock()
-
-
-# FIXME: Old stuff
-
-def pytest_funcarg__simple_plot(request):
-    """Yield a simple plot for testing plot windows"""
-    from plot_pc_scatter import PCScatterPlot
-    set1 = np.array([
-        [-0.3, 0.4, 0.9],
-        [-0.1, 0.2, 0.7],
-        [-0.1, 0.3, 0.1],
-        [0.1, 0.2, 0.1],
-        ])
-    label1 = ['s1pt1', 's1pt2', 's1pt3', 's1pt4']
-    expl_vars = [37.34, 9.4, 0.3498]
-    color = (0.7, 0.9, 0.4, 1.0)
-    sp = PCScatterPlot(set1, label1, color, expl_vars)
-    ## sp.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-
-    return sp
-
 
 
 ## More ideas
@@ -308,16 +268,6 @@ def test_foo4():
 
 # parameterize testing
 # ex to increate the ratio of missing data in a matrix
-@pytest.mark.parameterize(("input", "expected"), [
-        ("3+5", 8),
-        ("2+4", 6),
-        ("6*9", 42),
-])
-def test_eval(input, expected):
-    assert eval(input) == expected
-
-
-# org generate test functions
 
 # monkeypatching - can be problematic
 
@@ -350,15 +300,13 @@ class WinPdbInvoke(object):
         import rpdb2
         rpdb2.start_embedded_debugger('0')
 
-'''
 
 # Suggestion for how to simulate a user in testing
-'''
+
 import time
 import threading
 
 from test_ui import MyClass, MyController
-
 
 class MocAsyncTestUser(threading.Thread):
 

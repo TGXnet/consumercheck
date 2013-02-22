@@ -18,7 +18,6 @@ def line_curve():
     return np.array(vals)
 
 
-## @pytest.mark.usefixtures("gui_qt")
 ## @pytest.mark.ui
 def test_simple_ev_line_plot(line_curve):
     from plot_ev_line import EVLinePlot
