@@ -31,8 +31,8 @@ class PrefmapsContainer(HasTraits):
         id_c - Consumer dataset id
         id_s - Sensory dataset id
         '''
-        ds_c = self.dsl.get_by_id(id_c)
-        ds_s = self.dsl.get_by_id(id_s)
+        ds_c = self.dsl[id_c]
+        ds_s = self.dsl[id_s]
         map_id = id_c+id_s
         map_name = ds_c.display_name + ' - ' + ds_s.display_name
         mapping_model = APrefmapModel(
@@ -74,16 +74,9 @@ class PrefmapsHandler(ModelView):
 
 
     def _update_comb(self):
-        sens_list = []
-        cons_list = []
-        
-        for a in self.model.dsl.get_id_list_by_type('Sensory profiling'):
-            sens_list.append((a, self.model.dsl.get_by_id(a).display_name))
-        for b in self.model.dsl.get_id_list_by_type('Consumer liking'):
-            cons_list.append((b, self.model.dsl.get_by_id(b).display_name))
-        self.comb.col_set = sens_list
-        self.comb.row_set = cons_list
-            
+        dsc = self.model.dsl
+        self.comb.col_set = dsc.get_id_name_map('Sensory profiling')
+        self.comb.row_set = dsc.get_id_name_map('Consumer liking')
 
 
     @on_trait_change('comb:combination_updated')
