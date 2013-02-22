@@ -28,7 +28,7 @@ class DataSet(_traits.HasTraits):
 
     and associated metadata
     '''
-    _matrix = _traits.Instance(_pd.DataFrame)
+    _matrix = _traits.Instance(_pd.DataFrame, ())
 
     _id = _traits.Int()
     id = _traits.Property()
