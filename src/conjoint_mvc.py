@@ -171,7 +171,7 @@ class AConjointHandler(ModelView):
                 func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
             for nn, p_one, p_two in int_plot_launchers]
 
-        # self.model.mother_ref.update_conjoint_tree = True
+        self.model.mother_ref.update_conjoint_tree = True
 
 
     def show_random(self):

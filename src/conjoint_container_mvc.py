@@ -28,13 +28,11 @@ class ConjointsContainer(HasTraits):
     chosen_consumer_likings = List(Str)
     model_structure_type = Enum(1, 2, 3)
 
+    update_conjoint_tree = Event()
+
 
     def add_mapping(self, liking_set_id):
-
-        def get_set(set_id):
-            return self.dsl.get_by_id(set_id)
-
-        liking_set = get_set(liking_set_id)
+        liking_set = self.dsl[liking_set_id]
         map_name = liking_set.display_name
         map_id = liking_set.id
         mapping_model = AConjointModel(
@@ -62,7 +60,7 @@ class ConjointsHandler(ModelView):
     available_consumer_attr_vars = List()
     available_consumer_likings = List()
 
-    update_conjoint_tree = Event()
+    
 
     model_desc = Str(
         '''
@@ -83,18 +81,15 @@ class ConjointsHandler(ModelView):
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
     def _ds_changed(self, info):
 
-        def id_by_type(ds_type):
-            return self.model.dsl.get_id_list_by_type(ds_type)
+        dsc = self.model.dsl
 
-        def name_from_id(ds_id):
-            return self.model.dsl.get_by_id(ds_id).display_name
+        designs = dsc.get_id_name_map('Design variable')
+        self.available_designs = [idn[1] for idn in designs]
 
-        self.available_designs = [name_from_id(i)
-                                  for i in id_by_type('Design variable')]
-        self.available_consumer_attrs = [name_from_id(i)
-                                         for i in id_by_type('Consumer characteristics')]
-        self.available_consumer_likings = [(i, name_from_id(i))
-                                           for i in id_by_type('Consumer liking')]
+        consc = dsc.get_id_name_map('Consumer characteristics')
+        self.available_consumer_attrs = [idn[1] for idn in consc]
+
+        self.available_consumer_likings = dsc.get_id_name_map('Consumer liking')
 
         # Reset design whne dataset is removed
         if self.model.selected_design and (self.model.selected_design not in self.available_designs):
@@ -110,14 +105,20 @@ class ConjointsHandler(ModelView):
 
     @on_trait_change('model:selected_design')
     def _handle_design_choice(self, obj, ref, new):
-        self.model.design_set = obj.dsl.get_by_name(new)
+        idn_map = obj.dsl.get_id_name_map()
+        nid_map = dict([(idn[1], idn[0]) for idn in idn_map])
+        ds_id = nid_map[new]
+        self.model.design_set = obj.dsl[ds_id]
         obj.chosen_design_vars = []
         self.available_design_vars = self.model.design_set.variable_names
 
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):
-        self.model.consumer_attr_set = obj.dsl.get_by_name(new)
+        idn_map = obj.dsl.get_id_name_map()
+        nid_map = dict([(idn[1], idn[0]) for idn in idn_map])
+        ds_id = nid_map[new]
+        self.model.consumer_attr_set = obj.dsl[ds_id]
         obj.chosen_consumer_attr_vars = []
         self.available_consumer_attr_vars = self.model.consumer_attr_set.variable_names
 

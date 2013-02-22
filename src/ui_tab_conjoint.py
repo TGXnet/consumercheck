@@ -59,11 +59,12 @@ conjoint_tree = TreeEditor(
             on_dclick = dclk_activator,
             ),
         ],
-     refresh='update_conjoint_tree',
-     hide_root=True,
-     editable=False,
-     selected='selected_obj',
-   )
+    refresh='object.conjoints_handler.model.update_conjoint_tree',
+    hide_root=True,
+    editable=False,
+    auto_open = 4,
+    selected='selected_obj',
+    )
 
 
 
