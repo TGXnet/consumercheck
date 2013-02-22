@@ -22,7 +22,7 @@ class PCAsContainer(HasTraits):
 
 
     def add_mapping(self, ds_id):
-        set_ds = self.dsl.get_by_id(ds_id)
+        set_ds = self.dsl[ds_id]
         map_name = set_ds.display_name
         map_id = set_ds.id
         mapping_model = APCAModel(mother_ref=self, nid=map_id, name=map_name,ds=set_ds)
@@ -50,11 +50,8 @@ class PCAsHandler(ModelView):
 
 
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
-    def _ds_changed(self, info):
-        data = []
-        for i in self.model.dsl.name_id_mapping:
-            data.append((self.model.dsl.name_id_mapping[i], i))
-        self.data = data
+    def _ds_changed(self, obj):
+        self.data = self.model.dsl.get_id_name_map()
 
 
     @on_trait_change('selected')

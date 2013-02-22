@@ -37,7 +37,6 @@ pca_tree = TreeEditor(
             node_for = [APCAHandler],
             children  = 'window_launchers',
             label = 'name',
-#            auto_open=True,
             ),
         TreeNode(
             node_for = [WindowLauncher],
@@ -48,7 +47,7 @@ pca_tree = TreeEditor(
     hide_root=True,
     editable=False,
     selected='selected_obj',
-#    auto_open=0,
+    # auto_open=0,
     )
 
 
@@ -64,24 +63,17 @@ class PCAPlugin(HasTraits):
         self.selected_obj = self.pcas_handler
 
 
-    @on_trait_change('selected_obj')
-    def _sel_obj_changed(self, obj, name, new, old):
-        print("Selected updated")
-        
-        obj.pcas_handler.model.selected_pca = new
-
-
     traits_view = View(
-                       Group(
-                             Item(name='pcas_handler',
-                                  editor=pca_tree,
-                                  show_label=False),
-                             Item(name='pcas_handler',
-                                  editor=InstanceEditor(view=pcas_view),
-                                  style='custom',
-                                  show_label=False),
-                             orientation='horizontal'
-                             ),
+        Group(
+            Item(name='pcas_handler',
+                 editor=pca_tree,
+                 show_label=False),
+            Item(name='pcas_handler',
+                 editor=InstanceEditor(view=pcas_view),
+                 style='custom',
+                 show_label=False),
+            orientation='horizontal'
+            ),
         resizable=True,
         height=300,
         width=600,
@@ -98,5 +90,6 @@ if __name__ == '__main__':
     pca_plugin = PCAPlugin(mother_ref=container)
     # To force populating selection list
     pca_plugin.pcas_handler._ds_changed(None)
+    # container.dsl_event = True
     with np.errstate(invalid='ignore'):
         pca_plugin.configure_traits()
