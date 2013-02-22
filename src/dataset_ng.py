@@ -44,7 +44,6 @@ class DataSet(_traits.HasTraits):
     # * do imputation
     missing_data = _traits.Property(_traits.Bool)
 
-
     # FIXME: For backward compability
     n_cols = _traits.Property()
     n_rows = _traits.Property()
@@ -95,7 +94,10 @@ class DataSet(_traits.HasTraits):
         return _np.any(_np.isnan(self._matrix.values))
 
 
-if __name__ == '__main__':
-    print("Test run")
-    td = _pd.DataFrame([[1, 2, _np.nan], [4, 5, 6]])
-    ds = DataSet(matrix=td)
+    def __eq__(self, other):
+        return self.id == other
+
+
+    def __ne__(self, other):
+        return self.id != other
+
