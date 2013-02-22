@@ -3,7 +3,7 @@ Datasets container
 ------------------
 
 Dictionary to hold all datasets.
-Datasets can be imported or genrated.
+Datasets can be imported or generated.
 
 """
 # stdlib imports
