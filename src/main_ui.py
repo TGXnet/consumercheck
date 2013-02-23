@@ -10,11 +10,10 @@ from traits.api import HasTraits, Instance, Any, Event
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
-
 # Local imports
-from dataset_collection import DatasetCollection
+from dataset_container import DatasetContainer
+from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
-from ui_datasets_tree import tree_view
 from ui_tab_pca import PCAPlugin
 from ui_tab_prefmap import PrefmapPlugin
 from ui_tab_conjoint import ConjointPlugin
@@ -29,17 +28,12 @@ class MainViewHandler(Handler):
         """Action called when activating importing of new dataset"""
         importer = ImporterMain()
         imported = importer.dialog_multi_import()
-        for ds in imported:
-            info.object.dsl.add_dataset(ds)
-            logger.info("importDataset: internal name = %s", ds.id)
+        if imported:
+            info.object.dsl.add(*tuple(imported))
 
 
     def _close_ds(self, info):
-        datasets = []
-        for i in info.object.dsl._datasets:
-            datasets.append(i)
-        for a in datasets:
-            info.object.dsl.delete_dataset(a)
+        info.object.dsl.dsl = []
 
 
     def view_about(self, info):
@@ -69,12 +63,10 @@ class MainViewHandler(Handler):
 
 class MainUi(HasTraits):
     """Main application class"""
-    # Singular dataset list for the application
-    # or not?
-    # dsl = Instance(DatasetCollection)
-    dsl = DatasetCollection()
+    dsl = DatasetContainer()
     ds_event = Event()
     dsname_event = Event()
+    tulle_event = Event()
     # en_advanced = Bool(False)
     parent_win = Any()
 
@@ -110,26 +102,28 @@ class MainUi(HasTraits):
         self.prefmap = PrefmapPlugin(mother_ref=self)
         self.pca = PCAPlugin(mother_ref=self)
         self.conjoint = ConjointPlugin(mother_ref=self)
-        self.dsl.on_trait_change(self._dsl_updated, 'datasets_event')
-        self.dsl.on_trait_change(self._ds_name_updated, 'ds_name_event')
+        self.dsl.on_trait_change(self._dsl_updated, 'dsl_changed')
+        self.dsl.on_trait_change(self._ds_name_updated, 'ds_changed')
 
 
-    # @on_trait_change('', post_init=True)
-    # @on_trait_change('dsl.datasets_event')
     def _dsl_updated(self, obj, name, new):
         self.ds_event = True
+        self.tulle_event = True
+        print("DSL fired")
 
 
-    # @on_trait_change('dsl.ds_name_event')
     def _ds_name_updated(self, obj, name, new):
         self.dsname_event = True
+        # self.tulle_event = True
+        print("DS fired")
 
 
     # The main view
     traits_ui_view = View(
         Group(
-            Item('dsl', editor=InstanceEditor(view=tree_view),
-                 style='custom', label="Datasets", show_label=False),
+            ## Item('dsl', editor=InstanceEditor(view=tree_view),
+            ##      style='custom', label="Datasets", show_label=False),
+            Item('dsl', editor=tree_editor, label="Datasets", show_label=False),
             Item('pca', editor=InstanceEditor(),
                  style='custom', label="PCA", show_label=False),
             Item('prefmap', editor=InstanceEditor(),
@@ -165,6 +159,5 @@ if __name__ == '__main__':
 
     dsl = all_dsc()
     mother = MainUi(dsl=dsl)
-    # mother = MainUi()
     with np.errstate(invalid='ignore'):
         ui = mother.configure_traits()
