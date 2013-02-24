@@ -81,8 +81,8 @@ VINE = [
 
 
 CHEESE = [
-    ('Cheese', 'ConsumerLiking.txt', 'Cheese liking', 'Consumer liking'),
-    ('Cheese', 'ConsumerValues.txt', 'Consumer info', 'Consumer characteristics'),
+    # ('Cheese', 'ConsumerLiking.txt', 'Cheese liking', 'Consumer liking'),
+    # ('Cheese', 'ConsumerValues.txt', 'Consumer info', 'Consumer characteristics'),
     ('Cheese', 'SensoryData.txt', 'Sensory profiling', 'Sensory profiling'),
     ]
 
@@ -93,15 +93,32 @@ def simple_ds():
     '''Makes a simple syntetic dataset'''
 
     ds = DataSet()
-    ds.matrix = pd.DataFrame([
-        [1.1, 1.2, 1.3],
-        [2.1, 2.2, 2.3],
-        [3.1, 3.2, 3.3]])
-
-    ds.matrix.columns = ['V1', 'V2', 'V3']
-    ds.matrix.index = ['O1', 'O2', 'O3']
+    ds.matrix = pd.DataFrame(
+        [[1.1, 1.2, 1.3],
+         [2.1, 2.2, 2.3],
+         [3.1, 3.2, 3.3]],
+        index = ['O1', 'O2', 'O3'],
+        columns = ['V1', 'V2', 'V3'])
 
     return ds
+
+
+@pytest.fixture
+def discrete_ds():
+    '''Make a dataset with discrete walues'''
+
+    ds = DataSet()
+    ds.matrix = pd.DataFrame(
+        [[3, 5, 7, 8, 1, 9, 7, 3],
+         [1, 8, 2, 5, 5, 2, 7, 5],
+         [2, 1, 2, 5, 6, 3, 9, 6],
+         [8, 4, 8, 4, 8, 1, 2, 4],
+         [6, 5, 3, 7, 6, 9, 2, 2]],
+        index = ['O1', 'O2', 'O3', 'O4', 'O5'],
+        columns = ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8'])
+
+    return ds
+
 
 
 @pytest.fixture
@@ -144,7 +161,8 @@ def all_dsc():
     '''Data set container/collection mock'''
     dsc = DatasetContainer()
 
-    ad = CONJOINT + VINE + CHEESE
+    # ad = CONJOINT + VINE + CHEESE
+    ad = CHEESE
 
     for mi in ad:
         dsc.add(imp_ds(mi))
