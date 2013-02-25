@@ -87,13 +87,14 @@ CHEESE = [
     ]
 
 
+# Create datasets
 
 @pytest.fixture
 def simple_ds():
     '''Makes a simple syntetic dataset'''
 
-    ds = DataSet()
-    ds.matrix = pd.DataFrame(
+    ds = DataSet(display_name='Some values')
+    ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 2.2, 2.3],
          [3.1, 3.2, 3.3]],
@@ -107,8 +108,8 @@ def simple_ds():
 def discrete_ds():
     '''Make a dataset with discrete walues'''
 
-    ds = DataSet()
-    ds.matrix = pd.DataFrame(
+    ds = DataSet(display_name='Discrete values')
+    ds.mat = pd.DataFrame(
         [[3, 5, 7, 8, 1, 9, 7, 3],
          [1, 8, 2, 5, 5, 2, 7, 5],
          [2, 1, 2, 5, 6, 3, 9, 6],
@@ -133,6 +134,16 @@ def iris_ds():
     ds = importer.import_data(iris_url, False, False, ',')
     return ds
 
+
+
+@pytest.fixture
+def synth_dsc():
+    dsc = DatasetContainer()
+    dsc.add(simple_ds(), discrete_ds(), iris_ds())
+    return dsc
+
+
+# Read datasets from files
 
 @pytest.fixture(scope="module")
 def conjoint_dsc():
