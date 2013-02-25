@@ -25,7 +25,7 @@ class PCAsContainer(HasTraits):
         set_ds = self.dsl[ds_id]
         map_name = set_ds.display_name
         map_id = set_ds.id
-        mapping_model = APCAModel(mother_ref=self, nid=map_id, name=map_name,ds=set_ds)
+        mapping_model = APCAModel(mother_ref=self, nid=map_id, name=map_name, ds=set_ds)
         mapping_handler = APCAHandler(mapping_model)
         self.mappings.append(mapping_handler)
         return map_name
@@ -65,7 +65,7 @@ class PCAsHandler(ModelView):
             self.model.remove_mapping(list(odiff)[0])
         elif ndiff:
             self.model.add_mapping(list(ndiff)[0])
-            
+
 
 pcas_view = View(
     Group(
