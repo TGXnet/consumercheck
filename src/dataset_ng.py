@@ -28,7 +28,7 @@ class DataSet(_traits.HasTraits):
 
     and associated metadata
     '''
-    _matrix = _traits.Instance(_pd.DataFrame, ())
+    mat = _traits.Instance(_pd.DataFrame, ())
 
     _id = _traits.Int()
     id = _traits.Property()
@@ -45,41 +45,71 @@ class DataSet(_traits.HasTraits):
     missing_data = _traits.Property(_traits.Bool)
 
     # FIXME: For backward compability
+    # Deprecated; replaced by n_vars
     n_cols = _traits.Property()
+    # Deprecated; replaced by n_objs
     n_rows = _traits.Property()
+    n_vars = _traits.Property()
+    n_objs = _traits.Property()
+    # Deprecated; replaced by var_n
     variable_names = _traits.Property()
+    var_n = _traits.Property()
+    # Deprecated; replaced by obj_n
     object_names = _traits.Property()
+    obj_n = _traits.Property()
     values = _traits.Property()
+    # Deprecated by direct access to mat
     matrix = _traits.Property()
 
 
     def _get_matrix(self):
         deprecation("Use values instead")
-        return self._matrix.values
+        return self.mat.values
 
 
     def _get_values(self):
-        return self._matrix.values
+        return self.mat.values
 
 
     def _set_matrix(self, value):
-        self._matrix = value
+        deprecation("Use mat instead")
+        self.mat = value
 
 
     def _get_n_cols(self):
-        return self._matrix.shape[1]
+        deprecation("Use n_vars instead")
+        return self.mat.shape[1]
+
+
+    def _get_n_vars(self):
+        return self.mat.shape[1]
 
 
     def _get_n_rows(self):
-        return self._matrix.shape[0]
+        deprecation("Use n_objs instead")
+        return self.mat.shape[0]
+
+
+    def _get_n_objs(self):
+        return self.mat.shape[0]
 
 
     def _get_variable_names(self):
-        return list(self._matrix.columns)
+        deprecation("Use var_n instead")
+        return list(self.mat.columns)
+
+
+    def _get_var_n(self):
+        return list(self.mat.columns)
 
 
     def _get_object_names(self):
-        return list(self._matrix.index)
+        deprecation("Use obj_n instead")
+        return list(self.mat.index)
+
+
+    def _get_obj_n(self):
+        return list(self.mat.index)
 
 
     def __id_default(self):
@@ -91,7 +121,7 @@ class DataSet(_traits.HasTraits):
 
 
     def _get_missing_data(self):
-        return _np.any(_np.isnan(self._matrix.values))
+        return _np.any(_np.isnan(self.mat.values))
 
 
     def __eq__(self, other):
