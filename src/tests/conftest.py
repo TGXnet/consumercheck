@@ -121,6 +121,33 @@ def discrete_ds():
     return ds
 
 
+@pytest.fixture
+def hist_ds():
+    '''Make dataset for histograms'''
+    row_col = (12, 45)
+    ## norm = np.random.normal(loc=5.0, scale=2.0, size=row_col)
+    ## normi = norm.astype('int')
+    ## end = normi.max()
+    ## hl = []
+    ## for row in normi:
+    ##     hl.append(list(np.bincount(row, minlength=end+1)))
+    hl = [[ 0,  3,  5,  8,  9,  5,  5,  8,  0,  2,],
+          [ 1,  3,  6,  6, 11,  7,  5,  4,  2,  0,],
+          [ 1,  2,  2,  9,  8,  8,  7,  6,  1,  1,],
+          [ 0,  1,  7,  8, 12,  3,  4,  7,  2,  1,],
+          [ 0,  2,  2,  4,  5, 13, 10,  6,  1,  2,],
+          [ 0,  4,  6,  3, 15,  8,  6,  1,  2,  0,],
+          [ 1,  2,  5, 10,  4, 11,  6,  5,  1,  0,],
+          [ 1,  3,  1, 11, 10,  9,  8,  0,  0,  2,],
+          [ 1,  2,  4, 10, 11,  3,  3, 10,  1,  0,],
+          [ 2,  3,  3,  5, 10,  8,  4,  5,  3,  2,],
+          [ 1,  1,  4,  8,  7,  9,  9,  3,  1,  2,],
+          [ 1,  2,  6,  8,  4, 10,  6,  3,  4,  1,],]
+
+    rown = ["O{}".format(i+1) for i in range(row_col[0])]
+    hdf = pd.DataFrame(hl, index=rown)
+    return DataSet(mat=hdf, display_name="Test histogram")
+
 
 @pytest.fixture
 def iris_ds():
