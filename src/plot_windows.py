@@ -9,7 +9,7 @@ from enable.api import Component, ComponentEditor
 from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
 from traitsui.menu import OKButton
-from chaco.api import Plot, GridPlotContainer
+from chaco.api import DataView, GridPlotContainer
 from pyface.api import FileDialog, OK
 from enable.savage.trait_defs.ui.svg_button import SVGButton
 
@@ -64,7 +64,7 @@ class SinglePlotWindow(PlotWindow):
 
     FIXME: Or should the name be PC plot window
     """
-    plot = Instance(Plot)
+    plot = Instance(DataView)
 
     # Buttons
     eq_axis = Bool(False)
