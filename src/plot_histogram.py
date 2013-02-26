@@ -5,8 +5,6 @@ import numpy as _np
 # ETS imports
 import traits.api as _traits
 import chaco.api as _chaco
-# from chaco.api import ArrayDataSource, DataRange1D, DataView, LinearMapper, BarPlot
-from chaco.example_support import COLOR_PALETTE
 
 # Local imports
 from dataset_ng import DataSet
@@ -52,7 +50,7 @@ class HistPlot(_chaco.DataView):
                               value_mapper=value_mapper,
                               index_mapper=index_mapper,
                               line_color='black',
-                              fill_color=tuple(COLOR_PALETTE[6]),
+                              fill_color='springgreen',
                               bar_width=0.8, antialias=False)
 
         return bars
@@ -88,13 +86,98 @@ class HistPlot(_chaco.DataView):
 
 
 
+class StackedHistPlot(_chaco.DataView):
+    pass
+
+
+
+
+
+
+class BoxPlot(_chaco.DataView):
+    '''A box plot
+
+    This plot takes one DataSet as parameter:
+    The DataFrame columns must be on the form:
+    mean, std, max, min
+    '''
+    ds = _traits.Instance(DataSet)
+
+
+    def __init__(self, ds):
+        super(BoxPlot, self).__init__(ds=ds)
+        boxes_renderer = self._create_renderer()
+        self.add(boxes_renderer)
+        self._add_axis(boxes_renderer)
+
+
+    def _create_renderer(self):
+        # Create our data sources
+        mean = self.ds.mat['mean'].values
+        std = self.ds.mat['std'].values
+        bmin = _chaco.ArrayDataSource(mean - std)
+        bmax = _chaco.ArrayDataSource(mean + std)
+        mean = _chaco.ArrayDataSource(mean)
+        std = _chaco.ArrayDataSource(std)
+
+        minv = _chaco.ArrayDataSource(self.ds.mat['min'].values)
+        maxv = _chaco.ArrayDataSource(self.ds.mat['max'].values)
+        idx = _chaco.ArrayDataSource(_np.arange(self.ds.n_objs))
+
+        # Create the index range
+        index_range = _chaco.DataRange1D(idx, tight_bounds=False)
+        index_mapper = _chaco.LinearMapper(range=index_range)
+
+        # Create the value range
+        value_range = _chaco.DataRange1D(minv, maxv, tight_bounds=False)
+        value_mapper = _chaco.LinearMapper(range=value_range)
+
+
+        # Color defined in enable.colors.color_table
+        boxes = _chaco.CandlePlot(index=idx, center_values=mean,
+                                  bar_min=bmin, bar_max=bmax,
+                                  min_values=minv, max_values=maxv,
+                                  index_mapper=index_mapper,
+                                  value_mapper=value_mapper,
+                                  bar_color='springgreen', bar_line_color='black',
+                                  center_color='forestgreen', stem_color='black',
+                                  line_width=1.0, center_width=5, stem_width=1,
+                                  end_cap=False)
+        return boxes
+
+
+
+    def _add_axis(self, renderer):
+        left_axis = _chaco.PlotAxis(renderer, orientation='left')
+        bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
+                                       title='Categories',
+                                       positions = range(self.ds.n_objs),
+                                       labels = [str(vn) for vn in self.ds.obj_n],
+                                       small_haxis_style=True)
+        renderer.underlays.append(left_axis)
+        renderer.underlays.append(bottom_axis)
+
+
+
+    def new_window(self, configure=False):
+        """Convenience function that creates a window containing the Plot
+
+        Don't call this if the plot is already displayed in a window.
+        """
+        from chaco.ui.plot_window import PlotWindow
+        if configure:
+            self._plot_ui_info = PlotWindow(plot=self).configure_traits()
+        else:
+            self._plot_ui_info = PlotWindow(plot=self).edit_traits()
+        return self._plot_ui_info
+
+
 
 
 if __name__ == '__main__':
-    from tests.conftest import hist_ds
-    ds = hist_ds()
-    print(ds.mat)
-    plot = HistPlot(ds, 'O6')
+    from tests.conftest import hist_ds, boxplot_ds
+    # plot = BoxPlot(boxplot_ds())
+    plot = HistPlot(hist_ds(), 'O6')
     plot.new_window(True)
 
     ## plot.render_hist(row_id)
