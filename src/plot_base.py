@@ -5,7 +5,7 @@ from chaco.api import Plot
 
 
 class PlotBase(Plot):
-    # The function to call if the plot i double clicked
+    # The function to call if the plot is double clicked
     ld_action_func = Callable()
     # Add extra room for y axis
     padding_left = 75
