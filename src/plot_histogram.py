@@ -14,20 +14,24 @@ from dataset_ng import DataSet
 
 
 class HistPlot(_chaco.DataView):
-    
+
     ds = _traits.Instance(DataSet)
     row_id = _traits.Str()
+    ceiling = _traits.Int()
+    head_space = _traits.Float(1.1)
+    bars_renderer = _traits.Instance(_chaco.BarPlot)
 
 
-    def __init__(self, ds, row_id=None):
+    def __init__(self, ds, row_id):
         super(HistPlot, self).__init__(ds=ds, row_id=row_id)
-        bars = self._create_render()
-        self.add(bars)
-        self._add_axis(bars)
+        self.bars_renderer = self._create_render()
+        self.add(self.bars_renderer)
+        self._add_axis(self.bars_renderer)
 
 
     def render_hist(self, row_id):
-        pass
+        self.row_id = row_id
+        self.bars_renderer.value.set_data(self.ds.mat.ix[self.row_id].values)
 
 
     def _create_render(self):
@@ -40,7 +44,7 @@ class HistPlot(_chaco.DataView):
         index_mapper = _chaco.LinearMapper(range=index_range)
 
         # Create the value range
-        value_range = _chaco.DataRange1D(vals)
+        value_range = _chaco.DataRange1D(vals, high=self.ceiling)
         value_mapper = _chaco.LinearMapper(range=value_range)
 
         # Create the plot
@@ -54,18 +58,20 @@ class HistPlot(_chaco.DataView):
         return bars
 
 
-
     def _add_axis(self, renderer):
         left_axis = _chaco.PlotAxis(renderer, orientation='left')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
                                        title='Categories',
-                                       positions = range(10),
-                                       labels = ['a', 'b', 'c', 'd', 'e',
-                                                 'f', 'g', 'h', 'i', 'j'],
+                                       positions = range(self.ds.n_vars),
+                                       labels = [str(vn) for vn in self.ds.var_n],
                                        small_haxis_style=True)
         renderer.underlays.append(left_axis)
         renderer.underlays.append(bottom_axis)
 
+
+    def _ceiling_default(self):
+        top = self.ds.values.max()
+        return int(top * self.head_space)
 
 
     def new_window(self, configure=False):
@@ -88,7 +94,7 @@ if __name__ == '__main__':
     from tests.conftest import hist_ds
     ds = hist_ds()
     print(ds.mat)
-    plot = HistPlot(ds, 'O3')
+    plot = HistPlot(ds, 'O6')
     plot.new_window(True)
 
     ## plot.render_hist(row_id)
