@@ -6,7 +6,8 @@ import traitsui.api as _traitsui
 #Local imports
 from basic_stat_model import BasicStatPlugin, extract_summary, extract_histogram
 from plugin_tree_helper import WindowLauncher, dclk_activator
-
+from plot_histogram import BoxPlot, HistPlot
+from plot_windows import LinePlotWindow
 
 
 class BasicStatController(_traitsui.Controller):
@@ -29,11 +30,22 @@ class BasicStatController(_traitsui.Controller):
                                func_name='stacked_histogram',
                                owner_ref=self)]
 
+
+    def _idx_win_launchers_default(self):
+        return [WindowLauncher(owner_ref=self,
+                               node_name=name,
+                               func_name='plot_histogram',
+                               func_parms=tuple([name]))
+                for name in self.model.ds.obj_n]
+
+
     def box_plot(self):
         print("Box plot")
         res = self.model.stat_res
         summary = extract_summary(res)
-        print(summary.mat)
+        plot = BoxPlot(summary)
+        win = LinePlotWindow(plot=plot, title_text='Hello')
+        win.edit_traits()
 
 
     def stacked_histogram(self):
@@ -41,6 +53,16 @@ class BasicStatController(_traitsui.Controller):
         res = self.model.stat_res
         hist = extract_histogram(res)
         print(hist.mat)
+
+
+    def plot_histogram(self, obj_id):
+        print("Hist", obj_id)
+        res = self.model.stat_res
+        hist = extract_histogram(res)
+        plot = HistPlot(hist, obj_id)
+        win = LinePlotWindow(plot=plot, title_text='Hello')
+        win.edit_traits()
+
 
 
     def __eq__(self, other):
@@ -59,10 +81,24 @@ bs_view = _traitsui.View(
     )
 
 
-bsc_tnode = _traitsui.TreeNode(
+bsa_tnode = _traitsui.TreeNode(
     node_for=[BasicStatController],
     label='name',
+    children='',
+    menu=[])
+
+
+bsb_tnode = _traitsui.TreeNode(
+    node_for=[BasicStatController],
+    label='=Base plots',
     children='base_win_launchers',
+    menu=[])
+
+
+bsc_tnode = _traitsui.TreeNode(
+    node_for=[BasicStatController],
+    label='=Object histogram',
+    children='idx_win_launchers',
     menu=[])
 
 
@@ -74,7 +110,7 @@ wl_tnode = _traitsui.TreeNode(
 
 
 bs_tree = _traitsui.TreeEditor(
-    nodes=[bsc_tnode, wl_tnode],
+    nodes=[bsa_tnode, bsb_tnode, bsc_tnode, wl_tnode],
     )
 
 
@@ -132,7 +168,7 @@ bsp_tnode = _traitsui.TreeNode(
 
 
 bs_plugin_tree = _traitsui.TreeEditor(
-    nodes=[bsp_tnode, bsc_tnode, wl_tnode],
+    nodes=[bsa_tnode, bsb_tnode, bsc_tnode, bsp_tnode, wl_tnode],
     refresh='controller.update_tree',
     selected='controller.selected_object',
     editable=False,
