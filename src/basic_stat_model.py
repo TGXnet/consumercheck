@@ -39,8 +39,8 @@ class BasicStat(_traits.HasTraits):
         sy = _pd.DataFrame(index=self.ds.obj_n)
         sy['mean'] = mat.mean(axis=1)
         sy['std'] = mat.std(axis=1)
-        sy['max'] = mat.max(axis=1)
         sy['min'] = mat.min(axis=1)
+        sy['max'] = mat.max(axis=1)
 
         return DataSet(mat=sy, display_name="Summary")
 

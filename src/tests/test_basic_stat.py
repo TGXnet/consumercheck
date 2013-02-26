@@ -13,7 +13,7 @@ def test_discrete(discrete_ds):
     res = bs.stat_res
     summary = extract_summary(res)
     assert summary.mat.shape == (5, 4)
-    assert summary.var_n == ['mean', 'std', 'max', 'min']
+    assert summary.var_n == ['mean', 'std', 'min', 'max']
     hist = extract_histogram(res)
     assert hist.mat.shape == (5, 11)
     # FIXME: Maybe this should be converted to strings
