@@ -214,7 +214,7 @@ class AConjointHandler(ModelView):
         dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
 
 
-    def plot_main_effects(self, attr_name,):
+    def plot_main_effects(self, attr_name):
         mep = MainEffectsPlot(self.model.result, attr_name, self.me_plot_launchers)
         spw = LinePlotWindow(
             plot=mep,
