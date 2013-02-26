@@ -4,7 +4,7 @@ import traits.api as _traits
 import traitsui.api as _traitsui
 
 #Local imports
-from basic_stat_model import BasicStatPlugin, extract_summary, extract_histogram
+from basic_stat_model import BasicStat, BasicStatPlugin, extract_summary, extract_histogram
 from plugin_tree_helper import WindowLauncher, dclk_activator
 from plot_histogram import BoxPlot, HistPlot
 from plot_windows import LinePlotWindow
@@ -40,7 +40,6 @@ class BasicStatController(_traitsui.Controller):
 
 
     def box_plot(self):
-        print("Box plot")
         res = self.model.stat_res
         summary = extract_summary(res)
         plot = BoxPlot(summary)
@@ -49,20 +48,17 @@ class BasicStatController(_traitsui.Controller):
 
 
     def stacked_histogram(self):
-        print("Stacked histogram")
         res = self.model.stat_res
         hist = extract_histogram(res)
         print(hist.mat)
 
 
     def plot_histogram(self, obj_id):
-        print("Hist", obj_id)
         res = self.model.stat_res
         hist = extract_histogram(res)
         plot = HistPlot(hist, obj_id)
         win = LinePlotWindow(plot=plot, title_text='Hello')
         win.edit_traits()
-
 
 
     def __eq__(self, other):
@@ -85,6 +81,7 @@ bsa_tnode = _traitsui.TreeNode(
     node_for=[BasicStatController],
     label='name',
     children='',
+    view=bs_view,
     menu=[])
 
 
@@ -92,6 +89,7 @@ bsb_tnode = _traitsui.TreeNode(
     node_for=[BasicStatController],
     label='=Base plots',
     children='base_win_launchers',
+    view=bs_view,
     menu=[])
 
 
@@ -99,12 +97,14 @@ bsc_tnode = _traitsui.TreeNode(
     node_for=[BasicStatController],
     label='=Object histogram',
     children='idx_win_launchers',
+    view=bs_view,
     menu=[])
 
 
 wl_tnode = _traitsui.TreeNode(
     node_for=[WindowLauncher],
     label='node_name',
+    view=no_view,
     menu=[],
     on_dclick=dclk_activator)
 
@@ -203,16 +203,31 @@ bs_plugin_view = _traitsui.View(
     )
 
 
+
+class TestOneDsTree(_traits.HasTraits):
+    one_ds = _traits.Instance(BasicStatController)
+
+    traits_view = _traitsui.View(
+        _traitsui.Item('one_ds', editor=bs_tree, show_label=False),
+        resizable=True,
+        buttons=['OK'],
+        )
+
+
+
 if __name__ == '__main__':
     print("Basic stat GUI test started")
-    from tests.conftest import synth_dsc
-    ## ds = discrete_ds()
-    ## bs = BasicStat(ds=ds)
-    ## bsc = BasicStatController(bs)
-    ## bsc.print_traits()
-    ## ta = TestApp(obj=bsc)
-    ## ta.configure_traits()
-    dsc = synth_dsc()
-    bsp = BasicStatPlugin(dsc=dsc)
-    bspc = BasicStatPluginController(bsp)
-    bspc.configure_traits(view=bs_plugin_view)
+    from tests.conftest import synth_dsc, discrete_ds
+    one_branch=True
+
+    if one_branch:
+        ds = discrete_ds()
+        bs = BasicStat(ds=ds)
+        bsc = BasicStatController(bs)
+        tods = TestOneDsTree(one_ds=bsc)
+        tods.configure_traits()
+    else:
+        dsc = synth_dsc()
+        bsp = BasicStatPlugin(dsc=dsc)
+        bspc = BasicStatPluginController(bsp)
+        bspc.configure_traits(view=bs_plugin_view)
