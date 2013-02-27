@@ -6,7 +6,7 @@ import traitsui.api as _traitsui
 #Local imports
 from basic_stat_model import BasicStat, BasicStatPlugin, extract_summary, extract_histogram
 from plugin_tree_helper import WindowLauncher, dclk_activator
-from plot_histogram import BoxPlot, HistPlot
+from plot_histogram import BoxPlot, HistPlot, StackedHistPlot
 from plot_windows import LinePlotWindow
 
 
@@ -50,7 +50,9 @@ class BasicStatController(_traitsui.Controller):
     def stacked_histogram(self):
         res = self.model.stat_res
         hist = extract_histogram(res)
-        print(hist.mat)
+        plot = StackedHistPlot(hist)
+        win = LinePlotWindow(plot=plot, title_text='Hello')
+        win.edit_traits()
 
 
     def plot_histogram(self, obj_id):
@@ -218,7 +220,7 @@ class TestOneDsTree(_traits.HasTraits):
 if __name__ == '__main__':
     print("Basic stat GUI test started")
     from tests.conftest import synth_dsc, discrete_ds
-    one_branch=True
+    one_branch=False
 
     if one_branch:
         ds = discrete_ds()
