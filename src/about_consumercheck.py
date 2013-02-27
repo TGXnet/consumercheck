@@ -1,6 +1,7 @@
 from traits.api import HasTraits, HTML
 from traitsui.api import View, Item
 
+
 class ConsumerCheckAbout(HasTraits):
     about_html = '''
     <body text="#404040" bgcolor="#f0f0f0">
@@ -13,15 +14,14 @@ class ConsumerCheckAbout(HasTraits):
     '''
     about_render = HTML(about_html)
     traits_view = View(
-        Item('about_render',
-             show_label=False
-             ),
+        Item('about_render', show_label=False),
         title="About",
-        height=400,
+        height=430,
         width=400,
-#        resizable=True,
-        ok=True,
+        buttons=['OK'],
         )
 
+
 if __name__ == '__main__':
-    ConsumerCheckAbout().configure_traits()
+    cca = ConsumerCheckAbout()
+    cca.configure_traits()
