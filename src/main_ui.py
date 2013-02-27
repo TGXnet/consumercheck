@@ -14,6 +14,7 @@ from traitsui.menu import Action, Menu, MenuBar
 from dataset_container import DatasetContainer
 from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
+from basic_stat_gui import BasicStatPlugin, BasicStatPluginController, bs_plugin_view
 from ui_tab_pca import PCAPlugin
 from ui_tab_prefmap import PrefmapPlugin
 from ui_tab_conjoint import ConjointPlugin
@@ -70,19 +71,18 @@ class MainUi(HasTraits):
     # en_advanced = Bool(False)
     parent_win = Any()
 
-
-    def _toggle_advanced(self):
-        self.en_advanced = not self.en_advanced
-        print(self.en_advanced)
-
     splash = None
+
+
+    # Object representating the basic stat
+    basic_stat = Instance(BasicStatPluginController)
 
     # Object representing the PCA and the GUI tab
     pca = Instance(PCAPlugin)
 
     # Object representing the Prefmap and the GUI tab
     prefmap = Instance(PrefmapPlugin)
-    
+
     # Object representing the Conjoint and the GUI tab
     conjoint = Instance(ConjointPlugin)
 
@@ -99,11 +99,16 @@ class MainUi(HasTraits):
 
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
-        self.prefmap = PrefmapPlugin(mother_ref=self)
         self.pca = PCAPlugin(mother_ref=self)
+        self.prefmap = PrefmapPlugin(mother_ref=self)
         self.conjoint = ConjointPlugin(mother_ref=self)
         self.dsl.on_trait_change(self._dsl_updated, 'dsl_changed')
         self.dsl.on_trait_change(self._ds_name_updated, 'ds_changed')
+
+
+    def _basic_stat_default(self):
+        bsp = BasicStatPlugin(dsc=self.dsl)
+        return BasicStatPluginController(bsp)
 
 
     def _dsl_updated(self, obj, name, new):
@@ -118,12 +123,19 @@ class MainUi(HasTraits):
         print("DS fired")
 
 
+    def _toggle_advanced(self):
+        self.en_advanced = not self.en_advanced
+        print(self.en_advanced)
+
+
     # The main view
     traits_ui_view = View(
         Group(
             ## Item('dsl', editor=InstanceEditor(view=tree_view),
             ##      style='custom', label="Datasets", show_label=False),
             Item('dsl', editor=tree_editor, label="Datasets", show_label=False),
+            Item('basic_stat', editor=InstanceEditor(view=bs_plugin_view),
+                 style='custom', label="Basic stat", show_label=False),
             Item('pca', editor=InstanceEditor(),
                  style='custom', label="PCA", show_label=False),
             Item('prefmap', editor=InstanceEditor(),
