@@ -100,7 +100,7 @@ class MainUi(HasTraits):
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
         self.pca = PCAPlugin(mother_ref=self)
-        self.prefmap = PrefmapPlugin(mother_ref=self)
+        ## self.prefmap = PrefmapPlugin(mother_ref=self)
         self.conjoint = ConjointPlugin(mother_ref=self)
         self.dsl.on_trait_change(self._dsl_updated, 'dsl_changed')
         self.dsl.on_trait_change(self._ds_name_updated, 'ds_changed')
@@ -114,13 +114,11 @@ class MainUi(HasTraits):
     def _dsl_updated(self, obj, name, new):
         self.ds_event = True
         self.tulle_event = True
-        print("DSL fired")
 
 
     def _ds_name_updated(self, obj, name, new):
         self.dsname_event = True
         # self.tulle_event = True
-        print("DS fired")
 
 
     def _toggle_advanced(self):
@@ -138,8 +136,8 @@ class MainUi(HasTraits):
                  style='custom', label="Basic stat", show_label=False),
             Item('pca', editor=InstanceEditor(),
                  style='custom', label="PCA", show_label=False),
-            Item('prefmap', editor=InstanceEditor(),
-                 style='custom', label="Prefmap", show_label=False),
+            ## Item('prefmap', editor=InstanceEditor(),
+            ##      style='custom', label="Prefmap", show_label=False),
             Item('conjoint', editor=InstanceEditor(),
                  style='custom', label="Conjoint", show_label=False),
             layout='tabbed'
@@ -169,7 +167,6 @@ if __name__ == '__main__':
 
     logger.info('Start interactive')
 
-    dsl = all_dsc()
-    mother = MainUi(dsl=dsl)
+    mother = MainUi(dsl=all_dsc())
     with np.errstate(invalid='ignore'):
         ui = mother.configure_traits()
