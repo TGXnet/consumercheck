@@ -137,8 +137,16 @@ class BasicStatPluginController(_traitsui.Controller):
             self.edit_node = None
 
 
+    # FIXME: I dont know why the initial populating is not handled by
+    # _update_selection_list()
     def _available_ds_default(self):
         return self.model.dsc.get_id_name_map()
+
+
+    @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]', post_init=False)
+    def _update_selection_list(self, obj, name, new):
+        self.available_ds = self.model.dsc.get_id_name_map()
+
 
 
     @_traits.on_trait_change('selected_ds')
