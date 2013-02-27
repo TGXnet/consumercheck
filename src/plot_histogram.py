@@ -5,6 +5,7 @@ import numpy as _np
 # ETS imports
 import traits.api as _traits
 import chaco.api as _chaco
+from enable.colors import color_table
 
 # Local imports
 from dataset_ng import DataSet
@@ -87,7 +88,82 @@ class HistPlot(_chaco.DataView):
 
 
 class StackedHistPlot(_chaco.DataView):
-    pass
+    '''Plot histogram values for each row stacked on to of each other'''
+
+    ds = _traits.Instance(DataSet)
+    stair_ds = _traits.Instance(_chaco.MultiArrayDataSource)
+
+
+
+    def __init__(self, ds):
+        super(StackedHistPlot, self).__init__(ds=ds)
+        last_renderer = self._render_data()
+        self._add_axis(last_renderer)
+
+
+    def _stair_ds_default(self):
+        nums = self.ds.values
+        stair = _np.empty_like(nums)
+        rows, cols = nums.shape
+        cum = _np.zeros(rows)
+        for i in range(cols):
+            cum += nums[:,i]
+            stair[:,i] = cum
+
+        return _chaco.MultiArrayDataSource(stair)
+
+
+
+    def _render_data(self):
+        idx = _chaco.ArrayDataSource(_np.arange(self.ds.n_objs))
+        mvals = self.stair_ds
+
+        # Create the index range
+        index_range = _chaco.DataRange1D(idx, tight_bounds=True)
+        index_mapper = _chaco.LinearMapper(range=index_range)
+
+        # Create the value range
+        value_range = _chaco.DataRange1D(mvals, tight_bounds=True)
+        value_mapper = _chaco.LinearMapper(range=value_range)
+
+        colors = color_table.keys()
+
+        for i in range(mvals.get_value_size()-1, 0, -1):
+            vals = _chaco.ArrayDataSource(mvals.get_data(axes=i))
+            bars = _chaco.BarPlot(index=idx, value=vals,
+                                  value_mapper=value_mapper,
+                                  index_mapper=index_mapper,
+                                  line_color='black',
+                                  fill_color=colors[i%len(colors)],
+                                  bar_width=0.8, antialias=False)
+            self.add(bars)
+        return bars
+
+
+
+    def _add_axis(self, renderer):
+        left_axis = _chaco.PlotAxis(renderer, orientation='left')
+        bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
+                                       title='Categories',
+                                       positions = range(self.ds.n_objs),
+                                       labels = [str(vn) for vn in self.ds.obj_n],
+                                       small_haxis_style=True)
+        renderer.underlays.append(left_axis)
+        renderer.underlays.append(bottom_axis)
+
+
+
+    def new_window(self, configure=False):
+        """Convenience function that creates a window containing the Plot
+
+        Don't call this if the plot is already displayed in a window.
+        """
+        from chaco.ui.plot_window import PlotWindow
+        if configure:
+            self._plot_ui_info = PlotWindow(plot=self).configure_traits()
+        else:
+            self._plot_ui_info = PlotWindow(plot=self).edit_traits()
+        return self._plot_ui_info
 
 
 
@@ -177,12 +253,13 @@ class BoxPlot(_chaco.DataView):
 if __name__ == '__main__':
     from tests.conftest import hist_ds, boxplot_ds
     # plot = BoxPlot(boxplot_ds())
-    plot = HistPlot(hist_ds(), 'O6')
+    plot = StackedHistPlot(hist_ds())
+    # plot = HistPlot(hist_ds(), 'O6')
     plot.new_window(True)
 
     ## plot.render_hist(row_id)
 
-    ## plot = StackedHistPlot(ds)
+    
 
     ## plot_stacked_hist(res):
     ##     ds = extract_hist(res)
