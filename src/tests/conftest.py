@@ -81,8 +81,8 @@ VINE = [
 
 
 CHEESE = [
-    # ('Cheese', 'ConsumerLiking.txt', 'Cheese liking', 'Consumer liking'),
-    # ('Cheese', 'ConsumerValues.txt', 'Consumer info', 'Consumer characteristics'),
+    ('Cheese', 'ConsumerLiking.txt', 'Cheese liking', 'Consumer liking'),
+    ('Cheese', 'ConsumerValues.txt', 'Consumer info', 'Consumer characteristics'),
     ('Cheese', 'SensoryData.txt', 'Sensory profiling', 'Sensory profiling'),
     ]
 
@@ -240,10 +240,11 @@ def all_dsc():
     dsc = DatasetContainer()
 
     # ad = CONJOINT + VINE + CHEESE
-    ad = CHEESE
+    ad = CHEESE + CONJOINT
 
     for mi in ad:
         dsc.add(imp_ds(mi))
+    dsc.add(discrete_ds())
 
     return dsc
 
