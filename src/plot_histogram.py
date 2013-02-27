@@ -15,7 +15,7 @@ from dataset_ng import DataSet
 class HistPlot(_chaco.DataView):
 
     ds = _traits.Instance(DataSet)
-    row_id = _traits.Str()
+    row_id = _traits.Any()
     ceiling = _traits.Int()
     head_space = _traits.Float(1.1)
     bars_renderer = _traits.Instance(_chaco.BarPlot)

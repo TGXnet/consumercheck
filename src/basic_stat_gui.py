@@ -33,7 +33,7 @@ class BasicStatController(_traitsui.Controller):
 
     def _idx_win_launchers_default(self):
         return [WindowLauncher(owner_ref=self,
-                               node_name=name,
+                               node_name=str(name),
                                func_name='plot_histogram',
                                func_parms=tuple([name]))
                 for name in self.model.ds.obj_n]
@@ -140,13 +140,20 @@ class BasicStatPluginController(_traitsui.Controller):
     # FIXME: I dont know why the initial populating is not handled by
     # _update_selection_list()
     def _available_ds_default(self):
-        return self.model.dsc.get_id_name_map()
+        return self._get_selectable()
 
 
     @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]', post_init=False)
     def _update_selection_list(self, obj, name, new):
-        self.available_ds = self.model.dsc.get_id_name_map()
+        self.available_ds = self._get_selectable()
 
+
+    def _get_selectable(self, all=False):
+        if all:
+            return self.model.dsc.get_id_name_map()
+        else:
+            return (self.model.dsc.get_id_name_map('Consumer liking')
+                    + self.model.dsc.get_id_name_map('Consumer characteristics'))
 
 
     @_traits.on_trait_change('selected_ds')
@@ -227,7 +234,7 @@ class TestOneDsTree(_traits.HasTraits):
 
 if __name__ == '__main__':
     print("Basic stat GUI test started")
-    from tests.conftest import synth_dsc, discrete_ds
+    from tests.conftest import all_dsc, discrete_ds
     one_branch=False
 
     if one_branch:
@@ -237,7 +244,7 @@ if __name__ == '__main__':
         tods = TestOneDsTree(one_ds=bsc)
         tods.configure_traits()
     else:
-        dsc = synth_dsc()
+        dsc = all_dsc()
         bsp = BasicStatPlugin(dsc=dsc)
         bspc = BasicStatPluginController(bsp)
         bspc.configure_traits(view=bs_plugin_view)
