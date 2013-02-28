@@ -78,41 +78,34 @@ bs_view = _traitsui.View(
     _traitsui.Item('test_dummy'),
     )
 
-
-bsa_tnode = _traitsui.TreeNode(
-    node_for=[BasicStatController],
-    label='name',
-    children='',
-    view=bs_view,
-    menu=[])
-
-
-bsb_tnode = _traitsui.TreeNode(
-    node_for=[BasicStatController],
-    label='=Base plots',
-    children='base_win_launchers',
-    view=bs_view,
-    menu=[])
-
-
-bsc_tnode = _traitsui.TreeNode(
-    node_for=[BasicStatController],
-    label='=Object histogram',
-    children='idx_win_launchers',
-    view=bs_view,
-    menu=[])
-
-
-wl_tnode = _traitsui.TreeNode(
-    node_for=[WindowLauncher],
-    label='node_name',
-    view=no_view,
-    menu=[],
-    on_dclick=dclk_activator)
-
+task_nodes = [_traitsui.TreeNode(
+                                 node_for=[BasicStatController],
+                                 label='name',
+                                 children='',
+                                 view=bs_view,
+                                 menu=[]),
+              _traitsui.TreeNode(
+                                 node_for=[BasicStatController],
+                                 label='=Base plots',
+                                 children='base_win_launchers',
+                                 view=bs_view,
+                                 menu=[]),
+              _traitsui.TreeNode(
+                                 node_for=[BasicStatController],
+                                 label='=Object histogram',
+                                 children='idx_win_launchers',
+                                 view=bs_view,
+                                 menu=[]),
+              _traitsui.TreeNode(
+                                 node_for=[WindowLauncher],
+                                 label='node_name',
+                                 view=no_view,
+                                 menu=[],
+                                 on_dclick=dclk_activator)
+              ]
 
 bs_tree = _traitsui.TreeEditor(
-    nodes=[bsa_tnode, bsb_tnode, bsc_tnode, wl_tnode],
+    nodes=task_nodes,
     )
 
 
@@ -148,12 +141,12 @@ class BasicStatPluginController(_traitsui.Controller):
         self.available_ds = self._get_selectable()
 
 
-    def _get_selectable(self, all=False):
-        if all:
-            return self.model.dsc.get_id_name_map()
-        else:
+    def _get_selectable(self, not_all=True):
+        if not_all:
             return (self.model.dsc.get_id_name_map('Consumer liking')
                     + self.model.dsc.get_id_name_map('Consumer characteristics'))
+        else:
+            return self.model.dsc.get_id_name_map()
 
 
     @_traits.on_trait_change('selected_ds')
@@ -175,20 +168,30 @@ class BasicStatPluginController(_traitsui.Controller):
         task = BasicStatController(tsk)
         self.model.add(task)
 
-
-bsp_tnode = _traitsui.TreeNode(
-    node_for=[BasicStatPlugin],
-    label='=Basic stat',
-    children='tasks',
-    menu=[],
-    )
+plugin_nodes=[
+    _traitsui.TreeNode(
+                       node_for=[BasicStatPlugin],
+                       label='=Basic stat',
+                       children='',
+                       auto_open=True,
+                       menu=[],
+                       ),
+    _traitsui.TreeNode(
+                       node_for=[BasicStatPlugin],
+                       label='=Basic stat',
+                       children='tasks',
+                       auto_open=True,
+                       menu=[],
+                       ),
+              ]
 
 
 bs_plugin_tree = _traitsui.TreeEditor(
-    nodes=[bsa_tnode, bsb_tnode, bsc_tnode, bsp_tnode, wl_tnode],
-    refresh='controller.update_tree',
+    nodes=plugin_nodes+task_nodes,
+    # refresh='controller.update_tree',
     selected='controller.selected_object',
     editable=False,
+    hide_root=True,
     )
 
 
