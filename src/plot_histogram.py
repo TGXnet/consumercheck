@@ -103,13 +103,7 @@ class StackedHistPlot(_chaco.DataView):
 
     def _stair_ds_default(self):
         nums = self.ds.values
-        stair = _np.empty_like(nums)
-        rows, cols = nums.shape
-        cum = _np.zeros(rows)
-        for i in range(cols):
-            cum += nums[:,i]
-            stair[:,i] = cum
-
+        stair = _np.cumsum(nums, axis=1)
         return _chaco.MultiArrayDataSource(stair)
 
 
