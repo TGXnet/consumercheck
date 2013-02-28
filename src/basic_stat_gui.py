@@ -204,7 +204,10 @@ bs_plugin_view = _traitsui.View(
                                editor=_traitsui.CheckListEditor(name='controller.available_ds'),
                                style='custom',
                                show_label=False,
+                               width=200,
+                               height=200,
                                ),
+                label='Select dataset',
                 show_border=True,
                 ),
             _traitsui.Group(
@@ -216,6 +219,7 @@ bs_plugin_view = _traitsui.View(
                 ),
             orientation='vertical',
             ),
+        _traitsui.Spring(width=230),
         orientation='horizontal',
         ),
     resizable=True,

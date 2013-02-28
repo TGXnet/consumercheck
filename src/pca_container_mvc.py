@@ -1,7 +1,7 @@
 
 # Enthought imports
 from traits.api import HasTraits, Any, Instance, Str, List, Int,DelegatesTo, Bool, on_trait_change, Set
-from traitsui.api import View, Group, Item, ModelView, CheckListEditor, RangeEditor
+from traitsui.api import View, Group, Item, ModelView, CheckListEditor, RangeEditor, Spring
 
 # Local imports
 from pca_mvc import APCAHandler, APCAModel
@@ -74,7 +74,7 @@ pcas_view = View(
                 Item('selected',
                      editor=CheckListEditor(name='data'),
                      style='custom',
-                     width=100,
+                     width=200,
                      height=200,
                      show_label=False),
                 label='Select dataset',
@@ -89,10 +89,10 @@ pcas_view = View(
                 ),
             orientation='vertical',
             ),
-        Item('', springy=True),
+        Spring(width=230),
         orientation='horizontal',
         ),
-    resizable=True,
+    resizable=False,
     )
 
 
