@@ -7,7 +7,10 @@ from dataset_container import DatasetContainer
 
 
 class DSNode(_traitsui.TreeNode):
-
+    '''Cusom tree node for datasets.
+    
+    Sets tree node icon based on dataset type
+    '''
     def get_icon(self, obj, is_expanded):
         """Return icon name based on ds type
         """
@@ -15,8 +18,12 @@ class DSNode(_traitsui.TreeNode):
             return 'design_variable.ico'
         elif obj.ds_type == 'Sensory profiling':
             return 'sensory_profiling.ico'
-        else:
+        elif obj.ds_type == 'Consumer liking':
             return 'customer_liking.ico'
+        elif obj.ds_type == 'Consumer characteristics':
+            return 'customer_attributes.ico'
+        else:
+            return self.icon_item
 
 
 class DSHandler(_traitsui.Handler):
@@ -75,6 +82,12 @@ tree_editor = _traitsui.TreeEditor(
         _traitsui.TreeNode(
             node_for=[DatasetContainer],
             label='=Datasets',
+            children='',
+            view=list_view,
+            ),
+        _traitsui.TreeNode(
+            node_for=[DatasetContainer],
+            label='=Datasets',
             children='dsl',
             view=list_view,
             ),
@@ -86,7 +99,8 @@ tree_editor = _traitsui.TreeEditor(
             view=ds_view,
             ),
         ],
-    refresh='object.tulle_event',
+    ## refresh='object.tulle_event',
     ## editable=False,
+    hide_root=True,
     alternating_row_colors=True,
     )
