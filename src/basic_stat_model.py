@@ -46,11 +46,14 @@ class BasicStat(_traits.HasTraits):
 
 
     def _calc_histogram(self):
-        mat = self.ds.values
+        # NOTE: astype(np.int16) due to some bincount() bug in v1.6.2 on window
+        # https://github.com/numpy/numpy/issues/823
+        mat = self.ds.values.astype(_np.int16)
         end = mat.max()
         hl = []
-        for l in mat:
-            hl.append(list(_np.bincount(l, minlength=end+2)))
+        for row in mat:
+            hist = _np.bincount(row, minlength=end+2)
+            hl.append(list(hist))
 
         ht = _pd.DataFrame(hl, index=self.ds.obj_n)
         return DataSet(mat=ht, display_name="Histogram")
