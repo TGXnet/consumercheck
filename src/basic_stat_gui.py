@@ -32,11 +32,28 @@ class BasicStatController(_traitsui.Controller):
 
 
     def _idx_win_launchers_default(self):
-        return [WindowLauncher(owner_ref=self,
-                               node_name=str(name),
-                               func_name='plot_histogram',
-                               func_parms=tuple([name]))
-                for name in self.model.ds.obj_n]
+        return self._create_win_launchers()
+
+
+    @_traits.on_trait_change('model:summary_axis')
+    def _axis_altered(self, obj, name, new):
+        self.idx_win_launchers = self._create_win_launchers()
+
+
+    def _create_win_launchers(self):
+        if self.model.summary_axis == 'Row-wise':
+            nl = self.model.ds.obj_n
+        else:
+            nl = self.model.ds.var_n
+
+        wll = []
+        for n in nl:
+            wl = WindowLauncher(owner_ref=self, node_name=str(n),
+                                func_name='plot_histogram',
+                                func_parms=tuple([n]))
+            wll.append(wl)
+
+        return wll
 
 
     def box_plot(self):
@@ -75,7 +92,8 @@ no_view = _traitsui.View()
 
 
 bs_view = _traitsui.View(
-    _traitsui.Item('test_dummy'),
+    _traitsui.Label('Summary axis:'),
+    _traitsui.Item('summary_axis', style='custom', show_label=False),
     )
 
 task_nodes = [_traitsui.TreeNode(

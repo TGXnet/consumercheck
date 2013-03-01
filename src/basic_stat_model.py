@@ -14,9 +14,8 @@ from dataset_container import DatasetContainer
 class BasicStat(_traits.HasTraits):
     id = _traits.Str()
     ds = DataSet()
+    summary_axis = _traits.Enum(('Row-wise', 'Column-wise'))
     stat_res = _traits.Property()
-
-    test_dummy = _traits.Bool()
 
 
     def _get_stat_res(self):
@@ -36,11 +35,17 @@ class BasicStat(_traits.HasTraits):
 
     def _calc_summary(self):
         mat = self.ds.values
-        sy = _pd.DataFrame(index=self.ds.obj_n)
-        sy['mean'] = mat.mean(axis=1)
-        sy['std'] = mat.std(axis=1)
-        sy['min'] = mat.min(axis=1)
-        sy['max'] = mat.max(axis=1)
+        if self.summary_axis == 'Row-wise':
+            ax = 1
+            idx = self.ds.obj_n
+        else:
+            ax = 0
+            idx = self.ds.var_n
+        sy = _pd.DataFrame(index=idx)
+        sy['mean'] = mat.mean(axis=ax)
+        sy['std'] = mat.std(axis=ax)
+        sy['min'] = mat.min(axis=ax)
+        sy['max'] = mat.max(axis=ax)
 
         return DataSet(mat=sy, display_name="Summary")
 
@@ -49,13 +54,18 @@ class BasicStat(_traits.HasTraits):
         # NOTE: astype(np.int16) due to some bincount() bug in v1.6.2 on window
         # https://github.com/numpy/numpy/issues/823
         mat = self.ds.values.astype(_np.int16)
-        end = mat.max()
-        hl = []
-        for row in mat:
-            hist = _np.bincount(row, minlength=end+2)
-            hl.append(list(hist))
+        end = mat.max() + 2
 
-        ht = _pd.DataFrame(hl, index=self.ds.obj_n)
+        if self.summary_axis == 'Row-wise':
+            idx = self.ds.obj_n
+            it = [(i,Ellipsis) for i in range(mat.shape[0])]
+        else:
+            idx = self.ds.var_n
+            it = [(Ellipsis,i) for i in range(mat.shape[1])]
+
+        hl = [list(_np.bincount(mat[i], minlength=end)) for i in it]
+
+        ht = _pd.DataFrame(hl, index=idx)
         return DataSet(mat=ht, display_name="Histogram")
 
 

@@ -107,7 +107,6 @@ class StackedHistPlot(_chaco.DataView):
         return _chaco.MultiArrayDataSource(stair)
 
 
-
     def _render_data(self):
         idx = _chaco.ArrayDataSource(_np.arange(self.ds.n_objs))
         mvals = self.stair_ds
