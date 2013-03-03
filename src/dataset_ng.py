@@ -68,7 +68,10 @@ class DataSet(_traits.HasTraits):
 
 
     def _get_values(self):
-        return self.mat.values
+        if self.missing_data:
+            return _np.ma.masked_invalid(self.mat.values)
+        else:
+            return self.mat.values
 
 
     def _set_matrix(self, value):
