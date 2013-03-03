@@ -35,8 +35,28 @@ def test_discrete_column_wise(discrete_ds):
 
 
 
-def test_missing():
-    assert False
+def test_missing(discrete_nans_ds):
+    bs = BasicStat(ds=discrete_nans_ds)
+
+    bs.summary_axis = 'Row-wise'
+    res = bs.stat_res
+    summary = extract_summary(res)
+    hist = extract_histogram(res)
+    nans = hist.mat['missing']
+    assert nans.sum() == 10
+    hist_sums = hist.mat.sum(axis=1)
+    sane_sum = hist_sums == discrete_nans_ds.n_cols
+    assert sane_sum.all()
+
+    bs.summary_axis = 'Column-wise'
+    res = bs.stat_res
+    summary = extract_summary(res)
+    hist = extract_histogram(res)
+    nans = hist.mat['missing']
+    assert nans.sum() == 10
+    hist_sums = hist.mat.sum(axis=1)
+    sane_sum = hist_sums == discrete_nans_ds.n_rows
+    assert sane_sum.all()
 
 
 def test_continous():
