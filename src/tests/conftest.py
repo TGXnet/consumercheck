@@ -13,6 +13,7 @@
 import pytest
 
 # Std lib imports
+import copy
 import logging
 
 # Configure logging
@@ -104,20 +105,47 @@ def simple_ds():
     return ds
 
 
+discrete_nl = [
+    [3, 5, 7, 8, 1, 9, 7, 3],
+    [1, 8, 2, 5, 5, 2, 7, 5],
+    [2, 1, 2, 5, 6, 3, 9, 6],
+    [8, 4, 8, 4, 8, 1, 2, 4],
+    [6, 5, 3, 7, 6, 9, 2, 2]]
+
+
 @pytest.fixture
 def discrete_ds():
     '''Make a dataset with discrete walues'''
 
     ds = DataSet(display_name='Discrete values')
-    ds.mat = pd.DataFrame(
-        [[3, 5, 7, 8, 1, 9, 7, 3],
-         [1, 8, 2, 5, 5, 2, 7, 5],
-         [2, 1, 2, 5, 6, 3, 9, 6],
-         [8, 4, 8, 4, 8, 1, 2, 4],
-         [6, 5, 3, 7, 6, 9, 2, 2]],
-        index = ['O1', 'O2', 'O3', 'O4', 'O5'],
-        columns = ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8'])
+    idxn = ['O'+str(i+1) for i in range(5)]
+    coln = ['V'+str(j+1) for j in range(8)]
+    ds.mat = pd.DataFrame(discrete_nl, index = idxn, columns = coln)
+    return ds
 
+
+@pytest.fixture
+def discrete_nans_ds():
+    '''Make a dataset with discrete walues'''
+
+    missing = copy.deepcopy(discrete_nl)
+    missing[1][6:8] = [np.nan for i in range(2)]
+    missing[2][6:8] = [np.nan for i in range(2)]
+    missing[3][0:8:3] = [np.nan for i in range(3)]
+    missing[4][1:8:3] = [np.nan for i in range(3)]
+
+    ds = DataSet(display_name='Discrete values')
+    idxn = ['O'+str(i+1) for i in range(5)]
+    coln = ['V'+str(j+1) for j in range(8)]
+    ds.mat = pd.DataFrame(missing, index = idxn, columns = coln)
+
+    # This does not work by now
+    # When i set integer type to nan, a large value is inserted
+    ## ds = discrete_ds()
+    ## ds.display_name = 'Discrete values, some missing'
+    ## ds.mat.ix['O2':'O3','V5':'V7'] = np.nan
+    ## ds.mat.ix['O4','V1':'V8':2] = np.nan
+    ## ds.mat.ix['O5','V2':'V8':2] = np.nan
     return ds
 
 
