@@ -56,7 +56,6 @@ class BasicStat(_traits.HasTraits):
         mat = self.ds.values.astype(_np.int16)
         end = mat.max() + 2
 
-
         if self.ds.missing_data:
             hl = []
             if self.summary_axis == 'Row-wise':

@@ -259,7 +259,7 @@ class TestOneDsTree(_traits.HasTraits):
 
 if __name__ == '__main__':
     print("Basic stat GUI test started")
-    from tests.conftest import all_dsc, discrete_ds
+    from tests.conftest import all_dsc, synth_dsc, discrete_ds
     one_branch=False
 
     if one_branch:
@@ -269,7 +269,8 @@ if __name__ == '__main__':
         tods = TestOneDsTree(one_ds=bsc)
         tods.configure_traits()
     else:
-        dsc = all_dsc()
+        # dsc = all_dsc()
+        dsc = synth_dsc()
         bsp = BasicStatPlugin(dsc=dsc)
         bspc = BasicStatPluginController(bsp)
         bspc.configure_traits(view=bs_plugin_view)

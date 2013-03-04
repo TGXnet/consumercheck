@@ -94,7 +94,7 @@ CHEESE = [
 def simple_ds():
     '''Makes a simple syntetic dataset'''
 
-    ds = DataSet(display_name='Some values')
+    ds = DataSet(display_name='Some values', ds_type='Sensory profiling')
     ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 2.2, 2.3],
@@ -117,7 +117,7 @@ discrete_nl = [
 def discrete_ds():
     '''Make a dataset with discrete walues'''
 
-    ds = DataSet(display_name='Discrete values')
+    ds = DataSet(display_name='Discrete values', ds_type='Consumer characteristics')
     idxn = ['O'+str(i+1) for i in range(5)]
     coln = ['V'+str(j+1) for j in range(8)]
     ds.mat = pd.DataFrame(discrete_nl, index = idxn, columns = coln)
@@ -134,7 +134,7 @@ def discrete_nans_ds():
     missing[3][0:8:3] = [np.nan for i in range(3)]
     missing[4][1:8:3] = [np.nan for i in range(3)]
 
-    ds = DataSet(display_name='Discrete values')
+    ds = DataSet(display_name='Discrete and missing', ds_type='Consumer characteristics')
     idxn = ['O'+str(i+1) for i in range(5)]
     coln = ['V'+str(j+1) for j in range(8)]
     ds.mat = pd.DataFrame(missing, index = idxn, columns = coln)
@@ -234,7 +234,7 @@ def iris_ds():
 @pytest.fixture
 def synth_dsc():
     dsc = DatasetContainer()
-    dsc.add(simple_ds(), discrete_ds(), iris_ds())
+    dsc.add(simple_ds(), discrete_ds(), discrete_nans_ds(), iris_ds())
     return dsc
 
 

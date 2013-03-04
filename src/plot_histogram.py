@@ -63,7 +63,8 @@ class HistPlot(_chaco.DataView):
                                        title='Categories',
                                        positions = range(self.ds.n_vars),
                                        labels = [str(vn) for vn in self.ds.var_n],
-                                       small_haxis_style=True)
+                                       tick_interval=1.0,
+                                       )
         renderer.underlays.append(left_axis)
         renderer.underlays.append(bottom_axis)
 
@@ -140,7 +141,8 @@ class StackedHistPlot(_chaco.DataView):
                                        title='Categories',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
-                                       small_haxis_style=True)
+                                       tick_interval=1.0,
+                                       )
         renderer.underlays.append(left_axis)
         renderer.underlays.append(bottom_axis)
 
@@ -222,7 +224,8 @@ class BoxPlot(_chaco.DataView):
                                        title='Categories',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
-                                       small_haxis_style=True)
+                                       tick_interval=1.0,
+                                       )
         renderer.underlays.append(left_axis)
         renderer.underlays.append(bottom_axis)
 
