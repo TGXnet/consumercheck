@@ -133,6 +133,6 @@ DND = ImporterMain()
 
 if __name__ == '__main__':
     fi = ImporterMain()
-    dsl = fi.dialog_multi_import()
-    for ds in dsl:
+    dsc = fi.dialog_multi_import()
+    for ds in dsc:
         ds.print_traits()

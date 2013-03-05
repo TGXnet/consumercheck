@@ -14,7 +14,7 @@ class PCAsContainer(HasTraits):
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
-    dsl = DelegatesTo('mother_ref')
+    dsc = DelegatesTo('mother_ref')
     mappings = List(APCAHandler)
     # Fitting parameters
     standardise = Bool(False)
@@ -22,7 +22,7 @@ class PCAsContainer(HasTraits):
 
 
     def add_mapping(self, ds_id):
-        set_ds = self.dsl[ds_id]
+        set_ds = self.dsc[ds_id]
         map_name = set_ds.display_name
         map_id = set_ds.id
         mapping_model = APCAModel(mother_ref=self, nid=map_id, name=map_name, ds=set_ds)
@@ -51,7 +51,7 @@ class PCAsHandler(ModelView):
 
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
     def _ds_changed(self, obj):
-        self.data = self.model.dsl.get_id_name_map()
+        self.data = self.model.dsc.get_id_name_map()
 
 
     @on_trait_change('selected')

@@ -16,7 +16,7 @@ class PrefmapsContainer(HasTraits):
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
-    dsl = DelegatesTo('mother_ref')
+    dsc = DelegatesTo('mother_ref')
     mappings = List(APrefmapHandler)
 
     # Fitting parameters
@@ -31,8 +31,8 @@ class PrefmapsContainer(HasTraits):
         id_c - Consumer dataset id
         id_s - Sensory dataset id
         '''
-        ds_c = self.dsl[id_c]
-        ds_s = self.dsl[id_s]
+        ds_c = self.dsc[id_c]
+        ds_s = self.dsc[id_s]
         map_id = id_c+id_s
         map_name = ds_c.display_name + ' - ' + ds_s.display_name
         mapping_model = APrefmapModel(
@@ -68,13 +68,13 @@ class PrefmapsHandler(ModelView):
 
 
     @on_trait_change('model:mother_ref:ds_event')
-    def dsl_changed(self):
+    def dsc_changed(self):
         self._update_comb()
         self.comb._generate_combinations()
 
 
     def _update_comb(self):
-        dsc = self.model.dsl
+        dsc = self.model.dsc
         self.comb.col_set = dsc.get_id_name_map('Sensory profiling')
         self.comb.row_set = dsc.get_id_name_map('Consumer liking')
 

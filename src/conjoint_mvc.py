@@ -346,7 +346,7 @@ a_conjoint_view = View(
 
 if __name__ == '__main__':
     from tests.conftest import conjoint_dsc
-    dsl = conjoint_dsc()
+    dsc = conjoint_dsc()
 
 
     class MocMother(HasTraits):
@@ -357,15 +357,15 @@ if __name__ == '__main__':
         consumer_attr_set = Instance(DataSet)
 
     moc = MocMother()
-    moc.design_set = dsl.get_by_id('design')
-    moc.consumer_attr_set = dsl.get_by_id('consumerattributes')
+    moc.design_set = dsc.get_by_id('design')
+    moc.consumer_attr_set = dsc.get_by_id('consumerattributes')
     moc.print_traits()
 
     model = AConjointModel(
         nid='conjoint',
         name='Conjoint test',
         mother_ref=moc,
-        cons_liking=dsl.get_by_id('odour-flavour_liking'))
+        cons_liking=dsc.get_by_id('odour-flavour_liking'))
 
 
     class AConjointTestHandler(AConjointHandler):

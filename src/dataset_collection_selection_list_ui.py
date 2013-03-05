@@ -57,18 +57,18 @@ class SelectionListHandler( Handler ):
     clicked = Event()
 
     def init(self, uiInfo):
-        self._populateSelectionList(uiInfo.object.dsl)
+        self._populateSelectionList(uiInfo.object.dsc)
 
     def object_datasetsAltered_changed(self, uiInfo):
         logging.info("datasetAltered_changed: activated")
         if uiInfo.initialized:
-            self._populateSelectionList(uiInfo.object.dsl)
+            self._populateSelectionList(uiInfo.object.dsc)
 
-    def _populateSelectionList(self, dsl):
+    def _populateSelectionList(self, dsc):
         self.datasets = []
-        for kName, dName in dsl.id_name_list:
+        for kName, dName in dsc.id_name_list:
             isSelected = False
-            for isHere in dsl.selectedSet:
+            for isHere in dsc.selectedSet:
                 if isHere == kName:
                     isSelected = True
             ob = SelectableDataset(
@@ -78,12 +78,12 @@ class SelectionListHandler( Handler ):
             self.datasets.append(ob)
 
     def handler_clicked_changed(self, uiInfo):
-        uiInfo.object.dsl.selectedSet = []
+        uiInfo.object.dsc.selectedSet = []
         for ob in uiInfo.handler.datasets:
             if ob.isSelected:
-                uiInfo.object.dsl.selectedSet.append(ob.kName)
+                uiInfo.object.dsc.selectedSet.append(ob.kName)
 
-        logging.info("Selection list updated: %s", uiInfo.object.dsl.selectedSet)
+        logging.info("Selection list updated: %s", uiInfo.object.dsc.selectedSet)
 
 
 selection_list_view = View(

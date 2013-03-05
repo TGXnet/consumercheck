@@ -30,11 +30,11 @@ class MainViewHandler(Handler):
         importer = ImporterMain()
         imported = importer.dialog_multi_import()
         if imported:
-            info.object.dsl.add(*tuple(imported))
+            info.object.dsc.add(*tuple(imported))
 
 
     def _close_ds(self, info):
-        info.object.dsl.dsl = []
+        info.object.dsc.dsl = []
 
 
     def view_about(self, info):
@@ -64,7 +64,7 @@ class MainViewHandler(Handler):
 
 class MainUi(HasTraits):
     """Main application class"""
-    dsl = DatasetContainer()
+    dsc = DatasetContainer()
     ds_event = Event()
     dsname_event = Event()
     tulle_event = Event()
@@ -102,12 +102,12 @@ class MainUi(HasTraits):
         self.pca = PCAPlugin(mother_ref=self)
         ## self.prefmap = PrefmapPlugin(mother_ref=self)
         self.conjoint = ConjointPlugin(mother_ref=self)
-        self.dsl.on_trait_change(self._dsl_updated, 'dsl_changed')
-        self.dsl.on_trait_change(self._ds_name_updated, 'ds_changed')
+        self.dsc.on_trait_change(self._dsl_updated, 'dsl_changed')
+        self.dsc.on_trait_change(self._ds_name_updated, 'ds_changed')
 
 
     def _basic_stat_default(self):
-        bsp = BasicStatPlugin(dsc=self.dsl)
+        bsp = BasicStatPlugin(dsc=self.dsc)
         return BasicStatPluginController(bsp)
 
 
@@ -129,9 +129,9 @@ class MainUi(HasTraits):
     # The main view
     traits_ui_view = View(
         Group(
-            ## Item('dsl', editor=InstanceEditor(view=tree_view),
+            ## Item('dsc', editor=InstanceEditor(view=tree_view),
             ##      style='custom', label="Datasets", show_label=False),
-            Item('dsl', editor=tree_editor, label="Datasets", show_label=False),
+            Item('dsc', editor=tree_editor, label="Datasets", show_label=False),
             Item('basic_stat', editor=InstanceEditor(view=bs_plugin_view),
                  style='custom', label="Basic stat", show_label=False),
             Item('pca', editor=InstanceEditor(),
@@ -167,6 +167,6 @@ if __name__ == '__main__':
 
     logger.info('Start interactive')
 
-    mother = MainUi(dsl=all_dsc())
+    mother = MainUi(dsc=all_dsc())
     with np.errstate(invalid='ignore'):
         ui = mother.configure_traits()

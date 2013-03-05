@@ -336,12 +336,12 @@ def plugin_mother_mock():
         """Main frame for testing method tabs
         """
         test_subject = Instance(HasTraits)
-        dsl = Instance(DatasetContainer)
+        dsc = Instance(DatasetContainer)
         ds_event = Event()
         dsname_event = Event()
         en_advanced = Bool(True)
 
-        def _dsl_default(self):
+        def _dsc_default(self):
             return all_dsc()
 
         def _test_subject_changed(self, old, new):
@@ -353,9 +353,9 @@ def plugin_mother_mock():
                     new.mother_ref = self
 
 
-        @on_trait_change('dsl')
-        def _dsl_updated(self, obj, name, new):
-            print("main: dsl changed")
+        @on_trait_change('dsc')
+        def _dsc_updated(self, obj, name, new):
+            print("main: dsc changed")
             self.ds_event = True
 
     

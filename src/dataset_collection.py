@@ -120,6 +120,6 @@ if __name__ == '__main__':
     def test_print():
         print("Test")
     from tests.conftest import dsc_mock
-    dsl = dsc_mock()
-    dsl.on_trait_change(test_print, 'ds_name_event')
-    # dsl.print_traits()
+    dsc = dsc_mock()
+    dsc.on_trait_change(test_print, 'ds_name_event')
+    # dsc.print_traits()

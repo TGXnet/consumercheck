@@ -422,9 +422,9 @@ a_prefmap_view = View(
 if __name__ == '__main__':
     from traits.api import Bool, Int
     from tests.conftest import all_dsc
-    dsl = all_dsc()
-    dsx = dsl.get_by_id('consumerliking')
-    dsy = dsl.get_by_id('sensorydata')
+    dsc = all_dsc()
+    dsx = dsc.get_by_id('consumerliking')
+    dsy = dsc.get_by_id('sensorydata')
 
     class MocMother(HasTraits):
         standardise = Bool(False)

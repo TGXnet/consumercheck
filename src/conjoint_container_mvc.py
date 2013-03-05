@@ -16,7 +16,7 @@ class ConjointsContainer(HasTraits):
     name = Str('Conjoint results')
     win_handle = Any()
     mother_ref = Instance(HasTraits)
-    dsl = DelegatesTo('mother_ref')
+    dsc = DelegatesTo('mother_ref')
     mappings = List(AConjointHandler)
 
     selected_design = Str()
@@ -32,7 +32,7 @@ class ConjointsContainer(HasTraits):
 
 
     def add_mapping(self, liking_set_id):
-        liking_set = self.dsl[liking_set_id]
+        liking_set = self.dsc[liking_set_id]
         map_name = liking_set.display_name
         map_id = liking_set.id
         mapping_model = AConjointModel(
@@ -81,7 +81,7 @@ class ConjointsHandler(ModelView):
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
     def _ds_changed(self, info):
 
-        dsc = self.model.dsl
+        dsc = self.model.dsc
 
         designs = dsc.get_id_name_map('Design variable')
         self.available_designs = [idn[1] for idn in designs]
@@ -105,20 +105,20 @@ class ConjointsHandler(ModelView):
 
     @on_trait_change('model:selected_design')
     def _handle_design_choice(self, obj, ref, new):
-        idn_map = obj.dsl.get_id_name_map()
+        idn_map = obj.dsc.get_id_name_map()
         nid_map = dict([(idn[1], idn[0]) for idn in idn_map])
         ds_id = nid_map[new]
-        self.model.design_set = obj.dsl[ds_id]
+        self.model.design_set = obj.dsc[ds_id]
         obj.chosen_design_vars = []
         self.available_design_vars = self.model.design_set.variable_names
 
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):
-        idn_map = obj.dsl.get_id_name_map()
+        idn_map = obj.dsc.get_id_name_map()
         nid_map = dict([(idn[1], idn[0]) for idn in idn_map])
         ds_id = nid_map[new]
-        self.model.consumer_attr_set = obj.dsl[ds_id]
+        self.model.consumer_attr_set = obj.dsc[ds_id]
         obj.chosen_consumer_attr_vars = []
         self.available_consumer_attr_vars = self.model.consumer_attr_set.variable_names
 

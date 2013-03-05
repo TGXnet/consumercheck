@@ -11,7 +11,7 @@ from traitsui.api import Item, View, CheckListEditor, Controller
 class CheckListController(Controller):
     """ Define the main CheckListEditor demo class.
 
-    The model attribute have to be set to the dataset collection (dsl)
+    The model attribute have to be set to the dataset collection (dsc)
     object in this object constructor.
     FIXME: Compare with prefmapUIController to equalize API for dataset collection
     """
