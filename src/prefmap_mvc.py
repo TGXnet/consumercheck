@@ -14,7 +14,7 @@ from traitsui.api import View, Group, Item, ModelView, RangeEditor
 
 # Local imports
 from plsr import nipalsPLS2 as pls
-from dataset_ng import DataSet
+from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow

@@ -5,7 +5,7 @@ from traitsui.api import Handler, View, Item
 from traitsui.menu import OKButton, CancelButton
 
 # Local imports
-from dataset_ng import DataSet
+from dataset import DataSet
 from ds_slicer_view import ds_slicer_view
 
 

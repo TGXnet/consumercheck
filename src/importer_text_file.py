@@ -18,7 +18,7 @@ from traitsui.tabular_adapter import TabularAdapter
 from traits.api import implements
 
 # Local imports
-from dataset_ng import DS_TYPES, DataSet
+from dataset import DS_TYPES, DataSet
 from importer_interfaces import IDataImporter
 
 

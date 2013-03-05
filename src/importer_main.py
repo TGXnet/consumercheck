@@ -22,7 +22,7 @@ from pyface.api import FileDialog, OK, CANCEL
 
 # Local imports
 import cc_config as conf
-from dataset_ng import DataSet
+from dataset import DataSet
 from importer_text_file import ImporterTextFile
 from importer_xls_file import ImporterXlsFile
 from importer_xlsx_file import ImporterXlsxFile

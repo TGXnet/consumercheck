@@ -14,7 +14,7 @@ from traits.api import (HasTraits, Dict, Str, Event, Property,
                         on_trait_change, property_depends_on)
 
 # Local imports
-from dataset_ng import DataSet
+from dataset import DataSet
 
 
 class DatasetCollection(HasTraits):

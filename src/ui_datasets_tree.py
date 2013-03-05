@@ -6,7 +6,7 @@ from traits.api import HasTraits, Str, List, Instance, Event
 from traitsui.api import Item, View, TreeEditor, Handler, TreeNode
 from traitsui.tree_node import TreeNode as TN
 # Local imports
-from dataset_ng import DataSet
+from dataset import DataSet
 from ds_ui import ds_list_tab
 from importer_main import DND
 from ds_matrix_view import TableViewer

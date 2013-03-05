@@ -14,7 +14,7 @@ from traitsui.menu import OKButton
 
 # Local imports
 from pca import nipalsPCA as PCA
-from dataset_ng import DataSet
+from dataset import DataSet
 from plot_pc_scatter import PCScatterPlot
 from plot_ev_line import EVLinePlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow

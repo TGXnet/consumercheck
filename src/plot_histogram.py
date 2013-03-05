@@ -8,7 +8,7 @@ import chaco.api as _chaco
 from enable.colors import color_table
 
 # Local imports
-from dataset_ng import DataSet
+from dataset import DataSet
 
 
 

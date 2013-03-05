@@ -25,7 +25,7 @@ from traitsui.api import View, Group, Item, Spring, ModelView, CheckListEditor
 from traitsui.menu import OKButton
 
 # Local imports
-from dataset_ng import DataSet
+from dataset import DataSet
 from ds_table_view import DSTableViewer
 from plot_windows import LinePlotWindow
 # from ds_matrix_view import matrix_view

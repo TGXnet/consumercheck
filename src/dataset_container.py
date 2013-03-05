@@ -7,7 +7,7 @@
 import traits.api as _traits
 
 # Local imports
-from dataset_ng import DataSet, DS_TYPES
+from dataset import DataSet, DS_TYPES
 
 
 class DatasetContainer(_traits.HasTraits):

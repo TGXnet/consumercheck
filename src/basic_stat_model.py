@@ -7,7 +7,7 @@ import pandas as _pd
 import traits.api as _traits
 
 # Local imports
-from dataset_ng import DataSet
+from dataset import DataSet
 from dataset_container import DatasetContainer
 
 

@@ -8,7 +8,7 @@ from traitsui.menu import OKButton
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
-from dataset_ng import DataSet
+from dataset import DataSet
 
 
 class ConjointsContainer(HasTraits):

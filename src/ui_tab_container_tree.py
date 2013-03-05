@@ -2,7 +2,7 @@
 import traits.api as _traits
 import traitsui.api as _traitsui
 
-from dataset_ng import DataSet
+from dataset import DataSet
 from dataset_container import DatasetContainer
 
 

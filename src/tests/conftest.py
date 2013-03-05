@@ -41,7 +41,7 @@ def check_trait_interface():
 
 
 # Local imports
-from dataset_ng import DataSet
+from dataset import DataSet
 from dataset_container import DatasetContainer
 from importer_main import ImporterMain
 
@@ -273,6 +273,7 @@ def all_dsc():
     for mi in ad:
         dsc.add(imp_ds(mi))
     dsc.add(discrete_ds())
+    dsc.add(discrete_nans_ds())
 
     return dsc
 

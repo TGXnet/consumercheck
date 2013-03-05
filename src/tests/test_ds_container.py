@@ -3,7 +3,7 @@ import pytest
 
 
 # Local imports
-from dataset_ng import DataSet, DS_TYPES
+from dataset import DataSet, DS_TYPES
 from dataset_container import DatasetContainer
 
 

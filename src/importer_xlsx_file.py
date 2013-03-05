@@ -17,7 +17,7 @@ from traitsui.menu import OKButton, CancelButton
 
 # Local imports
 from importer_interfaces import IDataImporter
-from dataset_ng import DS_TYPES, DataSet
+from dataset import DS_TYPES, DataSet
 
 #Import NumPy
 import numpy as np
