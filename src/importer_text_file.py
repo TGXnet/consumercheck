@@ -205,7 +205,7 @@ class ImporterTextFile(HasTraits):
 
         # Make DataSet
         ds = DataSet(
-            matrix=dsdf,
+            mat=dsdf,
             display_name=self.ds_name,
             ds_type=self.ds_type,
             )
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     itf.configure_traits()
     ds = itf.import_data()
     print(ds.display_name)
-    print(ds.matrix.shape)
-    print(ds.matrix.index)
-    print(ds.matrix.columns)
-    print(ds.matrix.dtypes)
+    print(ds.mat.shape)
+    print(ds.mat.index)
+    print(ds.mat.columns)
+    print(ds.mat.dtypes)

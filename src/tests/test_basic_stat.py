@@ -45,7 +45,7 @@ def test_missing(discrete_nans_ds):
     nans = hist.mat['missing']
     assert nans.sum() == 10
     hist_sums = hist.mat.sum(axis=1)
-    sane_sum = hist_sums == discrete_nans_ds.n_cols
+    sane_sum = hist_sums == discrete_nans_ds.n_vars
     assert sane_sum.all()
 
     bs.summary_axis = 'Column-wise'
@@ -55,7 +55,7 @@ def test_missing(discrete_nans_ds):
     nans = hist.mat['missing']
     assert nans.sum() == 10
     hist_sums = hist.mat.sum(axis=1)
-    sane_sum = hist_sums == discrete_nans_ds.n_rows
+    sane_sum = hist_sums == discrete_nans_ds.n_objs
     assert sane_sum.all()
 
 

@@ -22,7 +22,7 @@ class DSArrayAdapter(TabularAdapter):
     # text_color = Color(0xE0E0E0)
 
     def get_row_label(self, section, obj=None):
-        row_names = getattr(obj, 'object_names', None)
+        row_names = getattr(obj, 'obj_n', None)
         return row_names[section]
 
 
@@ -40,18 +40,18 @@ class TableViewer(Controller):
     def init(self, info):
         matrix_editor.adapter.columns = [
             (vn.encode('utf-8'), i)
-            for i, vn in enumerate(info.object.variable_names)]
+            for i, vn in enumerate(info.object.var_n)]
 
 
     def handler_cp_clip_changed(self, info):
         txt_var = unicode()
-        for i in info.object.variable_names:
+        for i in info.object.var_n:
             txt_var += u'{}"{}"'.format('\t', i)
         txt_var += '\n'
 
         txt_mat = unicode()
         for i, a in enumerate(info.object.matrix):
-            txt_mat += u'"{}"'.format(info.object.object_names[i])
+            txt_mat += u'"{}"'.format(info.object.obj_n[i])
             for e in a:
                 txt_mat += u'{}{}'.format('\t', e)
             txt_mat += '\n'

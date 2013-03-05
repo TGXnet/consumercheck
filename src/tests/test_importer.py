@@ -147,5 +147,5 @@ class TestTextfileImport(object):
 ##     file_path=join(tdd, 'test_number.txt')
 ##     di = ImporterMain()
 ##     ds = di.import_data(file_path, False, False)
-##     assert ds.n_cols == len(ds.variable_names)
-##     assert ds.n_rows == len(ds.object_names)
+##     assert ds.n_vars == len(ds.var_n)
+##     assert ds.n_objs == len(ds.obj_n)

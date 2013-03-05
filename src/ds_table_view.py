@@ -8,7 +8,6 @@ class ArrayAdapter(TabularAdapter):
     bg_color = Color(0xFFFFFF)
     width = 75
     index_text = Property()
-    #index_bg_color = Color(0xE0E0E0)
 
     obj_names = List()
 
@@ -18,28 +17,25 @@ class ArrayAdapter(TabularAdapter):
 
 
 class DSTableViewer(Controller):
-    matrix = Array()
-    row_names = List()
-    col_names = List()
     header = Property()
     cp_clip = Button('Copy to clipboard')
     display_name = Str()
 
     def _get_header(self):
         varnames = [('Names', 'index')]
-        for i, vn in enumerate(self.model.variable_names):
+        for i, vn in enumerate(self.model.var_n):
             varnames.append((vn, i))
         return varnames
 
     def handler_cp_clip_changed(self, info):
         txt_var = unicode()
-        for i in info.object.variable_names:
+        for i in info.object.var_n:
             txt_var += u'{}"{}"'.format('\t', i)
         txt_var += '\n'
 
         txt_mat = unicode()
-        for i, a in enumerate(info.object.matrix):
-            txt_mat += u'"{}"'.format(info.object.object_names[i])
+        for i, a in enumerate(info.object.values):
+            txt_mat += u'"{}"'.format(info.object.obj_n[i])
             for e in a:
                 txt_mat += u'{}{}'.format('\t', e)
             txt_mat += '\n'
@@ -56,11 +52,10 @@ class DSTableViewer(Controller):
         
         aa = ArrayAdapter(
             columns = self.header,
-            obj_names = self.model.object_names)
+            obj_names = self.model.obj_n)
 
         view = View(
-            Item('matrix', editor=TabularEditor(adapter=aa),
-                 # width=900, height=400,
+            Item('values', editor=TabularEditor(adapter=aa),
                  show_label=False),
             Item('handler.cp_clip', show_label=False),
             title=header_txt,
@@ -72,7 +67,7 @@ class DSTableViewer(Controller):
 
 
 if __name__ == '__main__':
-    from tests.conftest import make_non_ascii_ds_mock    
-    ds = make_non_ascii_ds_mock()
+    from tests.conftest import simple_ds
+    ds = simple_ds()
     dstv = DSTableViewer(ds)
     dstv.configure_traits(view=dstv.get_view())

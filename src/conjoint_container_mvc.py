@@ -110,7 +110,7 @@ class ConjointsHandler(ModelView):
         ds_id = nid_map[new]
         self.model.design_set = obj.dsc[ds_id]
         obj.chosen_design_vars = []
-        self.available_design_vars = self.model.design_set.variable_names
+        self.available_design_vars = self.model.design_set.var_n
 
 
     @on_trait_change('model:selected_consumer_attr')
@@ -120,7 +120,7 @@ class ConjointsHandler(ModelView):
         ds_id = nid_map[new]
         self.model.consumer_attr_set = obj.dsc[ds_id]
         obj.chosen_consumer_attr_vars = []
-        self.available_consumer_attr_vars = self.model.consumer_attr_set.variable_names
+        self.available_consumer_attr_vars = self.model.consumer_attr_set.var_n
 
 
     @on_trait_change('model:chosen_consumer_likings')

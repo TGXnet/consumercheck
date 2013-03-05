@@ -28,7 +28,6 @@ from traitsui.menu import OKButton
 from dataset import DataSet
 from ds_table_view import DSTableViewer
 from plot_windows import LinePlotWindow
-# from ds_matrix_view import matrix_view
 from conjoint_machine import ConjointMachine
 from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
 from plugin_tree_helper import WindowLauncher
@@ -273,13 +272,7 @@ class AConjointHandler(ModelView):
         cj_df = pd.DataFrame(cj_res['data'])
         cj_df.index = cj_res['rowNames']
         cj_df.columns = cj_res['colNames']
-        dm = DataSet(matrix=cj_df, display_name=name)
-        ## logger.debug(cj_res['data'])
-        ## dm.matrix = cj_res['data']
-        ## logger.debug(cj_res['colNames'])
-        ## dm.variable_names = list(cj_res['colNames'])
-        ## logger.debug(cj_res['rowNames'])
-        ## dm.object_names = list(cj_res['rowNames'])
+        dm = DataSet(mat=cj_df, display_name=name)
         return dm
 
 

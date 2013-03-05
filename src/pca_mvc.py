@@ -59,15 +59,15 @@ class APCAModel(HasTraits):
     result = Property()
 
     def _get_max_pc(self):
-        return (min(self.ds.n_rows, self.ds.n_cols) - 2)
+        return (min(self.ds.n_objs, self.ds.n_vars) - 2)
 
 
     def _check_std_dev(self):
-        sv = self.ds.matrix.std(axis=0)
+        sv = self.ds.values.std(axis=0)
         std_limit = 0.001
         dm = sv < std_limit
         if np.any(dm):
-            vv = np.array(self.ds.variable_names)
+            vv = np.array(self.ds.var_n)
             self.zero_variance = list(vv[np.nonzero(dm)])
         else:
             self.zero_variance = []
@@ -80,7 +80,7 @@ class APCAModel(HasTraits):
         self._check_std_dev()
         if self.zero_variance and self.standardise:
             raise InComputeable('PCA: matrix have vectors with zero variance')
-        return PCA(self.ds.matrix,
+        return PCA(self.ds.values,
                    numPC=self.pc_to_calc,
                    mode=std_ds,
                    cvType=["loo"])
@@ -196,7 +196,7 @@ class APCAHandler(ModelView):
     def _make_scores_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.scores()
-        labels = self.model.ds.object_names
+        labels = self.model.ds.obj_n
 
         # Make table view dataset
         pc_df = pd.DataFrame(
@@ -204,7 +204,7 @@ class APCAHandler(ModelView):
             index=labels,
             columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
         score_ds = DataSet(
-            matrix=pc_df,
+            mat=pc_df,
             display_name=self.model.ds.display_name)
 
         plot = PCScatterPlot(pc_tab, labels, view_data=score_ds, title="Scores", id='scores')
@@ -233,7 +233,7 @@ class APCAHandler(ModelView):
     def _make_loadings_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.loadings()
-        labels = self.model.ds.variable_names
+        labels = self.model.ds.var_n
 
         # Make table view dataset
         pc_df = pd.DataFrame(
@@ -241,7 +241,7 @@ class APCAHandler(ModelView):
             index=labels,
             columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
         loadings_ds = DataSet(
-            matrix=pc_df,
+            mat=pc_df,
             display_name=self.model.ds.display_name)
 
         plot = PCScatterPlot(pc_tab, labels, view_data=loadings_ds, title="Loadings", id="loadings")
@@ -270,7 +270,7 @@ class APCAHandler(ModelView):
         res = self.model.result
         pc_tab = res.corrLoadings()
         expl_vars = res.calExplVar()
-        labels = self.model.ds.variable_names
+        labels = self.model.ds.var_n
 
         # Make table view dataset
         pc_df = pd.DataFrame(
@@ -278,7 +278,7 @@ class APCAHandler(ModelView):
             index=labels,
             columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
         corr_loadings_ds = DataSet(
-            matrix=pc_df,
+            mat=pc_df,
             display_name=self.model.ds.display_name)
 
         pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, view_data=corr_loadings_ds, title="Correlation Loadings", id="corr_loading")
@@ -317,7 +317,7 @@ class APCAHandler(ModelView):
             index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
             columns=["calibrated", "validated"])
         ev_ds = DataSet(
-            matrix=pc_df,
+            mat=pc_df,
             display_name=self.model.ds.display_name)
 
         pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated', view_data=ev_ds, title="Explained Variance", id="expl_var")

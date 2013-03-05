@@ -150,8 +150,8 @@ class ConjointMachine(object):
     def _check2d_interaction(self, attr1, attr2):
         from pprint import pprint
         print(attr1, attr2)
-        vns = self.consAtts.variable_names
-        mat = self.consAtts.matrix
+        vns = self.consAtts.var_n
+        mat = self.consAtts.values
         ind1 = vns.index(attr1)
         ind2 = vns.index(attr2)
         uniq1 = np.unique(mat[:,ind1])
@@ -197,24 +197,24 @@ class ConjointMachine(object):
         # consumer attributes and design
         
         # Get content from design array
-        desData = self.design.matrix
-        desVarNames = self.design.variable_names
-        desObjNames = self.design.object_names
+        desData = self.design.values
+        desVarNames = self.design.var_n
+        desObjNames = self.design.obj_n
         
         # Get content form cosumer liking array
-        consData = self.consLiking.matrix
-        consVarNames = self.consLiking.variable_names
+        consData = self.consLiking.values
+        consVarNames = self.consLiking.var_n
         
         # Get content from consumer attributes array
-        attrData = self.consAtts.matrix
-        attrVarNames = self.consAtts.variable_names
+        attrData = self.consAtts.values
+        attrVarNames = self.consAtts.var_n
         
         # Make list with column names
         self.headerList = ['Consumer', self.consLikingTag]
         self.headerList.extend(desVarNames)
         self.headerList.extend(attrVarNames)
 
-        # Now construct conjoint matrix
+        # Now construct conjoint values
         # -----------------------------
         allConsList = []
         consRows = np.shape(desData)[0]
@@ -258,25 +258,25 @@ class ConjointMachine(object):
             self.r('colnames(conjDF) <- conjDataVarNames')
         else:
             # Consumer attributes
-            self.r['consAttMat'] = self.consAtts.matrix
-            self.r['consAttVars'] = asciify(self.consAtts.variable_names)
-            self.r['consAttObj'] = asciify(self.consAtts.object_names)
+            self.r['consAttMat'] = self.consAtts.values
+            self.r['consAttVars'] = asciify(self.consAtts.var_n)
+            self.r['consAttObj'] = asciify(self.consAtts.obj_n)
             self.r('consum.attr <- as.data.frame(consAttMat)')
             self.r('colnames(consum.attr) <- consAttVars')
             self.r('rownames(consum.attr) <- consAttObj')
 
-            # Design matrix
-            self.r['designMat'] = self.design.matrix
-            self.r['designVars'] = asciify(self.design.variable_names)
-            self.r['designObj'] = asciify(self.design.object_names)
+            # Design values
+            self.r['designMat'] = self.design.values
+            self.r['designVars'] = asciify(self.design.var_n)
+            self.r['designObj'] = asciify(self.design.obj_n)
             self.r('design.matr <- as.data.frame(designMat)')
             self.r('colnames(design.matr) <- designVars')
             self.r('rownames(design.matr) <- designObj')
 
             # Consumer liking data
-            self.r['consLikingMat'] = self.consLiking.matrix
-            self.r['consLikingVars'] = asciify(self.consLiking.variable_names)
-            self.r['consLikingObj'] = asciify(self.consLiking.object_names)
+            self.r['consLikingMat'] = self.consLiking.values
+            self.r['consLikingVars'] = asciify(self.consLiking.var_n)
+            self.r['consLikingObj'] = asciify(self.consLiking.obj_n)
             self.r('cons.liking <- as.data.frame(consLikingMat)')
             self.r('colnames(cons.liking) <- consLikingVars')
             self.r('rownames(cons.liking) <- consLikingObj')
@@ -409,7 +409,7 @@ class ConjointMachine(object):
         Returns residuals from R conjoint function.
         """
         # Get size of liking data array. 
-        numRows, numCols = np.shape(self.consLiking.matrix)
+        numRows, numCols = np.shape(self.consLiking.values)
 
         self.r('residTab <- res.gm[[1]][5]')
 
@@ -418,14 +418,14 @@ class ConjointMachine(object):
             self.r['residTab']['residuals'],
             (numRows, numCols))
 
-        residTableDict['rowNames'] = self.consLiking.object_names
-        residTableDict['colNames'] = self.consLiking.variable_names
+        residTableDict['rowNames'] = self.consLiking.obj_n
+        residTableDict['colNames'] = self.consLiking.var_n
 
         return residTableDict
 
 
     def _calcMeanLiking(self):
-        return np.mean(self.consLiking.matrix)
+        return np.mean(self.consLiking.values)
 
 
 class ConjointCalcThread(Thread):

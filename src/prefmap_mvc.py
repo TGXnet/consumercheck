@@ -46,22 +46,22 @@ class APrefmapModel(HasTraits):
     result = Property()
 
     def _get_max_pc(self):
-        return (min(self.ds_C.n_rows,self.ds_C.n_cols))
+        return (min(self.ds_C.n_objs,self.ds_C.n_vars))
 
     def _get_result(self):
         logging.info("Run pls for: Consumer: {0} ,Sensory: {1}".format(self.ds_C.id, self.ds_S.id))
         if self.mother_ref.radio == 'Internal mapping':
             return pls(
-                       self.ds_C.matrix,
-                       self.ds_S.matrix,
+                       self.ds_C.values,
+                       self.ds_S.values,
                        numPC=self.pc_to_calc,
                        cvType=["loo"],
                        Xstand=self.standardise,
                        Ystand=self.standardise)
         else:
             return pls(
-                       self.ds_S.matrix,
-                       self.ds_C.matrix,
+                       self.ds_S.values,
+                       self.ds_C.values,
                        numPC=self.pc_to_calc,
                        cvType=["loo"],
                        Ystand=self.standardise,
@@ -137,7 +137,7 @@ class APrefmapHandler(ModelView):
     def _make_scores_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.X_scores()
-        labels = self.model.ds_C.object_names
+        labels = self.model.ds_C.obj_n
         expl_vars_x = res.X_calExplVar()
 
         # Make table view dataset
@@ -146,7 +146,7 @@ class APrefmapHandler(ModelView):
             index=labels,
             columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
         score_ds = DataSet(
-            matrix=pc_df,
+            mat=pc_df,
             display_name=self.model.ds_C.display_name)
 
         plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, view_data=score_ds, title="Scores", id="scores")
@@ -179,16 +179,16 @@ class APrefmapHandler(ModelView):
         pc_df = pd.DataFrame(xLP)
 
         if self.model.mother_ref.radio == 'Internal mapping':
-            labels = self.model.ds_C.variable_names
+            labels = self.model.ds_C.var_n
             display_name = self.model.ds_C.display_name
         else:
-            labels = self.model.ds_S.variable_names
+            labels = self.model.ds_S.var_n
             display_name = self.model.ds_S.display_name
 
         pc_df.index = labels
         pc_df.columns = ["PC-{0}".format(i+1) for i in range(xLP.shape[1])]
         loadings_ds = DataSet(
-            matrix=pc_df,
+            values=pc_df,
             display_name=display_name)
 
         plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, view_data=loadings_ds, title="X Loadings", id="loadings_x")
@@ -212,16 +212,16 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         yLP = res.Y_loadings()
         expl_vars = res.Y_calExplVar()
-        # labels = self.model.ds_S.variable_names
+        # labels = self.model.ds_S.var_n
 
         # Make table view dataset
         col_names = ["PC-{0}".format(i+1) for i in range(yLP.shape[1])]
 
         if self.model.mother_ref.radio == 'Internal mapping':
-            labels = self.model.ds_S.variable_names
+            labels = self.model.ds_S.var_n
             display_name = self.model.ds_S.display_name
         else:
-            labels = self.model.ds_C.variable_names
+            labels = self.model.ds_C.var_n
             display_name = self.model.ds_C.display_name
 
         pc_df = pd.DataFrame(
@@ -229,7 +229,7 @@ class APrefmapHandler(ModelView):
             index=labels,
             columns=col_names)
         loadings_ds = DataSet(
-            matrix=pc_df,
+            mat=pc_df,
             display_name=display_name)
 
         plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, view_data=loadings_ds, title="Y Loadings", id="loadings_y")
@@ -259,11 +259,11 @@ class APrefmapHandler(ModelView):
         cevx = res.X_calExplVar()
         cevy = res.Y_calExplVar()
         if self.model.mother_ref.radio == 'Internal mapping':
-            vnx = self.model.ds_C.variable_names
-            vny = self.model.ds_S.variable_names
+            vnx = self.model.ds_C.var_n
+            vny = self.model.ds_S.var_n
         else:
-            vnx = self.model.ds_S.variable_names
-            vny = self.model.ds_C.variable_names
+            vnx = self.model.ds_S.var_n
+            vny = self.model.ds_C.var_n
         pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings", id="corr_loading")
         pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
         if is_subplot:
@@ -301,7 +301,7 @@ class APrefmapHandler(ModelView):
             index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
             columns=["calibrated", "validated"])
         ev_ds = DataSet(
-            matrix=pc_df,
+            mat=pc_df,
             display_name=self.model.ds_C.display_name)
 
         pl = EVLinePlot(sumCalX, 'darkviolet', 'Calibrated X', view_data=ev_ds, title = "Explained Variance X", id="expl_var_x")
@@ -335,7 +335,7 @@ class APrefmapHandler(ModelView):
             index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
             columns=["calibrated", "validated"])
         ev_ds = DataSet(
-            matrix=pc_df,
+            mat=pc_df,
             display_name=self.model.ds_S.display_name)
 
         pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', view_data=ev_ds, title = "Explained Variance Y", id="expl_var_y")
