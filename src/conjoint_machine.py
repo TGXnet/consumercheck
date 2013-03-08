@@ -441,7 +441,7 @@ class ConjointCalcThread(Thread):
 
 def asciify(names):
     """Take a list of unicodes and turn each elemet into ascii strings"""
-    return [n.encode('ascii', 'ignore') for n in names]
+    return [str(n).encode('ascii', 'ignore') for n in names]
 
 
 if __name__ == '__main__':

@@ -1,14 +1,5 @@
 # Per directory py.test helper functions
-'''
-# FIXME: Update to py.test 2.3 funcargs
-# syntetic ds
-# vell know ds from file
-# pure random ds
-# Data set container/collection
-# All datasets
-# Related prefmap datasets
-# Related Conjoint datasets
-# Datasets with vaiable degree of missing data
+'''PY.test resources
 '''
 import pytest
 
@@ -230,7 +221,6 @@ def iris_ds():
     return ds
 
 
-
 @pytest.fixture
 def synth_dsc():
     dsc = DatasetContainer()
@@ -253,7 +243,7 @@ def conjoint_dsc():
 
 @pytest.fixture(scope="module")
 def prefmap_dsc():
-    '''Get Conjoint std. test datasets '''
+    '''Get liking and sensory std. test datasets '''
     dsc = DatasetContainer()
 
     for mi in CHEESE:

@@ -2,10 +2,13 @@
 import pytest
 
 from basic_stat_model import BasicStat, BasicStatPlugin, extract_summary, extract_histogram
+from basic_stat_gui import BasicStatPluginController
+from dataset_container import DatasetContainer
 
 
 # Testing one analysis module
 
+@pytest.mark.model
 def test_discrete_row_wise(discrete_ds):
     # Row-wise is default
     bs = BasicStat(ds=discrete_ds)
@@ -20,6 +23,7 @@ def test_discrete_row_wise(discrete_ds):
     assert hist.obj_n == ['O{}'.format(i+1) for i in range(5)]
 
 
+@pytest.mark.model
 def test_discrete_column_wise(discrete_ds):
     bs = BasicStat(ds=discrete_ds)
     bs.summary_axis = 'Column-wise'
@@ -34,7 +38,7 @@ def test_discrete_column_wise(discrete_ds):
     assert hist.obj_n == ['V{}'.format(i+1) for i in range(8)]
 
 
-
+@pytest.mark.model
 def test_missing(discrete_nans_ds):
     bs = BasicStat(ds=discrete_nans_ds)
 
@@ -59,6 +63,7 @@ def test_missing(discrete_nans_ds):
     assert sane_sum.all()
 
 
+@pytest.mark.model
 def test_continous():
     '''Not needed by now'''
     assert True
@@ -66,3 +71,25 @@ def test_continous():
 
 
 # Testing the plugin
+@pytest.mark.gui
+def test_update_propagation(discrete_ds):
+    # Assemble object graph
+    dsc = DatasetContainer()
+    bsp = BasicStatPlugin(dsc=dsc)
+    bspc = BasicStatPluginController(bsp)
+    # Verify that empty dsc gives empty selection list
+    print("Available", bspc.available_ds)
+    assert len(bspc.available_ds) == 0
+    # Simulate dataset added
+    dsc.add(discrete_ds)
+    # Verify that the added dataset i available in the selection list
+    print("Available", bspc.available_ds)
+    assert len(bspc.available_ds) == 1
+    # Simulat that dataset i selected for computation
+    bspc.selected_ds.append(bspc.available_ds[0][0])
+    print("Selected", bspc.selected_ds)
+    print("Tasks", bspc.model.tasks)
+    # Simulat removal of dataset
+    del dsc[bspc.available_ds[0][0]]
+    # Verify that it is also removed from selection list
+    assert len(bspc.available_ds) == 0

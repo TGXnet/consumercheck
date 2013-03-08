@@ -8,14 +8,19 @@ from conjoint_machine import ConjointMachine
 # How to compare results
 
 
+def from_name(dsc, name):
+    nid = dict([(m[1], m[0]) for m in dsc.get_id_name_map()])
+    return dsc[nid[name]]
+
+
 # Test all three structures
 @pytest.mark.parametrize("structure", [1, 2, 3])
 def test_all_struct(conjoint_dsc, structure):
-    consAttr = conjoint_dsc.get_by_id('consumerattributes')
-    odflLike = conjoint_dsc.get_by_id('odour-flavour_liking')
-    consistencyLike = conjoint_dsc.get_by_id('consistency_liking')
-    overallLike = conjoint_dsc.get_by_id('overall_liking')
-    designVar = conjoint_dsc.get_by_id('design')
+    consAttr = from_name(conjoint_dsc, 'Consumers')
+    odflLike = from_name(conjoint_dsc, 'Odour-flavor')
+    consistencyLike = from_name(conjoint_dsc, 'Consistency')
+    overallLike = from_name(conjoint_dsc, 'Overall')
+    designVar = from_name(conjoint_dsc, 'Tine yogurt design')
     selected_structure = structure
     selected_consAttr = ['Sex']
     selected_designVar = ['Flavour', 'Sugarlevel']
@@ -30,11 +35,11 @@ def test_all_struct(conjoint_dsc, structure):
 
 
 def test_r_data_merge(conjoint_dsc):
-    consAttr = conjoint_dsc.get_by_id('consumerattributes')
-    odflLike = conjoint_dsc.get_by_id('odour-flavour_liking')
-    consistencyLike = conjoint_dsc.get_by_id('consistency_liking')
-    overallLike = conjoint_dsc.get_by_id('overall_liking')
-    designVar = conjoint_dsc.get_by_id('design')
+    consAttr = from_name(conjoint_dsc, 'Consumers')
+    odflLike = from_name(conjoint_dsc, 'Odour-flavor')
+    consistencyLike = from_name(conjoint_dsc, 'Consistency')
+    overallLike = from_name(conjoint_dsc, 'Overall')
+    designVar = from_name(conjoint_dsc, 'Tine yogurt design')
     selected_structure = 1
     selected_consAttr = ['Sex']
     # selected_consAttr = ['Sex', 'Age']
@@ -51,11 +56,11 @@ def test_r_data_merge(conjoint_dsc):
 
 
 def test_category_strings(conjoint_dsc):
-    e_attr = conjoint_dsc.get_by_id('bb_e_consattr')
-    e_liking = conjoint_dsc.get_by_id('bb_e_liking')
-    design = conjoint_dsc.get_by_id('bb_design')
+    e_attr = from_name(conjoint_dsc, 'Estland consumers')
+    e_liking = from_name(conjoint_dsc, 'Estland liking data')
+    design = from_name(conjoint_dsc, 'Barley bread design')
+
     selected_structure = 1
-    # [u'Sex', u'Age', u'WB', u'BB', u'Edu', u'Health']
     selected_consAttr = ['Sex', 'Age']
     # [u'Barley', u'Salt']
     selected_designVar = ['Barley', 'Salt']
@@ -70,9 +75,10 @@ def test_category_strings(conjoint_dsc):
 
 
 def test_completeness(conjoint_dsc):
-    e_attr = conjoint_dsc.get_by_id('bb_e_consattr')
-    e_liking = conjoint_dsc.get_by_id('bb_e_liking')
-    design = conjoint_dsc.get_by_id('bb_design')
+    e_attr = from_name(conjoint_dsc, 'Estland consumers')
+    e_liking = from_name(conjoint_dsc, 'Estland liking data')
+    design = from_name(conjoint_dsc, 'Barley bread design')
+
     selected_structure = 1
     # [u'Sex', u'Age', u'WB', u'BB', u'Edu', u'Health']
     selected_consAttr = ['Sex', 'Age', 'Edu']
@@ -97,11 +103,20 @@ def test_async_calc(conjoint_dsc, merge):
 
     run_state = RunState()
 
-    consAttr = conjoint_dsc.get_by_id('consumerattributes')
-    odflLike = conjoint_dsc.get_by_id('odour-flavour_liking')
-    consistencyLike = conjoint_dsc.get_by_id('consistency_liking')
-    overallLike = conjoint_dsc.get_by_id('overall_liking')
-    designVar = conjoint_dsc.get_by_id('design')
+
+    consAttr = from_name(conjoint_dsc, 'Consumers')
+    odflLike = from_name(conjoint_dsc, 'Odour-flavor')
+    consistencyLike = from_name(conjoint_dsc, 'Consistency')
+    overallLike = from_name(conjoint_dsc, 'Overall')
+    designVar = from_name(conjoint_dsc, 'Tine yogurt design')
+
+
+    ## consAttr = conjoint_dsc.get_by_id('consumerattributes')
+    ## odflLike = conjoint_dsc.get_by_id('odour-flavour_liking')
+    ## consistencyLike = conjoint_dsc.get_by_id('consistency_liking')
+    ## overallLike = conjoint_dsc.get_by_id('overall_liking')
+    ## designVar = conjoint_dsc.get_by_id('design')
+
     selected_structure = 1
     selected_consAttr = ['Sex']
     selected_designVar = ['Flavour', 'Sugarlevel']

@@ -59,22 +59,6 @@ def test_get_ndarray(w2err, a_df):
     assert isinstance(ds.values, np.ndarray)
 
 
-def test_deprecation_varnings(w2err, a_df):
-    ds = DataSet(mat=a_df)
-    with pytest.raises(DeprecationWarning):
-        dtest = DataSet(matrix=a_df)
-    with pytest.raises(DeprecationWarning):
-        arr = ds.matrix
-    with pytest.raises(DeprecationWarning):
-        cols = ds.n_cols
-    with pytest.raises(DeprecationWarning):
-        rows = ds.n_rows
-    with pytest.raises(DeprecationWarning):
-        vn = ds.variable_names
-    with pytest.raises(DeprecationWarning):
-        on = ds.object_names
-
-
 # Test dataset with missing data
 # To read an matrix with discrete number shoud result
 # in dtype=int but nan is defined as an float

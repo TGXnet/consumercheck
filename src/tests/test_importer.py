@@ -50,7 +50,8 @@ class TestTextfileImport(object):
             have_obj_names=False,
             )
         ds = ifp.import_data()
-        assert ds.matrix.shape == (12, 5)
+        assert ds.n_objs == 12
+        assert ds.n_vars == 5
 
 
     def test_comma_decimal_mark(self, tdd, ref):
@@ -62,8 +63,9 @@ class TestTextfileImport(object):
             have_obj_names=False,
             )
         ds = ifp.import_data()
-        assert ds.matrix.shape == (12, 5)
-        assert ds.matrix.dtypes[0] == np.float64
+        assert ds.n_objs == 12
+        assert ds.n_vars == 5
+        assert ds.mat.dtypes[0] == np.float64
 
 
     def test_var_names(self, tdd, ref):
@@ -73,9 +75,10 @@ class TestTextfileImport(object):
             have_obj_names=False,
             )
         ds = ifp.import_data()
-        assert ds.matrix.shape == (12, 5)
-        assert ds.matrix.index[0] == 'O1'
-        assert ds.matrix.columns[0] == 'Var1'
+        assert ds.n_objs == 12
+        assert ds.n_vars == 5
+        assert ds.obj_n[0] == 'O1'
+        assert ds.var_n[0] == 'Var1'
 
 
     def test_obj_var_names(self, tdd, ref):
@@ -85,9 +88,10 @@ class TestTextfileImport(object):
             have_obj_names=True,
             )
         ds = ifp.import_data()
-        assert ds.matrix.shape == (12, 5)
-        assert ds.matrix.index[0] == 'Ost1'
-        assert ds.matrix.columns[0] == 'Var1'
+        assert ds.n_objs == 12
+        assert ds.n_vars == 5
+        assert ds.obj_n[0] == 'Ost1'
+        assert ds.var_n[0] == 'Var1'
 
 
     def test_csv_empty_corner(self, tdd, ref):
@@ -98,8 +102,8 @@ class TestTextfileImport(object):
             have_obj_names=True,
             )
         ds = ifp.import_data()
-        assert ds.matrix.shape == (12, 5)
-        assert not ds.missing_data
+        assert ds.n_objs == 12
+        assert ds.n_vars == 5
 
 
     def test_utf8_text(self, tdd, ref):
@@ -110,7 +114,8 @@ class TestTextfileImport(object):
             have_obj_names=True,
             )
         ds = ifp.import_data()
-        assert ds.matrix.shape == (12, 5)
+        assert ds.n_objs == 12
+        assert ds.n_vars == 5
 
 
     def test_latin1_text(self, tdd, ref):
@@ -121,7 +126,8 @@ class TestTextfileImport(object):
             have_obj_names=True,
             )
         ds = ifp.import_data()
-        assert ds.matrix.shape == (12, 5)
+        assert ds.n_objs == 12
+        assert ds.n_vars == 5
 
 
     def test_missing_values(self, tdd, ref):
@@ -131,7 +137,8 @@ class TestTextfileImport(object):
             have_obj_names=False,
             )
         ds = ifp.import_data()
-        assert ds.matrix.shape == (12, 5)
+        assert ds.n_objs == 12
+        assert ds.n_vars == 5
         assert ds.missing_data
 
 
