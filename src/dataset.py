@@ -21,6 +21,16 @@ class DataSet(_traits.HasTraits):
     '''Dataset for holding one matrix
 
     and associated metadata
+    The reccomended access methods as properties for the DataSet object:
+     * id: An identity string that is unique for each object
+     * display_name: An human friendly name that for the datataset
+     * ds_type: The dataset type
+     * missing_data: Boolean value indicatin if the dataset have "holes"
+     * n_vars: Number of variables
+     * n_objs: Number of objects
+     * var_n: List containing variable names
+     * obj_n: List containing object names
+     * values: The matrix values as an 2D Numpy array
     '''
     mat = _traits.Instance(_pd.DataFrame, ())
 
