@@ -31,6 +31,7 @@ class DataSet(_traits.HasTraits):
      * var_n: List containing variable names
      * obj_n: List containing object names
      * values: The matrix values as an 2D Numpy array
+     * mat: The matrix as an Pandas DataFrame
     '''
     mat = _traits.Instance(_pd.DataFrame, ())
 
