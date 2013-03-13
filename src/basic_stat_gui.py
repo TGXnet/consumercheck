@@ -14,8 +14,8 @@ class BasicStatController(_traitsui.Controller):
     '''Controller for one basic statistics object'''
     id = _traits.DelegatesTo('model')
     name = _traits.Str()
-    base_win_launchers = _traits.List()
-    idx_win_launchers = _traits.List()
+    base_win_launchers = _traits.List(_traits.Instance(WindowLauncher))
+    idx_win_launchers = _traits.List(_traits.Instance(WindowLauncher))
 
 
     def _name_default(self):
@@ -264,7 +264,7 @@ class TestOneDsTree(_traits.HasTraits):
 if __name__ == '__main__':
     print("Basic stat GUI test started")
     from tests.conftest import all_dsc, synth_dsc, discrete_ds
-    one_branch=False
+    one_branch=True
 
     if one_branch:
         ds = discrete_ds()

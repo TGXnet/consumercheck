@@ -1,6 +1,10 @@
-
+'''Things to test;
+ * Test GUI logic for one BasicStat
+ * Make basic stat handle continuous values
+'''
 import pytest
 
+# Local imports
 from basic_stat_model import BasicStat, BasicStatPlugin, extract_summary, extract_histogram
 from basic_stat_gui import BasicStatPluginController
 from dataset_container import DatasetContainer
