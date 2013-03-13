@@ -1,130 +1,57 @@
 
-# std lib imports
+# Std lib imports
 import sys
 
-# Scipy libs imports
-import numpy as np
-import pandas as pd
+# Scipy imports
+import numpy as _np
+import pandas as _pd
 
-# Enthought imports
-from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
-                        Property, on_trait_change)
-from traitsui.api import View, Group, Item, ModelView, RangeEditor
-from traitsui.menu import OKButton
+# ETS imports
+import traits.api as _traits
+import traitsui.api as _traitsui
 
 # Local imports
-from pca import nipalsPCA as PCA
 from dataset import DataSet
-from plot_pc_scatter import PCScatterPlot
+from pca_model import PcaPlugin, InComputeable
 from plot_ev_line import EVLinePlot
+from plot_pc_scatter import PCScatterPlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
-from ds_slicer_view import ds_obj_slicer_view, ds_var_slicer_view
-from ui_results_new import TableViewController
-from plugin_tree_helper import WindowLauncher
+from plugin_tree_helper import WindowLauncher, dclk_activator
+from ui_results import TableViewController
 
 
-class InComputeable(Exception):
-    pass
-
-
-class ErrorMessage(HasTraits):
-    err_msg = Str()
-    traits_view = View(Item('err_msg', style='readonly',
+class ErrorMessage(_traits.HasTraits):
+    err_msg = _traits.Str()
+    traits_view = _traitsui.View(_traitsui.Item('err_msg', style='readonly',
                             label='Zero variance variables'),
-                       buttons=[OKButton], title='Warning')
+                       buttons=[_traitsui.OKButton], title='Warning')
 
 
-class APCAModel(HasTraits):
-    """Represent the PCA model of a dataset."""
-    name = Str()
-    plot_type = Str()
-    nid = Str()
-    # Shoud be Instance(PrefmapsContainer)
-    # but who comes first?
-    mother_ref = Instance(HasTraits)
-    ds = DataSet()
-    # List of variable names with zero variance in the data vector
-    zero_variance = List()
-    # FIXME: To be replaced by groups
-    sel_var = List()
-    sel_obj = List()
-
-    #checkbox bool for standardised results
-    standardise = DelegatesTo('mother_ref')
-    pc_to_calc = DelegatesTo('mother_ref')
-    min_pc = 2
-    max_pc = Property()
-
-    # depends_on
-    result = Property()
-
-    def _get_max_pc(self):
-        return (min(self.ds.n_objs, self.ds.n_vars) - 2)
+class PcaController(_traitsui.Controller):
+    '''Controller for one PCA object'''
+    id = _traits.DelegatesTo('model')
+    name = _traits.Str()
+    window_launchers = _traits.List(_traits.Instance(WindowLauncher))
 
 
-    def _check_std_dev(self):
-        sv = self.ds.values.std(axis=0)
-        std_limit = 0.001
-        dm = sv < std_limit
-        if np.any(dm):
-            vv = np.array(self.ds.var_n)
-            self.zero_variance = list(vv[np.nonzero(dm)])
-        else:
-            self.zero_variance = []
+    def _name_default(self):
+        return self.model.ds.display_name
 
 
-    def _get_result(self):
-        std_ds = 'cent'
-        if self.standardise:
-            std_ds = 'stand'
-        self._check_std_dev()
-        if self.zero_variance and self.standardise:
-            raise InComputeable('PCA: matrix have vectors with zero variance')
-        return PCA(self.ds.values,
-                   numPC=self.pc_to_calc,
-                   mode=std_ds,
-                   cvType=["loo"])
-
-
-class APCAHandler(ModelView):
-    plot_uis = List()
-    name = DelegatesTo('model')
-    nid = DelegatesTo('model')
-
-    show_sel_obj = Button('Objects')
-    show_sel_var = Button('Variables')
-
-    window_launchers = List(Instance(WindowLauncher))
-
-
-    def __init__(self, *args, **kwargs):
-        super(APCAHandler, self).__init__(*args, **kwargs)
-        self._populate_window_launchers()
-
-
-    @on_trait_change('show_sel_obj')
-    def _act_show_sel_obj(self, obj, name, new):
-        obj.model.ds.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
-
-
-    @on_trait_change('show_sel_var')
-    def _act_show_sel_var(self, obj, name, new):
-        obj.model.ds.edit_traits(view=ds_var_slicer_view, kind='livemodal')
+    def _window_launchers_default(self):
+        return self._populate_window_launchers()
 
 
     def __eq__(self, other):
-        return self.nid == other
+        return self.id == other
 
 
     def __ne__(self, other):
-        return self.nid != other
+        return self.id != other
 
 
     def _populate_window_launchers(self):
-        try:
-            adv_enable = self.model.mother_ref.mother_ref.en_advanced
-        except AttributeError:
-            adv_enable = False
+        adv_enable = False
 
         std_launchers = [
             ("Overview", "plot_overview"),
@@ -146,7 +73,7 @@ class APCAHandler(ModelView):
 
         if adv_enable:
             std_launchers.extend(adv_launchers)
-        self.window_launchers = [WindowLauncher(node_name=nn, func_name=fn, owner_ref=self) for nn, fn in std_launchers]
+        return [WindowLauncher(node_name=nn, func_name=fn, owner_ref=self) for nn, fn in std_launchers]
 
 
     def _show_zero_var_warning(self):
@@ -194,12 +121,12 @@ class APCAHandler(ModelView):
 
 
     def _make_scores_plot(self, is_subplot=False):
-        res = self.model.result
+        res = self.model.pca_res
         pc_tab = res.scores()
         labels = self.model.ds.obj_n
 
         # Make table view dataset
-        pc_df = pd.DataFrame(
+        pc_df = _pd.DataFrame(
             pc_tab,
             index=labels,
             columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
@@ -231,12 +158,12 @@ class APCAHandler(ModelView):
 
 
     def _make_loadings_plot(self, is_subplot=False):
-        res = self.model.result
+        res = self.model.pca_res
         pc_tab = res.loadings()
         labels = self.model.ds.var_n
 
         # Make table view dataset
-        pc_df = pd.DataFrame(
+        pc_df = _pd.DataFrame(
             pc_tab,
             index=labels,
             columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
@@ -267,13 +194,13 @@ class APCAHandler(ModelView):
 
 
     def _make_corr_load_plot(self, is_subplot=False):
-        res = self.model.result
+        res = self.model.pca_res
         pc_tab = res.corrLoadings()
         expl_vars = res.calExplVar()
         labels = self.model.ds.var_n
 
         # Make table view dataset
-        pc_df = pd.DataFrame(
+        pc_df = _pd.DataFrame(
             pc_tab,
             index=labels,
             columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
@@ -306,13 +233,13 @@ class APCAHandler(ModelView):
 
 
     def _make_expl_var_plot(self, is_subplot=False):
-        res = self.model.result
+        res = self.model.pca_res
         sumCal = res.cumCalExplVar()
         sumVal = res.cumValExplVar()
 
         # Make table view dataset
-        pc_tab = np.array([sumCal, sumVal]).T
-        pc_df = pd.DataFrame(
+        pc_tab = _np.array([sumCal, sumVal]).T
+        pc_df = _pd.DataFrame(
             pc_tab,
             index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
             columns=["calibrated", "validated"])
@@ -327,35 +254,24 @@ class APCAHandler(ModelView):
         return pl
 
 
-    def _accumulate_expl_var_adapter(self, nipals_ev_dict):
-        indexes = nipals_ev_dict.keys()
-        indexes.sort()
-        values = [0]
-        for i in indexes:
-            val = nipals_ev_dict[i]
-            values.append(values[i-1] + val)
-        values.pop(0)
-        return np.array(values)
-
-
     def show_residuals(self):
-        resids = self.model.result.residuals()
+        resids = self.model.pca_res.residuals()
         print(resids)
 
 
     def show_pred_x_cal(self):
-        cal_pred_x = self.model.result.calPredX()
+        cal_pred_x = self.model.pca_res.calPredX()
         print(cal_pred_x)
 
 
     def show_pred_x_val(self):
-        val_pred_x = self.model.result.valPredX()
+        val_pred_x = self.model.pca_res.valPredX()
         print(val_pred_x)
 
 
     def show_msee_tot(self):
         print("MSEE total")
-        msee = self.model.result.MSEE()
+        msee = self.model.pca_res.MSEE()
         tv = TableViewController(title="MSEE total")
         tv.set_col_names([str(i) for i in range(msee.shape[0])])
         tv.add_row(msee, 'MSEE')
@@ -364,7 +280,7 @@ class APCAHandler(ModelView):
 
     def show_msee_ind(self):
         print("MSEE for each variable")
-        ind_var_msee = self.model.result.MSEE_indVar()
+        ind_var_msee = self.model.pca_res.MSEE_indVar()
         tv = TableViewController(title="MSEE individual variables")
         tv.set_col_names([str(i) for i in range(ind_var_msee.shape[1])])
         for i in range(ind_var_msee.shape[0]):
@@ -374,7 +290,7 @@ class APCAHandler(ModelView):
 
     def show_msecv_tot(self):
         print("MSECV total")
-        msecv = self.model.result.MSECV()
+        msecv = self.model.pca_res.MSECV()
         tv = TableViewController(title="MSECV total")
         tv.set_col_names([str(i) for i in range(msecv.shape[0])])
         tv.add_row(msecv, 'MSECV')
@@ -383,7 +299,7 @@ class APCAHandler(ModelView):
 
     def show_msecv_ind(self):
         print("MSECV for each variable")
-        ind_var_msecv = self.model.result.MSECV_indVar()
+        ind_var_msecv = self.model.pca_res.MSECV_indVar()
         tv = TableViewController(title="MSECV individual variables")
         tv.set_col_names([str(i) for i in range(ind_var_msecv.shape[1])])
         for i in range(ind_var_msecv.shape[0]):
@@ -436,101 +352,182 @@ class APCAHandler(ModelView):
         return "{0} | PCA - {1} - ConsumerCheck".format(ds_name, dstype)
 
 
-a_pca_view = View(
-    Group(
-        Group(
-            Item('model.name'),
-            Item('model.standardise'),
-            Item('model.pc_to_calc',editor=RangeEditor(low_name='model.min_pc',high_name='model.max_pc',mode='spinner')),
-            Item('show_sel_obj',
-                 show_label=False),
-            Item('show_sel_var',
-                 show_label=False),
-            orientation='vertical',
-            ),
-        Item('', springy=True),
-        orientation='horizontal',
-        ),
+
+no_view = _traitsui.View()
+
+
+pca_view = _traitsui.View(
+    _traitsui.Item('controller.name', style='readonly'),
+    # _traitsui.Label('Standardise:'),
+    _traitsui.Item('standardise', style='custom', show_label=True),
+    _traitsui.Item('calc_n_pc',
+                   editor=_traitsui.RangeEditor(low_name='min_pc', high_name='max_pc', mode='auto'),
+                   style='simple',
+                   label='PC to calc:'),
     )
 
 
-if __name__ == '__main__':
-    # Things to fix for testing
-    # mother_ref: standardise, pc_to_calc
-    from traits.api import Bool, Int
-    from tests.conftest import imp_ds
+pca_nodes = [
+    _traitsui.TreeNode(
+        node_for=[PcaController],
+        label='name',
+        children='',
+        view=pca_view,
+        menu=[]),
+    _traitsui.TreeNode(
+        node_for=[PcaController],
+        label='=Base plots',
+        children='window_launchers',
+        view=pca_view,
+        menu=[]),
+    _traitsui.TreeNode(
+        node_for=[WindowLauncher],
+        label='node_name',
+        view=no_view,
+        menu=[],
+        on_dclick=dclk_activator)
+    ]
 
-    ds_meta = ('Vine', 'A_labels.txt', 'Vine set A', 'Consumer liking')
-    ds = imp_ds(ds_meta)
+
+pca_tree = _traitsui.TreeEditor(
+    nodes=pca_nodes,
+    )
 
 
-    class MocMother(HasTraits):
-        standardise = Bool(False)
-        pc_to_calc = Int(2)
-        win_handle = None
+class PcaPluginController(_traitsui.Controller):
+    available_ds = _traits.List()
+    selected_ds = _traits.List()
 
-    moc_mother = MocMother()
-
-    model = APCAModel(
-        name='Tore test',
-        ds=ds,
-        mother_ref=moc_mother)
+    update_tree = _traits.Event()
+    selected_object = _traits.Any()
+    edit_node = _traits.Instance(PcaController)
 
 
-    class APCATestHandler(APCAHandler):
-        bt_plot_overview = Button('Plot overview')
-        bt_plot_scores = Button('Plot scores')
-        bt_plot_loadings = Button('Plot loadings')
-        bt_plot_corr_loadings = Button('Plot corr loadings')
-        bt_plot_expl_var = Button('Plot explainded variance')
+    @_traits.on_trait_change('selected_object')
+    def _tree_selection_made(self, obj, name, new):
+        if isinstance(new, PcaController):
+            self.edit_node = new
+        elif isinstance(new, WindowLauncher):
+            self.edit_node = new.owner_ref
+        else:
+            self.edit_node = None
 
-        @on_trait_change('bt_plot_overview')
-        def _on_bpo(self, obj, name, new):
-            self.plot_overview()
 
-        @on_trait_change('bt_plot_scores')
-        def _on_bps(self, obj, name, new):
-            self.plot_scores()
+    # FIXME: I dont know why the initial populating is not handled by
+    # _update_selection_list()
+    def _available_ds_default(self):
+        return self._get_selectable()
 
-        @on_trait_change('bt_plot_loadings')
-        def _on_bpl(self, obj, name, new):
-            self.plot_loadings()
 
-        @on_trait_change('bt_plot_corr_loadings')
-        def _on_bpcl(self, obj, name, new):
-            self.plot_corr_loading()
+    @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]', post_init=False)
+    def _update_selection_list(self, obj, name, new):
+        self.available_ds = self._get_selectable()
 
-        @on_trait_change('bt_plot_expl_var')
-        def _on_bpev(self, obj, name, new):
-            self.plot_expl_var()
 
-        traits_view = View(
-            Group(
-                Group(
-                    Item('model.name'),
-                    Item('model.standardise'),
-                    Item('model.pc_to_calc'),
-                    Item('show_sel_obj',
-                         show_label=False),
-                    Item('show_sel_var',
-                         show_label=False),
-                    orientation='vertical',
-                    ),
-                Item('', springy=True),
-                Group(
-                    Item('bt_plot_overview'),
-                    Item('bt_plot_scores'),
-                    Item('bt_plot_loadings'),
-                    Item('bt_plot_corr_loadings'),
-                    Item('bt_plot_expl_var'),
-                    ),
-                orientation='horizontal',
+    def _get_selectable(self):
+        return self.model.dsc.get_id_name_map()
+
+
+    @_traits.on_trait_change('selected_ds')
+    def _selection_made(self, obj, name, old_value, new_value):
+        last = set(old_value)
+        new = set(new_value)
+        removed = last.difference(new)
+        added = new.difference(last)
+        if removed:
+            self.model.remove(list(removed)[0])
+        elif added:
+            self._make_task(list(added)[0])
+
+        self.update_tree = True
+
+
+    def _make_task(self, ds_id):
+        tsk = self.model.make_model(ds_id)
+        task = PcaController(tsk)
+        self.model.add(task)
+
+
+plugin_nodes=[
+    _traitsui.TreeNode(
+        node_for=[PcaPlugin],
+        label='=Pca',
+        children='',
+        auto_open=True,
+        menu=[],
+        ),
+    _traitsui.TreeNode(
+        node_for=[PcaPlugin],
+        label='=Pca',
+        children='tasks',
+        auto_open=True,
+        menu=[],
+        ),
+    ]
+
+
+pca_plugin_tree = _traitsui.TreeEditor(
+    nodes=plugin_nodes+pca_nodes,
+    # refresh='controller.update_tree',
+    selected='controller.selected_object',
+    editable=False,
+    hide_root=True,
+    )
+
+
+pca_plugin_view = _traitsui.View(
+    _traitsui.Group(
+        _traitsui.Item('controller.model', editor=pca_plugin_tree, show_label=False),
+        _traitsui.Group(
+            _traitsui.Group(
+                _traitsui.Item('controller.selected_ds',
+                               editor=_traitsui.CheckListEditor(name='controller.available_ds'),
+                               style='custom',
+                               show_label=False,
+                               width=200,
+                               height=200,
+                               ),
+                label='Select dataset',
+                show_border=True,
                 ),
-            resizable=True,
-            )
+            _traitsui.Group(
+                _traitsui.Item('controller.edit_node',
+                               editor=_traitsui.InstanceEditor(view=pca_view),
+                               style='custom',
+                               show_label=False),
+                show_border=True,
+                ),
+            orientation='vertical',
+            ),
+        _traitsui.Spring(width=230),
+        orientation='horizontal',
+        ),
+    resizable=True,
+    buttons=['OK'],
+    )
 
 
-    controller = APCATestHandler(
-        model=model)
-    with np.errstate(invalid='ignore'):
-        controller.configure_traits()
+class TestOnePcaTree(_traits.HasTraits):
+    one_pca = _traits.Instance(PcaController)
+
+    traits_view = _traitsui.View(
+        _traitsui.Item('one_pca', editor=pca_tree, show_label=False),
+        resizable=True,
+        buttons=['OK'],
+        )
+
+
+if __name__ == '__main__':
+    print("PCA GUI test start")
+    ## from tests.conftest import synth_dsc
+
+    ## ds = simple_ds()
+    ## pca = Pca(ds=ds)
+    ## pc = PcaController(pca)
+    ## test = TestOnePcaTree(one_pca=pc)
+    ## test.configure_traits()
+
+    ## dsc = synth_dsc()
+    ## pcap = PcaPlugin(dsc=dsc)
+    ## ppc = PcaPluginController(pcap)
+    ## ppc.configure_traits(view=pca_plugin_view)

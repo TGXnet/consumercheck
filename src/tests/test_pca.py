@@ -1,35 +1,58 @@
+'''Things to test:
+ * Check max_pc
+ * calc_n_pc to max_pc
+ * Results sets and shapes
+ * Check zero variance test
+ * Check that res is a new copy each time (unique id?)
+ * Calculation with missing data
+'''
 import pytest
+from tests.conftest import imp_ds
 
-# FIXME: To be tested
-# * One premap model
-# * different datasets and settings
-# * Test expected failures
-
-
-@pytest.fixture
-def mock_contaner():
-    import traits.api as traits
-
-    class MockContainer(traits.HasTraits):
-        standardise = traits.Bool(False)
-        pc_to_calc = traits.Int(4)
-
-    return MockContainer()
+# Local imports
+from pca_model import Pca, InComputeable
+from pca_gui import PcaController, TestOnePcaTree, PcaPlugin, PcaPluginController, pca_plugin_view
 
 
+@pytest.mark.model
+def test_pca_results():
+    # Folder, File name, Display name, DS type
+    ds_meta = ('Vine', 'A_labels.txt', 'Vine set A', 'Consumer liking')
+    ds = imp_ds(ds_meta)
+    print(ds.mat)
+    pca = Pca(ds=ds)
+    assert pca.calc_n_pc == pca.max_pc == 3
+    res = pca.pca_res
+    # Check if all expected result sets is in res
+    expected_sets = ['scores', 'loadings', 'expl_var', 'corr_loadings']
+    attrs = dir(res)
+    assert all([s in attrs for s in expected_sets])
+    # Check row and column headings
+    for dsn in expected_sets:
+        ds  = getattr(res, dsn)
+        print(ds.display_name, 'var', ds.var_n)
+        print(ds.display_name, 'obj', ds.obj_n)
 
-def test_one_pca(iris_ds, mock_contaner):
-    from pca_mvc import APCAModel
-    pca = APCAModel(mother_ref=mock_contaner, ds=iris_ds)
-    res = pca.result
-    print(type(res))
-    print(dir(res))
-    print("Results")
-    print(res.calExplVar())
-    print(res.means())
-    assert True
+
+@pytest.mark.model
+def test_zero_var(zero_var_ds):
+    pca = Pca(ds=zero_var_ds)
+    pca.standardise = True
+    print(zero_var_ds.mat)
+    with pytest.raises(InComputeable):
+        res = pca.pca_res
 
 
-def test_tull(dsc_mock):
-    dsc_mock.print_traits()
-    assert 0
+@pytest.mark.gui
+def test_one_pca_tree(simple_ds):
+    pca = Pca(ds=simple_ds)
+    pc = PcaController(pca)
+    one_pca = TestOnePcaTree(one_pca=pc)
+    one_pca.configure_traits()
+
+
+@pytest.mark.gui
+def test_pca_gui_update(synth_dsc):
+    pcap = PcaPlugin(dsc=synth_dsc)
+    ppc = PcaPluginController(pcap)
+    ppc.configure_traits(view=pca_plugin_view)
