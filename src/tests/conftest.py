@@ -96,6 +96,21 @@ def simple_ds():
     return ds
 
 
+@pytest.fixture
+def zero_var_ds():
+    '''Makes a simple syntetic dataset'''
+
+    ds = DataSet(display_name='Some values', ds_type='Sensory profiling')
+    ds.mat = pd.DataFrame(
+        [[1.1, 1.2, 1.3],
+         [2.1, 1.2, 2.3],
+         [3.1, 1.2, 3.3]],
+        index = ['O1', 'O2', 'O3'],
+        columns = ['V1', 'V2', 'V3'])
+
+    return ds
+
+
 discrete_nl = [
     [3, 5, 7, 8, 1, 9, 7, 3],
     [1, 8, 2, 5, 5, 2, 7, 5],
