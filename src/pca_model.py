@@ -10,15 +10,15 @@ import traits.api as _traits
 from pca import nipalsPCA as PCA
 from dataset import DataSet
 from dataset_container import DatasetContainer
+from plugin_tree_helper import Model
 
 
 class InComputeable(Exception):
     pass
 
 
-class Pca(_traits.HasTraits):
+class Pca(Model):
     """Represent the PCA model of a dataset."""
-    id = _traits.Str()
     ds = DataSet()
     # List of variable names with zero variance in the data vector
     zero_variance = _traits.List()
@@ -29,9 +29,6 @@ class Pca(_traits.HasTraits):
     min_pc = 2
     max_pc = _traits.Property()
     min_std = _traits.Float(0.001)
-
-    # depends_on
-    pca_res = _traits.Property()
 
 
     def _get_max_pc(self):
@@ -52,7 +49,7 @@ class Pca(_traits.HasTraits):
             self.zero_variance = []
 
 
-    def _get_pca_res(self):
+    def _get_res(self):
         '''Does the PCA calculation and gets the results
 
         This return an results object that holds copies of the
@@ -70,10 +67,10 @@ class Pca(_traits.HasTraits):
                   mode=std_ds,
                   cvType=["loo"])
 
-        return self._pack_pca_res(pca)
+        return self._pack_res(pca)
 
 
-    def _pack_pca_res(self, pca_obj):
+    def _pack_res(self, pca_obj):
 
         class PcaRes(object):
             pass
@@ -145,23 +142,3 @@ class Pca(_traits.HasTraits):
         ind_var_msecv = pca_obj.MSECV_indVar()
 
         return res
-
-
-
-class PcaPlugin(_traits.HasTraits):
-    dsc = _traits.Instance(DatasetContainer)
-    tasks = _traits.List(_traits.HasTraits)
-
-
-    def add(self, task):
-        self.tasks.append(task)
-
-
-    def make_model(self, ds_id):
-        ds = self.dsc[ds_id]
-        bs = Pca(id=ds_id, ds=ds)
-        return bs
-
-
-    def remove(self, task_id):
-        del(self.tasks[self.tasks.index(task_id)])
