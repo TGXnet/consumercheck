@@ -15,7 +15,7 @@ from dataset_container import DatasetContainer
 from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
 from basic_stat_gui import BasicStatPlugin, BasicStatPluginController, bs_plugin_view
-from ui_tab_pca import PCAPlugin
+from pca_gui import PcaPlugin, PcaPluginController, pca_plugin_view
 from ui_tab_prefmap import PrefmapPlugin
 from ui_tab_conjoint import ConjointPlugin
 from about_consumercheck import ConsumerCheckAbout
@@ -78,7 +78,7 @@ class MainUi(HasTraits):
     basic_stat = Instance(BasicStatPluginController)
 
     # Object representing the PCA and the GUI tab
-    pca = Instance(PCAPlugin)
+    pca = Instance(PcaPluginController)
 
     # Object representing the Prefmap and the GUI tab
     prefmap = Instance(PrefmapPlugin)
@@ -99,7 +99,6 @@ class MainUi(HasTraits):
 
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
-        self.pca = PCAPlugin(mother_ref=self)
         ## self.prefmap = PrefmapPlugin(mother_ref=self)
         self.conjoint = ConjointPlugin(mother_ref=self)
         self.dsc.on_trait_change(self._dsl_updated, 'dsl_changed')
@@ -109,6 +108,11 @@ class MainUi(HasTraits):
     def _basic_stat_default(self):
         bsp = BasicStatPlugin(dsc=self.dsc)
         return BasicStatPluginController(bsp)
+
+
+    def _pca_default(self):
+        pp = PcaPlugin(dsc=self.dsc)
+        return PcaPluginController(pp)
 
 
     def _dsl_updated(self, obj, name, new):
@@ -129,12 +133,10 @@ class MainUi(HasTraits):
     # The main view
     traits_ui_view = View(
         Group(
-            ## Item('dsc', editor=InstanceEditor(view=tree_view),
-            ##      style='custom', label="Datasets", show_label=False),
             Item('dsc', editor=tree_editor, label="Datasets", show_label=False),
             Item('basic_stat', editor=InstanceEditor(view=bs_plugin_view),
                  style='custom', label="Basic stat", show_label=False),
-            Item('pca', editor=InstanceEditor(),
+            Item('pca', editor=InstanceEditor(view=pca_plugin_view),
                  style='custom', label="PCA", show_label=False),
             ## Item('prefmap', editor=InstanceEditor(),
             ##      style='custom', label="Prefmap", show_label=False),
