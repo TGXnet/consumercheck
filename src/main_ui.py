@@ -99,7 +99,7 @@ class MainUi(HasTraits):
 
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
-        ## self.prefmap = PrefmapPlugin(mother_ref=self)
+        self.prefmap = PrefmapPlugin(mother_ref=self)
         self.conjoint = ConjointPlugin(mother_ref=self)
         self.dsc.on_trait_change(self._dsl_updated, 'dsl_changed')
         self.dsc.on_trait_change(self._ds_name_updated, 'ds_changed')
@@ -138,8 +138,8 @@ class MainUi(HasTraits):
                  style='custom', label="Basic stat", show_label=False),
             Item('pca', editor=InstanceEditor(view=pca_plugin_view),
                  style='custom', label="PCA", show_label=False),
-            ## Item('prefmap', editor=InstanceEditor(),
-            ##      style='custom', label="Prefmap", show_label=False),
+            Item('prefmap', editor=InstanceEditor(),
+                 style='custom', label="Prefmap", show_label=False),
             Item('conjoint', editor=InstanceEditor(),
                  style='custom', label="Conjoint", show_label=False),
             layout='tabbed'
