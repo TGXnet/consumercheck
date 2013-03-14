@@ -32,6 +32,7 @@ class PcaController(_traitsui.Controller):
     id = _traits.DelegatesTo('model')
     name = _traits.Str()
     window_launchers = _traits.List(_traits.Instance(WindowLauncher))
+    plot_uis = _traits.List()
 
 
     def _name_default(self):
@@ -122,7 +123,7 @@ class PcaController(_traitsui.Controller):
 
     def _make_scores_plot(self, is_subplot=False):
         res = self.model.pca_res
-        pc_tab = res.scores()
+        pc_tab = res.scores.values
         labels = self.model.ds.obj_n
 
         # Make table view dataset
@@ -159,7 +160,7 @@ class PcaController(_traitsui.Controller):
 
     def _make_loadings_plot(self, is_subplot=False):
         res = self.model.pca_res
-        pc_tab = res.loadings()
+        pc_tab = res.loadings.values
         labels = self.model.ds.var_n
 
         # Make table view dataset
@@ -195,8 +196,8 @@ class PcaController(_traitsui.Controller):
 
     def _make_corr_load_plot(self, is_subplot=False):
         res = self.model.pca_res
-        pc_tab = res.corrLoadings()
-        expl_vars = res.calExplVar()
+        pc_tab = res.corr_loadings.values
+        expl_vars = list(res.expl_var.values[0])
         labels = self.model.ds.var_n
 
         # Make table view dataset
@@ -234,8 +235,9 @@ class PcaController(_traitsui.Controller):
 
     def _make_expl_var_plot(self, is_subplot=False):
         res = self.model.pca_res
-        sumCal = res.cumCalExplVar()
-        sumVal = res.cumValExplVar()
+        cum_expl_v = _np.cumsum(_np.insert(res.expl_var.values, 0, 0, axis=1), axis=1)
+        sumCal = cum_expl_v[0]
+        sumVal = cum_expl_v[1]
 
         # Make table view dataset
         pc_tab = _np.array([sumCal, sumVal]).T
@@ -334,7 +336,8 @@ class PcaController(_traitsui.Controller):
         plot_window.mother_ref = self
         if sys.platform == 'linux2':
             self.plot_uis.append(
-                plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
+                # plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
+                plot_window.edit_traits(kind='live')
                 )
         elif sys.platform == 'win32':
             # FIXME: Investigate more here
@@ -519,15 +522,17 @@ class TestOnePcaTree(_traits.HasTraits):
 
 if __name__ == '__main__':
     print("PCA GUI test start")
-    ## from tests.conftest import synth_dsc
+    from tests.conftest import simple_ds, synth_dsc
+    one_branch=False
 
-    ## ds = simple_ds()
-    ## pca = Pca(ds=ds)
-    ## pc = PcaController(pca)
-    ## test = TestOnePcaTree(one_pca=pc)
-    ## test.configure_traits()
-
-    ## dsc = synth_dsc()
-    ## pcap = PcaPlugin(dsc=dsc)
-    ## ppc = PcaPluginController(pcap)
-    ## ppc.configure_traits(view=pca_plugin_view)
+    if one_branch:
+        ds = simple_ds()
+        pca = Pca(ds=ds)
+        pc = PcaController(pca)
+        test = TestOnePcaTree(one_pca=pc)
+        test.configure_traits()
+    else:
+        dsc = synth_dsc()
+        pcap = PcaPlugin(dsc=dsc)
+        ppc = PcaPluginController(pcap)
+        ppc.configure_traits(view=pca_plugin_view)
