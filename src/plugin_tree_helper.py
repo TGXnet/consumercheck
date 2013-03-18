@@ -168,7 +168,7 @@ class TestOneNode(_traits.HasTraits):
     one_model = _traits.Instance(ModelController)
 
 
-def test_view(model_nodes):
+def dummy_view(model_nodes):
 
     model_tree = _traitsui.TreeEditor(nodes=model_nodes)
 

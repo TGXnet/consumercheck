@@ -5,9 +5,10 @@
 import pytest
 
 # Local imports
-from basic_stat_model import BasicStat, BasicStatPlugin, extract_summary, extract_histogram
+from basic_stat_model import BasicStat, extract_summary, extract_histogram
 from basic_stat_gui import BasicStatPluginController
 from dataset_container import DatasetContainer
+from plugin_tree_helper import CalcContainer
 
 
 # Testing one analysis module
@@ -16,7 +17,7 @@ from dataset_container import DatasetContainer
 def test_discrete_row_wise(discrete_ds):
     # Row-wise is default
     bs = BasicStat(ds=discrete_ds)
-    res = bs.stat_res
+    res = bs.res
     summary = extract_summary(res)
     hist = extract_histogram(res)
     assert summary.var_n == ['mean', 'std', 'min', 'max']
@@ -31,7 +32,7 @@ def test_discrete_row_wise(discrete_ds):
 def test_discrete_column_wise(discrete_ds):
     bs = BasicStat(ds=discrete_ds)
     bs.summary_axis = 'Column-wise'
-    res = bs.stat_res
+    res = bs.res
     summary = extract_summary(res)
     hist = extract_histogram(res)
     assert summary.var_n == ['mean', 'std', 'min', 'max']
@@ -47,7 +48,7 @@ def test_missing(discrete_nans_ds):
     bs = BasicStat(ds=discrete_nans_ds)
 
     bs.summary_axis = 'Row-wise'
-    res = bs.stat_res
+    res = bs.res
     summary = extract_summary(res)
     hist = extract_histogram(res)
     nans = hist.mat['missing']
@@ -57,7 +58,7 @@ def test_missing(discrete_nans_ds):
     assert sane_sum.all()
 
     bs.summary_axis = 'Column-wise'
-    res = bs.stat_res
+    res = bs.res
     summary = extract_summary(res)
     hist = extract_histogram(res)
     nans = hist.mat['missing']
@@ -79,7 +80,7 @@ def test_continous():
 def test_update_propagation(discrete_ds):
     # Assemble object graph
     dsc = DatasetContainer()
-    bsp = BasicStatPlugin(dsc=dsc)
+    bsp = CalcContainer(dsc=dsc)
     bspc = BasicStatPluginController(bsp)
     # Verify that empty dsc gives empty selection list
     print("Available", bspc.available_ds)
@@ -92,7 +93,7 @@ def test_update_propagation(discrete_ds):
     # Simulat that dataset i selected for computation
     bspc.selected_ds.append(bspc.available_ds[0][0])
     print("Selected", bspc.selected_ds)
-    print("Tasks", bspc.model.tasks)
+    print("Calculations", bspc.model.calculations)
     # Simulat removal of dataset
     del dsc[bspc.available_ds[0][0]]
     # Verify that it is also removed from selection list

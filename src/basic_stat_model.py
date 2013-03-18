@@ -13,18 +13,34 @@ import traits.api as _traits
 
 # Local imports
 from dataset import DataSet
-from dataset_container import DatasetContainer
+from plugin_tree_helper import Model
 
 
-class BasicStat(_traits.HasTraits):
-    id = _traits.Str()
+class BasicStat(Model):
+    '''Basic statitstics model object.
+
+    This model calculates:
+     * mean
+     * std
+     * min
+     * max
+    In adition i makes data for plotting histograms.
+
+    The *summary_axis* attribute decides if the calculation is done for the
+    row or column axis.
+    '''
     ds = DataSet()
     summary_axis = _traits.Enum(('Row-wise', 'Column-wise'))
-    stat_res = _traits.Property()
 
 
-    def _get_stat_res(self):
+    def _get_res(self):
         class Res(object):
+            '''Calculation result *struct*.
+
+            Attributes:
+             * summary
+             * hist
+            '''
             def __init__(self, summary, hist):
                 # mean, std, min, max, loci, hici
                 self.summary = summary
@@ -94,38 +110,11 @@ class BasicStat(_traits.HasTraits):
         return DataSet(mat=ht, display_name="Histogram")
 
 
-    def __eq__(self, other):
-        return self.id == other
-
-
-    def __ne__(self, other):
-        return self.id != other
-
-
-
 def extract_summary(basic_stat_res):
+    '''Returns the summary statistics from the result object'''
     return basic_stat_res.summary
 
 
 def extract_histogram(basic_stat_res):
+    '''Returns the histogram data from the result object'''
     return basic_stat_res.hist
-
-
-
-class BasicStatPlugin(_traits.HasTraits):
-    dsc = _traits.Instance(DatasetContainer)
-    tasks = _traits.List(_traits.HasTraits)
-
-
-    def add(self, task):
-        self.tasks.append(task)
-
-
-    def make_model(self, ds_id):
-        ds = self.dsc[ds_id]
-        bs = BasicStat(id=ds_id, ds=ds)
-        return bs
-
-
-    def remove(self, task_id):
-        del(self.tasks[self.tasks.index(task_id)])
