@@ -190,7 +190,7 @@ class BasicStatPluginController(_traitsui.Controller):
         self.model.add(task)
 
 
-plugin_nodes=[
+plugin_nodes = [
     _traitsui.TreeNode(
         node_for=[BasicStatPlugin],
         label='=Basic stat',
@@ -264,7 +264,7 @@ class TestOneDsTree(_traits.HasTraits):
 if __name__ == '__main__':
     print("Basic stat GUI test started")
     from tests.conftest import all_dsc, synth_dsc, discrete_ds
-    one_branch=True
+    one_branch = True
 
     if one_branch:
         ds = discrete_ds()

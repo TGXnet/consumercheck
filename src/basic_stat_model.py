@@ -1,4 +1,9 @@
+'''Module for basic statistics analysis
 
+This module gives:
+ * Data for box plots
+ * Histogram data
+'''
 # Scipy imports
 import numpy as _np
 import pandas as _pd
@@ -62,23 +67,23 @@ class BasicStat(_traits.HasTraits):
                 idx = self.ds.obj_n
                 dr = 1
                 for i in range(mat.shape[0]):
-                    row = mat[i,~mat[i].mask]
+                    row = mat[i, ~mat[i].mask]
                     hr = list(_np.bincount(row, minlength=end))
                     hl.append(hr)
             else:
                 idx = self.ds.var_n
                 dr = 0
                 for i in range(mat.shape[1]):
-                    row = mat[~mat[:,i].mask,i]
+                    row = mat[~mat[:, i].mask, i]
                     hr = list(_np.bincount(row, minlength=end))
                     hl.append(hr)
         else:
             if self.summary_axis == 'Row-wise':
                 idx = self.ds.obj_n
-                it = [(i,Ellipsis) for i in range(mat.shape[0])]
+                it = [(i, Ellipsis) for i in range(mat.shape[0])]
             else:
                 idx = self.ds.var_n
-                it = [(Ellipsis,i) for i in range(mat.shape[1])]
+                it = [(Ellipsis, i) for i in range(mat.shape[1])]
 
             hl = [list(_np.bincount(mat[i], minlength=end)) for i in it]
 
