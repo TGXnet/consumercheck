@@ -15,7 +15,7 @@ from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot
 from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
 from plugin_tree_helper import (WindowLauncher, dclk_activator, ModelController,
-                                CalcContainer, PluginController, test_view,
+                                CalcContainer, PluginController, dummy_view,
                                 TestOneNode, make_plugin_view)
 
 
@@ -419,16 +419,14 @@ selection_view = _traitsui.Group(
 if __name__ == '__main__':
     print("PCA GUI test start")
     from tests.conftest import simple_ds, synth_dsc
-    one_branch=True
+    one_branch = False
 
     if one_branch:
-        ds = simple_ds()
-        pca = Pca(ds=ds)
+        pca = Pca(ds=simple_ds())
         pc = PcaController(pca)
         test = TestOneNode(one_model=pc)
-        test.configure_traits(view=test_view(pca_nodes))
+        test.configure_traits(view=dummy_view(pca_nodes))
     else:
-        dsc = synth_dsc()
-        pcap = CalcContainer(dsc=dsc)
+        pcap = CalcContainer(dsc=synth_dsc())
         ppc = PcaPluginController(pcap)
         ppc.configure_traits(view=make_plugin_view('Pca', pca_nodes, selection_view, pca_view))
