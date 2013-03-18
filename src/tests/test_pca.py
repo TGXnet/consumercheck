@@ -11,7 +11,8 @@ from tests.conftest import imp_ds
 
 # Local imports
 from pca_model import Pca, InComputeable
-from pca_gui import PcaController, TestOnePcaTree, PcaPlugin, PcaPluginController, pca_plugin_view
+from pca_gui import PcaController, PcaPluginController, pca_nodes, pca_view, selection_view
+from plugin_tree_helper import CalcContainer, TestOneNode, make_plugin_view, dummy_view
 
 
 @pytest.mark.model
@@ -22,7 +23,7 @@ def test_pca_results():
     print(ds.mat)
     pca = Pca(ds=ds)
     assert pca.calc_n_pc == pca.max_pc == 3
-    res = pca.pca_res
+    res = pca.res
     # Check if all expected result sets is in res
     expected_sets = ['scores', 'loadings', 'expl_var', 'corr_loadings']
     attrs = dir(res)
@@ -40,19 +41,19 @@ def test_zero_var(zero_var_ds):
     pca.standardise = True
     print(zero_var_ds.mat)
     with pytest.raises(InComputeable):
-        res = pca.pca_res
+        res = pca.res
 
 
-@pytest.mark.gui
+@pytest.mark.ui
 def test_one_pca_tree(simple_ds):
     pca = Pca(ds=simple_ds)
     pc = PcaController(pca)
-    one_pca = TestOnePcaTree(one_pca=pc)
-    one_pca.configure_traits()
+    test = TestOneNode(one_model=pc)
+    test.configure_traits(view=dummy_view(pca_nodes))
 
 
-@pytest.mark.gui
+@pytest.mark.ui
 def test_pca_gui_update(synth_dsc):
-    pcap = PcaPlugin(dsc=synth_dsc)
+    pcap = CalcContainer(dsc=synth_dsc)
     ppc = PcaPluginController(pcap)
-    ppc.configure_traits(view=pca_plugin_view)
+    ppc.configure_traits(view=make_plugin_view('Pca', pca_nodes, selection_view, pca_view))
