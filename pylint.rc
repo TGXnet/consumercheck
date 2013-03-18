@@ -43,8 +43,9 @@ load-plugins=
 # W0232: Class has no __init__ method
 # W0511: warning note as FIXME
 # W0201: Attribute %r defined outside __init__
-# R0903: Too few public methods (0/2)
-disable=W0232,W0201,R0903
+# R0903: Too few public methods
+# R0904: Too many public methods, inherit from HasTraits
+disable=W0232,W0201,R0903,R0904
 
 
 [REPORTS]
