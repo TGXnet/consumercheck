@@ -11,8 +11,10 @@ from tests.conftest import imp_ds
 
 # Local imports
 from pca_model import Pca, InComputeable
-from pca_gui import PcaController, PcaPluginController, pca_nodes, pca_view, selection_view
-from plugin_tree_helper import CalcContainer, TestOneNode, make_plugin_view, dummy_view
+from pca_gui import (PcaController, PcaPluginController, pca_nodes,
+                     pca_view, selection_view)
+from plugin_tree_helper import (CalcContainer, TestOneNode,
+                                make_plugin_view, dummy_view)
 
 
 @pytest.mark.model
