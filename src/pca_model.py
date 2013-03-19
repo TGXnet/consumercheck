@@ -3,7 +3,7 @@
 import numpy as _np
 import pandas as _pd
 
-# Enthought imports
+# ETS imports
 import traits.api as _traits
 
 # Local imports
@@ -31,12 +31,25 @@ class Pca(Model):
     min_std = _traits.Float(0.001)
 
 
-    def _get_max_pc(self):
-        return max((min(self.ds.n_objs, self.ds.n_vars, 12) - 2), self.min_pc)
+    def _get_res(self):
+        '''Does the PCA calculation and gets the results
 
+        This return an results object that holds copies of the
+        various result data. Each result set i an DataSet containing
+        all metadata necessary for presenting the result.
+        '''
+        if self.standardise:
+            std_ds = 'stand'
+        else:
+            std_ds = 'cent'
+        self._check_std_dev()
+        if self.zero_variance and self.standardise:
+            raise InComputeable('Matrix have variables with zero variance',
+                                self.zero_variance)
+        pca = PCA(self.ds.values,
+                  numPC=self.calc_n_pc, mode=std_ds, cvType=["loo"])
 
-    def _calc_n_pc_default(self):
-        return self.max_pc
+        return self._pack_res(pca)
 
 
     def _check_std_dev(self):
@@ -49,32 +62,18 @@ class Pca(Model):
             self.zero_variance = []
 
 
-    def _get_res(self):
-        '''Does the PCA calculation and gets the results
+    def _get_max_pc(self):
+        return max((min(self.ds.n_objs, self.ds.n_vars, 12) - 2), self.min_pc)
 
-        This return an results object that holds copies of the
-        various result data. Each result set i an DataSet containing
-        all metadata necessary for presenting the result.
-        '''
-        std_ds = 'cent'
-        if self.standardise:
-            std_ds = 'stand'
-        self._check_std_dev()
-        if self.zero_variance and self.standardise:
-            raise InComputeable('Matrix have variables with zero variance', self.zero_variance)
-        pca = PCA(self.ds.values,
-                  numPC=self.calc_n_pc,
-                  mode=std_ds,
-                  cvType=["loo"])
 
-        return self._pack_res(pca)
+    def _calc_n_pc_default(self):
+        return self.max_pc
 
 
     def _pack_res(self, pca_obj):
 
         class PcaRes(object):
             pass
-
         res = PcaRes()
 
         # Scores
