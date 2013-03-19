@@ -2247,7 +2247,7 @@ class nipalsPLS2:
         """
         Returns a vector holding the column means of X. 
         """
-        return np.average(self.arrX_input, axis=0).reshape(1,-1)    
+        return np.average(self.arrX_input, axis=0).reshape(1,-1)
     
     def X_scores(self):
         """
