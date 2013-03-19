@@ -14,11 +14,12 @@ from traitsui.menu import Action, Menu, MenuBar
 from dataset_container import DatasetContainer
 from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
-from basic_stat_gui import BasicStatPlugin, BasicStatPluginController, bs_plugin_view
-from pca_gui import PcaPlugin, PcaPluginController, pca_plugin_view
-from ui_tab_prefmap import PrefmapPlugin
+from basic_stat_gui import BasicStatPluginController, bs_plugin_view
+from pca_gui import PcaPluginController, pca_plugin_view
+from prefmap_gui import PrefmapPluginController, prefmap_plugin_view
 from ui_tab_conjoint import ConjointPlugin
 from about_consumercheck import ConsumerCheckAbout
+from plugin_tree_helper import CalcContainer
 
 
 class MainViewHandler(Handler):
@@ -81,7 +82,7 @@ class MainUi(HasTraits):
     pca = Instance(PcaPluginController)
 
     # Object representing the Prefmap and the GUI tab
-    prefmap = Instance(PrefmapPlugin)
+    prefmap = Instance(PrefmapPluginController)
 
     # Object representing the Conjoint and the GUI tab
     conjoint = Instance(ConjointPlugin)
@@ -99,20 +100,24 @@ class MainUi(HasTraits):
 
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
-        self.prefmap = PrefmapPlugin(mother_ref=self)
         self.conjoint = ConjointPlugin(mother_ref=self)
         self.dsc.on_trait_change(self._dsl_updated, 'dsl_changed')
         self.dsc.on_trait_change(self._ds_name_updated, 'ds_changed')
 
 
     def _basic_stat_default(self):
-        bsp = BasicStatPlugin(dsc=self.dsc)
-        return BasicStatPluginController(bsp)
+        basic_statisitc = CalcContainer(dsc=self.dsc)
+        return BasicStatPluginController(basic_statisitc)
 
 
     def _pca_default(self):
-        pp = PcaPlugin(dsc=self.dsc)
-        return PcaPluginController(pp)
+        pca = CalcContainer(dsc=self.dsc)
+        return PcaPluginController(pca)
+
+
+    def _prefmap_default(self):
+        prefmap = CalcContainer(dsc=self.dsc)
+        return PrefmapPluginController(prefmap)
 
 
     def _dsl_updated(self, obj, name, new):
@@ -138,7 +143,7 @@ class MainUi(HasTraits):
                  style='custom', label="Basic stat", show_label=False),
             Item('pca', editor=InstanceEditor(view=pca_plugin_view),
                  style='custom', label="PCA", show_label=False),
-            Item('prefmap', editor=InstanceEditor(),
+            Item('prefmap', editor=InstanceEditor(view=prefmap_plugin_view),
                  style='custom', label="Prefmap", show_label=False),
             Item('conjoint', editor=InstanceEditor(),
                  style='custom', label="Conjoint", show_label=False),

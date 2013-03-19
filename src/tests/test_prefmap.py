@@ -5,9 +5,8 @@ from tests.conftest import imp_ds
 # Local imports
 from prefmap_model import Prefmap
 from prefmap_gui import (PrefmapController, PrefmapPluginController,
-                         prefmap_nodes, prefmap_view, selection_view)
-from plugin_tree_helper import (CalcContainer, TestOneNode,
-                                make_plugin_view, dummy_view)
+                         prefmap_nodes, prefmap_plugin_view)
+from plugin_tree_helper import (CalcContainer, TestOneNode, dummy_view)
 
 
 @pytest.mark.model
@@ -41,4 +40,4 @@ def test_one_prefmap_tree(simple_ds):
 def test_prefmap_gui_update(prefmap_dsc):
     prefmap = CalcContainer(dsc=prefmap_dsc)
     ppc = PrefmapPluginController(prefmap)
-    ppc.configure_traits(view=make_plugin_view('Prefmap', prefmap_nodes, selection_view, prefmap_view))
+    ppc.configure_traits(view=prefmap_plugin_view)

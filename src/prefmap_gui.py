@@ -408,6 +408,9 @@ selection_view = _traitsui.Group(
     )
 
 
+prefmap_plugin_view =  make_plugin_view(
+    'Prefmap', prefmap_nodes, selection_view, prefmap_view)
+
 
 if __name__ == '__main__':
     print("Prefmap GUI test start")
@@ -434,5 +437,4 @@ if __name__ == '__main__':
         prefmap = CalcContainer(dsc=dsc)
         ppc = PrefmapPluginController(prefmap)
         ppc.configure_traits(
-            view=make_plugin_view('Prefmap', prefmap_nodes,
-                                  selection_view, prefmap_view))
+            view=prefmap_plugin_view)

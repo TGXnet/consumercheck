@@ -11,10 +11,8 @@ from tests.conftest import imp_ds
 
 # Local imports
 from pca_model import Pca, InComputeable
-from pca_gui import (PcaController, PcaPluginController, pca_nodes,
-                     pca_view, selection_view)
-from plugin_tree_helper import (CalcContainer, TestOneNode,
-                                make_plugin_view, dummy_view)
+from pca_gui import (PcaController, PcaPluginController, pca_nodes, pca_plugin_view)
+from plugin_tree_helper import (CalcContainer, TestOneNode, dummy_view)
 
 
 @pytest.mark.model
@@ -58,4 +56,4 @@ def test_one_pca_tree(simple_ds):
 def test_pca_gui_update(synth_dsc):
     pcap = CalcContainer(dsc=synth_dsc)
     ppc = PcaPluginController(pcap)
-    ppc.configure_traits(view=make_plugin_view('Pca', pca_nodes, selection_view, pca_view))
+    ppc.configure_traits(view=pca_plugin_view)

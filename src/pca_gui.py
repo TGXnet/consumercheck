@@ -415,6 +415,9 @@ selection_view = _traitsui.Group(
     )
 
 
+pca_plugin_view = make_plugin_view('Pca', pca_nodes, selection_view, pca_view)
+
+
 
 if __name__ == '__main__':
     print("PCA GUI test start")
@@ -429,4 +432,4 @@ if __name__ == '__main__':
     else:
         pcap = CalcContainer(dsc=synth_dsc())
         ppc = PcaPluginController(pcap)
-        ppc.configure_traits(view=make_plugin_view('Pca', pca_nodes, selection_view, pca_view))
+        ppc.configure_traits(view=pca_plugin_view)

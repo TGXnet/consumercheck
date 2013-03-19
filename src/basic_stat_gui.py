@@ -176,6 +176,8 @@ selection_view = _traitsui.Group(
     show_border=True,
     )
 
+bs_plugin_view = make_plugin_view(
+    'Basic Statistics', bs_nodes, selection_view, bs_view)
 
 
 if __name__ == '__main__':
@@ -192,7 +194,4 @@ if __name__ == '__main__':
         bsp = CalcContainer(dsc=synth_dsc())
         bspc = BasicStatPluginController(bsp)
         bspc.configure_traits(
-            view=make_plugin_view('Basic Statistics',
-                                  bs_nodes,
-                                  selection_view,
-                                  bs_view))
+            view=bs_plugin_view)
