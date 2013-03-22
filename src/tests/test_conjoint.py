@@ -3,24 +3,21 @@ import pytest
 
 # To be tested
 from conjoint_machine import ConjointMachine
+from conjoint_model import Conjoint
+from dataset_container import get_ds_by_name
 
 # Test sharing of same R env
 # How to compare results
 
 
-def from_name(dsc, name):
-    nid = dict([(m[1], m[0]) for m in dsc.get_id_name_map()])
-    return dsc[nid[name]]
-
-
 # Test all three structures
 @pytest.mark.parametrize("structure", [1, 2, 3])
 def test_all_struct(conjoint_dsc, structure):
-    consAttr = from_name(conjoint_dsc, 'Consumers')
-    odflLike = from_name(conjoint_dsc, 'Odour-flavor')
-    consistencyLike = from_name(conjoint_dsc, 'Consistency')
-    overallLike = from_name(conjoint_dsc, 'Overall')
-    designVar = from_name(conjoint_dsc, 'Tine yogurt design')
+    consAttr = get_ds_by_name('Consumers', conjoint_dsc)
+    odflLike = get_ds_by_name('Odour-flavor', conjoint_dsc)
+    # consistencyLike = get_ds_by_name('Consistency', conjoint_dsc)
+    # overallLike = get_ds_by_name('Overall', conjoint_dsc)
+    designVar = get_ds_by_name('Tine yogurt design', conjoint_dsc)
     selected_structure = structure
     selected_consAttr = ['Sex']
     selected_designVar = ['Flavour', 'Sugarlevel']
@@ -35,11 +32,11 @@ def test_all_struct(conjoint_dsc, structure):
 
 
 def test_r_data_merge(conjoint_dsc):
-    consAttr = from_name(conjoint_dsc, 'Consumers')
-    odflLike = from_name(conjoint_dsc, 'Odour-flavor')
-    consistencyLike = from_name(conjoint_dsc, 'Consistency')
-    overallLike = from_name(conjoint_dsc, 'Overall')
-    designVar = from_name(conjoint_dsc, 'Tine yogurt design')
+    consAttr = get_ds_by_name('Consumers', conjoint_dsc)
+    odflLike = get_ds_by_name('Odour-flavor', conjoint_dsc)
+    # consistencyLike = get_ds_by_name('Consistency', conjoint_dsc)
+    # overallLike = get_ds_by_name('Overall', conjoint_dsc)
+    designVar = get_ds_by_name('Tine yogurt design', conjoint_dsc)
     selected_structure = 1
     selected_consAttr = ['Sex']
     # selected_consAttr = ['Sex', 'Age']
@@ -52,13 +49,13 @@ def test_r_data_merge(conjoint_dsc):
         designVar, selected_designVar, odflLike, False)
     
     print(res.keys())
-    # assert 0
+    assert 0
 
 
 def test_category_strings(conjoint_dsc):
-    e_attr = from_name(conjoint_dsc, 'Estland consumers')
-    e_liking = from_name(conjoint_dsc, 'Estland liking data')
-    design = from_name(conjoint_dsc, 'Barley bread design')
+    e_attr = get_ds_by_name('Estland consumers', conjoint_dsc)
+    e_liking = get_ds_by_name('Estland liking data', conjoint_dsc)
+    design = get_ds_by_name('Barley bread design', conjoint_dsc)
 
     selected_structure = 1
     selected_consAttr = ['Sex', 'Age']
@@ -75,9 +72,9 @@ def test_category_strings(conjoint_dsc):
 
 
 def test_completeness(conjoint_dsc):
-    e_attr = from_name(conjoint_dsc, 'Estland consumers')
-    e_liking = from_name(conjoint_dsc, 'Estland liking data')
-    design = from_name(conjoint_dsc, 'Barley bread design')
+    e_attr = get_ds_by_name('Estland consumers', conjoint_dsc)
+    e_liking = get_ds_by_name('Estland liking data', conjoint_dsc)
+    design = get_ds_by_name('Barley bread design', conjoint_dsc)
 
     selected_structure = 1
     # [u'Sex', u'Age', u'WB', u'BB', u'Edu', u'Health']
@@ -103,19 +100,11 @@ def test_async_calc(conjoint_dsc, merge):
 
     run_state = RunState()
 
-
-    consAttr = from_name(conjoint_dsc, 'Consumers')
-    odflLike = from_name(conjoint_dsc, 'Odour-flavor')
-    consistencyLike = from_name(conjoint_dsc, 'Consistency')
-    overallLike = from_name(conjoint_dsc, 'Overall')
-    designVar = from_name(conjoint_dsc, 'Tine yogurt design')
-
-
-    ## consAttr = conjoint_dsc.get_by_id('consumerattributes')
-    ## odflLike = conjoint_dsc.get_by_id('odour-flavour_liking')
-    ## consistencyLike = conjoint_dsc.get_by_id('consistency_liking')
-    ## overallLike = conjoint_dsc.get_by_id('overall_liking')
-    ## designVar = conjoint_dsc.get_by_id('design')
+    consAttr = get_ds_by_name('Consumers', conjoint_dsc)
+    odflLike = get_ds_by_name('Odour-flavor', conjoint_dsc)
+    # consistencyLike = get_ds_by_name('Consistency', conjoint_dsc)
+    # overallLike = get_ds_by_name('Overall', conjoint_dsc)
+    designVar = get_ds_by_name('Tine yogurt design', conjoint_dsc)
 
     selected_structure = 1
     selected_consAttr = ['Sex']
@@ -133,4 +122,17 @@ def test_async_calc(conjoint_dsc, merge):
     res = cm.get_result()
     print(run_state.messages)
     print(res.keys())
-    # assert 0
+    assert 0
+
+
+def test_model(conjoint_dsc):
+    design = get_ds_by_name('Tine yogurt design', conjoint_dsc)
+    liking = get_ds_by_name('Odour-flavor', conjoint_dsc)
+    consumers = get_ds_by_name('Consumers', conjoint_dsc)
+    cj = Conjoint(design_set=design, cons_liking=liking, consumer_attr_set=consumers)
+    cj.chosen_design_vars = ['Flavour', 'Sugarlevel']
+    cj.chosen_consumer_attr_vars = ['Sex']
+    # cj.print_traits()
+    # cj_res = cj.res
+    # print(cj_res)
+    assert 0
