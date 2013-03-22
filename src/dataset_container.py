@@ -75,3 +75,15 @@ class DatasetContainer(_traits.HasTraits):
     @_traits.on_trait_change('dsl:[display_name,ds_type]')
     def _ds_updated(self, obj, name, old_value, new_value):
         self.ds_changed = True
+
+
+
+def get_ds_by_name(name, dsc):
+    '''Utility function if you realy want to get dataset by name.
+
+    This is not encouraged because several datasets can have same name,
+    and be differentiated by other traits like dimensions, dataset type,
+    style metadata o.l.
+    '''
+    nid = dict([(m[1], m[0]) for m in dsc.get_id_name_map()])
+    return dsc[nid[name]]
