@@ -113,17 +113,18 @@ class PluginController(_traitsui.Controller):
 
 # plugin_view
 def make_plugin_view(model_name, model_nodes, selection_view, model_view):
+    node_label = '=' + model_name
     container_nodes=[
         _traitsui.TreeNode(
             node_for=[CalcContainer],
-            label='=Pca',
+            label=node_label,
             children='',
             auto_open=True,
             menu=[],
             ),
         _traitsui.TreeNode(
             node_for=[CalcContainer],
-            label='=Pca',
+            label=node_label,
             children='calculations',
             auto_open=True,
             menu=[],
