@@ -88,7 +88,11 @@ class DataSet(_traits.HasTraits):
 
 
     def _get_missing_data(self):
-        return _np.any(_np.isnan(self.mat.values))
+        # FIXME: I must look more into this
+        try:
+            return _np.any(_np.isnan(self.mat.values))
+        except TypeError:
+            return False
 
 
     def __eq__(self, other):
