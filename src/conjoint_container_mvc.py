@@ -8,6 +8,7 @@ from traitsui.menu import OKButton
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
+from dataset_container import get_ds_by_name
 from dataset import DataSet
 
 
@@ -105,20 +106,14 @@ class ConjointsHandler(ModelView):
 
     @on_trait_change('model:selected_design')
     def _handle_design_choice(self, obj, ref, new):
-        idn_map = obj.dsc.get_id_name_map()
-        nid_map = dict([(idn[1], idn[0]) for idn in idn_map])
-        ds_id = nid_map[new]
-        self.model.design_set = obj.dsc[ds_id]
+        self.model.design_set = get_ds_by_name(new, obj.dsc)
         obj.chosen_design_vars = []
         self.available_design_vars = self.model.design_set.var_n
 
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):
-        idn_map = obj.dsc.get_id_name_map()
-        nid_map = dict([(idn[1], idn[0]) for idn in idn_map])
-        ds_id = nid_map[new]
-        self.model.consumer_attr_set = obj.dsc[ds_id]
+        self.model.consumer_attr_set = get_ds_by_name(new, obj.dsc)
         obj.chosen_consumer_attr_vars = []
         self.available_consumer_attr_vars = self.model.consumer_attr_set.var_n
 

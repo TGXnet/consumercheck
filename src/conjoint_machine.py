@@ -446,19 +446,21 @@ def asciify(names):
 
 if __name__ == '__main__':
     print("Hello World")
-    from tests.conftest import conjoint_dsc as cjd_maker
+    from dataset_container import get_ds_by_name
+    from tests.conftest import conjoint_dsc
     cm = ConjointMachine()
 
     selected_structure = 1
-    conjoint_dsc = cjd_maker()
-    consAttr = conjoint_dsc.get_by_id('consumerattributes')
-    odflLike = conjoint_dsc.get_by_id('odour-flavour_liking')
-    consistencyLike = conjoint_dsc.get_by_id('consistency_liking')
-    overallLike = conjoint_dsc.get_by_id('overall_liking')
-    designVar = conjoint_dsc.get_by_id('design')
+    dsc = conjoint_dsc()
+    consAttr = get_ds_by_name('Consumers', dsc)
+    odflLike = get_ds_by_name('Odour-flavor', dsc)
+    consistencyLike = get_ds_by_name('Consistency', dsc)
+    overallLike = get_ds_by_name('Overall', dsc)
+    designVar = get_ds_by_name('Tine yogurt design', dsc)
     selected_consAttr = ['Sex']
     selected_designVar = ['Flavour', 'Sugarlevel']
 
     res = cm.synchronous_calculation(
         selected_structure, consAttr, selected_consAttr,
         designVar, selected_designVar, odflLike, True)
+    print(res.keys())
