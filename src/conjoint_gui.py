@@ -85,7 +85,7 @@ class ConjointController(ModelController):
                 for nn, fn in table_win_launchers]
 
 
-    @_traits.on_trait_change('model:[chosen_design_vars,chosen_consumer_attr_vars]')
+    @_traits.on_trait_change('model:[chosen_design_vars,chosen_consumer_attr_vars,model_structure_type]')
     def _update_plot_lists(self):
         self._populate_me_plot_launchers()
         self._populate_int_plot_launchers()
@@ -291,9 +291,12 @@ class ConjointPluginController(PluginController):
     selected_consumer_liking_sets = _traits.List()
 
 
-    ## @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]', post_init=False)
-    ## def _update_selection_list(self, obj, name, new):
-    ##     self.available_ds = self._get_selectable()
+    @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]', post_init=False)
+    def _update_selection_list(self, obj, name, new):
+        self.available_design_sets = self._available_design_sets_default()
+        self.available_consumer_characteristics_sets = self._available_consumer_characteristics_sets_default()
+        self.available_consumer_liking_sets = self._available_consumer_liking_sets_default()
+
 
     def _available_design_sets_default(self):
         return self.model.dsc.get_id_name_map('Design variable')
