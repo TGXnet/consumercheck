@@ -333,41 +333,6 @@ def conj_res():
     return res
 
 
-
-@pytest.fixture
-def plugin_mother_mock():
-    from traits.api import HasTraits, Instance, Bool, Event, on_trait_change
-
-    class PluginMotherMock(HasTraits):
-        """Main frame for testing method tabs
-        """
-        test_subject = Instance(HasTraits)
-        dsc = Instance(DatasetContainer)
-        ds_event = Event()
-        dsname_event = Event()
-        en_advanced = Bool(True)
-
-        def _dsc_default(self):
-            return all_dsc()
-
-        def _test_subject_changed(self, old, new):
-            if old is not None:
-                if hasattr(old, 'mother_ref'):
-                    old.mother_ref = None
-            if new is not None:
-                if hasattr(new, 'mother_ref'):
-                    new.mother_ref = self
-
-
-        @on_trait_change('dsc')
-        def _dsc_updated(self, obj, name, new):
-            print("main: dsc changed")
-            self.ds_event = True
-
-    
-    return PluginMotherMock()
-
-
 ## More ideas
 '''
 # Taken fra a PyConAU presentation
