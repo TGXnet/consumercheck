@@ -11,6 +11,7 @@ from dataset_container import get_ds_by_name
 
 
 # Test all three structures
+@pytest.mark.slow
 @pytest.mark.parametrize("structure", [1, 2, 3])
 def test_all_struct(conjoint_dsc, structure):
     consAttr = get_ds_by_name('Consumers', conjoint_dsc)
@@ -30,7 +31,7 @@ def test_all_struct(conjoint_dsc, structure):
     print(res.keys())
 
 
-
+@pytest.mark.slow
 def test_r_data_merge(conjoint_dsc):
     consAttr = get_ds_by_name('Consumers', conjoint_dsc)
     odflLike = get_ds_by_name('Odour-flavor', conjoint_dsc)
@@ -52,6 +53,7 @@ def test_r_data_merge(conjoint_dsc):
     assert 0
 
 
+@pytest.mark.slow
 def test_category_strings(conjoint_dsc):
     e_attr = get_ds_by_name('Estland consumers', conjoint_dsc)
     e_liking = get_ds_by_name('Estland liking data', conjoint_dsc)
@@ -89,6 +91,7 @@ def test_completeness(conjoint_dsc):
 
 
 # test async calculation
+@pytest.mark.slow
 @pytest.mark.parametrize("merge", [True, False])
 def test_async_calc(conjoint_dsc, merge):
     from time import sleep
