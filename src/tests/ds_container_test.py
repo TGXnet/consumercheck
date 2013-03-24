@@ -26,8 +26,10 @@ def test_add(dsc3):
 
 
 def test_get_ds(dsc3):
-    ds = dsc3['101']
-    assert ds.id == '101'
+    idn = dsc3.get_id_name_map()
+    pick = idn[0][0]
+    ds = dsc3[pick]
+    assert ds.id == pick
 
 
 def test_del_ds(dsc3):

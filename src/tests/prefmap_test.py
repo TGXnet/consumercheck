@@ -19,13 +19,12 @@ def test_prefmap_results():
     print('C', C.mat.shape)
     print('S', S.mat.shape)
     prefmap = Prefmap(ds_C=C, ds_S=S,
-                      int_ext_mapping='External mapping'
+                      int_ext_mapping='External'
                       )
     prefmap.print_traits()
     result = prefmap.res
     print(result.corr_loadings_y.mat)
-    assert 0
-
+    assert True
 
 
 @pytest.mark.ui
