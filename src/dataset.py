@@ -9,6 +9,7 @@ import pandas as _pd
 
 # ETS imports
 import traits.api as _traits
+from enable.api import ColorTrait
 
 
 DS_TYPES = ['Design variable',
@@ -42,6 +43,10 @@ class DataSet(_traits.HasTraits):
     display_name = _traits.Str('Unnamed dataset')
 
     ds_type = _traits.Enum(DS_TYPES)
+
+    style = _traits.Instance('VisualStyle')
+
+    subs = _traits.List('SubSet')
 
     # FIXME: This dataset has missing data
     # do you want to do somthing about it?
@@ -102,3 +107,16 @@ class DataSet(_traits.HasTraits):
     def __ne__(self, other):
         return self.id != other
 
+
+
+class VisualStyle(_traits.HasTraits):
+    fg_color = ColorTrait()
+    bg_color = ColorTrait()
+
+
+class SubSet(_traits.HasTraits):
+    id = _traits.Str()
+    name = _traits.Str()
+    row_selector = _traits.List(_traits.Int())
+    col_selector = _traits.List(_traits.Int())
+    gr_style = VisualStyle()
