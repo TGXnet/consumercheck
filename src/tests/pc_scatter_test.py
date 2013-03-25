@@ -1,73 +1,122 @@
 """Test to be used with py.test.
 """
 
-import numpy as np
-from numpy import array
 import pytest
 
+# Scipy imports
+import numpy as np
+import pandas as pd
+
 # Local imports
+from dataset import DataSet, VisualStyle
 from plot_pc_scatter import PCScatterPlot
 from plot_windows import SinglePlotWindow
 
 
-class TestPlotBase(object):
-    pass
+@pytest.fixture
+def clust1ds():
+    """Manual random pick from the Iris datast: setosa"""
+    ds = DataSet(
+        mat = pd.DataFrame(
+            [[5.1,3.5,1.4,0.2],
+             [4.6,3.4,1.4,0.3],
+             [5.4,3.7,1.5,0.2],
+             [5.7,3.8,1.7,0.3],
+             [5.4,3.4,1.7,0.2],
+             [4.8,3.1,1.6,0.2],
+             [4.6,3.6,1.0,0.2]],
+            index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
+            columns = ['V1', 'V2', 'V3', 'V4']),
+        display_name='Some values', ds_type='Sensory profiling',
+        # style=VisualStyle(fg_color=(0.8, 0.2, 0.1, 1.0)),
+        style=VisualStyle(fg_color='indigo'),
+        )
+    return ds
 
 
-class TestPCPlotSingleSet(TestPlotBase):
+@pytest.fixture
+def clust2ds():
+    """Manual random pick from the Iris datast: versicolor"""
+    ds = DataSet(
+        mat = pd.DataFrame(
+            [[6.9,3.1,4.9,1.5],
+             [4.9,2.4,3.3,1.0],
+             [5.7,3.0,4.2,1.2],
+             [5.1,2.5,3.0,1.1],
+             [5.7,2.6,3.5,1.0],
+             [5.1,2.5,3.0,1.1],
+             [6.1,2.9,4.7,1.4]],
+            index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
+            columns = ['V1', 'V2', 'V3', 'V4']),
+        display_name='Some values', ds_type='Sensory profiling',
+        style=VisualStyle(fg_color='saddlebrown'))
+    return ds
 
-    def setup_method(self, method):
-        self.set1 = array([
-            [-0.3, 0.4, 0.9],
-            [-0.1, 0.2, 0.7],
-            [-0.1, 0.1, 0.1],
-            ])
 
-        self.label1 = ['s1pt1', 's1pt2', 's1pt3']
+@pytest.fixture
+def clust3ds():
+    """Manual random pick from the Iris datast: virginica"""
+    ds = DataSet(
+        mat = pd.DataFrame(
+            [[5.8,2.7,5.1,1.9],
+             [6.5,3.0,5.8,2.2],
+             [7.2,3.6,6.1,2.5],
+             [6.8,3.0,5.5,2.1],
+             [6.2,2.8,4.8,1.8],
+             [6.4,3.1,5.5,1.8],
+             [6.2,3.4,5.4,2.3]],
+            index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
+            columns = ['V1', 'V2', 'V3', 'V4']),
+        display_name='Some values', ds_type='Sensory profiling',
+        style=VisualStyle(fg_color='olive'))
+    return ds
 
-        self.expl_vars = {1:37.34, 2:9.4, 3:0.3498}
 
-    @pytest.mark.ui
-    def test_plot_one_set(self):
-        # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
-        plot = PCScatterPlot(self.set1, self.label1, (0.8, 0.2, 0.1, 1.0), self.expl_vars)
+@pytest.fixture
+def expvar1ds():
+    """Simulated explained variance"""
+    ds = DataSet(
+        mat = pd.DataFrame(
+            [[50.8,20.7,5.1,1.9],
+             [30.2,12.4,5.4,2.3]],
+            index = ['cal', 'val'],
+            columns = ['V1', 'V2', 'V3', 'V4']),
+        display_name='Some values', ds_type='Sensory profiling',
+        style=VisualStyle(fg_color='olive'))
+    return ds
+
+
+@pytest.fixture
+def expvar2ds():
+    """Simulated explained variance"""
+    ds = DataSet(
+        mat = pd.DataFrame(
+            [[38.4,25.7,10.1,7.9],
+             [67.2,18.4,9.4,1.3]],
+            index = ['cal', 'val'],
+            columns = ['V1', 'V2', 'V3', 'V4']),
+        display_name='Some values', ds_type='Sensory profiling',
+        style=VisualStyle(fg_color='olive'))
+    return ds
+
+
+def test_pc_plot(clust1ds, expvar1ds):
+    plot = PCScatterPlot(clust1ds, expvar1ds)
+
+    with np.errstate(invalid='ignore'):
         plot.new_window(True)
+    assert 0
 
 
-class TestPCPlotMultipleSet(TestPCPlotSingleSet):
+def test_corre_correlation_plot(clust1ds, clust2ds, expvar1ds, expvar2ds):
+    plot = PCScatterPlot()
+    plot.add_PC_set(clust1ds, expvar1ds)
+    plot.add_PC_set(clust2ds, expvar2ds)
+    plot.plot_circle(True)
 
-    def setup_method(self, method):
-        super(TestPCPlotMultipleSet, self).setup_method(method)
-
-        self.set2 = array([
-            [-1.3, -0.4, -0.9],
-            [-1.1, -0.2, -0.7],
-            [-1.2, -0.1, -0.1],
-            ])
-
-        self.label2 = ['s2pt1', 's2pt2', 's2pt3']
-
-    def test_plot_one_set(self):
-        pass
-
-    @pytest.mark.two
-    def test_plot_two_sets(self):
-        # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
-        plot = PCScatterPlot(self.set1, labels=self.label1, color=(0.8, 0.2, 0.1, 1.0))
-        plot.add_PC_set(self.set2, labels=self.label2, color=(0.2, 0.9, 0.1, 1.0))
-        plot.plot_circle(True)
-        assert plot.plots.keys().sort() == [
-            'ell_half', 'ell_full', 'plot_2', 'plot_1'
-            ].sort()
-        # plot.new_window(True)
-
-    @pytest.mark.ui
-    def test_plot_two_sets(self):
-        # (0.5, 0.5, 0.5, 0.2) (R, G, B, Alpha)
-        plot = PCScatterPlot(self.set1, labels=self.label1, color=(0.8, 0.2, 0.1, 1.0))
-        plot.add_PC_set(self.set2, labels=self.label2, color=(0.2, 0.9, 0.1, 1.0))
-        plot.plot_circle(True)
+    with np.errstate(invalid='ignore'):
         plot.new_window(True)
+    assert 0
 
 
 # Test generating and exporting plot image

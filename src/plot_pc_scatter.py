@@ -75,7 +75,7 @@ class PCPlotData(ArrayPlotData):
         if color is not None:
             pcds.color = color
         if expl_vars is not None:
-            pcds.expl_vars = expl_vars
+            pcds.expl_vars = list(expl_vars.mat.xs('cal'))
         if view_data is not None:
             pcds.view_data = view_data
         self.pc_ds.append(pcds)
@@ -99,7 +99,8 @@ class PCScatterPlot(PlotBase):
     visible_datasets = Int(3)
 
 
-    def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None, view_data=None, **kwtraits):
+    # def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None, view_data=None):
+    def __init__(self, pc_matrix=None, expl_vars=None):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -116,28 +117,28 @@ class PCScatterPlot(PlotBase):
 
         """
         data = PCPlotData()
-        super(PCScatterPlot, self).__init__(data, **kwtraits)
+        super(PCScatterPlot, self).__init__(data)
         self._adjust_range()
 
         if pc_matrix is not None:
-            self.add_PC_set(pc_matrix, labels, color, expl_vars, view_data)
+            self.add_PC_set(pc_matrix, expl_vars)
 
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
         
 
-    def add_PC_set(self, matrix, labels=None, color=None, expl_vars=None, view_data=None):
+    def add_PC_set(self, pc_matrix, expl_vars=None):
         """Add a PC dataset with metadata.
 
         Args:
-          1. matrix: Array with PC datapoints
-          2. lables: Labels for the PC datapoints
-          3. color: Color used in plot for this PC set
-
+          1. pc_matrix: DataSet with PC datapoints
+          2. expl_vars: DataSet with explained variance
         """
-        matrix_t = matrix.transpose()
-        set_id = self.data.add_PC_set(matrix_t, labels, color, expl_vars, view_data)
+        matrix_t = pc_matrix.values.transpose()
+        labels = pc_matrix.obj_n
+        color = pc_matrix.style.fg_color
+        set_id = self.data.add_PC_set(matrix_t, labels, color, expl_vars, pc_matrix)
         self._plot_PC(set_id)
 
 
