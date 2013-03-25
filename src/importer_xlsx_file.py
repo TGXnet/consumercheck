@@ -98,8 +98,8 @@ class ImporterXlsxFile(HasTraits):
     have_obj_names = Bool(True)
     ds_id = Str()
     ds_name = Str()
-    ds_type = Str()
-    ds_type_list = List(DS_TYPES)
+    kind = Str()
+    kind_list = List(DS_TYPES)
 
     def make_ds_name(self):
         # FIXME: Find a better more general solution
@@ -111,7 +111,7 @@ class ImporterXlsxFile(HasTraits):
 
     def import_data(self):
         self.ds = DataSet(
-            ds_type=self.ds_type,
+            kind=self.kind,
             display_name=self.ds_name,
             _source_file=self.file_path)
         
@@ -170,7 +170,7 @@ class ImporterXlsxFile(HasTraits):
             ## Item('transpose'),
             Item('ds_id', style='readonly', label='File name'),
             Item('ds_name', label='Dataset name'),
-            Item('ds_type', editor=EnumEditor(name='ds_type_list'), label='Dataset type'),
+            Item('kind', editor=EnumEditor(name='kind_list'), label='Dataset type'),
             Item('have_var_names', label='Existing variable names',
                  tooltip='Is first row variables names?'),
             Item('have_obj_names', label='Existing object names',

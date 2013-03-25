@@ -44,7 +44,7 @@ class ImporterMain(HasTraits):
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
         importer.separator = sep
-        importer.ds_type = self._pick_ds_type(file_path)
+        importer.kind = self._pick_kind(file_path)
         ds = importer.import_data()
         return ds
 
@@ -65,7 +65,7 @@ class ImporterMain(HasTraits):
             return []
         for filen in self._files_path:
             importer = self._make_importer(filen)
-            importer.ds_type = self._pick_ds_type(filen)
+            importer.kind = self._pick_kind(filen)
             importer.edit_traits()
             ds = importer.import_data()
             self._datasets.append(ds)
@@ -99,7 +99,7 @@ class ImporterMain(HasTraits):
             return ImporterTextFile(file_path=path)
 
 
-    def _pick_ds_type(self, filen):
+    def _pick_kind(self, filen):
         '''Available types:
          * Design variable
          * Sensory profiling

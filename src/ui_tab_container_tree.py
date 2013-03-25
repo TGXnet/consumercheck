@@ -14,13 +14,13 @@ class DSNode(_traitsui.TreeNode):
     def get_icon(self, obj, is_expanded):
         """Return icon name based on ds type
         """
-        if obj.ds_type == 'Design variable':
+        if obj.kind == 'Design variable':
             return 'design_variable.ico'
-        elif obj.ds_type == 'Sensory profiling':
+        elif obj.kind == 'Sensory profiling':
             return 'sensory_profiling.ico'
-        elif obj.ds_type == 'Consumer liking':
+        elif obj.kind == 'Consumer liking':
             return 'customer_liking.ico'
-        elif obj.ds_type == 'Consumer characteristics':
+        elif obj.kind == 'Consumer characteristics':
             return 'customer_attributes.ico'
         else:
             return self.icon_item
@@ -58,7 +58,7 @@ ds_view = _traitsui.View(
             _traitsui.Label('Dataset name:'),
             _traitsui.Item('display_name', show_label=False),
             _traitsui.Label('Dataset type:'),
-            _traitsui.Item('ds_type', show_label=False),
+            _traitsui.Item('kind', show_label=False),
             ),
         _traitsui.Group(
             _traitsui.Item('handler.summary', style='readonly', show_label=False),
@@ -94,7 +94,7 @@ tree_editor = _traitsui.TreeEditor(
         DSNode(
             node_for=[DataSet],
             label='display_name',
-            tooltip='ds_type',
+            tooltip='kind',
             icon_path = 'graphics',
             view=ds_view,
             ),

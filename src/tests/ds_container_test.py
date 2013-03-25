@@ -13,7 +13,7 @@ def dsc3():
     for i in range(3):
         name = "Dataset{index}".format(index=i)
         dtype = DS_TYPES[i%2]
-        ds = DataSet(display_name=name, ds_type=dtype)
+        ds = DataSet(display_name=name, kind=dtype)
         dsl.append(ds)
     dst = tuple(dsl)
     dsc = DatasetContainer()
@@ -42,7 +42,7 @@ def test_del_ds(dsc3):
         ds = dsc3[did]
 
 
-def test_ds_type(dsc3):
+def test_kind(dsc3):
     assert len(dsc3.get_id_name_map('Design variable')) == 2
     assert len(dsc3.get_id_name_map('Sensory profiling')) == 1
     assert len(dsc3.get_id_name_map('Consumer liking')) == 0
@@ -79,5 +79,5 @@ def test_events(dsc3):
     ds = dsc3[idn[1][0]]
     ds.display_name = "New name"
     assert ds_changes == 1
-    ds.ds_type = "Consumer characteristics"
+    ds.kind = "Consumer characteristics"
     assert ds_changes == 2

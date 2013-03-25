@@ -46,7 +46,7 @@ def tdd():
 
 
 # Available test data
-# Format: folder, file_name, ds_name, ds_type
+# Format: folder, file_name, ds_name, kind
 
 CONJOINT = [
     ('Conjoint', 'design.txt', 'Tine yogurt design', 'Design variable'),
@@ -85,7 +85,7 @@ CHEESE = [
 def simple_ds():
     '''Makes a simple syntetic dataset'''
 
-    ds = DataSet(display_name='Some values', ds_type='Sensory profiling')
+    ds = DataSet(display_name='Some values', kind='Sensory profiling')
     ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 2.2, 2.3],
@@ -100,7 +100,7 @@ def simple_ds():
 def zero_var_ds():
     '''Makes a simple syntetic dataset'''
 
-    ds = DataSet(display_name='Some values', ds_type='Sensory profiling')
+    ds = DataSet(display_name='Some values', kind='Sensory profiling')
     ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 1.2, 2.3],
@@ -123,7 +123,7 @@ discrete_nl = [
 def discrete_ds():
     '''Make a dataset with discrete walues'''
 
-    ds = DataSet(display_name='Discrete values', ds_type='Consumer characteristics')
+    ds = DataSet(display_name='Discrete values', kind='Consumer characteristics')
     idxn = ['O'+str(i+1) for i in range(5)]
     coln = ['V'+str(j+1) for j in range(8)]
     ds.mat = pd.DataFrame(discrete_nl, index = idxn, columns = coln)
@@ -140,7 +140,7 @@ def discrete_nans_ds():
     missing[3][0:8:3] = [np.nan for i in range(3)]
     missing[4][1:8:3] = [np.nan for i in range(3)]
 
-    ds = DataSet(display_name='Discrete and missing', ds_type='Consumer characteristics')
+    ds = DataSet(display_name='Discrete and missing', kind='Consumer characteristics')
     idxn = ['O'+str(i+1) for i in range(5)]
     coln = ['V'+str(j+1) for j in range(8)]
     ds.mat = pd.DataFrame(missing, index = idxn, columns = coln)
@@ -284,13 +284,13 @@ def all_dsc():
 
 
 def imp_ds(ds_meta_info):
-    folder, file_name, ds_name, ds_type = ds_meta_info
+    folder, file_name, ds_name, kind = ds_meta_info
     importer = ImporterMain()
     home = tdd()
     ds_url = osp.join(home, folder, file_name)
     ds = importer.import_data(ds_url)
     ds.display_name = ds_name
-    ds.ds_type = ds_type
+    ds.kind = kind
     return ds
 
 

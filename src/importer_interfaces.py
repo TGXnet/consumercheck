@@ -23,7 +23,7 @@ class IDataImporter(Interface):
     ds_name = Str()
     """An userfriendly name for the dataset."""
 
-    ds_type = Enum(
+    kind = Enum(
         ('Design variable',
          'Sensory profiling',
          'Consumer liking',

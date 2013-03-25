@@ -25,7 +25,7 @@ class DataSet(_traits.HasTraits):
     The reccomended access methods as properties for the DataSet object:
      * id: An identity string that is unique for each object
      * display_name: An human friendly name that for the datataset
-     * ds_type: The dataset type
+     * kind: The dataset type
      * missing_data: Boolean value indicatin if the dataset have "holes"
      * n_vars: Number of variables
      * n_objs: Number of objects
@@ -42,7 +42,7 @@ class DataSet(_traits.HasTraits):
 
     display_name = _traits.Str('Unnamed dataset')
 
-    ds_type = _traits.Enum(DS_TYPES)
+    kind = _traits.Enum(DS_TYPES)
 
     style = _traits.Instance('VisualStyle')
 

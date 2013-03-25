@@ -27,7 +27,7 @@ def clust1ds():
              [4.6,3.6,1.0,0.2]],
             index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
             columns = ['V1', 'V2', 'V3', 'V4']),
-        display_name='Some values', ds_type='Sensory profiling',
+        display_name='Some values', kind='Sensory profiling',
         # style=VisualStyle(fg_color=(0.8, 0.2, 0.1, 1.0)),
         style=VisualStyle(fg_color='indigo'),
         )
@@ -48,7 +48,7 @@ def clust2ds():
              [6.1,2.9,4.7,1.4]],
             index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
             columns = ['V1', 'V2', 'V3', 'V4']),
-        display_name='Some values', ds_type='Sensory profiling',
+        display_name='Some values', kind='Sensory profiling',
         style=VisualStyle(fg_color='saddlebrown'))
     return ds
 
@@ -67,7 +67,7 @@ def clust3ds():
              [6.2,3.4,5.4,2.3]],
             index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
             columns = ['V1', 'V2', 'V3', 'V4']),
-        display_name='Some values', ds_type='Sensory profiling',
+        display_name='Some values', kind='Sensory profiling',
         style=VisualStyle(fg_color='olive'))
     return ds
 
@@ -81,7 +81,7 @@ def expvar1ds():
              [30.2,12.4,5.4,2.3]],
             index = ['cal', 'val'],
             columns = ['V1', 'V2', 'V3', 'V4']),
-        display_name='Some values', ds_type='Sensory profiling',
+        display_name='Some values', kind='Sensory profiling',
         style=VisualStyle(fg_color='olive'))
     return ds
 
@@ -95,11 +95,12 @@ def expvar2ds():
              [67.2,18.4,9.4,1.3]],
             index = ['cal', 'val'],
             columns = ['V1', 'V2', 'V3', 'V4']),
-        display_name='Some values', ds_type='Sensory profiling',
+        display_name='Some values', kind='Sensory profiling',
         style=VisualStyle(fg_color='olive'))
     return ds
 
 
+@pytest.mark.ui
 def test_pc_plot(clust1ds, expvar1ds):
     plot = PCScatterPlot(clust1ds, expvar1ds)
 
@@ -108,6 +109,7 @@ def test_pc_plot(clust1ds, expvar1ds):
     assert 0
 
 
+@pytest.mark.ui
 def test_corre_correlation_plot(clust1ds, clust2ds, expvar1ds, expvar2ds):
     plot = PCScatterPlot()
     plot.add_PC_set(clust1ds, expvar1ds)

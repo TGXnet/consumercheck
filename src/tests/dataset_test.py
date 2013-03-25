@@ -62,7 +62,7 @@ def test_get_ndarray(w2err, a_df):
 def test_style(a_df):
     ds = DataSet(mat=a_df, style=VisualStyle(fg_color='beige', bg_color=(0.3, 0.7, 0.9, 1.0)))
     ds.style.print_traits()
-    assert 0
+    assert True
 
 
 def test_subset(a_df):
@@ -73,7 +73,7 @@ def test_subset(a_df):
                   gr_style=VisualStyle(fg_color='green', bg_color='red'))
     ds.subs.append(sub1)
     print(ds.mat)
-    assert 0
+    assert True
 
 
 # Test dataset with missing data

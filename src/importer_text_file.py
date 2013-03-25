@@ -150,8 +150,8 @@ class ImporterTextFile(HasTraits):
     have_var_names = Bool(True)
     have_obj_names = Bool(True)
     ds_name = Str('Unnamed dataset')
-    ds_type = Str('Design variable')
-    ds_type_list = List(DS_TYPES)
+    kind = Str('Design variable')
+    kind_list = List(DS_TYPES)
 
 
     def import_data(self):
@@ -207,7 +207,7 @@ class ImporterTextFile(HasTraits):
         ds = DataSet(
             mat=dsdf,
             display_name=self.ds_name,
-            ds_type=self.ds_type,
+            kind=self.kind,
             )
         return ds
 
@@ -241,7 +241,7 @@ class ImporterTextFile(HasTraits):
             Item('decimal_mark'),
             ## Item('transpose'),
             Item('ds_name', label='Dataset name'),
-            Item('ds_type', editor=EnumEditor(name='ds_type_list'), label='Dataset type'),
+            Item('kind', editor=EnumEditor(name='kind_list'), label='Dataset type'),
             Item('have_var_names', label='Existing variable names',
                  tooltip='Is first row variable names?'),
             Item('have_obj_names', label='Existing object names',
