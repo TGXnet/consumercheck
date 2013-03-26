@@ -111,23 +111,10 @@ class PcaController(ModelController):
 
     def _make_scores_plot(self, is_subplot=False):
         res = self.model.res
-        pc_tab = res.scores.values
-        labels = self.model.ds.obj_n
-
-        # Make table view dataset
-        pc_df = _pd.DataFrame(
-            pc_tab,
-            index=labels,
-            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
-        score_ds = DataSet(
-            mat=pc_df,
-            display_name=self.model.ds.display_name)
-
-        plot = PCScatterPlot(pc_tab, labels, view_data=score_ds, title="Scores", id='scores')
+        plot = PCScatterPlot(res.scores, res.expl_var)
         if is_subplot:
             plot.add_left_down_action(self.plot_scores)
         return plot
-
 
 
     def plot_loadings(self):
@@ -148,19 +135,7 @@ class PcaController(ModelController):
 
     def _make_loadings_plot(self, is_subplot=False):
         res = self.model.res
-        pc_tab = res.loadings.values
-        labels = self.model.ds.var_n
-
-        # Make table view dataset
-        pc_df = _pd.DataFrame(
-            pc_tab,
-            index=labels,
-            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
-        loadings_ds = DataSet(
-            mat=pc_df,
-            display_name=self.model.ds.display_name)
-
-        plot = PCScatterPlot(pc_tab, labels, view_data=loadings_ds, title="Loadings", id="loadings")
+        plot = PCScatterPlot(res.loadings, res.expl_var)
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings)
         return plot
@@ -184,20 +159,7 @@ class PcaController(ModelController):
 
     def _make_corr_load_plot(self, is_subplot=False):
         res = self.model.res
-        pc_tab = res.corr_loadings.values
-        expl_vars = list(res.expl_var.values[0])
-        labels = self.model.ds.var_n
-
-        # Make table view dataset
-        pc_df = _pd.DataFrame(
-            pc_tab,
-            index=labels,
-            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
-        corr_loadings_ds = DataSet(
-            mat=pc_df,
-            display_name=self.model.ds.display_name)
-
-        pcl = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars, view_data=corr_loadings_ds, title="Correlation Loadings", id="corr_loading")
+        pcl = PCScatterPlot(res.corr_loadings, res.expl_var)
         pcl.plot_circle(True)
         if is_subplot:
             pcl.add_left_down_action(self.plot_corr_loading)
@@ -223,22 +185,7 @@ class PcaController(ModelController):
 
     def _make_expl_var_plot(self, is_subplot=False):
         res = self.model.res
-        cum_expl_v = _np.cumsum(_np.insert(res.expl_var.values, 0, 0, axis=1), axis=1)
-        sumCal = cum_expl_v[0]
-        sumVal = cum_expl_v[1]
-
-        # Make table view dataset
-        pc_tab = _np.array([sumCal, sumVal]).T
-        pc_df = _pd.DataFrame(
-            pc_tab,
-            index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
-            columns=["calibrated", "validated"])
-        ev_ds = DataSet(
-            mat=pc_df,
-            display_name=self.model.ds.display_name)
-
-        pl = EVLinePlot(sumCal, 'darkviolet', 'Calibrated', view_data=ev_ds, title="Explained Variance", id="expl_var")
-        pl.add_EV_set(sumVal, 'darkgoldenrod', 'Validated')
+        pl = EVLinePlot(res.expl_var)
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var)
         return pl
@@ -421,11 +368,13 @@ pca_plugin_view = make_plugin_view('Pca', pca_nodes, selection_view, pca_view)
 
 if __name__ == '__main__':
     print("PCA GUI test start")
-    from tests.conftest import simple_ds, synth_dsc
-    one_branch = False
+    from tests.conftest import iris_ds, synth_dsc
+    one_branch = True
 
     if one_branch:
-        pca = Pca(ds=simple_ds())
+        iris = iris_ds()
+        print(iris.mat.values)
+        pca = Pca(ds=iris)
         pc = PcaController(pca)
         test = TestOneNode(one_model=pc)
         test.configure_traits(view=dummy_view(pca_nodes))
