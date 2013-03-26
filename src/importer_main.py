@@ -43,7 +43,7 @@ class ImporterMain(HasTraits):
         importer = self._make_importer(file_path)
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
-        importer.separator = sep
+        importer.delimiter = sep
         importer.kind = self._pick_kind(file_path)
         ds = importer.import_data()
         return ds
