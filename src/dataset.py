@@ -44,7 +44,7 @@ class DataSet(_traits.HasTraits):
 
     kind = _traits.Enum(DS_TYPES)
 
-    style = _traits.Instance('VisualStyle')
+    style = _traits.Instance('VisualStyle', ())
 
     subs = _traits.List('SubSet')
 
@@ -110,8 +110,8 @@ class DataSet(_traits.HasTraits):
 
 
 class VisualStyle(_traits.HasTraits):
-    fg_color = ColorTrait()
-    bg_color = ColorTrait()
+    fg_color = ColorTrait('black')
+    bg_color = ColorTrait('white')
 
 
 class SubSet(_traits.HasTraits):
