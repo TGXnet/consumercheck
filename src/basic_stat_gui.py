@@ -84,8 +84,17 @@ no_view = _traitsui.View()
 
 
 bs_view = _traitsui.View(
-    _traitsui.Label('Summary axis:'),
-    _traitsui.Item('summary_axis', style='custom', show_label=False),
+    _traitsui.Group(
+        # _traitsui.Label('Summary axis:'),
+        _traitsui.Item('summary_axis',
+                       # editor=_traitsui.EnumEditor(cols=2),
+                       # style='custom',
+                       show_label=False
+                       ),
+        label='Summary axis',
+        show_border=True,
+        orientation='vertical',
+        ),
     )
 
 
