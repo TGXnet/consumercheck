@@ -87,28 +87,10 @@ class PrefmapController(ModelController):
 
     def _make_scores_plot(self, is_subplot=False):
         res = self.model.res
-        pc_tab = res.X_scores()
-        labels = self.model.ds_C.obj_n
-        expl_vars_x = res.X_calExplVar()
-
-        # Make table view dataset
-        pc_df = _pd.DataFrame(
-            pc_tab,
-            index=labels,
-            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
-        score_ds = DataSet(
-            mat=pc_df,
-            display_name=self.model.ds_C.display_name)
-
-        plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x,
-                             view_data=score_ds, title="Scores", id="scores")
+        plot = PCScatterPlot(res.scores_x, res.expl_var_x)
         if is_subplot:
             plot.add_left_down_action(self.plot_scores)
         return plot
-
-
-    def _ev_list_dict_adapter(self, ev_list):
-        return dict([kv for kv in enumerate(ev_list, 1)])
 
 
     def plot_loadings_x(self):
@@ -124,28 +106,7 @@ class PrefmapController(ModelController):
 
     def _make_loadings_plot_x(self, is_subplot=False):
         res = self.model.res
-        xLP = res.X_loadings()
-        expl_vars = res.X_calExplVar()
-
-        # Make table view dataset
-        pc_df = _pd.DataFrame(xLP)
-
-        if self.model.mother_ref.radio == 'Internal mapping':
-            labels = self.model.ds_C.var_n
-            display_name = self.model.ds_C.display_name
-        else:
-            labels = self.model.ds_S.var_n
-            display_name = self.model.ds_S.display_name
-
-        pc_df.index = labels
-        pc_df.columns = ["PC-{0}".format(i+1) for i in range(xLP.shape[1])]
-        loadings_ds = DataSet(
-            values=pc_df,
-            display_name=display_name)
-
-        plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars,
-                             view_data=loadings_ds, title="X Loadings",
-                             id="loadings_x")
+        plot = PCScatterPlot(res.loadings_x, res.expl_var_x)
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings_x)
         return plot
@@ -164,31 +125,7 @@ class PrefmapController(ModelController):
 
     def _make_loadings_plot_y(self, is_subplot=False):
         res = self.model.res
-        yLP = res.Y_loadings()
-        expl_vars = res.Y_calExplVar()
-        # labels = self.model.ds_S.var_n
-
-        # Make table view dataset
-        col_names = ["PC-{0}".format(i+1) for i in range(yLP.shape[1])]
-
-        if self.model.mother_ref.radio == 'Internal mapping':
-            labels = self.model.ds_S.var_n
-            display_name = self.model.ds_S.display_name
-        else:
-            labels = self.model.ds_C.var_n
-            display_name = self.model.ds_C.display_name
-
-        pc_df = _pd.DataFrame(
-            yLP,
-            index=labels,
-            columns=col_names)
-        loadings_ds = DataSet(
-            mat=pc_df,
-            display_name=display_name)
-
-        plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars,
-                             view_data=loadings_ds, title="Y Loadings",
-                             id="loadings_y")
+        plot = PCScatterPlot(res.loadings_y, res.expl_var_y)
         if is_subplot:
             plot.add_left_down_action(self.plot_loadings_y)
         return plot
@@ -206,27 +143,13 @@ class PrefmapController(ModelController):
 
 
     def _make_corr_load_plot(self, is_subplot=False):
-        # VarNameX, CorrLoadX
-        # labels
         res = self.model.res
-        clx = res.X_corrLoadings()
-        cly = res.Y_corrLoadings()
-        # calExplVarX
-        cevx = res.X_calExplVar()
-        cevy = res.Y_calExplVar()
-        if self.model.mother_ref.radio == 'Internal mapping':
-            vnx = self.model.ds_C.var_n
-            vny = self.model.ds_S.var_n
-        else:
-            vnx = self.model.ds_S.var_n
-            vny = self.model.ds_C.var_n
-        pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx,
-                            title="X & Y correlation loadings",
-                            id="corr_loading")
-        pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
+        pcl = PCScatterPlot()
+        pcl.add_PC_set(res.corr_loadings_x, res.expl_var_x)
+        pcl.add_PC_set(res.corr_loadings_y, res.expl_var_y)
+        pcl.plot_circle(True)
         if is_subplot:
             pcl.add_left_down_action(self.plot_corr_loading)
-        pcl.plot_circle(True)
         return pcl
 
 
@@ -249,22 +172,7 @@ class PrefmapController(ModelController):
 
     def _make_expl_var_plot_c(self, is_subplot=False):
         res = self.model.res
-        sumCalX = res.X_cumCalExplVar()
-        sumValX = res.X_cumValExplVar()
-
-        # Make table view dataset
-        pc_tab = _np.array([sumCalX, sumValX]).T
-        pc_df = _pd.DataFrame(
-            pc_tab,
-            index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
-            columns=["calibrated", "validated"])
-        ev_ds = DataSet(
-            mat=pc_df,
-            display_name=self.model.ds_C.display_name)
-
-        pl = EVLinePlot(sumCalX, 'darkviolet', 'Calibrated X', view_data=ev_ds,
-                        title = "Explained Variance X", id="expl_var_x")
-        pl.add_EV_set(sumValX, 'darkgoldenrod', 'Validated X')
+        pl = EVLinePlot(res.expl_var_x)
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var_x)
         return pl
@@ -284,25 +192,19 @@ class PrefmapController(ModelController):
 
     def _make_expl_var_plot_s(self, is_subplot=False):
         res = self.model.res
-        sumCalY = res.Y_cumCalExplVar()
-        sumValY = res.Y_cumValExplVar()
-
-        # Make table view dataset
-        pc_tab = _np.array([sumCalY, sumValY]).T
-        pc_df = _pd.DataFrame(
-            pc_tab,
-            index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
-            columns=["calibrated", "validated"])
-        ev_ds = DataSet(
-            mat=pc_df,
-            display_name=self.model.ds_S.display_name)
-
-        pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', view_data=ev_ds,
-                        title = "Explained Variance Y", id="expl_var_y")
-        pl.add_EV_set(sumValY, 'darkgoldenrod', 'Validated Y')
+        pl = EVLinePlot(res.expl_var_y)
         if is_subplot:
             pl.add_left_down_action(self.plot_expl_var_y)
         return pl
+
+
+    def _wind_title(self):
+        dsx_name = self.model.ds_C.display_name
+        dsy_name = self.model.ds_S.display_name
+        dstype = self.model.plot_type
+        return "({0}) X ~ Y ({1}) | Prefmap - {2} - ConsumerCheck".format(dsx_name, dsy_name, dstype)
+
+
 
 
 no_view = _traitsui.View()
@@ -415,7 +317,7 @@ prefmap_plugin_view =  make_plugin_view(
 if __name__ == '__main__':
     print("Prefmap GUI test start")
     from tests.conftest import imp_ds
-    one_branch = False
+    one_branch = True
 
     # Folder, File name, Display name, DS type
     ds_C_meta = ('Cheese', 'ConsumerLiking.txt',
