@@ -12,9 +12,9 @@ run:
 """
 
 from distutils.core import setup
-#from glob import glob
-#import os
-import py2exe
+# from glob import glob
+# import os
+# import py2exe
 
 #msvc_files = [("Microsoft.VC90.CRT", glob(r'c:\dev\ms-vc-runtime\*.*'))]
 
@@ -43,7 +43,7 @@ options = {
 
 
 setup(
-    windows = ['run.py'],
+#    windows = ['run.py'],
     options = options,
     name = 'ConsumerCheck',
     version = '0.5',

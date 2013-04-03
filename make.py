@@ -6,6 +6,7 @@
 # subprocess module
 
 # FIXME: optparse replaced by argparse from python v2.7
+import os
 from optparse import OptionParser
 from subprocess import Popen
 
@@ -14,6 +15,10 @@ def make_clean():
 
 def make_doc():
     print("Hello doc")
+    home = os.getcwd()
+    os.chdir(os.path.join(home, "docs-user"))
+    print(os.getcwd())
+    tg = Popen(["make", "html"])
 
 def make_tags():
     print("Generate TAGS")
@@ -21,6 +26,10 @@ def make_tags():
 
 def make_pack():
     print("Hello pack")
+
+def make_fixme():
+    print("Hello fixme")
+    tg = Popen(["grep", "--recursive", "--line-number",  "--after-context=2",  "--fixed-strings", "FIXME", "src"])
 
 def main():
     usage = "usage: %prog [target]"
@@ -37,6 +46,9 @@ def main():
     parser.add_option("-p", "--pack",
                       action="store_true", dest="pack", default=False,
                       help="Make windows package")
+    parser.add_option("-f", "--fixme",
+                      action="store_true", dest="fixme", default=False,
+                      help="Filter FIXME tags")
 
     (options, args) = parser.parse_args()
 
@@ -48,6 +60,10 @@ def main():
         make_tags()
     if options.pack:
         make_pack()
+    if options.fixme:
+        make_fixme()
+
+
 
 if __name__ == "__main__":
     main()
