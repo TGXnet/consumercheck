@@ -44,27 +44,27 @@ class ConjointController(ModelController):
     cons_attr_name = _traits.Str()
 
     available_design_vars = _traits.List(_traits.Str())
-    available_cons_attr_vars = _traits.List(_traits.Str())
+    available_consumers_vars = _traits.List(_traits.Str())
 
 
     def _name_default(self):
-        return self.model.cons_liking.display_name
+        return self.model.liking.display_name
 
 
     def _design_name_default(self):
-        return self.model.design_set.display_name
+        return self.model.design.display_name
 
 
     def _cons_attr_name_default(self):
-        return self.model.consumer_attr_set.display_name
+        return self.model.consumers.display_name
 
 
     def _available_design_vars_default(self):
-        return self.model.design_set.var_n
+        return self.model.design.var_n
 
 
-    def _available_cons_attr_vars_default(self):
-        return self.model.consumer_attr_set.var_n
+    def _available_consumers_vars_default(self):
+        return self.model.consumers.var_n
 
 
     def _table_win_launchers_default(self):
@@ -85,7 +85,7 @@ class ConjointController(ModelController):
                 for nn, fn in table_win_launchers]
 
 
-    @_traits.on_trait_change('model:[chosen_design_vars,chosen_consumer_attr_vars,model_structure_type]')
+    @_traits.on_trait_change('model:[design_vars,consumers_vars,model_struct]')
     def _update_plot_lists(self):
         self._populate_me_plot_launchers()
         self._populate_int_plot_launchers()
@@ -93,7 +93,7 @@ class ConjointController(ModelController):
 
     def _populate_me_plot_launchers(self):
         vn = [n.encode('ascii') for n
-              in self.model.chosen_design_vars + self.model.chosen_consumer_attr_vars]
+              in self.model.design_vars + self.model.consumers_vars]
 
         self.me_plot_launchers = [
             WindowLauncher(
@@ -104,9 +104,9 @@ class ConjointController(ModelController):
 
     def _populate_int_plot_launchers(self):
         vn = [n.encode('ascii') for n
-              in self.model.chosen_design_vars + self.model.chosen_consumer_attr_vars]
+              in self.model.design_vars + self.model.consumers_vars]
 
-        if self.model.model_structure_type == 'Struct 2':
+        if self.model.model_struct == 'Struct 2':
             int_plot_launchers = [
                 ("{0}:{1}".format(*comb), comb[0], comb[1])
                 for comb in combinations(vn, 2)]
@@ -235,13 +235,13 @@ conjoint_view = _traitsui.View(
     _traitsui.Item('controller.name', style='readonly', label='Consumer likings'),
     _traitsui.Item('controller.design_name', style='readonly', label='Design'),
     _traitsui.Item('controller.cons_attr_name', style='readonly', label='Consumer charactersitics'),
-    _traitsui.Item('model_structure_type', style='custom', label='Model'),
-    _traitsui.Item('chosen_design_vars',
+    _traitsui.Item('model_struct', style='custom', label='Model'),
+    _traitsui.Item('design_vars',
                    editor=_traitsui.CheckListEditor(name='controller.available_design_vars'),
                    style='custom',
                    ),
-    _traitsui.Item('chosen_consumer_attr_vars',
-                   editor=_traitsui.CheckListEditor(name='controller.available_cons_attr_vars'),
+    _traitsui.Item('consumers_vars',
+                   editor=_traitsui.CheckListEditor(name='controller.available_consumers_vars'),
                    style='custom',
                    ),
     )
@@ -286,7 +286,7 @@ class ConjointPluginController(PluginController):
     available_design_sets = _traits.List()
     available_consumer_characteristics_sets = _traits.List()
     available_consumer_liking_sets = _traits.List()
-    selected_design_set = _traits.Str()
+    selected_design = _traits.Str()
     selected_consumer_characteristics_set = _traits.Str()
     selected_consumer_liking_sets = _traits.List()
 
@@ -325,10 +325,10 @@ class ConjointPluginController(PluginController):
 
 
     def _make_calculation(self, liking_id):
-        d = self.model.dsc[self.selected_design_set]
+        d = self.model.dsc[self.selected_design]
         c = self.model.dsc[self.selected_consumer_characteristics_set]
         l = self.model.dsc[liking_id]
-        calc_model = Conjoint(id=liking_id, design_set=d, cons_liking=l, consumer_attr_set=c)
+        calc_model = Conjoint(id=liking_id, design=d, liking=l, consumers=c)
         calculation = ConjointController(calc_model)
         self.model.add(calculation)
 
@@ -341,7 +341,7 @@ selection_view = _traitsui.Group(
                    width=200,
                    height=200,
                    ),
-    _traitsui.Item('controller.selected_design_set',
+    _traitsui.Item('controller.selected_design',
                    editor=_traitsui.CheckListEditor(name='controller.available_design_sets'),
                    style='simple',
                    show_label=False,
@@ -377,7 +377,7 @@ if __name__ == '__main__':
         l = get_ds_by_name('Odour-flavor', dsc)
         c = get_ds_by_name('Consumers', dsc)
 
-        cj = Conjoint(design_set=d, cons_liking=l, consumer_attr_set=c)
+        cj = Conjoint(design=d, liking=l, consumers=c)
         cjc = ConjointController(cj)
         test = TestOneNode(one_model=cjc)
         test.configure_traits(view=dummy_view(conjoint_nodes))

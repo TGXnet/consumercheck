@@ -50,21 +50,21 @@ class ConjointCalcState(_traits.HasTraits):
 
 class Conjoint(Model):
     # The imput data for calculation
-    design_set = DataSet()
-    chosen_design_vars = _traits.List(_traits.Str())
-    consumer_attr_set = DataSet()
-    chosen_consumer_attr_vars = _traits.List(_traits.Str())
-    cons_liking = DataSet()
+    design = DataSet()
+    design_vars = _traits.List(_traits.Str())
+    consumers = DataSet()
+    consumers_vars = _traits.List(_traits.Str())
+    liking = DataSet()
 
     # Conjoint settings
-    model_structure_type = _traits.Enum('Struct 1', 'Struct 2', 'Struct 3')
+    model_struct = _traits.Enum('Struct 1', 'Struct 2', 'Struct 3')
 
     # Conjoint calculation state
     ccs = _traits.Instance(ConjointCalcState, ())
     cm = _traits.Instance(ConjointMachine, ())
 
     # depends_on
-    res = _traits.Property(depends_on='chosen_design_vars, chosen_consumer_attr_vars, model_structure_type')
+    res = _traits.Property(depends_on='design_vars, consumers_vars, model_struct')
 
 
     @_traits.cached_property
@@ -72,13 +72,13 @@ class Conjoint(Model):
         if not self.cm.run_state:
             self.cm.run_state = self.ccs
 
-        struct = {'Struct 1': 1, 'Struct 2': 2, 'Struct 3': 3}[self.model_structure_type]
+        model = {'Struct 1': 1, 'Struct 2': 2, 'Struct 3': 3}[self.model_struct]
 
         self.cm.schedule_calculation(
-            struct,
-            self.consumer_attr_set, sorted(self.chosen_consumer_attr_vars),
-            self.design_set, sorted(self.chosen_design_vars),
-            self.cons_liking)
+            model,
+            self.consumers, sorted(self.consumers_vars),
+            self.design, sorted(self.design_vars),
+            self.liking)
         self.ccs.edit_traits(kind='livemodal')
         return self.cm.get_result()
 
@@ -91,9 +91,9 @@ if __name__ == '__main__':
     design = get_ds_by_name('Tine yogurt design', conjoint_dsc)
     liking = get_ds_by_name('Odour-flavor', conjoint_dsc)
     consumers = get_ds_by_name('Consumers', conjoint_dsc)
-    cj = Conjoint(design_set=design, cons_liking=liking, consumer_attr_set=consumers)
-    cj.chosen_design_vars = ['Flavour', 'Sugarlevel']
-    cj.chosen_consumer_attr_vars = ['Sex']
+    cj = Conjoint(design=design, liking=liking, consumers=consumers)
+    cj.design_vars = ['Flavour', 'Sugarlevel']
+    cj.consumers_vars = ['Sex']
     cj.print_traits()
     ## cj_res = cj.res
     ## print(cj_res.keys())
