@@ -55,7 +55,7 @@ preview_table = PreviewTableEditor(
     operations = [],
     # Can the user edit the values?
     show_titles = True,
-    show_row_titles = False,
+    # show_row_titles = False,
     editable = False,
     # The optional extended name of the trait used to indicate that a complete
     # table update is needed:
