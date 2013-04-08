@@ -266,7 +266,7 @@ class PCScatterPlot(PlotBase):
             label_obj = DataLabel(
                 component = plot_render,
                 data_point = (x[i], y[i]),
-                label_format = label,
+                label_format = str(label),
                 visible = self.visible_new_labels,
                 ## marker_color = pt_color,
                 # text_color = 'black',
