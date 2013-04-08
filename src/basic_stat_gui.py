@@ -61,7 +61,7 @@ class BasicStatController(ModelController):
         summary = extract_summary(res)
         plot = BoxPlot(summary)
         win = LinePlotWindow(plot=plot, title_text='Hello')
-        win.edit_traits()
+        self._show_plot_window(win)
 
 
     def stacked_histogram(self):
@@ -69,7 +69,7 @@ class BasicStatController(ModelController):
         hist = extract_histogram(res)
         plot = StackedHistPlot(hist)
         win = LinePlotWindow(plot=plot, title_text='Hello')
-        win.edit_traits()
+        self._show_plot_window(win)
 
 
     def plot_histogram(self, obj_id):
@@ -77,7 +77,7 @@ class BasicStatController(ModelController):
         hist = extract_histogram(res)
         plot = HistPlot(hist, obj_id)
         win = LinePlotWindow(plot=plot, title_text='Hello')
-        win.edit_traits()
+        self._show_plot_window(win)
 
 
 no_view = _traitsui.View()
