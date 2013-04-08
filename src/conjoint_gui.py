@@ -125,8 +125,8 @@ class ConjointController(ModelController):
         cj_dm = self.cj_res_ds_adapter(self.model.res['randomTable'], (self.name +
                                        ' - ANOVA table for random effects'))
         dstv = DSTableViewer(cj_dm)
-        # dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
-        dstv.edit_traits(view=dstv.get_view(), kind='live')
+        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
+        # dstv.edit_traits(view=dstv.get_view(), kind='live')
 
 
     def show_fixed(self):
@@ -134,8 +134,8 @@ class ConjointController(ModelController):
         cj_dm = self.cj_res_ds_adapter(self.model.res['anovaTable'], (self.name +
                                        ' - ANOVA table for fixed effects'))
         dstv = DSTableViewer(cj_dm)
-        # dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
-        dstv.edit_traits(view=dstv.get_view(), kind='live')
+        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
+        # dstv.edit_traits(view=dstv.get_view(), kind='live')
 
 
     def show_means(self):
@@ -143,8 +143,8 @@ class ConjointController(ModelController):
         cj_dm = self.cj_res_ds_adapter(self.model.res['lsmeansTable'], (self.name +
                                        ' - LS means (main effect and interaction)'))
         dstv = DSTableViewer(cj_dm)
-        # dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
-        dstv.edit_traits(view=dstv.get_view(), kind='live')
+        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
+        # dstv.edit_traits(view=dstv.get_view(), kind='live')
 
 
     def show_diff(self):
@@ -152,8 +152,8 @@ class ConjointController(ModelController):
         cj_dm = self.cj_res_ds_adapter(self.model.res['lsmeansDiffTable'], (self.name +
                                        ' - Pair-wise differences'))
         dstv = DSTableViewer(cj_dm)
-        # dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
-        dstv.edit_traits(view=dstv.get_view(), kind='live')
+        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
+        # dstv.edit_traits(view=dstv.get_view(), kind='live')
 
 
     def show_residu(self):
@@ -161,8 +161,8 @@ class ConjointController(ModelController):
         cj_dm = self.cj_res_ds_adapter(self.model.res['residualsTable'], (self.name +
                                        ' - Residuals'))
         dstv = DSTableViewer(cj_dm)
-        # dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
-        dstv.edit_traits(view=dstv.get_view(), kind='live')
+        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
+        # dstv.edit_traits(view=dstv.get_view(), kind='live')
 
 
     def plot_main_effects(self, attr_name):
