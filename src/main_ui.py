@@ -67,7 +67,7 @@ class MainUi(HasTraits):
     """Main application class"""
     dsc = DatasetContainer()
     # en_advanced = Bool(False)
-    parent_win = Any()
+    win_handle = Any()
     splash = None
 
     # Object representating the basic stat

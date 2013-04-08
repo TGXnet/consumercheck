@@ -45,6 +45,11 @@ class ModelController(_traitsui.Controller):
     id = _traits.DelegatesTo('model')
     name = _traits.Str()
     plot_uis = _traits.List()
+    win_handle = _traits.Any()
+
+
+    def init(self, info):
+        self.win_handle = info.ui.control
 
 
     def _name_default(self):
@@ -70,7 +75,7 @@ class ModelController(_traitsui.Controller):
         elif sys.platform == 'win32':
             # FIXME: Investigate more here
             self.plot_uis.append(
-                plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
+                plot_window.edit_traits(parent=self.win_handle, kind='live')
                 # plot_window.edit_traits(kind='live')
                 )
         else:
