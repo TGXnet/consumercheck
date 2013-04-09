@@ -4,6 +4,7 @@ from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton
 from pyface.api import clipboard
 
+
 class ArrayAdapter(TabularAdapter):
     bg_color = Color(0xFFFFFF)
     width = 75
@@ -21,11 +22,13 @@ class DSTableViewer(Controller):
     cp_clip = Button('Copy to clipboard')
     display_name = Str()
 
+
     def _get_header(self):
         varnames = [('Names', 'index')]
         for i, vn in enumerate(self.model.var_n):
-            varnames.append((vn, i))
+            varnames.append((str(vn), i))
         return varnames
+
 
     def handler_cp_clip_changed(self, info):
         txt_var = unicode()
@@ -42,6 +45,7 @@ class DSTableViewer(Controller):
 
         txt = txt_var + txt_mat
         clipboard.data = txt.encode('utf_8')
+
 
     def get_view(self):
         
