@@ -21,6 +21,7 @@ from dataset import DS_TYPES, DataSet
 
 #Import NumPy
 import numpy as np
+import pandas as _pd
 
 
 class RawLineAdapter(TabularAdapter):
@@ -112,9 +113,9 @@ class ImporterXlsxFile(HasTraits):
     def import_data(self):
         self.ds = DataSet(
             kind=self.kind,
-            display_name=self.ds_name,
-            _source_file=self.file_path)
-        
+            display_name=self.ds_name
+            )
+
         raw_data = load_workbook(filename = self.file_path)
         data_sheet = raw_data.get_active_sheet()
         c_table = []
@@ -139,10 +140,9 @@ class ImporterXlsxFile(HasTraits):
             for i in range(1,len(c_table)):
                 c_table[i].pop(0)
             
-            revised_list = []
+            obj_names = []
             for sh in objnamelist:
-                revised_list.append(unicode(sh))
-            self.ds.obj_n = revised_list
+                obj_names.append(unicode(sh))
         
         if self.have_var_names:
             varnamelist = c_table[0]
@@ -150,14 +150,14 @@ class ImporterXlsxFile(HasTraits):
                 varnamelist.pop(0)
             c_table.pop(0)
             
-            revised_list = []
+            var_names = []
             for sh in varnamelist:
-                revised_list.append(unicode(sh))
-            self.ds.var_n = revised_list
+                var_names.append(unicode(sh))
         
         full_table = np.array(c_table)
-        
-        self.ds.matrix = full_table
+        matrix = _pd.DataFrame(full_table, index=obj_names, columns=var_names)
+        self.ds.mat = matrix
+
         return self.ds
 
 
@@ -186,7 +186,7 @@ class ImporterXlsxFile(HasTraits):
         kind='livemodal',
         )
     
-# Run the demo (if invoked from the command line):
+
 if __name__ == '__main__':
     test = ImporterXlsxFile()
     test.file_path = (os.path.join('datasets', 'Cheese', 'ConsumerLiking.xls'))
