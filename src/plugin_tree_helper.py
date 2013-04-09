@@ -79,7 +79,7 @@ class ModelController(_traitsui.Controller):
                 # plot_window.edit_traits(kind='live')
                 )
         else:
-            raise Exception("Not implemented for this platform: ".format(sys.platform))
+            raise NotImplementedError("Not implemented for this platform: ".format(sys.platform))
 
 
 
