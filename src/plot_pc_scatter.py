@@ -11,7 +11,7 @@ import numpy as np
 # Enthought library imports
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Int, List, HasTraits, implements
+from traits.api import Bool, Int, List, HasTraits, implements, Property
 from enable.api import ColorTrait
 
 
@@ -97,9 +97,10 @@ class PCScatterPlot(PlotBase):
     # Should new labels be visible?
     visible_new_labels = Bool(True)
     visible_datasets = Int(3)
+    plot_data = Property()
 
 
-    # def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None, view_data=None):
+
     def __init__(self, pc_matrix=None, expl_vars=None):
         """Constructor signature.
 
@@ -409,6 +410,10 @@ class PCScatterPlot(PlotBase):
             transverse_mapper=self.x_mapper
             )
         self.underlays.append(ygrid)
+
+
+    def _get_plot_data(self):
+        return self.data.pc_ds[0].view_data
 
 
 def calc_bounds(data_low, data_high, margin, tight_bounds):

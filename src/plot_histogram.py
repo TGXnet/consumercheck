@@ -19,6 +19,7 @@ class HistPlot(_chaco.DataView):
     ceiling = _traits.Int()
     head_space = _traits.Float(1.1)
     bars_renderer = _traits.Instance(_chaco.BarPlot)
+    plot_data = _traits.Property()
 
 
     def __init__(self, ds, row_id):
@@ -87,12 +88,17 @@ class HistPlot(_chaco.DataView):
         return self._plot_ui_info
 
 
+    def _get_plot_data(self):
+        return self.ds
+
+
 
 class StackedHistPlot(_chaco.DataView):
     '''Plot histogram values for each row stacked on to of each other'''
 
     ds = _traits.Instance(DataSet)
     stair_ds = _traits.Instance(_chaco.MultiArrayDataSource)
+    plot_data = _traits.Property()
 
 
 
@@ -161,7 +167,8 @@ class StackedHistPlot(_chaco.DataView):
         return self._plot_ui_info
 
 
-
+    def _get_plot_data(self):
+        return self.ds
 
 
 
@@ -173,6 +180,7 @@ class BoxPlot(_chaco.DataView):
     mean, std, max, min
     '''
     ds = _traits.Instance(DataSet)
+    plot_data = _traits.Property()
 
 
     def __init__(self, ds):
@@ -243,6 +251,9 @@ class BoxPlot(_chaco.DataView):
             self._plot_ui_info = PlotWindow(plot=self).edit_traits()
         return self._plot_ui_info
 
+
+    def _get_plot_data(self):
+        return self.ds
 
 
 

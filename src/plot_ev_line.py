@@ -4,7 +4,7 @@ import numpy as np
 
 # Enthought library imports
 from chaco.api import ArrayPlotData
-from traits.api import Callable, List, HasTraits, implements
+from traits.api import List, HasTraits, implements, Property
 from enable.api import ColorTrait
 from chaco.tools.api import ZoomTool, PanTool
 
@@ -70,6 +70,9 @@ class EVLinePlot(PlotBase):
     """
     implements(IEVLinePlot)
 
+    plot_data = Property()
+
+
 
     def __init__(self, expl_var=None):
         """Constructor signature.
@@ -86,8 +89,8 @@ class EVLinePlot(PlotBase):
 
         if expl_var is not None:
             # FIXME: Do more inteligente coloring based on the dataset.style
-            self.add_EV_set(expl_var.mat.xs('cal'), 'darkviolet', 'Calibrated')
-            self.add_EV_set(expl_var.mat.xs('val'), 'darkgoldenrod', 'Validated')
+            self.add_EV_set(expl_var.mat.xs('cal'), 'darkviolet', 'Calibrated', expl_var)
+            self.add_EV_set(expl_var.mat.xs('val'), 'darkgoldenrod', 'Validated', expl_var)
 
         self.x_axis.title = "# of principal components"
         self.y_axis.title = "Explained variance [%]"
@@ -97,7 +100,7 @@ class EVLinePlot(PlotBase):
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
 
 
-    def add_EV_set(self, expl_var, color=None, legend=None):
+    def add_EV_set(self, expl_var, color=None, legend=None, ev_data=None):
         """Add a PC dataset with metadata.
 
         Args:
@@ -108,7 +111,7 @@ class EVLinePlot(PlotBase):
         
         cum_expl_var = np.cumsum(np.insert(expl_var.values, 0, 0, axis=0), axis=0)
 
-        set_id = self.data.add_line_ds(cum_expl_var, color)
+        set_id = self.data.add_line_ds(cum_expl_var, color, ev_data)
         self._plot_EV(set_id, legend)
 
 
@@ -145,6 +148,11 @@ class EVLinePlot(PlotBase):
         self.plots.values()[0][0].index._data = self.data.arrays['index']
         
         return pn
+
+
+    def _get_plot_data(self):
+        return self.data.pc_ds[0].view_data
+
 
 
 if __name__ == '__main__':

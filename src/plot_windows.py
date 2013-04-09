@@ -8,14 +8,15 @@ from os.path import join as pjoin
 from enable.api import Component, ComponentEditor
 from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
-from traitsui.menu import OKButton
+# from traitsui.menu import OKButton
 from chaco.api import DataView, GridPlotContainer
 from pyface.api import FileDialog, OK
 from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 #Local imports
-from ui_results import TableViewController
-from ds_matrix_view import TableViewer
+# from ui_results import TableViewController
+# from ds_matrix_view import TableViewer
+from ds_table_view import DSTableViewer
 
 
 #===============================================================================
@@ -53,8 +54,9 @@ class PlotWindow(HasTraits):
 
     @on_trait_change('view_table')
     def show_table(self, obj, name, new):
-        tv = TableViewer(obj.plot.data.pc_ds[0].view_data)
-        tv.edit_traits()
+        # tv = DSTableViewer(obj.plot.data.pc_ds[0].view_data)
+        tv = DSTableViewer(obj.plot.plot_data)
+        tv.edit_traits(view=tv.get_view())
 
 
 
@@ -308,28 +310,31 @@ class FileEditor(HasTraits):
 
 if __name__ == '__main__':
     import numpy as np
+    import pandas as pd
     from plot_pc_scatter import PCScatterPlot
+    from dataset import DataSet, VisualStyle
 
-    set1 = np.array([
-        [-0.3, 0.4, 0.9],
-        [-0.1, 0.2, 0.7],
-        [-0.1, 0.1, 0.1],
-        ])
+    def clust1ds():
+        """Manual random pick from the Iris datast: setosa"""
+        ds = DataSet(
+            mat = pd.DataFrame(
+                [[5.1,3.5,1.4,0.2],
+                 [4.6,3.4,1.4,0.3],
+                 [5.4,3.7,1.5,0.2],
+                 [5.7,3.8,1.7,0.3],
+                 [5.4,3.4,1.7,0.2],
+                 [4.8,3.1,1.6,0.2],
+                 [4.6,3.6,1.0,0.2]],
+                index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
+                columns = ['V1', 'V2', 'V3', 'V4']),
+            display_name='Some values', kind='Sensory profiling',
+            # style=VisualStyle(fg_color=(0.8, 0.2, 0.1, 1.0)),
+            style=VisualStyle(fg_color='indigo'),
+            )
+        return ds
 
-    set2 = np.array([
-        [-1.3, -0.4, -0.9],
-        [-1.1, -0.2, -0.7],
-        [-1.2, -0.1, -0.1],
-        ])
-
-    label1 = ['s1pt1', 's1pt2', 's1pt3']
-    label2 = ['s2pt1', 's2pt2', 's2pt3']
-    plot = PCScatterPlot()
-    ## plot = PCScatterPlot(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-    plot.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-    plot.add_PC_set(set2, labels=label2, color=(0.2, 0.9, 0.1, 1.0))
-    plot.plot_circle(True)
-
+    mydata = clust1ds()
+    plot = PCScatterPlot(mydata)
     pw = SinglePlotWindow(plot=plot)
 
     with np.errstate(invalid='ignore'):
