@@ -18,12 +18,13 @@ from dataset_container import DatasetContainer
 
 
 def dclk_activator(obj):
-    fn = obj.func_name
-    open_win_func = getattr(obj.owner_ref, fn)
+    open_win_func = obj.view_creator
+    # open_win_func = getattr(obj.owner_ref, fn)
     if len(obj.func_parms) < 1:
-        open_win_func()
+        view = open_win_func(obj.owner_ref.model.res)
     else:
-        open_win_func(*obj.func_parms)
+        view = open_win_func(obj.owner_ref.model.res, *obj.func_parms)
+    obj.owner_ref.open_window(view)
 
 
 class WindowLauncher(_traits.HasTraits):
@@ -60,7 +61,7 @@ class ViewNavigator(_traits.HasTraits):
         else:
             self.current_idx = len(self.view_loop) - 1
         vc = self.view_loop[self.current_idx]
-        return vc.view_creator(self.res, vc.func_parms)
+        return vc.view_creator(self.res)
 
 
 

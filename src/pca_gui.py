@@ -44,11 +44,11 @@ class PcaController(ModelController):
         adv_enable = False
 
         std_launchers = [
-            ("Overview", "plot_overview"),
-            ("Scores", "plot_scores"),
-            ("Loadings", "plot_loadings"),
-            ("Correlation loadings", "plot_corr_loading"),
-            ("Explained variance", "plot_expl_var"),
+            # ("Overview", "plot_overview"),
+            ("Scores", scores_plot),
+            ("Loadings", loadings_plot),
+            ("Correlation loadings", corr_load_plot),
+            ("Explained variance", expl_var_plot),
             ]
 
         adv_launchers = [
@@ -63,7 +63,7 @@ class PcaController(ModelController):
 
         if adv_enable:
             std_launchers.extend(adv_launchers)
-        return [WindowLauncher(node_name=nn, func_name=fn, owner_ref=self) for nn, fn in std_launchers]
+        return [WindowLauncher(node_name=nn, view_creator=fn, owner_ref=self) for nn, fn in std_launchers]
 
 
     def _show_zero_var_warning(self):
@@ -94,6 +94,18 @@ class PcaController(ModelController):
         self._show_plot_window(mpw)
 
 
+    def open_window(self, view):
+        win = SinglePlotWindow(
+            plot=view,
+            res=self.model.res,
+            view_loop=self.window_launchers,
+            title_text=self._wind_title(),
+            vistog=False
+            )
+        self._show_plot_window(win)
+
+
+
     def plot_scores(self):
         # FIXME: Test plot navigation
         self.model.plot_type = 'Scores Plot'
@@ -102,14 +114,6 @@ class PcaController(ModelController):
         except InComputeable:
             self._show_zero_var_warning()
             return
-
-        vl = []
-        wl1 = WindowLauncher(node_name="Score plot",
-                             view_creator=scores_plot)
-        wl2 = WindowLauncher(node_name="Loadings",
-                             view_creator=loadings_plot)
-        vl.append(wl1)
-        vl.append(wl2)
 
         spw = SinglePlotWindow(
             plot=s_plot,
@@ -254,33 +258,12 @@ class PcaController(ModelController):
         for i in range(ind_var_msecv.shape[0]):
             tv.add_row(ind_var_msecv[i,:], 'MSECV')
         tv.edit_traits()
-    
-    
-    def show_next_plot(self, window):
-            if 'scores' == window.plot.id:
-                window.plot = self._make_loadings_plot()
-            elif 'loadings' == window.plot.id:
-                window.plot = self._make_corr_load_plot()
-            elif 'corr_loading' == window.plot.id:
-                window.plot = self._make_expl_var_plot()
-            elif 'expl_var' == window.plot.id:
-                window.plot = self._make_scores_plot()
-
-
-    def show_previous_plot(self, window):
-            if 'corr_loading' == window.plot.id:
-                window.plot = self._make_loadings_plot()
-            elif 'expl_var' == window.plot.id:
-                window.plot = self._make_corr_load_plot()
-            elif 'scores' == window.plot.id:
-                window.plot = self._make_expl_var_plot()
-            elif 'loadings' == window.plot.id:
-                window.plot = self._make_scores_plot()
 
 
     def _wind_title(self):
         ds_name = self.model.ds.display_name
-        dstype = self.model.plot_type
+        # dstype = self.model.plot_type
+        dstype = "FIXME plot type"
         return "{0} | PCA - {1} - ConsumerCheck".format(ds_name, dstype)
 
 
@@ -293,6 +276,17 @@ def scores_plot(res):
 
 def loadings_plot(res):
     plot = PCScatterPlot(res.loadings, res.expl_var)
+    return plot
+
+
+def corr_load_plot(res):
+    plot = PCScatterPlot(res.corr_loadings, res.expl_var)
+    plot.plot_circle(True)
+    return plot
+
+
+def expl_var_plot(res):
+    plot = EVLinePlot(res.expl_var)
     return plot
 
 
