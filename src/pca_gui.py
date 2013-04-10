@@ -27,6 +27,7 @@ class ErrorMessage(_traits.HasTraits):
                        buttons=[_traitsui.OKButton], title='Warning')
 
 
+
 class PcaController(ModelController):
     '''Controller for one PCA object'''
     window_launchers = _traits.List(_traits.Instance(WindowLauncher))
@@ -94,6 +95,7 @@ class PcaController(ModelController):
 
 
     def plot_scores(self):
+        # FIXME: Test plot navigation
         self.model.plot_type = 'Scores Plot'
         try:
             s_plot = self._make_scores_plot()
@@ -101,11 +103,21 @@ class PcaController(ModelController):
             self._show_zero_var_warning()
             return
 
+        vl = []
+        wl1 = WindowLauncher(node_name="Score plot",
+                             view_creator=scores_plot)
+        wl2 = WindowLauncher(node_name="Loadings",
+                             view_creator=loadings_plot)
+        vl.append(wl1)
+        vl.append(wl2)
+
         spw = SinglePlotWindow(
             plot=s_plot,
+            res=self.model.res,
             title_text=self._wind_title(),
             vistog=False
             )
+        spw.plot_navigator.view_loop = vl
         self._show_plot_window(spw)
 
 
@@ -272,6 +284,18 @@ class PcaController(ModelController):
         return "{0} | PCA - {1} - ConsumerCheck".format(ds_name, dstype)
 
 
+# Plots creators
+
+def scores_plot(res):
+    plot = PCScatterPlot(res.scores, res.expl_var)
+    return plot
+
+
+def loadings_plot(res):
+    plot = PCScatterPlot(res.loadings, res.expl_var)
+    return plot
+
+
 
 no_view = _traitsui.View()
 
@@ -373,7 +397,6 @@ if __name__ == '__main__':
 
     if one_branch:
         iris = iris_ds()
-        print(iris.mat.values)
         pca = Pca(ds=iris)
         pc = PcaController(pca)
         test = TestOneNode(one_model=pc)

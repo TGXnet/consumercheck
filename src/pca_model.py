@@ -72,7 +72,7 @@ class Pca(Model):
 
     def _pack_res(self, pca_obj):
 
-        class PcaRes(object):
+        class PcaRes(_traits.HasTraits):
             pass
         res = PcaRes()
 

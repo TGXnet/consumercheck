@@ -6,7 +6,7 @@ from os.path import join as pjoin
 
 # Enthought library imports
 from enable.api import Component, ComponentEditor
-from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
+from traits.api import HasTraits, Any, Instance, Bool, Str, File, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
 # from traitsui.menu import OKButton
 from chaco.api import DataView, GridPlotContainer
@@ -17,6 +17,7 @@ from enable.savage.trait_defs.ui.svg_button import SVGButton
 # from ui_results import TableViewController
 # from ds_matrix_view import TableViewer
 from ds_table_view import DSTableViewer
+from plugin_tree_helper import ViewNavigator
 
 
 #===============================================================================
@@ -38,26 +39,35 @@ class TitleHandler(Handler):
 
 
 class PlotWindow(HasTraits):
-    mother_ref = Instance(HasTraits)
+    # mother_ref = Instance(HasTraits)
+
+    plot = Instance(DataView)
+    res = Any()
+    plot_navigator = Instance(ViewNavigator)
 
     next_plot = Button('Next plot')
     previous_plot = Button('Previous plot')
     view_table = Button('View result table')
 
+
+    def _plot_navigator_default(self):
+        return ViewNavigator(res=self.res)
+
+
     @on_trait_change('next_plot')
     def goto_next_plot(self, obj, name, new):
-        self.mother_ref.show_next_plot(self)
+        # self.mother_ref.show_next_plot(self)
+        self.plot = self.plot_navigator.show_next()
 
     @on_trait_change('previous_plot')
     def goto_previous_plot(self, obj, name, new):
-        self.mother_ref.show_previous_plot(self)
+        # self.mother_ref.show_previous_plot(self)
+        self.plot = self.plot_navigator.show_previous()
 
     @on_trait_change('view_table')
     def show_table(self, obj, name, new):
-        # tv = DSTableViewer(obj.plot.data.pc_ds[0].view_data)
         tv = DSTableViewer(obj.plot.plot_data)
         tv.edit_traits(view=tv.get_view())
-
 
 
 
@@ -66,7 +76,6 @@ class SinglePlotWindow(PlotWindow):
 
     FIXME: Or should the name be PC plot window
     """
-    plot = Instance(DataView)
 
     # Buttons
     eq_axis = Bool(False)
@@ -75,11 +84,6 @@ class SinglePlotWindow(PlotWindow):
     vis_toggle = Button('Visibility')
     vistog = Bool(False)
 
-    ## x_up = Button('X+')
-    ## x_down = Button('X-')
-    ## y_up = Button('Y+')
-    ## y_down = Button('Y-')
-    ## reset_xy = Button('Reset axis')
     save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
                           width=32, height=32)
     y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
@@ -195,7 +199,8 @@ class LinePlotWindow(PlotWindow):
     """Window for embedding line plot
 
     """
-    plot = Instance(Component)
+    # plot = Instance(Component)
+
     eq_axis = Bool(False)
     show_labels = Bool(True)
     title_text = Str("ConsumerCheck")

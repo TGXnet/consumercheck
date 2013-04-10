@@ -28,9 +28,40 @@ def dclk_activator(obj):
 
 class WindowLauncher(_traits.HasTraits):
     node_name = _traits.Str()
+    # FIXME: Deprecated by view_creator
     func_name = _traits.Str()
+    view_creator = _traits.Callable()
+    # FIXME: Should not be nessesary for view navigator
     owner_ref = _traits.WeakRef()
+    # FIXME: Rename to creator_parms
     func_parms = _traits.Tuple()
+
+
+
+class ViewNavigator(_traits.HasTraits):
+    view_loop = _traits.List(WindowLauncher)
+    current_idx = _traits.Int(0)
+    res = _traits.WeakRef()
+
+
+    def show_next(self):
+        if self.current_idx < len(self.view_loop)-1:
+            self.current_idx += 1
+        else:
+            self.current_idx = 0
+        vc = self.view_loop[self.current_idx]
+        # return vc.view_creator(self.res, vc.func_parms)
+        return vc.view_creator(self.res)
+
+
+    def show_previous(self):
+        if self.current_idx > 0:
+            self.current_idx -= 1
+        else:
+            self.current_idx = len(self.view_loop) - 1
+        vc = self.view_loop[self.current_idx]
+        return vc.view_creator(self.res, vc.func_parms)
+
 
 
 class Model(_traits.HasTraits):
@@ -69,8 +100,8 @@ class ModelController(_traitsui.Controller):
         # plot_window.mother_ref = self
         if sys.platform == 'linux2':
             self.plot_uis.append(
-                plot_window.edit_traits(parent=self.win_handle, kind='live')
-                # plot_window.edit_traits(kind='live')
+                # plot_window.edit_traits(parent=self.win_handle, kind='live')
+                plot_window.edit_traits(kind='live')
                 )
         elif sys.platform == 'win32':
             # FIXME: Investigate more here
