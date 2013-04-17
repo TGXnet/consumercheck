@@ -82,7 +82,7 @@ class PcaController(ModelController):
             return
 
         wl = self.window_launchers
-        title = self._wind_title()
+        title = self._wind_title(res)
 
         sp = multiplot_factory(scores_plot, res, wl, title)
         lp = multiplot_factory(loadings_plot, res, wl, title)
@@ -92,7 +92,7 @@ class PcaController(ModelController):
         ds_plots = [[sp, lp],
                     [clp, evp]]
 
-        mpw = MultiPlotWindow(title_text=self._wind_title())
+        mpw = MultiPlotWindow(title_text=self._wind_title(res))
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)
@@ -151,9 +151,10 @@ class PcaController(ModelController):
         tv.edit_traits()
 
 
-    def _wind_title(self):
+    def _wind_title(self, res):
         ds_name = self.model.ds.display_name
-        return "{0} | PCA - ConsumerCheck".format(ds_name)
+        mn = res.method_name
+        return "{0} | {1} - ConsumerCheck".format(ds_name, mn)
 
 
 # Plots creators

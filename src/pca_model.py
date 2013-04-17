@@ -73,7 +73,7 @@ class Pca(Model):
     def _pack_res(self, pca_obj):
 
         class PcaRes(_traits.HasTraits):
-            method_name = _traits.Str('Unnamed pluging')
+            method_name = _traits.Str('PCA')
 
         res = PcaRes()
 
