@@ -45,13 +45,16 @@ class ModelController(_traitsui.Controller):
 
 
     def open_window(self, view):
+        res = self.model.res
+
         win = SinglePlotWindow(
             plot=view,
-            res=self.model.res,
+            res=res,
             view_loop=self.window_launchers,
-            title_text=self._wind_title(),
+            title_text=self._wind_title(res),
             vistog=False
             )
+
         self._show_plot_window(win)
 
 
