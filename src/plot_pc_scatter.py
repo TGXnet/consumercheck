@@ -101,7 +101,7 @@ class PCScatterPlot(PlotBase):
 
 
 
-    def __init__(self, pc_matrix=None, expl_vars=None):
+    def __init__(self, pc_matrix=None, expl_vars=None, **kwargs):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -118,7 +118,7 @@ class PCScatterPlot(PlotBase):
 
         """
         data = PCPlotData()
-        super(PCScatterPlot, self).__init__(data)
+        super(PCScatterPlot, self).__init__(data, **kwargs)
         self._adjust_range()
 
         if pc_matrix is not None:

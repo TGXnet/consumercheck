@@ -1,22 +1,18 @@
 
-# Scipy imports
-import numpy as _np
-import pandas as _pd
-
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
 
 # Local imports
-from dataset import DataSet
 from pca_model import Pca, InComputeable
 from ui_results import TableViewController
 from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot
-from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
-from plugin_tree_helper import (WindowLauncher, dclk_activator, ModelController,
-                                CalcContainer, PluginController, dummy_view,
-                                TestOneNode, make_plugin_view)
+from plot_windows import MultiPlotWindow
+from window_helper import multiplot_factory
+from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
+from plugin_base import (ModelController, CalcContainer, PluginController,
+                         dummy_view, TestOneNode, make_plugin_view)
 
 
 
@@ -73,138 +69,33 @@ class PcaController(ModelController):
         dlg.edit_traits()
 
 
-    def plot_overview(self):
+    def open_overview(self):
         """Make PCA overview plot.
 
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
         for each of the datasets.
         """
-        self.model.plot_type = 'Overview Plot'
-
         try:
-            ds_plots = [[self._make_scores_plot(True), self._make_loadings_plot(True)],
-                        [self._make_corr_load_plot(True), self._make_expl_var_plot(True)]]
+            res = self.model.res
         except InComputeable:
             self._show_zero_var_warning()
             return
+
+        wl = self.window_launchers
+        title = self._wind_title()
+
+        sp = multiplot_factory(scores_plot, res, wl, title)
+        lp = multiplot_factory(loadings_plot, res, wl, title)
+        clp = multiplot_factory(corr_load_plot, res, wl, title)
+        evp = multiplot_factory(expl_var_plot, res, wl, title)
+
+        ds_plots = [[sp, lp],
+                    [clp, evp]]
 
         mpw = MultiPlotWindow(title_text=self._wind_title())
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)
-
-
-    def open_window(self, view):
-        win = SinglePlotWindow(
-            plot=view,
-            res=self.model.res,
-            view_loop=self.window_launchers,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(win)
-
-
-
-    def plot_scores(self):
-        # FIXME: Test plot navigation
-        self.model.plot_type = 'Scores Plot'
-        try:
-            s_plot = self._make_scores_plot()
-        except InComputeable:
-            self._show_zero_var_warning()
-            return
-
-        spw = SinglePlotWindow(
-            plot=s_plot,
-            res=self.model.res,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        spw.plot_navigator.view_loop = vl
-        self._show_plot_window(spw)
-
-
-    def _make_scores_plot(self, is_subplot=False):
-        res = self.model.res
-        plot = PCScatterPlot(res.scores, res.expl_var)
-        if is_subplot:
-            plot.add_left_down_action(self.plot_scores)
-        return plot
-
-
-    def plot_loadings(self):
-        self.model.plot_type = 'Loadings Plot'
-        try:
-            l_plot = self._make_loadings_plot()
-        except InComputeable:
-            self._show_zero_var_warning()
-            return
-
-        spw = SinglePlotWindow(
-            plot=l_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-
-    def _make_loadings_plot(self, is_subplot=False):
-        res = self.model.res
-        plot = PCScatterPlot(res.loadings, res.expl_var)
-        if is_subplot:
-            plot.add_left_down_action(self.plot_loadings)
-        return plot
-
-
-    def plot_corr_loading(self):
-        self.model.plot_type = 'Correlation Loadings Plot'
-        try:
-            cl_plot = self._make_corr_load_plot()
-        except InComputeable:
-            self._show_zero_var_warning()
-            return
-
-        spw = SinglePlotWindow(
-            plot=cl_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-
-    def _make_corr_load_plot(self, is_subplot=False):
-        res = self.model.res
-        pcl = PCScatterPlot(res.corr_loadings, res.expl_var)
-        pcl.plot_circle(True)
-        if is_subplot:
-            pcl.add_left_down_action(self.plot_corr_loading)
-        return pcl
-
-
-    def plot_expl_var(self):
-        self.model.plot_type = 'Explained Variance Plot'
-        try:
-            ev_plot = self._make_expl_var_plot()
-        except InComputeable:
-            self._show_zero_var_warning()
-            return
-
-        ev_plot.legend.visible = True
-        spw = LinePlotWindow(
-            plot=ev_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-
-    def _make_expl_var_plot(self, is_subplot=False):
-        res = self.model.res
-        pl = EVLinePlot(res.expl_var)
-        if is_subplot:
-            pl.add_left_down_action(self.plot_expl_var)
-        return pl
 
 
     def show_residuals(self):
@@ -262,31 +153,29 @@ class PcaController(ModelController):
 
     def _wind_title(self):
         ds_name = self.model.ds.display_name
-        # dstype = self.model.plot_type
-        dstype = "FIXME plot type"
-        return "{0} | PCA - {1} - ConsumerCheck".format(ds_name, dstype)
+        return "{0} | PCA - ConsumerCheck".format(ds_name)
 
 
 # Plots creators
 
 def scores_plot(res):
-    plot = PCScatterPlot(res.scores, res.expl_var)
+    plot = PCScatterPlot(res.scores, res.expl_var, title='Scores')
     return plot
 
 
 def loadings_plot(res):
-    plot = PCScatterPlot(res.loadings, res.expl_var)
+    plot = PCScatterPlot(res.loadings, res.expl_var, title='Loadings')
     return plot
 
 
 def corr_load_plot(res):
-    plot = PCScatterPlot(res.corr_loadings, res.expl_var)
+    plot = PCScatterPlot(res.corr_loadings, res.expl_var, title='Correlation loadings')
     plot.plot_circle(True)
     return plot
 
 
 def expl_var_plot(res):
-    plot = EVLinePlot(res.expl_var)
+    plot = EVLinePlot(res.expl_var, title='Explained variance')
     return plot
 
 
@@ -314,10 +203,11 @@ pca_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[PcaController],
-        label='=Base plots',
+        label='=Overview',
         children='window_launchers',
         view=pca_view,
-        menu=[]),
+        menu=[],
+        on_dclick=overview_activator),
     _traitsui.TreeNode(
         node_for=[WindowLauncher],
         label='node_name',
@@ -387,7 +277,7 @@ pca_plugin_view = make_plugin_view('Pca', pca_nodes, selection_view, pca_view)
 if __name__ == '__main__':
     print("PCA GUI test start")
     from tests.conftest import iris_ds, synth_dsc
-    one_branch = True
+    one_branch = False
 
     if one_branch:
         iris = iris_ds()

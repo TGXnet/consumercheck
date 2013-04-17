@@ -74,7 +74,7 @@ class EVLinePlot(PlotBase):
 
 
 
-    def __init__(self, expl_var=None):
+    def __init__(self, expl_var=None, **kwargs):
         """Constructor signature.
 
         :param expl_var: Calibrated and validated explained variance for each calculated PC.
@@ -85,7 +85,7 @@ class EVLinePlot(PlotBase):
 
         """
         data = EVPlotData()
-        super(EVLinePlot, self).__init__(data)
+        super(EVLinePlot, self).__init__(data, **kwargs)
 
         if expl_var is not None:
             # FIXME: Do more inteligente coloring based on the dataset.style

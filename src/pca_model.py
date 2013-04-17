@@ -10,7 +10,7 @@ import traits.api as _traits
 from pca import nipalsPCA as PCA
 from dataset import DataSet
 from dataset_container import DatasetContainer
-from plugin_tree_helper import Model
+from plugin_base import Model
 
 
 class InComputeable(Exception):
@@ -73,7 +73,8 @@ class Pca(Model):
     def _pack_res(self, pca_obj):
 
         class PcaRes(_traits.HasTraits):
-            pass
+            method_name = _traits.Str('Unnamed pluging')
+
         res = PcaRes()
 
         # Scores
