@@ -92,7 +92,7 @@ class PcaController(ModelController):
         ds_plots = [[sp, lp],
                     [clp, evp]]
 
-        mpw = MultiPlotWindow(title_text=self._wind_title(res))
+        mpw = MultiPlotWindow(title_text=title)
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)
