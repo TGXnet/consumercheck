@@ -1,6 +1,5 @@
 
 # Scipy libs imports
-import numpy as _np
 import pandas as _pd
 
 # ETS imports
@@ -9,7 +8,7 @@ import traits.api as _traits
 # Local imports
 from plsr import nipalsPLS2 as PLS
 from dataset import DataSet
-from plugin_tree_helper import Model
+from plugin_base import Model
 
 
 class Prefmap(Model):
@@ -65,8 +64,9 @@ class Prefmap(Model):
 
     def _pack_res(self, pls_obj):
 
-        class PlsRes(object):
-            pass
+        class PlsRes(_traits.HasTraits):
+            method_name = _traits.Str('Prefmap')
+
         res = PlsRes()
 
         # Scores X
@@ -145,5 +145,3 @@ class Prefmap(Model):
             display_name=self.ds_Y.display_name)
 
         return res
-
-

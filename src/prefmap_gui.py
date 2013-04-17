@@ -1,23 +1,20 @@
 
-# Scipy lib imports
-import numpy as _np
-import pandas as _pd
-
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
 
 # Local imports
-from dataset import DataSet
 from prefmap_model import Prefmap
 from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot
 from combination_table import CombinationTable
 from dataset_container import DatasetContainer
-from plot_windows import SinglePlotWindow, LinePlotWindow, MultiPlotWindow
-from plugin_tree_helper import (WindowLauncher, dclk_activator, ModelController,
-                                CalcContainer, PluginController, dummy_view,
-                                TestOneNode, make_plugin_view)
+from plot_windows import MultiPlotWindow
+from window_helper import multiplot_factory
+from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
+from plugin_base import (ModelController, CalcContainer, PluginController,
+                         dummy_view, TestOneNode, make_plugin_view)
+
 
 
 
@@ -38,20 +35,20 @@ class PrefmapController(ModelController):
     def _populate_window_launchers(self):
 
         std_launchers = [
-            ("Overview", "plot_overview"),
-            ("Scores", "plot_scores"),
-            ("X ~ Y correlation loadings", "plot_corr_loading"),
-            ("Explained var X", "plot_expl_var_x"),
-            ("Explained var Y", "plot_expl_var_y"),
-            ("X loadings", "plot_loadings_x"),
-            ("Y loadings", "plot_loadings_y"),
+            # ("Overview", plot_overview),
+            ("Scores", scores_plot),
+            ("X ~ Y correlation loadings", corr_loadings_plot),
+            ("X loadings", loadings_x_plot),
+            ("Y loadings", loadings_y_plot),
+            ("Explained var X", expl_var_x_plot),
+            ("Explained var Y", expl_var_y_plot),
             ]
 
-        return [WindowLauncher(node_name=nn, func_name=fn, owner_ref=self)
+        return [WindowLauncher(node_name=nn, view_creator=fn, owner_ref=self)
                 for nn, fn in std_launchers]
 
 
-    def plot_overview(self):
+    def open_overview(self):
         """Make Prefmap overview plot.
 
         Plot an array of plots where we plot:
@@ -61,150 +58,65 @@ class PrefmapController(ModelController):
          * expl. var
         for each of the datasets.
         """
-        self.model.plot_type = 'Overview Plot'
+        res = self.model.res
+        wl = self.window_launchers
+        title = self._wind_title(res)
+
+        sp = multiplot_factory(scores_plot, res, wl, title)
+        clp = multiplot_factory(corr_loadings_plot, res, wl, title)
+        evc = multiplot_factory(expl_var_x_plot, res, wl, title)
+        evs = multiplot_factory(expl_var_y_plot, res, wl, title)
+
         ds_plots = [
-            [self._make_scores_plot(True), self._make_corr_load_plot(True)],
-            [self._make_expl_var_plot_c(True), self._make_expl_var_plot_s(True)]
+            [sp, clp],
+            [evc, evs]
             ]
 
-        mpw = MultiPlotWindow(title_text=self._wind_title())
+        mpw = MultiPlotWindow(title_text=title)
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)
 
 
-
-    def plot_scores(self):
-        self.model.plot_type = 'Scores Plot'
-        s_plot = self._make_scores_plot()
-        spw = SinglePlotWindow(
-            plot=s_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-
-    def _make_scores_plot(self, is_subplot=False):
-        res = self.model.res
-        plot = PCScatterPlot(res.scores_x, res.expl_var_x)
-        if is_subplot:
-            plot.add_left_down_action(self.plot_scores)
-        return plot
-
-
-    def plot_loadings_x(self):
-        self.model.plot_type = 'Loadings X Plot'
-        l_plot = self._make_loadings_plot_x()
-        spw = SinglePlotWindow(
-            plot=l_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-
-    def _make_loadings_plot_x(self, is_subplot=False):
-        res = self.model.res
-        plot = PCScatterPlot(res.loadings_x, res.expl_var_x)
-        if is_subplot:
-            plot.add_left_down_action(self.plot_loadings_x)
-        return plot
-
-
-    def plot_loadings_y(self):
-        self.model.plot_type = 'Loadings Y Plot'
-        l_plot = self._make_loadings_plot_y()
-        spw = SinglePlotWindow(
-            plot=l_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-
-    def _make_loadings_plot_y(self, is_subplot=False):
-        res = self.model.res
-        plot = PCScatterPlot(res.loadings_y, res.expl_var_y)
-        if is_subplot:
-            plot.add_left_down_action(self.plot_loadings_y)
-        return plot
-
-
-    def plot_corr_loading(self):
-        self.model.plot_type = 'Correlation Loadings Plot'
-        cl_plot = self._make_corr_load_plot()
-        spw = SinglePlotWindow(
-            plot=cl_plot,
-            title_text=self._wind_title(),
-            vistog=True
-            )
-        self._show_plot_window(spw)
-
-
-    def _make_corr_load_plot(self, is_subplot=False):
-        res = self.model.res
-        pcl = PCScatterPlot()
-        pcl.add_PC_set(res.corr_loadings_x, res.expl_var_x)
-        pcl.add_PC_set(res.corr_loadings_y, res.expl_var_y)
-        pcl.plot_circle(True)
-        if is_subplot:
-            pcl.add_left_down_action(self.plot_corr_loading)
-        return pcl
-
-
-    def plot_expl_var_x(self):
-        self.model.plot_type = 'Explained Variance X Plot'
-        ev_plot = self._make_expl_var_plot_c()
-        ev_plot.legend.visible = True
-        spw = LinePlotWindow(
-            plot=ev_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-
-    def _ev_rem_zero_adapter(self, ev_list):
-        ev_list.pop(0)
-        return ev_list
-
-
-    def _make_expl_var_plot_c(self, is_subplot=False):
-        res = self.model.res
-        pl = EVLinePlot(res.expl_var_x)
-        if is_subplot:
-            pl.add_left_down_action(self.plot_expl_var_x)
-        return pl
-
-
-    def plot_expl_var_y(self):
-        self.model.plot_type = 'Explained Variance Y Plot'
-        ev_plot = self._make_expl_var_plot_s()
-        ev_plot.legend.visible = True
-        spw = LinePlotWindow(
-            plot=ev_plot,
-            title_text=self._wind_title(),
-            vistog=False
-            )
-        self._show_plot_window(spw)
-
-
-    def _make_expl_var_plot_s(self, is_subplot=False):
-        res = self.model.res
-        pl = EVLinePlot(res.expl_var_y)
-        if is_subplot:
-            pl.add_left_down_action(self.plot_expl_var_y)
-        return pl
-
-
-    def _wind_title(self):
+    def _wind_title(self, res):
         dsx_name = self.model.ds_C.display_name
         dsy_name = self.model.ds_S.display_name
-        dstype = self.model.plot_type
-        return "({0}) X ~ Y ({1}) | Prefmap - {2} - ConsumerCheck".format(dsx_name, dsy_name, dstype)
+        mn = res.method_name
+        return "({0}) X ~ Y ({1}) | {2} - ConsumerCheck".format(dsx_name, dsy_name, mn)
 
 
+# Plot creators
+def scores_plot(res):
+    plot = PCScatterPlot(res.scores_x, res.expl_var_x, title='Scores')
+    return plot
+
+
+def loadings_x_plot(res):
+    plot = PCScatterPlot(res.loadings_x, res.expl_var_x, title='Loadings X')
+    return plot
+
+
+def loadings_y_plot(res):
+    plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Loadings Y')
+    return plot
+
+
+def corr_loadings_plot(res):
+    plot = PCScatterPlot(title='Correlation loadings')
+    plot.add_PC_set(res.corr_loadings_x, res.expl_var_x)
+    plot.add_PC_set(res.corr_loadings_y, res.expl_var_y)
+    plot.plot_circle(True)
+    return plot
+
+
+def expl_var_x_plot(res):
+    plot = EVLinePlot(res.expl_var_x, title='Explained variance X')
+    return plot
+
+
+def expl_var_y_plot(res):
+    plot = EVLinePlot(res.expl_var_y, title='Explained variance Y')
+    return plot
 
 
 no_view = _traitsui.View()
@@ -232,10 +144,11 @@ prefmap_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[PrefmapController],
-        label='=Base plots',
+        label='=Overview',
         children='window_launchers',
         view=prefmap_view,
-        menu=[]),
+        menu=[],
+        on_dclick=overview_activator),
     _traitsui.TreeNode(
         node_for=[WindowLauncher],
         label='node_name',
@@ -317,7 +230,7 @@ prefmap_plugin_view =  make_plugin_view(
 if __name__ == '__main__':
     print("Prefmap GUI test start")
     from tests.conftest import imp_ds
-    one_branch = True
+    one_branch = False
 
     # Folder, File name, Display name, DS type
     ds_C_meta = ('Cheese', 'ConsumerLiking.txt',
