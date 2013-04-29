@@ -7,7 +7,7 @@ import pyper
 import numpy as np
 from threading import Thread
 from itertools import combinations
-import traits.api as _traits
+from plugin_base import Result
 
 
 # Setup logging
@@ -339,11 +339,7 @@ class ConjointMachine(object):
 
 
     def get_result(self):
-
-        class ConjointRes(_traits.HasTraits):
-            pass
-
-        result = ConjointRes()
+        result = Result('Conjoint')
         result.randomTable = self._randomTable()
         result.anovaTable = self._anovaTable()
         result.lsmeansTable = self._lsmeansTable()

@@ -78,12 +78,8 @@ class BasicStatController(ModelController):
         elif isinstance(viewable, DataSet):
             table = DSTableViewer(viewable)
             table.edit_traits(view=table.get_view(), kind='live')
-
-
-    def _wind_title(self, res):
-        ds_name = self.model.ds.display_name
-        mn = res.method_name
-        return "{0} | {1} - ConsumerCheck".format(ds_name, mn)
+        else:
+            raise NotImplementedError("Do not know how to open this")
 
 
 # Plots creators

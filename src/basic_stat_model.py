@@ -13,7 +13,7 @@ import traits.api as _traits
 
 # Local imports
 from dataset import DataSet
-from plugin_base import Model
+from plugin_base import Model, Result
 
 
 class BasicStat(Model):
@@ -34,24 +34,9 @@ class BasicStat(Model):
 
 
     def _get_res(self):
-        class Res(_traits.HasTraits):
-            '''Calculation result *struct*.
-
-            Attributes:
-             * summary
-             * hist
-            '''
-            method_name = _traits.Str('Basic stat')
-
-            def __init__(self, summary, hist):
-                # mean, std, min, max, loci, hici
-                self.summary = summary
-                self.hist = hist
-
-        sds = self._calc_summary()
-        sdh = self._calc_histogram()
-
-        res = Res(sds, sdh)
+        res = Result('Basic stat')
+        res.summary = self._calc_summary()
+        res.hist = self._calc_histogram()
 
         return res
 

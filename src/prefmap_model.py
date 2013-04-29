@@ -8,7 +8,7 @@ import traits.api as _traits
 # Local imports
 from plsr import nipalsPLS2 as PLS
 from dataset import DataSet
-from plugin_base import Model
+from plugin_base import Model, Result
 
 
 class Prefmap(Model):
@@ -63,11 +63,7 @@ class Prefmap(Model):
 
 
     def _pack_res(self, pls_obj):
-
-        class PlsRes(_traits.HasTraits):
-            method_name = _traits.Str('Prefmap')
-
-        res = PlsRes()
+        res = Result('Prefmap')
 
         # Scores X
         mT = pls_obj.X_scores()

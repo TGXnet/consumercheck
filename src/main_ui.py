@@ -15,7 +15,7 @@ from dataset_container import DatasetContainer
 from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
 from about_consumercheck import ConsumerCheckAbout
-from plugin_tree_helper import CalcContainer
+from plugin_base import CalcContainer
 
 # Plugin imports
 from basic_stat_gui import BasicStatPluginController, bs_plugin_view

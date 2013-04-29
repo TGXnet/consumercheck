@@ -16,6 +16,12 @@ from plugin_tree_helper import WindowLauncher
 
 
 
+class Result(_traits.HasTraits):
+    method_name = _traits.Str('Basic stat')
+
+    def __init__(self, method_name):
+        super(Result, self).__init__(method_name=method_name)
+
 
 class Model(_traits.HasTraits):
     '''Base class for statistical analysis model'''
@@ -85,7 +91,15 @@ class ModelController(_traitsui.Controller):
                 # plot_window.edit_traits(kind='live')
                 )
         else:
-            raise NotImplementedError("Not implemented for this platform: ".format(sys.platform))
+            raise NotImplementedError(
+                "Not implemented for this platform: ".format(sys.platform))
+
+
+    def _wind_title(self, res):
+        ds_name = self.model.ds.display_name
+        mn = res.method_name
+        return "{0} | {1} - ConsumerCheck".format(ds_name, mn)
+
 
 
 class CalcContainer(_traits.HasTraits):
