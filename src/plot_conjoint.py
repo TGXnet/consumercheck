@@ -18,9 +18,8 @@ from ui_results import TableViewController
 
 
 class MainEffectsPlot(DataView):
-    def __init__(self, conj_res, attr_name, pl_ref):
+    def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
-        self.pl_ref = pl_ref
         self._adapt_conj_main_effect_data(conj_res, attr_name)
         self._create_plot()
 
@@ -29,9 +28,9 @@ class MainEffectsPlot(DataView):
         """FIXME: Can this bee extracted as an utility function
         that will return an result object but only with the needed values?
         """
-        ls_means = conj_res['lsmeansTable']['data']
-        ls_means_labels = conj_res['lsmeansTable']['rowNames']
-        cn = list(conj_res['lsmeansTable']['colNames'])
+        ls_means = conj_res.lsmeansTable['data']
+        ls_means_labels = conj_res.lsmeansTable['rowNames']
+        cn = list(conj_res.lsmeansTable['colNames'])
         nli = cn.index('Estimate')
         cn = cn[:nli]
 
@@ -68,14 +67,14 @@ class MainEffectsPlot(DataView):
         self.apd.set_data('values', [float(val) for val in selected[' Estimate ']])
         self.apd.set_data('ylow', [float(val) for val in selected[' Lower CI ']])
         self.apd.set_data('yhigh', [float(val) for val in selected[' Upper CI ']])
-        self.apd.set_data('average', [conj_res['meanLiking'] for
+        self.apd.set_data('average', [conj_res.meanLiking for
                                       val in selected[attr_name]])
         self.data = self.apd
 
 
         # Get p value for attribute
-        anova_values = conj_res['anovaTable']['data']
-        anova_names = conj_res['anovaTable']['rowNames']
+        anova_values = conj_res.anovaTable['data']
+        anova_names = conj_res.anovaTable['rowNames']
         picker = anova_names == attr_name
         p_value = anova_values[picker, 3][0]
         self.p_value = p_value
@@ -165,9 +164,8 @@ class MainEffectsPlot(DataView):
 
 class InteractionPlot(DataView):
 
-    def __init__(self, conj_res, attr_one_name, attr_two_name, pl_ref):
+    def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
-        self.pl_ref = pl_ref
         self.conj_res = conj_res
         self.attr_one_name = attr_one_name
         self.attr_two_name = attr_two_name
@@ -185,7 +183,7 @@ class InteractionPlot(DataView):
         else:
             self.index_attr, self.line_attr = self.attr_two_name, self.attr_one_name
 
-        ls_means = self.conj_res['lsmeansTable']['data']
+        ls_means = self.conj_res.lsmeansTable['data']
 
         picker_one = ls_means[self.index_attr] != 'NA'
         picker_two = ls_means[self.line_attr] != 'NA'
@@ -199,8 +197,8 @@ class InteractionPlot(DataView):
 
 
         # Get p value for attribute
-        anova_values = self.conj_res['anovaTable']['data']
-        anova_names = self.conj_res['anovaTable']['rowNames']
+        anova_values = self.conj_res.anovaTable['data']
+        anova_names = self.conj_res.anovaTable['rowNames']
         try:
             attr_name = "{0}:{1}".format(self.attr_one_name, self.attr_two_name)
             picker = anova_names == attr_name

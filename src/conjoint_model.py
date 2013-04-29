@@ -19,7 +19,7 @@ import traitsui.api as _traitsui
 
 # Local imports
 from dataset import DataSet
-from plugin_tree_helper import Model
+from plugin_base import Model
 from conjoint_machine import ConjointMachine
 
 

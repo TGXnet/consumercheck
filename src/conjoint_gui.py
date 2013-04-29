@@ -20,6 +20,8 @@ import pandas as _pd
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
+import chaco.api as _chaco
+
 
 # Local imports
 # from dataset import DataSet
@@ -27,11 +29,15 @@ from dataset import DataSet
 from conjoint_model import Conjoint
 from ds_table_view import DSTableViewer
 # from ui_results import TableViewController
-from plot_windows import LinePlotWindow
+from plot_windows import LinePlotWindow, SinglePlotWindow
 from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
-from plugin_tree_helper import (WindowLauncher, dclk_activator, ModelController,
-                                CalcContainer, PluginController, dummy_view,
-                                TestOneNode, make_plugin_view)
+
+from window_helper import multiplot_factory
+from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
+from plugin_base import (ModelController, CalcContainer, PluginController,
+                         dummy_view, TestOneNode, make_plugin_view)
+
+
 
 
 class ConjointController(ModelController):
@@ -74,14 +80,14 @@ class ConjointController(ModelController):
     def _populate_table_win_launchers(self):
         # Populate table windows launchers
         table_win_launchers = [
-            ("LS means", 'show_means'),
-            ("Fixed effects", 'show_fixed'),
-            ("Random effects", 'show_random'),
-            ("Pair-wise differences", 'show_diff'),
-            ("Residuals", 'show_residu'),
+            ("LS means", means_table),
+            ("Fixed effects", fixed_table),
+            ("Random effects", random_table),
+            ("Pair-wise differences", diff_table),
+            ("Residuals", residu_table),
             ]
 
-        return [WindowLauncher(owner_ref=self, node_name=nn, func_name=fn)
+        return [WindowLauncher(owner_ref=self, node_name=nn, view_creator=fn)
                 for nn, fn in table_win_launchers]
 
 
@@ -98,7 +104,7 @@ class ConjointController(ModelController):
         self.me_plot_launchers = [
             WindowLauncher(
                 owner_ref=self, node_name=name,
-                func_name='plot_main_effects', func_parms=tuple([name]))
+                view_creator=plot_main_effects, func_parms=tuple([name]))
             for name in vn]
 
 
@@ -116,116 +122,95 @@ class ConjointController(ModelController):
         self.int_plot_launchers = [
             WindowLauncher(
                 owner_ref=self, node_name=nn,
-                func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
+                view_creator=plot_interaction, func_parms=tuple([p_one, p_two]))
             for nn, p_one, p_two in int_plot_launchers]
 
 
-    def show_random(self):
-        logger.info('Show randomTable')
-        cj_dm = self.cj_res_ds_adapter(self.model.res['randomTable'], (self.name +
-                                       ' - ANOVA table for random effects'))
-        dstv = DSTableViewer(cj_dm)
-        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
-        # dstv.edit_traits(view=dstv.get_view(), kind='live')
+    def open_window(self, viewable):
+        """Expected viewable is by now:
+          + Plot subtype
+          + DataSet type
+        """
+        if isinstance(viewable, _chaco.DataView):
+            print("Plot")
+            res = self.model.res
+
+            win = SinglePlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=self.me_plot_launchers,
+                title_text=self._wind_title(res),
+                vistog=False
+                )
+
+            self._show_plot_window(win)
+        elif isinstance(viewable, DataSet):
+            table = DSTableViewer(viewable)
+            table.edit_traits(view=table.get_view(), kind='live')
 
 
-    def show_fixed(self):
-        logger.info('Show fixed ANOVA table')
-        cj_dm = self.cj_res_ds_adapter(self.model.res['anovaTable'], (self.name +
-                                       ' - ANOVA table for fixed effects'))
-        dstv = DSTableViewer(cj_dm)
-        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
-        # dstv.edit_traits(view=dstv.get_view(), kind='live')
+    def _wind_title(self, res):
+        ds_name = self.model.design.display_name
+        # mn = res.method_name
+        return "{0} | Conjoint - ConsumerCheck".format(ds_name)
 
 
-    def show_means(self):
-        logger.info('Show LS mean ANOVA table')
-        cj_dm = self.cj_res_ds_adapter(self.model.res['lsmeansTable'], (self.name +
-                                       ' - LS means (main effect and interaction)'))
-        dstv = DSTableViewer(cj_dm)
-        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
-        # dstv.edit_traits(view=dstv.get_view(), kind='live')
+
+def cj_res_ds_adapter(cj_res, name='Dataset Viewer'):
+    cj_df = _pd.DataFrame(cj_res['data'])
+    cj_df.index = cj_res['rowNames']
+    cj_df.columns = cj_res['colNames']
+    dm = DataSet(mat=cj_df, display_name=name)
+
+    return dm
 
 
-    def show_diff(self):
-        logger.info('Show difference table')
-        cj_dm = self.cj_res_ds_adapter(self.model.res['lsmeansDiffTable'], (self.name +
-                                       ' - Pair-wise differences'))
-        dstv = DSTableViewer(cj_dm)
-        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
-        # dstv.edit_traits(view=dstv.get_view(), kind='live')
+
+# View creators
+
+def plot_main_effects(res, attr_name):
+    plot = MainEffectsPlot(res, attr_name)
+    return plot
 
 
-    def show_residu(self):
-        logger.info('Show residuals table')
-        cj_dm = self.cj_res_ds_adapter(self.model.res['residualsTable'], (self.name +
-                                       ' - Residuals'))
-        dstv = DSTableViewer(cj_dm)
-        dstv.edit_traits(view=dstv.get_view(), parent=self.win_handle, kind='live')
-        # dstv.edit_traits(view=dstv.get_view(), kind='live')
+def plot_interaction(res, attr_one, attr_two):
+    plot = InteractionPlot(res, attr_one, attr_two)
+    return plot
 
 
-    def plot_main_effects(self, attr_name):
-        mep = MainEffectsPlot(self.model.res, attr_name, self.me_plot_launchers)
-        spw = LinePlotWindow(
-            plot=mep,
-            title_text=attr_name,
-            vistog=False
-            )
-        self._show_plot_window(spw)
+def means_table(res):
+    label= 'LS means (main effect and interaction)'
+    cj_dm = cj_res_ds_adapter(res.lsmeansTable, label)
+
+    return cj_dm
 
 
-    def show_next_plot(self, window):
-        next_pos = 0
-        for i, pl in enumerate(window.plot.pl_ref):
-            if pl.node_name == window.title_text:
-                next_pos = i + 1
-        if next_pos >= len(window.plot.pl_ref):
-            next_pos = 0
-        # Next Plot Launcher
-        npl = window.plot.pl_ref[next_pos]
-        window.title_text = npl.node_name
-        if npl.func_name == 'plot_main_effects':
-            window.plot = MainEffectsPlot(self.model.res, *npl.func_parms, pl_ref=window.plot.pl_ref)
-        elif npl.func_name == 'plot_interaction':
-            window.plot = InteractionPlot(self.model.res, *npl.func_parms, pl_ref=window.plot.pl_ref)
+def fixed_table(res):
+    label = 'ANOVA table for fixed effects'
+    cj_dm = cj_res_ds_adapter(res.anovaTable, label)
+
+    return cj_dm
 
 
-    def show_previous_plot(self, window):
-        next_pos = 0
-        for i, pl in enumerate(window.plot.pl_ref):
-            if pl.node_name == window.title_text:
-                next_pos = i - 1
-        if next_pos < 0:
-            next_pos = len(window.plot.pl_ref) - 1
-        # Previous Plot Launcher
-        ppl = window.plot.pl_ref[next_pos]
-        window.title_text = ppl.node_name
-        if ppl.func_name == 'plot_main_effects':
-            window.plot = MainEffectsPlot(self.model.res, *ppl.func_parms, pl_ref=window.plot.pl_ref)
-        elif ppl.func_name == 'plot_interaction':
-            window.plot = InteractionPlot(self.model.res, *ppl.func_parms, pl_ref=window.plot.pl_ref)
+def random_table(res):
+    label = 'ANOVA table for random effects'
+    cj_dm = cj_res_ds_adapter(res.randomTable, label)
+
+    return cj_dm
 
 
-    def plot_interaction(self, attr_one, attr_two):
-        plot = InteractionPlot(self.model.res,
-                               attr_one, attr_two,
-                               self.int_plot_launchers)
-        spw = InteractionPlotWindow(
-            plot=plot,
-            title_text="{0}:{1}".format(attr_one, attr_two),
-            vistog=False,
-            )
-        self._show_plot_window(spw)
+def diff_table(res):
+    label = 'Pair-wise differences'
+    cj_dm = cj_res_ds_adapter(res.lsmeansDiffTable, label)
+
+    return cj_dm
 
 
-    def cj_res_ds_adapter(self, cj_res, name='Dataset Viewer'):
-        cj_df = _pd.DataFrame(cj_res['data'])
-        cj_df.index = cj_res['rowNames']
-        cj_df.columns = cj_res['colNames']
-        dm = DataSet(mat=cj_df, display_name=name)
-        return dm
+def residu_table(res):
+    label = 'Residuals'
+    cj_dm = cj_res_ds_adapter(res.residualsTable, label)
 
+    return cj_dm
 
 
 no_view = _traitsui.View()
@@ -292,7 +277,8 @@ conjoint_nodes = [
         label='node_name',
         view=no_view,
         menu=[],
-        on_dclick=dclk_activator)
+        on_dclick=dclk_activator,
+        )
     ]
 
 
@@ -392,7 +378,7 @@ if __name__ == '__main__':
     from tests.conftest import conjoint_dsc
     from dataset_container import get_ds_by_name
 
-    one_branch = False
+    one_branch = True
     dsc = conjoint_dsc()
 
     if one_branch:
