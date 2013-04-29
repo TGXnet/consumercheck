@@ -2,14 +2,16 @@
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
+import chaco.api as _chaco
 
 #Local imports
-from basic_stat_model import BasicStat, extract_summary, extract_histogram
+from basic_stat_model import BasicStat
 from plot_histogram import BoxPlot, HistPlot, StackedHistPlot
-from plot_windows import LinePlotWindow
-from plugin_tree_helper import (WindowLauncher, dclk_activator, ModelController,
-                                CalcContainer, PluginController, dummy_view,
-                                TestOneNode, make_plugin_view)
+from plot_windows import LinePlotWindow, SinglePlotWindow
+from window_helper import multiplot_factory
+from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
+from plugin_base import (ModelController, CalcContainer, PluginController,
+                         dummy_view, TestOneNode, make_plugin_view)
 
 
 class BasicStatController(ModelController):
@@ -24,10 +26,10 @@ class BasicStatController(ModelController):
 
     def _base_win_launchers_default(self):
         return [WindowLauncher(node_name='Box plot',
-                               func_name='box_plot',
+                               view_creator=box_plot,
                                owner_ref=self),
                 WindowLauncher(node_name='Stacked histogram',
-                               func_name='stacked_histogram',
+                               view_creator=stacked_histogram,
                                owner_ref=self)]
 
 
@@ -49,35 +51,56 @@ class BasicStatController(ModelController):
         wll = []
         for n in nl:
             wl = WindowLauncher(owner_ref=self, node_name=str(n),
-                                func_name='plot_histogram',
+                                view_creator=plot_histogram,
                                 func_parms=tuple([n]))
             wll.append(wl)
 
         return wll
 
 
-    def box_plot(self):
-        res = self.model.res
-        summary = extract_summary(res)
-        plot = BoxPlot(summary)
-        win = LinePlotWindow(plot=plot, title_text='Hello')
-        self._show_plot_window(win)
+    def open_window(self, viewable):
+        """Expected viewable is by now:
+          + Plot subtype
+          + DataSet type
+        """
+        if isinstance(viewable, _chaco.DataView):
+            res = self.model.res
+
+            win = SinglePlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=self.idx_win_launchers,
+                title_text=self._wind_title(res),
+                vistog=False
+                )
+
+            self._show_plot_window(win)
+        elif isinstance(viewable, DataSet):
+            table = DSTableViewer(viewable)
+            table.edit_traits(view=table.get_view(), kind='live')
 
 
-    def stacked_histogram(self):
-        res = self.model.res
-        hist = extract_histogram(res)
-        plot = StackedHistPlot(hist)
-        win = LinePlotWindow(plot=plot, title_text='Hello')
-        self._show_plot_window(win)
+    def _wind_title(self, res):
+        ds_name = self.model.ds.display_name
+        mn = res.method_name
+        return "{0} | {1} - ConsumerCheck".format(ds_name, mn)
 
 
-    def plot_histogram(self, obj_id):
-        res = self.model.res
-        hist = extract_histogram(res)
-        plot = HistPlot(hist, obj_id)
-        win = LinePlotWindow(plot=plot, title_text='Hello')
-        self._show_plot_window(win)
+# Plots creators
+
+def box_plot(res):
+    plot = BoxPlot(res.summary)
+    return plot
+
+
+def stacked_histogram(res):
+    plot = StackedHistPlot(res.hist)
+    return plot
+
+
+def plot_histogram(res, obj_id):
+    plot = HistPlot(res.hist, obj_id)
+    return plot
 
 
 no_view = _traitsui.View()

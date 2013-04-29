@@ -13,7 +13,7 @@ import traits.api as _traits
 
 # Local imports
 from dataset import DataSet
-from plugin_tree_helper import Model
+from plugin_base import Model
 
 
 class BasicStat(Model):
@@ -34,13 +34,15 @@ class BasicStat(Model):
 
 
     def _get_res(self):
-        class Res(object):
+        class Res(_traits.HasTraits):
             '''Calculation result *struct*.
 
             Attributes:
              * summary
              * hist
             '''
+            method_name = _traits.Str('Basic stat')
+
             def __init__(self, summary, hist):
                 # mean, std, min, max, loci, hici
                 self.summary = summary
@@ -108,13 +110,3 @@ class BasicStat(Model):
             ht['missing'] = _np.ma.count_masked(mat, axis=dr)
 
         return DataSet(mat=ht, display_name="Histogram")
-
-
-def extract_summary(basic_stat_res):
-    '''Returns the summary statistics from the result object'''
-    return basic_stat_res.summary
-
-
-def extract_histogram(basic_stat_res):
-    '''Returns the histogram data from the result object'''
-    return basic_stat_res.hist
