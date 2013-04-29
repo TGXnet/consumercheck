@@ -5,11 +5,15 @@ import sys
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
+import chaco.api as _chaco
 
 # Local imports
-from dataset_container import DatasetContainer
+from dataset import DataSet
+from ds_table_view import DSTableViewer
 from plot_windows import SinglePlotWindow
+from dataset_container import DatasetContainer
 from plugin_tree_helper import WindowLauncher
+
 
 
 
@@ -44,18 +48,26 @@ class ModelController(_traitsui.Controller):
         return self.id != other
 
 
-    def open_window(self, view):
-        res = self.model.res
+    def open_window(self, viewable):
+        """Expected viewable is by now:
+          + Plot subtype
+          + DataSet type
+        """
+        if isinstance(viewable, _chaco.DataView):
+            res = self.model.res
 
-        win = SinglePlotWindow(
-            plot=view,
-            res=res,
-            view_loop=self.window_launchers,
-            title_text=self._wind_title(res),
-            vistog=False
-            )
+            win = SinglePlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=self.window_launchers,
+                title_text=self._wind_title(res),
+                vistog=False
+                )
 
-        self._show_plot_window(win)
+            self._show_plot_window(win)
+        elif isinstance(viewable, DataSet):
+            table = DSTableViewer(viewable)
+            table.edit_traits(view=table.get_view(), kind='live')
 
 
     def _show_plot_window(self, plot_window):
@@ -74,7 +86,6 @@ class ModelController(_traitsui.Controller):
                 )
         else:
             raise NotImplementedError("Not implemented for this platform: ".format(sys.platform))
-
 
 
 class CalcContainer(_traits.HasTraits):

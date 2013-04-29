@@ -12,7 +12,6 @@ import traits.api as _traits
 
 def dclk_activator(obj):
     open_win_func = obj.view_creator
-    # open_win_func = getattr(obj.owner_ref, fn)
     if len(obj.func_parms) < 1:
         view = open_win_func(obj.owner_ref.model.res)
     else:
@@ -49,7 +48,10 @@ class ViewNavigator(_traits.HasTraits):
             self.current_idx = 0
         vc = self.view_loop[self.current_idx]
         # return vc.view_creator(self.res, vc.func_parms)
-        return vc.view_creator(self.res)
+        if len(vc.func_parms) < 1:
+            return vc.view_creator(self.res)
+        else:
+            return vc.view_creator(self.res, *vc.func_parms)
 
 
     def show_previous(self):
@@ -58,4 +60,7 @@ class ViewNavigator(_traits.HasTraits):
         else:
             self.current_idx = len(self.view_loop) - 1
         vc = self.view_loop[self.current_idx]
-        return vc.view_creator(self.res)
+        if len(vc.func_parms) < 1:
+            return vc.view_creator(self.res)
+        else:
+            return vc.view_creator(self.res, *vc.func_parms)
