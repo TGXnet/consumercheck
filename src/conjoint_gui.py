@@ -87,7 +87,8 @@ class ConjointController(ModelController):
             ("Residuals", residu_table),
             ]
 
-        return [WindowLauncher(owner_ref=self, node_name=nn, view_creator=fn)
+        return [WindowLauncher(owner_ref=self, node_name=nn,
+                               view_creator=fn, loop_name='table_win_launchers',)
                 for nn, fn in table_win_launchers]
 
 
@@ -104,6 +105,7 @@ class ConjointController(ModelController):
         self.me_plot_launchers = [
             WindowLauncher(
                 owner_ref=self, node_name=name,
+                loop_name='me_plot_launchers',
                 view_creator=plot_main_effects, func_parms=tuple([name]))
             for name in vn]
 
@@ -122,31 +124,9 @@ class ConjointController(ModelController):
         self.int_plot_launchers = [
             WindowLauncher(
                 owner_ref=self, node_name=nn,
+                loop_name='int_plot_launchers',
                 view_creator=plot_interaction, func_parms=tuple([p_one, p_two]))
             for nn, p_one, p_two in int_plot_launchers]
-
-
-    def open_window(self, viewable):
-        """Expected viewable is by now:
-          + Plot subtype
-          + DataSet type
-        """
-        if isinstance(viewable, _chaco.DataView):
-            print("Plot")
-            res = self.model.res
-
-            win = SinglePlotWindow(
-                plot=viewable,
-                res=res,
-                view_loop=self.me_plot_launchers,
-                title_text=self._wind_title(res),
-                vistog=False
-                )
-
-            self._show_plot_window(win)
-        elif isinstance(viewable, DataSet):
-            table = DSTableViewer(viewable)
-            table.edit_traits(view=table.get_view(), kind='live')
 
 
     def _wind_title(self, res):

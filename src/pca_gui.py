@@ -59,7 +59,11 @@ class PcaController(ModelController):
 
         if adv_enable:
             std_launchers.extend(adv_launchers)
-        return [WindowLauncher(node_name=nn, view_creator=fn, owner_ref=self) for nn, fn in std_launchers]
+        return [WindowLauncher(node_name=nn, view_creator=fn,
+                               owner_ref=self,
+                               loop_name='window_launchers',
+                               )
+                for nn, fn in std_launchers]
 
 
     def _show_zero_var_warning(self):

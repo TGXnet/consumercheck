@@ -27,10 +27,12 @@ class BasicStatController(ModelController):
     def _base_win_launchers_default(self):
         return [WindowLauncher(node_name='Box plot',
                                view_creator=box_plot,
-                               owner_ref=self),
+                               owner_ref=self,
+                               loop_name='base_win_launchers'),
                 WindowLauncher(node_name='Stacked histogram',
                                view_creator=stacked_histogram,
-                               owner_ref=self)]
+                               owner_ref=self,
+                               loop_name='base_win_launchers')]
 
 
     def _idx_win_launchers_default(self):
@@ -52,34 +54,11 @@ class BasicStatController(ModelController):
         for n in nl:
             wl = WindowLauncher(owner_ref=self, node_name=str(n),
                                 view_creator=plot_histogram,
-                                func_parms=tuple([n]))
+                                func_parms=tuple([n]),
+                                loop_name='idx_win_launchers')
             wll.append(wl)
 
         return wll
-
-
-    def open_window(self, viewable):
-        """Expected viewable is by now:
-          + Plot subtype
-          + DataSet type
-        """
-        if isinstance(viewable, _chaco.DataView):
-            res = self.model.res
-
-            win = SinglePlotWindow(
-                plot=viewable,
-                res=res,
-                view_loop=self.idx_win_launchers,
-                title_text=self._wind_title(res),
-                vistog=False
-                )
-
-            self._show_plot_window(win)
-        elif isinstance(viewable, DataSet):
-            table = DSTableViewer(viewable)
-            table.edit_traits(view=table.get_view(), kind='live')
-        else:
-            raise NotImplementedError("Do not know how to open this")
 
 
 # Plots creators

@@ -12,11 +12,13 @@ import traits.api as _traits
 
 def dclk_activator(obj):
     open_win_func = obj.view_creator
+    res = obj.owner_ref.model.res
+    loop = getattr(obj.owner_ref, obj.loop_name)
     if len(obj.func_parms) < 1:
-        view = open_win_func(obj.owner_ref.model.res)
+        view = open_win_func(res)
     else:
-        view = open_win_func(obj.owner_ref.model.res, *obj.func_parms)
-    obj.owner_ref.open_window(view)
+        view = open_win_func(res, *obj.func_parms)
+    obj.owner_ref.open_window(view, loop)
 
 
 def overview_activator(obj):
@@ -26,10 +28,10 @@ def overview_activator(obj):
 class WindowLauncher(_traits.HasTraits):
     node_name = _traits.Str()
     # FIXME: Deprecated by view_creator
-    func_name = _traits.Str()
+    # func_name = _traits.Str()
     view_creator = _traits.Callable()
-    # FIXME: Should not be nessesary for view navigator
     owner_ref = _traits.WeakRef()
+    loop_name = _traits.Str()
     # FIXME: Rename to creator_parms
     func_parms = _traits.Tuple()
 

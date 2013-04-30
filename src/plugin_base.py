@@ -54,7 +54,7 @@ class ModelController(_traitsui.Controller):
         return self.id != other
 
 
-    def open_window(self, viewable):
+    def open_window(self, viewable, view_loop):
         """Expected viewable is by now:
           + Plot subtype
           + DataSet type
@@ -65,7 +65,7 @@ class ModelController(_traitsui.Controller):
             win = SinglePlotWindow(
                 plot=viewable,
                 res=res,
-                view_loop=self.window_launchers,
+                view_loop=view_loop,
                 title_text=self._wind_title(res),
                 vistog=False
                 )
@@ -74,6 +74,8 @@ class ModelController(_traitsui.Controller):
         elif isinstance(viewable, DataSet):
             table = DSTableViewer(viewable)
             table.edit_traits(view=table.get_view(), kind='live')
+        else:
+            raise NotImplementedError("Do not know how to open this")
 
 
     def _show_plot_window(self, plot_window):
