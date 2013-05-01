@@ -2,11 +2,14 @@
 ############## test Conjoint Analysis Program (conjoint.r) ##############
 #########################################################################
 
+# How to call this script from any R working directory
+# source("path/testConjoint.r", chdir=TRUE)
+
 #### Set paths
-orig_WD <- getwd()
+# orig_WD <- getwd()
 # Working Directory
-WD <- dirname(orig_WD)
-setwd(WD)
+# WD <- file.path(orig_WD, "rsrc")
+# setwd(WD)
 # Where the testdata is to be found
 # DD <- file.path(WD, "datasets", "HamData")
 DD <- "/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27/data preparation/ham data"
@@ -16,7 +19,7 @@ DD <- "/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointCon
 library(MixMod)
 library(lme4)
 library(Hmisc)
-source(file.path(WD, "rsrc", "conjoint.r"))
+source("conjoint.r")
 
 ###########################################################################
 # example from the book: Ham data

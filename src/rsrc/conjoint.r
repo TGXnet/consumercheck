@@ -13,9 +13,9 @@ ConjointMerge <- function(structure=1, consum.attr, design.matr, list.consum.lik
   #structure=3 : Full factorial model with ALL possible fixed and random effects. 
   #         (Automized reduction in random part, AND automized reduction in fixed part).
 
-  source(paste(getwd(), "/rsrc/createLMERmodel.r", sep = ""))
-  source(paste(getwd(), "/rsrc/convertToFactors.r", sep = ""))
-  source(paste(getwd(), "/rsrc/dataPrep.r", sep = ""))
+  source("createLMERmodel.r")
+  source("convertToFactors.r")
+  source("dataPrep.r")
 
   resultFULL <- vector("list", length(response))  #the result that will be returned
 
@@ -104,8 +104,8 @@ ConjointNoMerge <- function(structure=1, data, response, fixed, random, facs, co
   #structure=3 : Full factorial model with ALL possible fixed and random effects. 
   #         (Automized reduction in random part, AND automized reduction in fixed part).
 
-  source(paste(getwd(), "/rsrc/createLMERmodel.r", sep = ""))
-  source(paste(getwd(), "/rsrc/convertToFactors.r", sep = ""))
+  source("createLMERmodel.r")
+  source("convertToFactors.r")
   
   #the result that will be returned
   resultFULL <- vector("list",length(response))

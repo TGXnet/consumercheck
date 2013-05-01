@@ -1,9 +1,9 @@
 createLMERmodel<-function(structure, data, response, fixed, random, corr)
 {
  
- source(paste(getwd(),"/rsrc/createFormula.r",sep=""))
- source(paste(getwd(),"/rsrc/checkNumberInteract.r",sep=""))
- source(paste(getwd(),"/rsrc/createFormulaAllFixRand.r",sep=""))  
+ source("createFormula.r")
+ source("checkNumberInteract.r")
+ source("createFormulaAllFixRand.r")
 
  #construct formula for lmer model 
  #fma<-createFormula(structure, data, response, fixed, random)

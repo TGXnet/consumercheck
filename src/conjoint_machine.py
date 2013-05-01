@@ -12,6 +12,7 @@ from plugin_base import Result
 
 # Setup logging
 import logging
+# logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
     logger = logging.getLogger('tgxnet.nofima.cc.' + __file__.split('.')[0])
 else:
@@ -58,8 +59,9 @@ class ConjointMachine(object):
         self.r('library(Hmisc)')
         self.r('library(lme4)')
         # Set R working directory independent of Python working directory
-        self.r('setwd("{0}")'.format(self.r_origo))
-        self.r('source("rsrc/conjoint.r")')
+        r_wd = op.join(self.r_origo, "rsrc")
+        self.r('setwd("{0}")'.format(r_wd))
+        self.r('source("conjoint.r")')
         # Diagnostic output
         r_env = 'R environment\n'
         r_env += self.r('getwd()')
@@ -465,4 +467,4 @@ if __name__ == '__main__':
     res = cm.synchronous_calculation(
         selected_structure, consAttr, selected_consAttr,
         designVar, selected_designVar, odflLike, True)
-    print(res.keys())
+    res.print_traits()
