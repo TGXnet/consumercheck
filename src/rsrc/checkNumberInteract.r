@@ -1,4 +1,4 @@
-checkNumberInteract<-function(data, factors)
+checkNumberInteract <- function(data, factors)
 {
   # returns TRUE if number of levels is equal to nrow of data
  

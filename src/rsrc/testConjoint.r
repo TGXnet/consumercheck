@@ -12,52 +12,86 @@
 # setwd(WD)
 # Where the testdata is to be found
 # DD <- file.path(WD, "datasets", "HamData")
-DD <- "/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27/data preparation/ham data"
+# DD <- "/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27/data preparation/ham data"
+DD <- "/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/Conjoint_18_03_2013/data"
 
-# Load libraries
-# install.packages(paste(getwd(),"/MixMod.zip", sep=""), repos = NULL)
-library(MixMod)
-library(lme4)
+
+#install.packages(paste(getwd(),"/MixMod.zip", sep=""), repos = NULL)
+#library(MixMod)
+#library(lme4)
+#library(MASS)
 library(Hmisc)
+library(lmerTest)
 source("conjoint.r")
 
 ###########################################################################
-# example from the book: Ham data
+# Analyse Barley Bready data from CZ
 ###########################################################################
 
-#ham<-read.csv(paste(getwd(),"/data/ham.csv",sep=""), sep = ";")
-consum.attr<-read.table(file=file.path(DD, "consumAttr.txt"), header=TRUE)
-design.matr<-read.table(file=file.path(DD, "designMatr.txt") ,header=TRUE)
-consumer.liking<-read.table(file=file.path(DD, "consumLike.txt"), header=TRUE, check.names=FALSE)
-list.consum.liking<-list(matr.liking=list(consumer.liking), names.liking=c("informed.liking"))
+#for bug2
+bb <- read.csv(file=file.path(DD, "BB_ALL_noAge5.csv"), sep=";")
+#ham <- read.csv(paste(getwd(),"/data/ham.csv",sep=""), sep = ";")
+#for bug1
+bb <- read.csv(file=file.path(DD, "BB_CZ.csv"), sep=";")
+bb_CZ <- read.csv(file=file.path(DD, "BB_CZ.csv"), sep=";")
+bb_CZ_noMissing <- read.csv(file=file.path(DD, "BB_CZ_noMissing.csv"), sep=";")
+bb_E <- read.csv(file=file.path(DD, "BB_E.csv"), sep=";")
+bb_N <- read.csv(file=file.path(DD, "BB_N.csv"), sep=";")
+bb_SC <- read.csv(file=file.path(DD, "BB_SC.csv"), sep=";")
+bb_SP <- read.csv(file=file.path(DD, "BB_SP.csv"), sep=";")
 
-fixed<-list(Product=c("Product", "Information"), Consumer="Kjonn")
+
+# for bug1
+response <- c("Liking")
+#fixed<-list(Product=c("Barley", "Salt"), Consumer="Sex")
+fixed<-list(Product=c("Barley", "Salt"), Consumer=c("Sex", "Age"))
 random<-c("Consumer")
-response<-c("informed.liking")
-facs<-c("Consumer","Product","Information","Kjonn")
+facs<-c("Consumer","Barley","Salt","Sex", "Age")
 
-res.ham<-ConjointMerge(structure=3, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)
+res <- conjoint(structure=2, bb_SP, response, fixed, random, facs)
+
+randTab <- res[[1]][1]
+anovaTab <- res[[1]][2]
+lsmeansTab <- res[[1]][3]
+
+### write.table(randTab, file="__conjRes_randomTable.txt", sep ="\t", eol="\n", row.names=TRUE, col.names=TRUE)
+### write.table(anovaTab, file="__conjRes_anovaTable.txt", sep ="\t", eol="\n", row.names=TRUE, col.names=TRUE)
+### write.table(lsmeansTab, file="__conjRes_lsmeansTable.txt", sep ="\t", eol="\n", row.names=TRUE, col.names=TRUE)
 
 
-###########################################################################
-# example: gm data 
-###########################################################################
-# Load liking data (here we have three of them)
-#odfl.liking <- read.table(file=paste(getwd(),"/data preparation/gm data/odour-flavour_liking.txt", sep=""), header=TRUE, check.names=FALSE)
-#consistency.liking <- read.table(file=paste(getwd(),"/data preparation/gm data/consistency_liking.txt", sep=""), header=TRUE, check.names=FALSE)
-#overall.liking <- read.table(file=paste(getwd(),"/data preparation/gm data/overall_liking.txt", sep=""), header=TRUE, check.names=FALSE)
+# for bug2
+### response <- c("Liking")
+#fixed<-list(Product=c("Barley", "Salt"), Consumer="Sex")
+### fixed<-list(Product=c("Barley", "Salt"), Consumer=c("Country","Sex", "Age"))
+### random<-c("Consumer")
+### facs<-c("Consumer","Barley","Salt","Country","Sex","Age")
 
-# Load consumer attributes
-#consum.attr <- read.table(file=paste(getwd(),"/data preparation/gm data/consumerAttributes.txt", sep=""), header=TRUE)
+### res <- conjoint(structure=2, bb, response, fixed, random, facs)
 
-# Load design matrix
-#design.matr <- read.table(file=paste(getwd(),"/data preparation/gm data/design.txt", sep=""), header=TRUE)
 
-#list.consum.liking<-list(matr.liking=list(odfl.liking, consistency.liking, overall.liking), names.liking=c("odourflavour", "consistency", "overall"))
+# bug 3 wine
+#ham<-read.csv(paste(getwd(),"/data/ham.csv",sep=""), sep = ";")
+### consum.attr<-read.table(file="C:/Users/Romario/Desktop/Sasha Crap/Conjoint/Conjoint bug wine/consumers.txt",header=TRUE)
+### design.matr<-read.table(file="C:/Users/Romario/Desktop/Sasha Crap/Conjoint/Conjoint bug wine/wines.txt",header=TRUE)
+### consumer.liking<-read.table(file="C:/Users/Romario/Desktop/Sasha Crap/Conjoint/Conjoint bug wine/testfull.txt",header=TRUE, check.names=FALSE)
+### list.consum.liking<-list(matr.liking=list(consumer.liking), names.liking=c("liking"))
 
-#fixed<-list(Product=c("Flavour", "Sugarlevel"), Consumer="Sex")
-#random<-c("Consumer")
-#response<-c("odourflavour", "consistency", "overall")
-#facs<-c("Consumer","Flavour","Sugarlevel","Sex")
- 
-#res.gm<-conjoint(structure=3, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)
+### data <- makeDataForConjoint(design.matr, list.consum.liking, consum.attr)
+
+### response <- c("liking")
+### fixed<-list(Product=c("wine1", "wine2"), Consumer=c("gender"))
+### random<-c("Consumer")
+### facs<-c("Consumer","wine1","wine2","gender")
+
+### res <- conjoint(structure=1, data, response, fixed, random, facs)
+
+
+# test covariates with carrots data
+### data(carrots)
+
+### response<-c("Preference")
+### fixed<-list(Product=c("sens2","sens1"),Consumer=c("Income","Homesize"))
+### random<-c("Consumer")
+### facs <- c("Consumer", "Income", "Homesize")
+
+### res <- conjoint(structure=3, carrots, response, fixed, random, facs)

@@ -12,7 +12,7 @@ from plugin_base import Result
 
 # Setup logging
 import logging
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
     logger = logging.getLogger('tgxnet.nofima.cc.' + __file__.split('.')[0])
 else:
@@ -55,9 +55,10 @@ class ConjointMachine(object):
 
 
     def _load_conjoint_resources(self):
-        self.r('library(MixMod)')
+        ## self.r('library(MixMod)')
         self.r('library(Hmisc)')
-        self.r('library(lme4)')
+        ## self.r('library(lme4)')
+        self.r('library(lmerTest)')
         # Set R working directory independent of Python working directory
         r_wd = op.join(self.r_origo, "rsrc")
         self.r('setwd("{0}")'.format(r_wd))
