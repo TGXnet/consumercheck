@@ -12,11 +12,8 @@
 # setwd(WD)
 # Where the testdata is to be found
 # DD <- file.path(WD, "datasets", "HamData")
-# DD <- "/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/ConjointConsumerCheck_2012-04-27/data preparation/ham data"
 DD <- "/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/Conjoint_18_03_2013/data"
 
-
-#install.packages(paste(getwd(),"/MixMod.zip", sep=""), repos = NULL)
 #library(MixMod)
 #library(lme4)
 #library(MASS)
@@ -48,7 +45,7 @@ fixed<-list(Product=c("Barley", "Salt"), Consumer=c("Sex", "Age"))
 random<-c("Consumer")
 facs<-c("Consumer","Barley","Salt","Sex", "Age")
 
-res <- conjoint(structure=2, bb_SP, response, fixed, random, facs)
+res <- ConjointNoMerge(structure=2, bb_SP, response, fixed, random, facs)
 
 randTab <- res[[1]][1]
 anovaTab <- res[[1]][2]

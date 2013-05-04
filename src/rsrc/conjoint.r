@@ -23,10 +23,8 @@ ConjointNoMerge <- function(structure=1, data1, response, fixed, random, facs, c
   ##the result that will be returned
   resultFULL<-vector("list",length(response))
 
-
   ##data<-makeDataForConjoint(design.matr, list.consum.liking, consum.attr)
   ##data<-convertToFactors(data,c(fixed,random))
-
 
   ##convert some of the variables specified by user to factors
   data1<-convertToFactors(data1, facs)
@@ -71,10 +69,9 @@ ConjointNoMerge <- function(structure=1, data1, response, fixed, random, facs, c
 
       ##t<-totalAnovaRandLsmeans(model, data,  alpha.rand = 0.05, alpha.fix = 0.05, isFixReduce = FALSE, isRandReduce = FALSE, isTotal=TRUE, isAnova=FALSE, isRand=FALSE, isLSMEANS=FALSE, test.effs=NULL, plot=FALSE)
 
-
       ##t<-totalAnalysis(model, data, isFixReduce=isFixReduce, isRandReduce=isRandReduce, isLsmeans=isLsmeans , plot=plot, alpha.rand=alpha.rand, alpha.fix=alpha.fix)
-      t <- step(model, reduce.fixed=isFixReduce, reduce.random=isRandReduce, alpha.random=alpha.random, alpha.fixed=alpha.fixed)
 
+      t <- step(model, reduce.fixed=isFixReduce, reduce.random=isRandReduce, alpha.random=alpha.random, alpha.fixed=alpha.fixed)
 
       ##getFormula<-function(model, withRand=TRUE)
       ##{
@@ -89,7 +86,6 @@ ConjointNoMerge <- function(structure=1, data1, response, fixed, random, facs, c
       ##    fm[3]<-paste(terms.fm[-ind.rand.terms],collapse=" + ")
       ##  return(fm)
       ##}
-
 
       fillresult<-function(t)
         {
@@ -118,9 +114,7 @@ ConjointNoMerge <- function(structure=1, data1, response, fixed, random, facs, c
 
           return(result)
         }
-
       resultFULL[[ind.resp]]<-fillresult(t)
-
     }
 
 
