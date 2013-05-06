@@ -28,9 +28,9 @@ class MainEffectsPlot(DataView):
         """FIXME: Can this bee extracted as an utility function
         that will return an result object but only with the needed values?
         """
-        ls_means = conj_res.lsmeansTable['data']
-        ls_means_labels = conj_res.lsmeansTable['rowNames']
-        cn = list(conj_res.lsmeansTable['colNames'])
+        ls_means = conj_res.lsmeansTable.values
+        ls_means_labels = conj_res.lsmeansTable.obj_n
+        cn = list(conj_res.lsmeansTable.var_n)
         nli = cn.index('Estimate')
         cn = cn[:nli]
 
@@ -73,8 +73,8 @@ class MainEffectsPlot(DataView):
 
 
         # Get p value for attribute
-        anova_values = conj_res.anovaTable['data']
-        anova_names = conj_res.anovaTable['rowNames']
+        anova_values = conj_res.anovaTable.values
+        anova_names = conj_res.anovaTable.obj_n
         picker = anova_names == attr_name
         p_value = anova_values[picker, 3][0]
         self.p_value = p_value

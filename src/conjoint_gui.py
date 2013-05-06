@@ -159,38 +159,23 @@ def plot_interaction(res, attr_one, attr_two):
 
 
 def means_table(res):
-    label= 'LS means (main effect and interaction)'
-    cj_dm = cj_res_ds_adapter(res.lsmeansTable, label)
-
-    return cj_dm
+    return res.lsmeansTable
 
 
 def fixed_table(res):
-    label = 'ANOVA table for fixed effects'
-    cj_dm = cj_res_ds_adapter(res.anovaTable, label)
-
-    return cj_dm
+    return res.anovaTable
 
 
 def random_table(res):
-    label = 'ANOVA table for random effects'
-    cj_dm = cj_res_ds_adapter(res.randomTable, label)
-
-    return cj_dm
+    return res.randomTable
 
 
 def diff_table(res):
-    label = 'Pair-wise differences'
-    cj_dm = cj_res_ds_adapter(res.lsmeansDiffTable, label)
-
-    return cj_dm
+    return res.lsmeansDiffTable
 
 
 def residu_table(res):
-    label = 'Residuals'
-    cj_dm = cj_res_ds_adapter(res.residualsTable, label)
-
-    return cj_dm
+    return res.residualsTable
 
 
 no_view = _traitsui.View()
