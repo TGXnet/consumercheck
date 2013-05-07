@@ -73,10 +73,23 @@ class MainEffectsPlot(DataView):
 
 
         # Get p value for attribute
+        # Before Conjoint update from 2013-03-18
+        ## anova_values = conj_res.anovaTable['data']
+        ## anova_names = conj_res.anovaTable['rowNames']
+        ## picker = anova_names == attr_name
+        ## p_value = anova_values[picker, 3][0]
+        ## self.p_value = p_value
+
         anova_values = conj_res.anovaTable['data']
         anova_names = conj_res.anovaTable['rowNames']
         picker = anova_names == attr_name
-        p_value = anova_values[picker, 3][0]
+        # p_value = anova_values[picker, 3][0]
+        var_row = anova_values[picker]
+        p_str = var_row['Pr(>F)'][0]
+        try:
+            p_value = float(p_str)
+        except ValueError:
+            p_value = 0.0
         self.p_value = p_value
 
 
