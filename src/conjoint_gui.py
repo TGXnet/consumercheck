@@ -307,8 +307,11 @@ class ConjointPluginController(PluginController):
 
     def _make_calculation(self, liking_id):
         d = self.model.dsc[self.selected_design]
-        c = self.model.dsc[self.selected_consumer_characteristics_set]
         l = self.model.dsc[liking_id]
+        if self.selected_consumer_characteristics_set:
+            c = self.model.dsc[self.selected_consumer_characteristics_set]
+        else:
+            c = DataSet(display_name = '-')
         calc_model = Conjoint(id=liking_id, design=d, liking=l, consumers=c)
         calculation = ConjointController(calc_model)
         self.model.add(calculation)
@@ -358,7 +361,7 @@ if __name__ == '__main__':
     from tests.conftest import conjoint_dsc
     from dataset_container import get_ds_by_name
 
-    one_branch = True
+    one_branch = False
     dsc = conjoint_dsc()
 
     if one_branch:
