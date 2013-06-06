@@ -164,6 +164,7 @@ class PrefmapPluginController(PluginController):
     comb = _traits.Instance(CombinationTable, CombinationTable())
     last_selection = _traits.Set()
 
+    dummy_model_controller = _traits.Instance(PrefmapController, PrefmapController(Prefmap()))
 
     def init(self, info):
         self._update_comb()

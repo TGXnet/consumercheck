@@ -127,6 +127,10 @@ class PluginController(_traitsui.Controller):
     edit_node = _traits.Instance(ModelController)
 
 
+    def init(self, info):
+        self.selected_object = self.model
+
+
     @_traits.on_trait_change('selected_object')
     def _tree_selection_made(self, obj, name, new):
         if isinstance(new, ModelController):
@@ -134,7 +138,7 @@ class PluginController(_traitsui.Controller):
         elif isinstance(new, WindowLauncher):
             self.edit_node = new.owner_ref
         else:
-            self.edit_node = None
+            self.edit_node = self.dummy_model_controller
 
 
 # plugin_view

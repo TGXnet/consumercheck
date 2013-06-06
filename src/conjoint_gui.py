@@ -271,6 +271,7 @@ class ConjointPluginController(PluginController):
     selected_consumer_characteristics_set = _traits.Str()
     selected_consumer_liking_sets = _traits.List()
 
+    dummy_model_controller = _traits.Instance(ConjointController, ConjointController(Conjoint()))
 
     @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]', post_init=False)
     def _update_selection_list(self, obj, name, new):

@@ -220,6 +220,8 @@ class PcaPluginController(PluginController):
     available_ds = _traits.List()
     selected_ds = _traits.List()
 
+    dummy_model_controller = _traits.Instance(PcaController, PcaController(Pca()))
+
     # FIXME: I dont know why the initial populating is not handled by
     # _update_selection_list()
     def _available_ds_default(self):
