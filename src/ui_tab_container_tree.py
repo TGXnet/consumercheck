@@ -4,6 +4,7 @@ import traitsui.api as _traitsui
 
 from dataset import DataSet
 from dataset_container import DatasetContainer
+from ds_table_view import DSTableViewer
 
 
 class DSNode(_traitsui.TreeNode):
@@ -77,6 +78,11 @@ list_view = _traitsui.View(
     )
 
 
+def dclk_activator(obj):
+    dstv = DSTableViewer(obj)
+    dstv.edit_traits(view=dstv.get_view())
+
+
 tree_editor = _traitsui.TreeEditor(
     nodes = [
         _traitsui.TreeNode(
@@ -96,6 +102,7 @@ tree_editor = _traitsui.TreeEditor(
             label='display_name',
             tooltip='kind',
             icon_path = 'graphics',
+            on_dclick=dclk_activator,
             view=ds_view,
             ),
         ],
