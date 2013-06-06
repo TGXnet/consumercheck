@@ -58,3 +58,17 @@ def test_pandas():
 def test_pyper():
     pyper_meta = pkg_resources.get_distribution("pyper")
     assert pyper_meta.version == '1.1.1'
+
+
+def test_wxpython():
+    ## wx_meta = pkg_resources.get_distribution("wx")
+    ## assert wx_meta.version == '1.1.1'
+    import wx
+    wx_ver = wx.__version__
+    assert wx_ver == '2.8.12.1'
+    del(wx)
+
+
+def test_pyside():
+    pyside_meta = pkg_resources.get_distribution("PySide")
+    assert pyside_meta.version == '1.1.2'
