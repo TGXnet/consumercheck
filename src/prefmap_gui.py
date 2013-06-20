@@ -44,7 +44,10 @@ class PrefmapController(ModelController):
             ("Explained var Y", expl_var_y_plot),
             ]
 
-        return [WindowLauncher(node_name=nn, view_creator=fn, owner_ref=self)
+        return [WindowLauncher(node_name=nn, view_creator=fn,
+                               owner_ref=self,
+                               loop_name='window_launchers',
+                               )
                 for nn, fn in std_launchers]
 
 
