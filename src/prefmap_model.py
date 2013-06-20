@@ -22,7 +22,8 @@ class Prefmap(Model):
     ds_Y = _traits.Property()
 
     #checkbox bool for standardised results
-    standardise = _traits.Bool(False)
+    standardise_x = _traits.Bool(False)
+    standardise_y = _traits.Bool(False)
     int_ext_mapping = _traits.Enum('Internal', 'External')
     calc_n_pc = _traits.Int()
     min_pc = 2
@@ -33,7 +34,7 @@ class Prefmap(Model):
         print(self.ds_X.display_name)
         pls = PLS(self.ds_X.values, self.ds_Y.values,
                   numPC=self.calc_n_pc, cvType=["loo"],
-                  Xstand=self.standardise, Ystand=self.standardise)
+                  Xstand=self.standardise_x, Ystand=self.standardise_y)
         return self._pack_res(pls)
 
 

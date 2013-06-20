@@ -128,8 +128,10 @@ no_view = _traitsui.View()
 prefmap_view = _traitsui.View(
     _traitsui.Item('controller.name', style='readonly'),
     _traitsui.Item('int_ext_mapping', style='custom', label='Mapping'),
-    # _traitsui.Label('Standardise:'),
-    _traitsui.Item('standardise', style='custom', show_label=True),
+    _traitsui.Item('standardise_x', label='Standardise X',
+                   style='custom', show_label=True),
+    _traitsui.Item('standardise_y', label='Standardise Y',
+                   style='custom', show_label=True),
     _traitsui.Item('calc_n_pc',
                    editor=_traitsui.RangeEditor(
                        low_name='min_pc', high_name='max_pc', mode='auto'),
