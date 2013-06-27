@@ -15,6 +15,7 @@ else:
     logger = logging.getLogger(__name__)
 
 # Scipy lib imports
+import numpy as _np
 import pandas as _pd
 
 # ETS imports
@@ -271,6 +272,12 @@ class ConjointPluginController(PluginController):
     selected_consumer_characteristics_set = _traits.Str()
     selected_consumer_liking_sets = _traits.List()
 
+    sel_design_var = _traits.List()
+    design_vars = _traits.List()
+    sel_cons_char = _traits.List()
+    consumer_vars = _traits.List()
+
+
     dummy_model_controller = _traits.Instance(ConjointController, ConjointController(Conjoint()))
 
     @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]', post_init=False)
@@ -290,6 +297,26 @@ class ConjointPluginController(PluginController):
 
     def _available_consumer_liking_sets_default(self):
         return self.model.dsc.get_id_name_map('Consumer liking')
+
+
+    @_traits.on_trait_change('selected_design')
+    def _upd_des_attr_list(self, obj, name, old_value, new_value):
+        d = self.model.dsc[self.selected_design]
+        nn = []
+        for k, v in d.mat.iteritems():
+            nn.append((k, k + ' ' + str(len(_np.unique(v.values)))))
+
+        self.design_vars = nn
+
+
+    @_traits.on_trait_change('selected_consumer_characteristics_set')
+    def _upd_cons_attr_list(self, obj, name, old_value, new_value):
+        d = self.model.dsc[self.selected_consumer_characteristics_set]
+        nn = []
+        for k, v in d.mat.iteritems():
+            nn.append((k, k + ' ' + str(len(_np.unique(v.values)))))
+
+        self.consumer_vars = nn
 
 
     @_traits.on_trait_change('selected_consumer_liking_sets')
@@ -327,10 +354,24 @@ selection_view = _traitsui.Group(
                            style='simple',
                            show_label=False,
                            ),
+            _traitsui.Label('Design variables:'),
+            _traitsui.Item('controller.sel_design_var',
+                           editor=_traitsui.CheckListEditor(
+                               name='controller.design_vars'),
+                           style='custom',
+                           show_label=False,
+                           ),
             _traitsui.Label('Consumer characteristics:'),
             _traitsui.Item('controller.selected_consumer_characteristics_set',
                            editor=_traitsui.CheckListEditor(name='controller.available_consumer_characteristics_sets'),
                            style='simple',
+                           show_label=False,
+                           ),
+            _traitsui.Label('Consumer characteristics variables:'),
+            _traitsui.Item('controller.sel_cons_char',
+                           editor=_traitsui.CheckListEditor(
+                               name='controller.consumer_vars'),
+                           style='custom',
                            show_label=False,
                            ),
             show_border=True,
