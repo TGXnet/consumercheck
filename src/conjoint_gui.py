@@ -352,7 +352,12 @@ class ConjointPluginController(PluginController):
             c = self.model.dsc[self.selected_consumer_characteristics_set]
         else:
             c = DataSet(display_name = '-')
-        calc_model = Conjoint(id=liking_id, design=d, liking=l, consumers=c)
+        calc_model = Conjoint(id=liking_id,
+                              design=d,
+                              design_vars=self.sel_design_var,
+                              consumers=c,
+                              consumers_vars=self.sel_cons_char,
+                              liking=l)
         calculation = ConjointController(calc_model)
         self.model.add(calculation)
 
