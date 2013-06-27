@@ -21,20 +21,13 @@ import pandas as _pd
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
-import chaco.api as _chaco
 
 
 # Local imports
-# from dataset import DataSet
 from dataset import DataSet
 from conjoint_model import Conjoint
-from ds_table_view import DSTableViewer
-# from ui_results import TableViewController
-from plot_windows import LinePlotWindow, SinglePlotWindow
-from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
-
-from window_helper import multiplot_factory
-from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
+from plot_conjoint import MainEffectsPlot, InteractionPlot
+from plugin_tree_helper import (WindowLauncher, dclk_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
 
@@ -319,7 +312,7 @@ class ConjointPluginController(PluginController):
             nn.append((k, len(_np.unique(v.values))))
         # Check if some attribute have more than five categories
         for k, v in nn:
-            if v >= 5:
+            if v > 5:
                 warn = """
                 {0} have {1} categories. Conjoint is not suitable
                 for variables with a large number of categories.""".format(k, v)
@@ -329,6 +322,29 @@ class ConjointPluginController(PluginController):
         for k, v in nn:
             varn.append((k, "{0} ({1})".format(k, v)))
         self.consumer_vars = varn
+
+
+    @_traits.on_trait_change('sel_design_var')
+    def _upd_design_var(self, obj, name, old_value, new_value):
+        if isinstance(self.selected_object, (ModelController, WindowLauncher)):
+            self.selected_object.model.design_vars = new_value
+
+
+    @_traits.on_trait_change('sel_cons_char')
+    def _upd_cons_char(self, obj, name, old_value, new_value):
+        if isinstance(self.selected_object, (ModelController, WindowLauncher)):
+            self.selected_object.model.consumers_vars = new_value
+
+
+
+    ## @_traits.on_trait_change('selected_object')
+    ## def _sel_tree_obj(self, obj, name, old_value, new_value):
+    ##     if isinstance(self.selected_object, (ModelController, WindowLauncher)):
+    ##         self.selected_design = new_value.model.design
+    ##         self.selected_consumer_characteristics_set = new_value.model.consumers
+    ##         self.sel_design_var = new_value.model.design_vars
+    ##         self.sel_cons_char = new_value.model.consumers_vars
+
 
 
     @_traits.on_trait_change('selected_consumer_liking_sets')
