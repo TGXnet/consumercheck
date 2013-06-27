@@ -304,9 +304,11 @@ class ConjointPluginController(PluginController):
         d = self.model.dsc[self.selected_design]
         nn = []
         for k, v in d.mat.iteritems():
-            nn.append((k, k + ' ' + str(len(_np.unique(v.values)))))
-
-        self.design_vars = nn
+            nn.append((k, len(_np.unique(v.values))))
+        varn = []
+        for k, v in nn:
+            varn.append((k, "{0} ({1})".format(k, v)))
+        self.design_vars = varn
 
 
     @_traits.on_trait_change('selected_consumer_characteristics_set')
@@ -314,9 +316,19 @@ class ConjointPluginController(PluginController):
         d = self.model.dsc[self.selected_consumer_characteristics_set]
         nn = []
         for k, v in d.mat.iteritems():
-            nn.append((k, k + ' ' + str(len(_np.unique(v.values)))))
-
-        self.consumer_vars = nn
+            nn.append((k, len(_np.unique(v.values))))
+        # Check if some attribute have more than five categories
+        for k, v in nn:
+            if v >= 5:
+                warn = """
+                {0} have {1} categories. Conjoint is not suitable
+                for variables with a large number of categories.""".format(k, v)
+                cw = ConjointWarning(messages=warn)
+                cw.edit_traits()
+        varn = []
+        for k, v in nn:
+            varn.append((k, "{0} ({1})".format(k, v)))
+        self.consumer_vars = varn
 
 
     @_traits.on_trait_change('selected_consumer_liking_sets')
@@ -343,6 +355,21 @@ class ConjointPluginController(PluginController):
         calc_model = Conjoint(id=liking_id, design=d, liking=l, consumers=c)
         calculation = ConjointController(calc_model)
         self.model.add(calculation)
+
+
+
+class ConjointWarning(_traits.HasTraits):
+    messages = _traits.Str()
+
+    traits_view = _traitsui.View(
+        _traitsui.Item('messages', show_label=False, springy=True, style='custom' ),
+        title='Conjoint warning',
+        height=300,
+        width=600,
+        resizable=True,
+        buttons=[_traitsui.OKButton],
+        )
+
 
 
 selection_view = _traitsui.Group(
