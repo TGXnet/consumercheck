@@ -195,29 +195,29 @@ conjoint_view = _traitsui.View(
     _traitsui.Item('controller.design_name', style='readonly', label='Design'),
     _traitsui.Item('controller.cons_attr_name', style='readonly', label='Consumer charactersitics'),
     _traitsui.Item('model_struct', style='simple', label='Model'),
-    ## _traitsui.Group(
-    ##     _traitsui.Group(
-    ##         _traitsui.Item('design_vars',
-    ##                        editor=_traitsui.CheckListEditor(name='controller.available_design_vars'),
-    ##                        style='custom',
-    ##                        show_label=False,
-    ##                        ),
-    ##         label='Design variables:',
-    ##         show_border=True,
-    ##         springy=True,
-    ##         ),
-    ##     _traitsui.Group(
-    ##         _traitsui.Item('consumers_vars',
-    ##                        editor=_traitsui.CheckListEditor(name='controller.available_consumers_vars'),
-    ##                        style='custom',
-    ##                        show_label=False,
-    ##                        ),
-    ##         label='Consumer variables:',
-    ##         show_border=True,
-    ##         springy=True,
-    ##         ),
-    ##     orientation='horizontal',
-    ##     ),
+    _traitsui.Group(
+        _traitsui.Group(
+            _traitsui.Item('design_vars',
+                           editor=_traitsui.CheckListEditor(name='controller.available_design_vars'),
+                           style='custom',
+                           show_label=False,
+                           ),
+            label='Design variables:',
+            show_border=True,
+            springy=True,
+            ),
+        _traitsui.Group(
+            _traitsui.Item('consumers_vars',
+                           editor=_traitsui.CheckListEditor(name='controller.available_consumers_vars'),
+                           style='custom',
+                           show_label=False,
+                           ),
+            label='Consumer variables:',
+            show_border=True,
+            springy=True,
+            ),
+        orientation='horizontal',
+        ),
     )
 
 
@@ -314,8 +314,9 @@ class ConjointPluginController(PluginController):
         for k, v in nn:
             if v > 5:
                 warn = """
-                {0} have {1} categories. Conjoint is not suitable
-                for variables with a large number of categories.""".format(k, v)
+{0} have {1} categories. Conjoint is not suitable
+for variables with a large number of categories.
+""".format(k, v)
                 cw = ConjointWarning(messages=warn)
                 cw.edit_traits()
         varn = []
