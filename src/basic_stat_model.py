@@ -50,10 +50,11 @@ class BasicStat(Model):
             ax = 0
             idx = self.ds.var_n
         sy = _pd.DataFrame(index=idx)
-        sy['mean'] = mat.mean(axis=ax)
-        sy['std'] = mat.std(axis=ax)
-        sy['min'] = mat.min(axis=ax)
-        sy['max'] = mat.max(axis=ax)
+        sy['min'] = _np.percentile(mat, 0, axis=ax)
+        sy['perc25'] = _np.percentile(mat, 25, axis=ax)
+        sy['med'] = _np.percentile(mat, 50, axis=ax)
+        sy['perc75'] = _np.percentile(mat, 75, axis=ax)
+        sy['max'] = _np.percentile(mat, 100, axis=ax)
 
         return DataSet(mat=sy, display_name="Summary")
 

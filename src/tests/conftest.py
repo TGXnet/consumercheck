@@ -191,17 +191,18 @@ def hist_ds():
 def boxplot_ds():
     '''Make dataset for testing box plot'''
     rows_cols = (12, 45)
-    random = False
+    random = True
     rown = ["O{}".format(i+1) for i in range(rows_cols[0])]
 
     if random:
         norm = np.random.normal(loc=5.0, scale=2.0, size=rows_cols)
         normi = norm.astype('int')
         stat = pd.DataFrame(index=rown)
-        stat['mean'] = normi.mean(axis=1)
-        stat['std'] = normi.std(axis=1)
-        stat['max'] = normi.max(axis=1)
-        stat['min'] = normi.min(axis=1)
+        stat['min'] = np.percentile(normi, 0, axis=1)
+        stat['perc25'] = np.percentile(normi, 25, axis=1)
+        stat['med'] = np.percentile(normi, 50, axis=1)
+        stat['perc75'] = np.percentile(normi, 75, axis=1)
+        stat['max'] = np.percentile(normi, 100, axis=1)
     else:
         stat = pd.DataFrame(
             data=[[4.733333, 2.184796, 10, 1],

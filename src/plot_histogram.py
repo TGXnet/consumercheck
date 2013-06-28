@@ -192,13 +192,9 @@ class BoxPlot(_chaco.DataView):
 
     def _create_renderer(self):
         # Create our data sources
-        mean = self.ds.mat['mean'].values
-        std = self.ds.mat['std'].values
-        bmin = _chaco.ArrayDataSource(mean - std)
-        bmax = _chaco.ArrayDataSource(mean + std)
-        mean = _chaco.ArrayDataSource(mean)
-        std = _chaco.ArrayDataSource(std)
-
+        bmin = _chaco.ArrayDataSource(self.ds.mat['perc25'].values)
+        bmax = _chaco.ArrayDataSource(self.ds.mat['perc75'].values)
+        med = _chaco.ArrayDataSource(self.ds.mat['med'].values)
         minv = _chaco.ArrayDataSource(self.ds.mat['min'].values)
         maxv = _chaco.ArrayDataSource(self.ds.mat['max'].values)
         idx = _chaco.ArrayDataSource(_np.arange(self.ds.n_objs))
@@ -213,7 +209,7 @@ class BoxPlot(_chaco.DataView):
 
 
         # Color defined in enable.colors.color_table
-        boxes = _chaco.CandlePlot(index=idx, center_values=mean,
+        boxes = _chaco.CandlePlot(index=idx, center_values=med,
                                   bar_min=bmin, bar_max=bmax,
                                   min_values=minv, max_values=maxv,
                                   index_mapper=index_mapper,
@@ -259,8 +255,8 @@ class BoxPlot(_chaco.DataView):
 
 if __name__ == '__main__':
     from tests.conftest import hist_ds, boxplot_ds
-    # plot = BoxPlot(boxplot_ds())
-    plot = StackedHistPlot(hist_ds())
+    plot = BoxPlot(boxplot_ds())
+    # plot = StackedHistPlot(hist_ds())
     # plot = HistPlot(hist_ds(), 'O6')
     plot.new_window(True)
 
