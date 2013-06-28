@@ -27,11 +27,13 @@ from conjoint_gui import ConjointPluginController, conjoint_plugin_view
 class MainViewHandler(Handler):
     """Handler for dataset view"""
 
+    importer = Instance(ImporterMain, ImporterMain())
 
+    
     def import_data(self, info):
         """Action called when activating importing of new dataset"""
-        importer = ImporterMain()
-        imported = importer.dialog_multi_import()
+        # importer = ImporterMain()
+        imported = self.importer.dialog_multi_import()
         if imported:
             info.object.dsc.add(*tuple(imported))
 

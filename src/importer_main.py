@@ -15,8 +15,8 @@ import os.path
 # And log operation completed if success
 
 # Enthought imports
-from traits.api import HasTraits, File, List, Instance
-from traitsui.api import View, UCustom, FileEditor
+from traits.api import HasTraits, Bool, File, List, Instance, Str
+from traitsui.api import View, UCustom, FileEditor, Item
 from traitsui.menu import OKButton, CancelButton
 from pyface.api import FileDialog, OK, CANCEL
 
@@ -35,7 +35,8 @@ class ImporterMain(HasTraits):
 
     _last_open_path = File()
     _files_path = List(File)
-    _datasets = List(DataSet)
+    # _datasets = List(DataSet)
+    _notice_shown = Bool(False)
 
 
     def import_data(self, file_path, have_variable_names = True, have_object_names = True, sep='\t'):
@@ -60,17 +61,22 @@ class ImporterMain(HasTraits):
     def dialog_multi_import(self):
         """Open dialog for selecting multiple files and return a list of DataSet's"""
         self._last_open_path = conf.get_option('work_dir')
+        if not self._notice_shown:
+            notice = ImportNotice()
+            notice.edit_traits()
+            self._notice_shown = True
         status = self._show_file_selector()
         if status == CANCEL:
             return []
+        datasets = []
         for filen in self._files_path:
             importer = self._make_importer(filen)
             importer.kind = self._pick_kind(filen)
             importer.edit_traits()
             ds = importer.import_data()
-            self._datasets.append(ds)
+            datasets.append(ds)
         conf.set_option('work_dir', filen)
-        return self._datasets
+        return datasets
 
 
     # For select multi file dialog
@@ -81,6 +87,8 @@ class ImporterMain(HasTraits):
             title='Import data')
         status = dlg.open()
         if status == OK:
+            print(dlg.paths)
+            print(self._files_path)
             self._files_path = dlg.paths
         elif status == CANCEL:
             pass
@@ -125,6 +133,29 @@ class ImporterMain(HasTraits):
         fn = os.path.basename(path)
         return fn.partition('.')[2].lower()
 
+
+class ImportNotice(HasTraits):
+    message = Str('''
+This program allows for importing four different types of data:
+ * Qualitative descriptive analysis (QDA); rows: samples - columns: sensory attributes.
+ * Consumer acceptance data; rows: samples - columns: consumers.
+ * Consumer characteristics; rows: consumers - columns: characteristics.
+ * Experimental design; rows: samples - columns: design variables.
+
+Preference mapping: the two last one will not be used.
+Conjoint analysis: the first one will not be used.
+'''
+        )
+
+    traits_view = View(
+        Item('message', show_label=False, springy=True, style='custom' ),
+        title='Data import notice',
+        height=300,
+        width=600,
+        resizable=True,
+        buttons=[OKButton],
+        kind='modal',
+        )
 
 
 #Instantiate DND
