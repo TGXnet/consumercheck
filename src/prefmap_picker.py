@@ -1,7 +1,5 @@
-from traits.api import HasTraits, Int, Str, List, Bool, Any, Event, on_trait_change, Tuple, Button
-from traitsui.api import View, Item, TableEditor, CheckListEditor, Group
-from traitsui.table_column import ObjectColumn
-from traitsui.extras.checkbox_column import CheckboxColumn
+from traits.api import HasTraits, List, Event, on_trait_change, Tuple, Button
+from traitsui.api import View, Item, CheckListEditor, Group, Label
 
 
 class PrefmapPicker(HasTraits):
@@ -11,7 +9,17 @@ class PrefmapPicker(HasTraits):
     sel_col = List()
     combinations = List(Tuple())
     combination_updated = Event()
-    get_selected = Button('Update')
+    get_selected = Button('Add mapping')
+
+
+    @on_trait_change('get_selected')
+    def _new_selection(self, obj, name, old_value, new_value):
+        sel = (self.sel_row[0], self.sel_col[0])
+        print("The sel", sel)
+        self.combinations.append(sel)
+        self.sel_row = []
+        self.sel_col = []
+        self.combination_updated = True
 
 
     def get_selected_combinations(self):
@@ -20,11 +28,21 @@ class PrefmapPicker(HasTraits):
 
     traits_view = View(
         Group(
-            Item('sel_row', editor=CheckListEditor(name='row_set'), style='custom'),
-            Item('sel_col', editor=CheckListEditor(name='col_set'), style='custom'),
+            Group(
+                Label('Liking data'),
+                Item('sel_row', editor=CheckListEditor(name='row_set'),
+                     style='simple', show_label=False),
+                orientation='vertical',
+                ),
+            Group(
+                Label('Sensory data'),
+                Item('sel_col', editor=CheckListEditor(name='col_set'),
+                     style='simple', show_label=False),
+                orientation='vertical',
+                ),
             orientation='horizontal',
         ),
-        Item('get_selected'),
+        Item('get_selected', show_label=False),
         resizable=True,
         )
 
