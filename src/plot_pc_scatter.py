@@ -253,8 +253,8 @@ class PCScatterPlot(PlotBase):
             self.x_axis.title = tx[0]+' X'+tx[1]+', Y'+tx[2]
             self.y_axis.title = ty[0]+' X'+ty[1]+', Y'+ty[2]
         else:
-            self.x_axis.title = ' '.join(tx)  
-            self.y_axis.title = ' '.join(ty)           
+            self.x_axis.title = ' '.join(tx)
+            self.y_axis.title = ' '.join(ty)
 
 
     def _add_plot_data_labels(self, plot_render, point_data, set_id):

@@ -27,6 +27,8 @@ class HistPlot(_chaco.DataView):
         self.bars_renderer = self._create_render()
         self.add(self.bars_renderer)
         self._add_axis(self.bars_renderer)
+        fraction = self._calc_percentage()
+        self._add_data_labels(self.bars_renderer, fraction)
 
 
     def render_hist(self, row_id):
@@ -56,6 +58,29 @@ class HistPlot(_chaco.DataView):
                               bar_width=0.8, antialias=False)
 
         return bars
+
+
+    def _calc_percentage(self):
+        hist = self.ds.mat.ix[self.row_id].values
+        alt = hist.sum(axis=0)
+        pec = hist*100/alt
+        return pec
+
+
+    def _add_data_labels(self, renderer, fraction):
+        idx = renderer.index._data
+        val = renderer.value._data
+        for i, v in enumerate(fraction):
+            label = _chaco.DataLabel(
+                component = renderer,
+                data_point = (idx[i], val[i]),
+                label_text = "{}%".format(v),
+                marker_visible = False,
+                border_visible = False,
+                show_label_coords = False,
+                bgcolor = (0.5, 0.5, 0.5, 0.0),
+                )
+            renderer.overlays.append(label)
 
 
     def _add_axis(self, renderer):
@@ -255,9 +280,9 @@ class BoxPlot(_chaco.DataView):
 
 if __name__ == '__main__':
     from tests.conftest import hist_ds, boxplot_ds
-    plot = BoxPlot(boxplot_ds())
+    # plot = BoxPlot(boxplot_ds())
     # plot = StackedHistPlot(hist_ds())
-    # plot = HistPlot(hist_ds(), 'O6')
+    plot = HistPlot(hist_ds(), 'O3')
     plot.new_window(True)
 
     ## plot.render_hist(row_id)
