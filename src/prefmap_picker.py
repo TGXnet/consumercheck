@@ -3,7 +3,9 @@ from traitsui.api import View, Item, CheckListEditor, Group, Label
 
 
 class PrefmapPicker(HasTraits):
+    # Consumer liking ds
     row_set = List(Tuple())
+    # Sensory profiling ds
     col_set = List(Tuple())
     sel_row = List()
     sel_col = List()
@@ -15,7 +17,6 @@ class PrefmapPicker(HasTraits):
     @on_trait_change('get_selected')
     def _new_selection(self, obj, name, old_value, new_value):
         sel = (self.sel_row[0], self.sel_col[0])
-        print("The sel", sel)
         self.combinations.append(sel)
         self.sel_row = []
         self.sel_col = []
@@ -29,13 +30,13 @@ class PrefmapPicker(HasTraits):
     traits_view = View(
         Group(
             Group(
-                Label('Liking data'),
+                Label('Consumer likings'),
                 Item('sel_row', editor=CheckListEditor(name='row_set'),
                      style='simple', show_label=False),
                 orientation='vertical',
                 ),
             Group(
-                Label('Sensory data'),
+                Label('Sensory profiling'),
                 Item('sel_col', editor=CheckListEditor(name='col_set'),
                      style='simple', show_label=False),
                 orientation='vertical',
