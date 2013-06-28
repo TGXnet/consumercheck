@@ -7,7 +7,8 @@ import traitsui.api as _traitsui
 from prefmap_model import Prefmap
 from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot
-from combination_table import CombinationTable
+# from combination_table import CombinationTable
+from prefmap_picker import PrefmapPicker
 from dataset_container import DatasetContainer
 from plot_windows import MultiPlotWindow
 from window_helper import multiplot_factory
@@ -166,7 +167,7 @@ prefmap_nodes = [
 
 class PrefmapPluginController(PluginController):
 
-    comb = _traits.Instance(CombinationTable, CombinationTable())
+    comb = _traits.Instance(PrefmapPicker, PrefmapPicker())
     last_selection = _traits.Set()
 
     dummy_model_controller = _traits.Instance(PrefmapController, PrefmapController(Prefmap()))
@@ -185,15 +186,11 @@ class PrefmapPluginController(PluginController):
         dsc = self.model.dsc
         self.comb.col_set = dsc.get_id_name_map('Sensory profiling')
         self.comb.row_set = dsc.get_id_name_map('Consumer liking')
-        self.comb._generate_combinations()
+        # self.comb._generate_combinations()
 
 
     @_traits.on_trait_change('comb:combination_updated', post_init=True)
     def _handle_selection(self, obj, name, old, new):
-        print("handle_selection")
-        ## if not self.info:
-        ##     return
-
         selection = set(self.comb.get_selected_combinations())
         if selection.difference(self.last_selection):
             added = selection.difference(self.last_selection)
@@ -221,7 +218,7 @@ selection_view = _traitsui.Group(
                    editor=_traitsui.InstanceEditor(),
                    style='custom',
                    show_label=False,
-                   width=100,
+                   width=250,
                    height=150,
                    ),
     label='Select dataset',
