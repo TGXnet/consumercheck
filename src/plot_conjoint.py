@@ -215,11 +215,21 @@ class InteractionPlot(DataView):
         try:
             attr_name = "{0}:{1}".format(self.attr_one_name, self.attr_two_name)
             picker = anova_names == attr_name
-            p_value = anova_values[picker, 3][0]
+            var_row = anova_values[picker]
+            p_str = var_row['Pr(>F)'][0]
+            try:
+                p_value = float(p_str)
+            except ValueError:
+                p_value = 0.0
         except IndexError:
             attr_name = "{0}:{1}".format(self.attr_two_name, self.attr_one_name)
             picker = anova_names == attr_name
-            p_value = anova_values[picker, 3][0]
+            var_row = anova_values[picker]
+            p_str = var_row['Pr(>F)'][0]
+            try:
+                p_value = float(p_str)
+            except ValueError:
+                p_value = 0.0
         self.p_value = p_value
 
         # Set border color
