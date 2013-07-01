@@ -286,6 +286,7 @@ class ConjointPluginController(PluginController):
     selected_design = _traits.Str()
     selected_consumer_characteristics_set = _traits.Str()
     selected_consumer_liking_sets = _traits.List()
+    design = _traits.Instance(DataSet)
 
     sel_design_var = _traits.List()
     design_vars = _traits.List()
@@ -293,7 +294,12 @@ class ConjointPluginController(PluginController):
     consumer_vars = _traits.List()
 
 
-    dummy_model_controller = _traits.Instance(ConjointController, ConjointController(Conjoint()))
+    dummy_model_controller = _traits.Instance(ConjointController)
+
+
+    def _dummy_model_controller_default(self):
+        return ConjointController(Conjoint(owner_ref=self))
+
 
     @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]', post_init=False)
     def _update_selection_list(self, obj, name, new):
@@ -323,6 +329,7 @@ class ConjointPluginController(PluginController):
         varn = []
         for k, v in nn:
             varn.append((k, "{0} ({1})".format(k, v)))
+        self.design = d
         self.design_vars = varn
 
 
@@ -391,7 +398,7 @@ for variables with a large number of categories.
             c = self.model.dsc[self.selected_consumer_characteristics_set]
         else:
             c = DataSet(display_name = '-')
-        calc_model = Conjoint(id=liking_id,
+        calc_model = Conjoint(owner_ref=self, id=liking_id,
                               design=d,
                               design_vars=self.sel_design_var,
                               consumers=c,
