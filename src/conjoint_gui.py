@@ -208,29 +208,6 @@ conjoint_view = _traitsui.View(
     _traitsui.Item('controller.design_name', style='readonly', label='Design'),
     _traitsui.Item('controller.cons_attr_name', style='readonly', label='Consumer charactersitics'),
     _traitsui.Item('model_struct', style='simple', label='Model'),
-    ## _traitsui.Group(
-    ##     _traitsui.Group(
-    ##         _traitsui.Item('design_vars',
-    ##                        editor=_traitsui.CheckListEditor(name='controller.available_design_vars'),
-    ##                        style='custom',
-    ##                        show_label=False,
-    ##                        ),
-    ##         label='Design variables:',
-    ##         show_border=True,
-    ##         springy=True,
-    ##         ),
-    ##     _traitsui.Group(
-    ##         _traitsui.Item('consumers_vars',
-    ##                        editor=_traitsui.CheckListEditor(name='controller.available_consumers_vars'),
-    ##                        style='custom',
-    ##                        show_label=False,
-    ##                        ),
-    ##         label='Consumer variables:',
-    ##         show_border=True,
-    ##         springy=True,
-    ##         ),
-    ##     orientation='horizontal',
-    ##     ),
     _traitsui.Group(
         _traitsui.Item('controller.model_desc',
                        editor=_traitsui.HTMLEditor(),
@@ -287,7 +264,7 @@ class ConjointPluginController(PluginController):
     selected_consumer_characteristics_set = _traits.Str()
     selected_consumer_liking_sets = _traits.List()
     design = _traits.Instance(DataSet, DataSet())
-    # design = DataSet()
+    consumers = _traits.Instance(DataSet, DataSet())
 
     sel_design_var = _traits.List()
     design_vars = _traits.List()
@@ -352,6 +329,7 @@ for variables with a large number of categories.
         varn = []
         for k, v in nn:
             varn.append((k, "{0} ({1})".format(k, v)))
+        self.consumers = d
         self.consumer_vars = varn
 
 
@@ -388,14 +366,14 @@ for variables with a large number of categories.
     def _make_calculation(self, liking_id):
         # d = self.model.dsc[self.selected_design]
         l = self.model.dsc[liking_id]
-        if self.selected_consumer_characteristics_set:
-            c = self.model.dsc[self.selected_consumer_characteristics_set]
-        else:
-            c = DataSet(display_name = '-')
+        ## if self.selected_consumer_characteristics_set:
+        ##     c = self.model.dsc[self.selected_consumer_characteristics_set]
+        ## else:
+        ##     c = DataSet(display_name = '-')
         calc_model = Conjoint(owner_ref=self, id=liking_id,
                               ## design=d,
                               design_vars=self.sel_design_var,
-                              consumers=c,
+                              ## consumers=c,
                               consumers_vars=self.sel_cons_char,
                               liking=l)
         calculation = ConjointController(calc_model)

@@ -54,9 +54,9 @@ class Conjoint(Model):
     # design = DataSet()
     design = _traits.DelegatesTo('owner_ref')
     design_vars = _traits.List(_traits.Str())
-    # design_vars = _traits.DelegatesTo('owner_ref', 'sel_design_var')
     liking = DataSet()
-    consumers = DataSet()
+    # consumers = DataSet()
+    consumers = _traits.DelegatesTo('owner_ref')
     consumers_vars = _traits.List(_traits.Str())
 
     # Conjoint settings
