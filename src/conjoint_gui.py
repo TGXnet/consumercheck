@@ -208,29 +208,29 @@ conjoint_view = _traitsui.View(
     _traitsui.Item('controller.design_name', style='readonly', label='Design'),
     _traitsui.Item('controller.cons_attr_name', style='readonly', label='Consumer charactersitics'),
     _traitsui.Item('model_struct', style='simple', label='Model'),
-    _traitsui.Group(
-        _traitsui.Group(
-            _traitsui.Item('design_vars',
-                           editor=_traitsui.CheckListEditor(name='controller.available_design_vars'),
-                           style='custom',
-                           show_label=False,
-                           ),
-            label='Design variables:',
-            show_border=True,
-            springy=True,
-            ),
-        _traitsui.Group(
-            _traitsui.Item('consumers_vars',
-                           editor=_traitsui.CheckListEditor(name='controller.available_consumers_vars'),
-                           style='custom',
-                           show_label=False,
-                           ),
-            label='Consumer variables:',
-            show_border=True,
-            springy=True,
-            ),
-        orientation='horizontal',
-        ),
+    ## _traitsui.Group(
+    ##     _traitsui.Group(
+    ##         _traitsui.Item('design_vars',
+    ##                        editor=_traitsui.CheckListEditor(name='controller.available_design_vars'),
+    ##                        style='custom',
+    ##                        show_label=False,
+    ##                        ),
+    ##         label='Design variables:',
+    ##         show_border=True,
+    ##         springy=True,
+    ##         ),
+    ##     _traitsui.Group(
+    ##         _traitsui.Item('consumers_vars',
+    ##                        editor=_traitsui.CheckListEditor(name='controller.available_consumers_vars'),
+    ##                        style='custom',
+    ##                        show_label=False,
+    ##                        ),
+    ##         label='Consumer variables:',
+    ##         show_border=True,
+    ##         springy=True,
+    ##         ),
+    ##     orientation='horizontal',
+    ##     ),
     _traitsui.Group(
         _traitsui.Item('controller.model_desc',
                        editor=_traitsui.HTMLEditor(),
@@ -286,7 +286,8 @@ class ConjointPluginController(PluginController):
     selected_design = _traits.Str()
     selected_consumer_characteristics_set = _traits.Str()
     selected_consumer_liking_sets = _traits.List()
-    design = _traits.Instance(DataSet)
+    design = _traits.Instance(DataSet, DataSet())
+    # design = DataSet()
 
     sel_design_var = _traits.List()
     design_vars = _traits.List()
@@ -356,25 +357,18 @@ for variables with a large number of categories.
 
     @_traits.on_trait_change('sel_design_var')
     def _upd_design_var(self, obj, name, old_value, new_value):
-        if isinstance(self.selected_object, (ModelController, WindowLauncher)):
+        if isinstance(self.selected_object, ModelController):
             self.selected_object.model.design_vars = new_value
+        elif isinstance(self.selected_object, WindowLauncher):
+            self.selected_object.owner_ref.model.design_vars = new_value
 
 
     @_traits.on_trait_change('sel_cons_char')
     def _upd_cons_char(self, obj, name, old_value, new_value):
-        if isinstance(self.selected_object, (ModelController, WindowLauncher)):
+        if isinstance(self.selected_object, ModelController):
             self.selected_object.model.consumers_vars = new_value
-
-
-
-    ## @_traits.on_trait_change('selected_object')
-    ## def _sel_tree_obj(self, obj, name, old_value, new_value):
-    ##     if isinstance(self.selected_object, (ModelController, WindowLauncher)):
-    ##         self.selected_design = new_value.model.design
-    ##         self.selected_consumer_characteristics_set = new_value.model.consumers
-    ##         self.sel_design_var = new_value.model.design_vars
-    ##         self.sel_cons_char = new_value.model.consumers_vars
-
+        elif isinstance(self.selected_object, WindowLauncher):
+            self.selected_object.owner_ref.model.consumers_vars = new_value
 
 
     @_traits.on_trait_change('selected_consumer_liking_sets')
@@ -392,14 +386,14 @@ for variables with a large number of categories.
 
 
     def _make_calculation(self, liking_id):
-        d = self.model.dsc[self.selected_design]
+        # d = self.model.dsc[self.selected_design]
         l = self.model.dsc[liking_id]
         if self.selected_consumer_characteristics_set:
             c = self.model.dsc[self.selected_consumer_characteristics_set]
         else:
             c = DataSet(display_name = '-')
         calc_model = Conjoint(owner_ref=self, id=liking_id,
-                              design=d,
+                              ## design=d,
                               design_vars=self.sel_design_var,
                               consumers=c,
                               consumers_vars=self.sel_cons_char,
