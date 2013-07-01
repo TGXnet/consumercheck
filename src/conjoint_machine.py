@@ -215,14 +215,14 @@ class ConjointMachine(object):
         consVarNames = self.consLiking.var_n
         
         # Get content from consumer attributes array
-        if self.consAtts:
+        if self.consAtts and not self.consAtts.mat.empty:
             attrData = self.consAtts.values
             attrVarNames = self.consAtts.var_n
         
         # Make list with column names
         self.headerList = ['Consumer', self.consLikingTag]
         self.headerList.extend(desVarNames)
-        if self.consAtts:
+        if self.consAtts and not self.consAtts.mat.empty:
             self.headerList.extend(attrVarNames)
 
         # Now construct conjoint values
@@ -247,7 +247,7 @@ class ConjointMachine(object):
             # Append consumer attributes for each row (there are as many rows as there
             # are products for the specific consumer)   
             attrBlockList = []
-            if self.consAtts:
+            if self.consAtts and not self.consAtts.mat.empty:
                 attrList = attrData[consInd,:]
                 for rowInd in range(consRows):
                     attrBlockList.append(attrList)
@@ -458,11 +458,12 @@ def asciify(names):
 
 if __name__ == '__main__':
     print("Hello World")
+    from dataset import DataSet
     from dataset_container import get_ds_by_name
     from tests.conftest import conjoint_dsc
     cm = ConjointMachine(start_r=True)
 
-    selected_structure = 2
+    selected_structure = 1
     dsc = conjoint_dsc()
     consAttr = get_ds_by_name('Consumers', dsc)
     odflLike = get_ds_by_name('Odour-flavor', dsc)
@@ -471,10 +472,11 @@ if __name__ == '__main__':
     designVar = get_ds_by_name('Tine yogurt design', dsc)
     selected_consAttr = ['Sex']
     selected_designVar = ['Flavour', 'Sugarlevel']
+    empty = DataSet()
 
 #     res = cm.synchronous_calculation(designVar, selected_designVar, odflLike)
     res = cm.synchronous_calculation(designVar, selected_designVar,
                                      odflLike, selected_structure,
-                                     consAttr, selected_consAttr,
+                                     empty, [],
                                      py_merge=True)
     res.print_traits()

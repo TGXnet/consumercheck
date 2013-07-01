@@ -52,9 +52,9 @@ class Conjoint(Model):
     # The imput data for calculation
     design = DataSet()
     design_vars = _traits.List(_traits.Str())
+    liking = DataSet()
     consumers = DataSet()
     consumers_vars = _traits.List(_traits.Str())
-    liking = DataSet()
 
     # Conjoint settings
     model_struct = _traits.Enum('Struct 1', 'Struct 2', 'Struct 3')
@@ -75,10 +75,9 @@ class Conjoint(Model):
         model = {'Struct 1': 1, 'Struct 2': 2, 'Struct 3': 3}[self.model_struct]
 
         self.cm.schedule_calculation(
-            model,
-            self.consumers, sorted(self.consumers_vars),
             self.design, sorted(self.design_vars),
-            self.liking)
+            self.liking, model,
+            self.consumers, sorted(self.consumers_vars))
         self.ccs.edit_traits(kind='livemodal')
         return self.cm.get_result()
 
