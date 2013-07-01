@@ -72,10 +72,10 @@ class ConjointMachine(object):
         logger.info(r_env)
 
 
-    def synchronous_calculation(self, structure,
-                                consAtts, selected_consAtts,
-                                design, selected_designVars,
-                                consLiking, py_merge=True):
+    def synchronous_calculation(self, design, selected_designVars,
+                                consLiking, structure=1,
+                                consAtts=None, selected_consAtts=[],
+                                py_merge=True):
         """Starts a conjoint calculation and return when the result is ready
         Parameters:
          * structure: 1, 2 or 3
@@ -89,15 +89,19 @@ class ConjointMachine(object):
         """
         self._prepare_data(structure, consAtts, selected_consAtts,
                            design, selected_designVars, consLiking, py_merge)
+
+        ## print(self.headerList)
+        ## np.set_printoptions(threshold=100, edgeitems=10)
+        ## print(self.finalData)
         self._copy_values_into_r_env()
         self._run_conjoint()
         return self.get_result()
 
 
-    def schedule_calculation(self, structure,
-                             consAtts, selected_consAtts,
-                             design, selected_designVars,
-                             consLiking, py_merge=True):
+    def schedule_calculation(self, design, selected_designVars,
+                             consLiking, structure=1,
+                             consAtts=None, selected_consAtts=[],
+                             py_merge=True):
         """Starts a conjoint calculation and return when the result is ready
         Parameters:
          * structure: 1, 2 or 3
@@ -211,13 +215,15 @@ class ConjointMachine(object):
         consVarNames = self.consLiking.var_n
         
         # Get content from consumer attributes array
-        attrData = self.consAtts.values
-        attrVarNames = self.consAtts.var_n
+        if self.consAtts:
+            attrData = self.consAtts.values
+            attrVarNames = self.consAtts.var_n
         
         # Make list with column names
         self.headerList = ['Consumer', self.consLikingTag]
         self.headerList.extend(desVarNames)
-        self.headerList.extend(attrVarNames)
+        if self.consAtts:
+            self.headerList.extend(attrVarNames)
 
         # Now construct conjoint values
         # -----------------------------
@@ -241,10 +247,11 @@ class ConjointMachine(object):
             # Append consumer attributes for each row (there are as many rows as there
             # are products for the specific consumer)   
             attrBlockList = []
-            attrList = attrData[consInd,:]
-            for rowInd in range(consRows):
-                attrBlockList.append(attrList)
-            consList.append(np.vstack(attrBlockList))
+            if self.consAtts:
+                attrList = attrData[consInd,:]
+                for rowInd in range(consRows):
+                    attrBlockList.append(attrList)
+                consList.append(np.vstack(attrBlockList))
             
             # Convert consumer specific entry to an array and collect in allConsList
             consArr = np.hstack(consList)
@@ -453,9 +460,9 @@ if __name__ == '__main__':
     print("Hello World")
     from dataset_container import get_ds_by_name
     from tests.conftest import conjoint_dsc
-    cm = ConjointMachine()
+    cm = ConjointMachine(start_r=True)
 
-    selected_structure = 1
+    selected_structure = 2
     dsc = conjoint_dsc()
     consAttr = get_ds_by_name('Consumers', dsc)
     odflLike = get_ds_by_name('Odour-flavor', dsc)
@@ -465,7 +472,9 @@ if __name__ == '__main__':
     selected_consAttr = ['Sex']
     selected_designVar = ['Flavour', 'Sugarlevel']
 
-    res = cm.synchronous_calculation(
-        selected_structure, consAttr, selected_consAttr,
-        designVar, selected_designVar, odflLike, True)
+#     res = cm.synchronous_calculation(designVar, selected_designVar, odflLike)
+    res = cm.synchronous_calculation(designVar, selected_designVar,
+                                     odflLike, selected_structure,
+                                     consAttr, selected_consAttr,
+                                     py_merge=True)
     res.print_traits()
