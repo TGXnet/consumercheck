@@ -275,7 +275,7 @@ class PCScatterPlot(PlotBase):
                 border_visible = False,
                 marker_visible = False,
                 # bgcolor = color,
-                bgcolor = (0.5, 0.5, 0.5, 0.1),
+                bgcolor = (0.5, 0.5, 0.5, 0.0),
                 ## label_position = 'bottom left',
                 ## bgcolor = 'transparent',
                 )
