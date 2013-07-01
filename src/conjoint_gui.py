@@ -411,6 +411,9 @@ selection_view = _traitsui.Group(
                            style='custom',
                            show_label=False,
                            ),
+            show_border=True,
+        ),
+        _traitsui.Group(
             _traitsui.Label('Consumer characteristics:'),
             _traitsui.Item('controller.selected_consumer_characteristics_set',
                            editor=_traitsui.CheckListEditor(name='controller.available_consumer_characteristics_sets'),
@@ -425,7 +428,7 @@ selection_view = _traitsui.Group(
                            show_label=False,
                            ),
             show_border=True,
-            ),
+        ),
         _traitsui.Group(
             _traitsui.Label('Liking set:'),
             _traitsui.Item('controller.selected_consumer_liking_sets',
