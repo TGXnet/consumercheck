@@ -46,6 +46,17 @@ class ConjointController(ModelController):
     available_design_vars = _traits.List(_traits.Str())
     available_consumers_vars = _traits.List(_traits.Str())
 
+    model_desc = _traits.Str(
+'''
+Consumer characteristics and design values can only be categorical values.<br /><br />
+Model structure descriptions:
+<ul>
+<li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
+<li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones).</li>
+<li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part).</li>
+</ul>
+''')
+
 
     def _name_default(self):
         return self.model.liking.display_name
@@ -190,6 +201,8 @@ def residu_table(res):
 no_view = _traitsui.View()
 
 
+
+
 conjoint_view = _traitsui.View(
     _traitsui.Item('controller.name', style='readonly', label='Consumer likings'),
     _traitsui.Item('controller.design_name', style='readonly', label='Design'),
@@ -216,6 +229,15 @@ conjoint_view = _traitsui.View(
             show_border=True,
             springy=True,
             ),
+        orientation='horizontal',
+        ),
+    _traitsui.Group(
+        _traitsui.Item('controller.model_desc',
+                       editor=_traitsui.HTMLEditor(),
+                       height=220,
+                       width=460,
+                       resizable=False,
+                       show_label=False),
         orientation='horizontal',
         ),
     )
