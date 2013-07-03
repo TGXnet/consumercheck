@@ -84,6 +84,8 @@ class MainEffectsPlot(DataView):
         anova_names = conj_res.anovaTable['rowNames']
         picker = anova_names == attr_name
         # p_value = anova_values[picker, 3][0]
+        if isinstance(picker, bool):
+            picker = np.array([picker])
         var_row = anova_values[picker]
         p_str = var_row['Pr(>F)'][0]
         try:

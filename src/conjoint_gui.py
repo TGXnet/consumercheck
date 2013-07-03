@@ -143,7 +143,10 @@ Model structure descriptions:
 
 def cj_res_ds_adapter(cj_res, name='Dataset Viewer'):
     cj_df = _pd.DataFrame(cj_res['data'])
-    cj_df.index = cj_res['rowNames']
+    if isinstance(cj_res['rowNames'], str):
+        cj_df.index = _np.array([cj_res['rowNames']])
+    else:
+        cj_df.index = cj_res['rowNames']
     cj_df.columns = cj_res['colNames']
     dm = DataSet(mat=cj_df, display_name=name)
 
