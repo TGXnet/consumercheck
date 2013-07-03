@@ -39,15 +39,15 @@ class Pca(Model):
         all metadata necessary for presenting the result.
         '''
         if self.standardise:
-            std_ds = 'stand'
+            std_ds = True
         else:
-            std_ds = 'cent'
+            std_ds = False
         self._check_std_dev()
         if self.zero_variance and self.standardise:
             raise InComputeable('Matrix have variables with zero variance',
                                 self.zero_variance)
         pca = PCA(self.ds.values,
-                  numPC=self.calc_n_pc, mode=std_ds, cvType=["loo"])
+                  numPC=self.calc_n_pc, stand=std_ds, cvType=["loo"])
 
         return self._pack_res(pca)
 
