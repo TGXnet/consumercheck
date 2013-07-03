@@ -1,13 +1,16 @@
 
-# stdlib imports
+# std lib imports
 import sys
 import logging
+
+# Scipy lib imports
+import numpy as np
+import pandas as pd
 
 # Enthought imports
 from traits.api import (HasTraits, Instance, Str, List, Button, DelegatesTo,
                         Property, on_trait_change)
 from traitsui.api import View, Group, Item, ModelView, RangeEditor
-import numpy as np
 
 # Local imports
 from plsr import nipalsPLS2 as pls
@@ -27,47 +30,38 @@ class APrefmapModel(HasTraits):
     # Shoud be Instance(PrefmapsContainer)
     # but who comes first?
     mother_ref = Instance(HasTraits)
-    
+
     # Consumer liking
     ds_C = DataSet()
     # Sensory profiling
     ds_S = DataSet()
-    sub_ds_C = DataSet()
-    sub_ds_S = DataSet()
-    # FIXME: To be replaced by groups
-    sel_var_C = List()
-    sel_var_S = List()
-    sel_obj = List()
 
     #checkbox bool for standardised results
     standardise = DelegatesTo('mother_ref')
     pc_to_calc = DelegatesTo('mother_ref')
     min_pc = 2
     max_pc = Property()
-    
+
     # depends_on
     result = Property()
 
     def _get_max_pc(self):
-        return (min(self.ds_C.n_rows,self.ds_C.n_cols))
+        return (min(self.ds_C.n_objs,self.ds_C.n_vars))
 
     def _get_result(self):
-        logging.info("Run pls for: Consumer: {0} ,Sensory: {1}".format(self.ds_C._ds_id, self.ds_S._ds_id))
-        self.ds_S.active_objects = self.ds_C.active_objects
-        self.sub_ds_C = self.ds_C.subset()
-        self.sub_ds_S = self.ds_S.subset()
+        logging.info("Run pls for: Consumer: {0} ,Sensory: {1}".format(self.ds_C.id, self.ds_S.id))
         if self.mother_ref.radio == 'Internal mapping':
             return pls(
-                       self.sub_ds_C.matrix,
-                       self.sub_ds_S.matrix,
+                       self.ds_C.values,
+                       self.ds_S.values,
                        numPC=self.pc_to_calc,
                        cvType=["loo"],
                        Xstand=self.standardise,
                        Ystand=self.standardise)
         else:
             return pls(
-                       self.sub_ds_S.matrix,
-                       self.sub_ds_C.matrix,
+                       self.ds_S.values,
+                       self.ds_C.values,
                        numPC=self.pc_to_calc,
                        cvType=["loo"],
                        Ystand=self.standardise,
@@ -79,32 +73,17 @@ class APrefmapHandler(ModelView):
     name = DelegatesTo('model')
     nid = DelegatesTo('model')
 
-    show_sel_obj = Button('Objects')
-    show_sel_c_var = Button('Consumer Variables')
-    show_sel_s_var = Button('Sensory Variables')
-
     window_launchers = List(Instance(WindowLauncher))
-    
-    
+
+
     def __init__(self, *args, **kwargs):
         super(APrefmapHandler, self).__init__(*args, **kwargs)
         self._populate_window_launchers()
 
-    
-    @on_trait_change('show_sel_obj')
-    def _act_show_sel_obj(self, obj, name, new):
-        obj.model.ds_C.edit_traits(view=ds_obj_slicer_view, kind='livemodal')
-
-    @on_trait_change('show_sel_c_var')
-    def _act_show_sel_x_var(self, obj, name, new):
-        obj.model.ds_C.edit_traits(view=ds_var_slicer_view, kind='livemodal')
-
-    @on_trait_change('show_sel_s_var')
-    def _act_show_sel_y_var(self, obj, name, new):
-        obj.model.ds_S.edit_traits(view=ds_var_slicer_view, kind='livemodal')
 
     def __eq__(self, other):
         return self.nid == other
+
 
     def __ne__(self, other):
         return self.nid != other
@@ -158,15 +137,17 @@ class APrefmapHandler(ModelView):
     def _make_scores_plot(self, is_subplot=False):
         res = self.model.result
         pc_tab = res.X_scores()
-        labels = self.model.sub_ds_C.object_names
+        labels = self.model.ds_C.obj_n
         expl_vars_x = res.X_calExplVar()
 
         # Make table view dataset
-        score_ds = DataSet()
-        score_ds._ds_name = self.model.sub_ds_C._ds_name
-        score_ds.matrix = pc_tab
-        score_ds.object_names = labels
-        score_ds.variable_names = ["PC-{0}".format(i+1) for i in range(score_ds.n_cols)]
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=labels,
+            columns=["PC-{0}".format(i+1) for i in range(pc_tab.shape[1])])
+        score_ds = DataSet(
+            mat=pc_df,
+            display_name=self.model.ds_C.display_name)
 
         plot = PCScatterPlot(pc_tab, labels, expl_vars=expl_vars_x, view_data=score_ds, title="Scores", id="scores")
         if is_subplot:
@@ -195,18 +176,20 @@ class APrefmapHandler(ModelView):
         expl_vars = res.X_calExplVar()
 
         # Make table view dataset
-        loadings_ds = DataSet()
-        loadings_ds.matrix = xLP
+        pc_df = pd.DataFrame(xLP)
 
         if self.model.mother_ref.radio == 'Internal mapping':
-            labels = self.model.sub_ds_C.variable_names
-            loadings_ds._ds_name = self.model.sub_ds_C._ds_name
+            labels = self.model.ds_C.var_n
+            display_name = self.model.ds_C.display_name
         else:
-            labels = self.model.sub_ds_S.variable_names
-            loadings_ds._ds_name = self.model.sub_ds_S._ds_name
+            labels = self.model.ds_S.var_n
+            display_name = self.model.ds_S.display_name
 
-        loadings_ds.object_names = labels
-        loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
+        pc_df.index = labels
+        pc_df.columns = ["PC-{0}".format(i+1) for i in range(xLP.shape[1])]
+        loadings_ds = DataSet(
+            values=pc_df,
+            display_name=display_name)
 
         plot = PCScatterPlot(xLP, labels, expl_vars=expl_vars, view_data=loadings_ds, title="X Loadings", id="loadings_x")
         if is_subplot:
@@ -229,14 +212,25 @@ class APrefmapHandler(ModelView):
         res = self.model.result
         yLP = res.Y_loadings()
         expl_vars = res.Y_calExplVar()
-        labels = self.model.sub_ds_S.variable_names
+        # labels = self.model.ds_S.var_n
 
         # Make table view dataset
-        loadings_ds = DataSet()
-        loadings_ds._ds_name = self.model.sub_ds_S._ds_name
-        loadings_ds.matrix = yLP
-        loadings_ds.object_names = labels
-        loadings_ds.variable_names = ["PC-{0}".format(i+1) for i in range(loadings_ds.n_cols)]
+        col_names = ["PC-{0}".format(i+1) for i in range(yLP.shape[1])]
+
+        if self.model.mother_ref.radio == 'Internal mapping':
+            labels = self.model.ds_S.var_n
+            display_name = self.model.ds_S.display_name
+        else:
+            labels = self.model.ds_C.var_n
+            display_name = self.model.ds_C.display_name
+
+        pc_df = pd.DataFrame(
+            yLP,
+            index=labels,
+            columns=col_names)
+        loadings_ds = DataSet(
+            mat=pc_df,
+            display_name=display_name)
 
         plot = PCScatterPlot(yLP, labels, expl_vars=expl_vars, view_data=loadings_ds, title="Y Loadings", id="loadings_y")
         if is_subplot:
@@ -265,11 +259,11 @@ class APrefmapHandler(ModelView):
         cevx = res.X_calExplVar()
         cevy = res.Y_calExplVar()
         if self.model.mother_ref.radio == 'Internal mapping':
-            vnx = self.model.sub_ds_C.variable_names
-            vny = self.model.sub_ds_S.variable_names
+            vnx = self.model.ds_C.var_n
+            vny = self.model.ds_S.var_n
         else:
-            vnx = self.model.sub_ds_S.variable_names
-            vny = self.model.sub_ds_C.variable_names
+            vnx = self.model.ds_S.var_n
+            vny = self.model.ds_C.var_n
         pcl = PCScatterPlot(clx, vnx, 'darkviolet', cevx, title="X & Y correlation loadings", id="corr_loading")
         pcl.add_PC_set(cly, vny, 'darkgoldenrod', cevy)
         if is_subplot:
@@ -301,12 +295,14 @@ class APrefmapHandler(ModelView):
         sumValX = res.X_cumValExplVar()
 
         # Make table view dataset
-        ev_ds = DataSet()
-        ev_ds._ds_name = self.model.sub_ds_C._ds_name
-        pc_tab = np.array([sumCalX, sumValX])
-        ev_ds.matrix = pc_tab.T
-        ev_ds.object_names = ["PC-{0}".format(i) for i in range(ev_ds.n_rows)]
-        ev_ds.variable_names = ["calibrated", "validated"]
+        pc_tab = np.array([sumCalX, sumValX]).T
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
+            columns=["calibrated", "validated"])
+        ev_ds = DataSet(
+            mat=pc_df,
+            display_name=self.model.ds_C.display_name)
 
         pl = EVLinePlot(sumCalX, 'darkviolet', 'Calibrated X', view_data=ev_ds, title = "Explained Variance X", id="expl_var_x")
         pl.add_EV_set(sumValX, 'darkgoldenrod', 'Validated X')
@@ -333,13 +329,14 @@ class APrefmapHandler(ModelView):
         sumValY = res.Y_cumValExplVar()
 
         # Make table view dataset
-        ev_ds = DataSet()
-        ev_ds._ds_name = self.model.sub_ds_S._ds_name
-
-        pc_tab = np.array([sumCalY, sumValY])
-        ev_ds.matrix = pc_tab.T
-        ev_ds.object_names = ["PC-{0}".format(i) for i in range(ev_ds.n_rows)]
-        ev_ds.variable_names = ["calibrated", "validated"]
+        pc_tab = np.array([sumCalY, sumValY]).T
+        pc_df = pd.DataFrame(
+            pc_tab,
+            index=["PC-{0}".format(i) for i in range(pc_tab.shape[0])],
+            columns=["calibrated", "validated"])
+        ev_ds = DataSet(
+            mat=pc_df,
+            display_name=self.model.ds_S.display_name)
 
         pl = EVLinePlot(sumCalY, 'darkviolet', 'Calibrated Y', view_data=ev_ds, title = "Explained Variance Y", id="expl_var_y")
         pl.add_EV_set(sumValY, 'darkgoldenrod', 'Validated Y')
@@ -349,14 +346,12 @@ class APrefmapHandler(ModelView):
 
 
     def _show_plot_window(self, plot_window):
-        # FIXME: Setting parent forcing main ui to stay behind plot windows
         plot_window.mother_ref = self
         if sys.platform == 'linux2':
             self.plot_uis.append(
                 plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
                 )
         elif sys.platform == 'win32':
-            # FIXME: Investigate more here
             self.plot_uis.append(
                 plot_window.edit_traits(parent=self.model.mother_ref.win_handle, kind='live')
                 # plot_window.edit_traits(kind='live')
@@ -401,8 +396,8 @@ class APrefmapHandler(ModelView):
 
 
     def _wind_title(self):
-        dsx_name = self.model.ds_C._ds_name
-        dsy_name = self.model.ds_S._ds_name
+        dsx_name = self.model.ds_C.display_name
+        dsy_name = self.model.ds_S.display_name
         dstype = self.model.plot_type
         return "({0}) X ~ Y ({1}) | Prefmap - {2} - ConsumerCheck".format(dsx_name, dsy_name, dstype)
 
@@ -417,9 +412,6 @@ a_prefmap_view = View(
                      low_name='model.min_pc',
                      high_name='model.max_pc',
                      mode='spinner')),
-            Item('show_sel_obj'),
-            Item('show_sel_x_var'),
-            Item('show_sel_y_var'),
             ),
         Item('', springy=True),
         orientation='horizontal',
@@ -430,9 +422,9 @@ a_prefmap_view = View(
 if __name__ == '__main__':
     from traits.api import Bool, Int
     from tests.conftest import all_dsc
-    dsl = all_dsc()
-    dsx = dsl.get_by_id('consumerliking')
-    dsy = dsl.get_by_id('sensorydata')
+    dsc = all_dsc()
+    dsx = dsc.get_by_id('consumerliking')
+    dsy = dsc.get_by_id('sensorydata')
 
     class MocMother(HasTraits):
         standardise = Bool(False)
@@ -493,9 +485,6 @@ if __name__ == '__main__':
                              low_name='model.min_pc',
                              high_name='model.max_pc',
                              mode='spinner')),
-                    Item('show_sel_obj'),
-                    Item('show_sel_c_var'),
-                    Item('show_sel_s_var'),
                     orientation='vertical',
                     ),
                 Item('', springy=True),

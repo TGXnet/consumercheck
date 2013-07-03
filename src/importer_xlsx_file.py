@@ -21,6 +21,7 @@ from dataset import DS_TYPES, DataSet
 
 #Import NumPy
 import numpy as np
+import pandas as _pd
 
 
 class RawLineAdapter(TabularAdapter):
@@ -98,8 +99,8 @@ class ImporterXlsxFile(HasTraits):
     have_obj_names = Bool(True)
     ds_id = Str()
     ds_name = Str()
-    ds_type = Str()
-    ds_type_list = List(DS_TYPES)
+    kind = Str()
+    kind_list = List(DS_TYPES)
 
     def make_ds_name(self):
         # FIXME: Find a better more general solution
@@ -111,11 +112,10 @@ class ImporterXlsxFile(HasTraits):
 
     def import_data(self):
         self.ds = DataSet(
-            _dataset_type=self.ds_type,
-            _ds_id=self.ds_id,
-            _ds_name=self.ds_name,
-            _source_file=self.file_path)
-        
+            kind=self.kind,
+            display_name=self.ds_name
+            )
+
         raw_data = load_workbook(filename = self.file_path)
         data_sheet = raw_data.get_active_sheet()
         c_table = []
@@ -140,10 +140,9 @@ class ImporterXlsxFile(HasTraits):
             for i in range(1,len(c_table)):
                 c_table[i].pop(0)
             
-            revised_list = []
+            obj_names = []
             for sh in objnamelist:
-                revised_list.append(unicode(sh))
-            self.ds.object_names = revised_list
+                obj_names.append(unicode(sh))
         
         if self.have_var_names:
             varnamelist = c_table[0]
@@ -151,14 +150,14 @@ class ImporterXlsxFile(HasTraits):
                 varnamelist.pop(0)
             c_table.pop(0)
             
-            revised_list = []
+            var_names = []
             for sh in varnamelist:
-                revised_list.append(unicode(sh))
-            self.ds.variable_names = revised_list
+                var_names.append(unicode(sh))
         
         full_table = np.array(c_table)
-        
-        self.ds.matrix = full_table
+        matrix = _pd.DataFrame(full_table, index=obj_names, columns=var_names)
+        self.ds.mat = matrix
+
         return self.ds
 
 
@@ -171,7 +170,7 @@ class ImporterXlsxFile(HasTraits):
             ## Item('transpose'),
             Item('ds_id', style='readonly', label='File name'),
             Item('ds_name', label='Dataset name'),
-            Item('ds_type', editor=EnumEditor(name='ds_type_list'), label='Dataset type'),
+            Item('kind', editor=EnumEditor(name='kind_list'), label='Dataset type'),
             Item('have_var_names', label='Existing variable names',
                  tooltip='Is first row variables names?'),
             Item('have_obj_names', label='Existing object names',
@@ -187,7 +186,7 @@ class ImporterXlsxFile(HasTraits):
         kind='livemodal',
         )
     
-# Run the demo (if invoked from the command line):
+
 if __name__ == '__main__':
     test = ImporterXlsxFile()
     test.file_path = (os.path.join('datasets', 'Cheese', 'ConsumerLiking.xls'))

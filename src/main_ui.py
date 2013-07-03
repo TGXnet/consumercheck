@@ -10,36 +10,36 @@ from traits.api import HasTraits, Instance, Any, Event
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
-
 # Local imports
-from dataset_collection import DatasetCollection
+from dataset_container import DatasetContainer
+from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
-from ui_datasets_tree import tree_view
-from ui_tab_pca import PCAPlugin
-from ui_tab_prefmap import PrefmapPlugin
-from ui_tab_conjoint import ConjointPlugin
 from about_consumercheck import ConsumerCheckAbout
+from plugin_base import CalcContainer
+
+# Plugin imports
+from basic_stat_gui import BasicStatPluginController, bs_plugin_view
+from pca_gui import PcaPluginController, pca_plugin_view
+from prefmap_gui import PrefmapPluginController, prefmap_plugin_view
+from conjoint_gui import ConjointPluginController, conjoint_plugin_view
 
 
 class MainViewHandler(Handler):
     """Handler for dataset view"""
 
+    importer = Instance(ImporterMain, ImporterMain())
 
+    
     def import_data(self, info):
         """Action called when activating importing of new dataset"""
-        importer = ImporterMain()
-        imported = importer.dialog_multi_import()
-        for ds in imported:
-            info.object.dsl.add_dataset(ds)
-            logger.info("importDataset: internal name = %s", ds._ds_id)
+        # importer = ImporterMain()
+        imported = self.importer.dialog_multi_import()
+        if imported:
+            info.object.dsc.add(*tuple(imported))
 
 
     def _close_ds(self, info):
-        datasets = []
-        for i in info.object.dsl._datasets:
-            datasets.append(i)
-        for a in datasets:
-            info.object.dsl.delete_dataset(a)
+        info.object.dsc.dsl = []
 
 
     def view_about(self, info):
@@ -56,8 +56,6 @@ class MainViewHandler(Handler):
 
 
     def init(self, info):
-        # Force update of plugin windows for preimported datasets
-        info.object.ds_event = True
         # Close splash window
         info.object.win_handle = info.ui.control
         try:
@@ -69,30 +67,19 @@ class MainViewHandler(Handler):
 
 class MainUi(HasTraits):
     """Main application class"""
-    # Singular dataset list for the application
-    # or not?
-    # dsl = Instance(DatasetCollection)
-    dsl = DatasetCollection()
-    ds_event = Event()
-    dsname_event = Event()
+    dsc = DatasetContainer()
     # en_advanced = Bool(False)
-    parent_win = Any()
-
-
-    def _toggle_advanced(self):
-        self.en_advanced = not self.en_advanced
-        print(self.en_advanced)
-
+    win_handle = Any()
     splash = None
 
+    # Object representating the basic stat
+    basic_stat = Instance(BasicStatPluginController)
     # Object representing the PCA and the GUI tab
-    pca = Instance(PCAPlugin)
-
+    pca = Instance(PcaPluginController)
     # Object representing the Prefmap and the GUI tab
-    prefmap = Instance(PrefmapPlugin)
-    
+    prefmap = Instance(PrefmapPluginController)
     # Object representing the Conjoint and the GUI tab
-    conjoint = Instance(ConjointPlugin)
+    conjoint = Instance(ConjointPluginController)
 
     # Create an action that open dialog for dataimport
     import_action = Action(name = 'Add &Dataset', action = 'import_data')
@@ -105,36 +92,42 @@ class MainUi(HasTraits):
                              style='toggle', action='_toggle_advanced')
 
 
-    def __init__(self, **kwargs):
-        super(MainUi, self).__init__(**kwargs)
-        self.prefmap = PrefmapPlugin(mother_ref=self)
-        self.pca = PCAPlugin(mother_ref=self)
-        self.conjoint = ConjointPlugin(mother_ref=self)
-        self.dsl.on_trait_change(self._dsl_updated, 'datasets_event')
-        self.dsl.on_trait_change(self._ds_name_updated, 'ds_name_event')
+    def _basic_stat_default(self):
+        basic_statisitc = CalcContainer(dsc=self.dsc)
+        return BasicStatPluginController(basic_statisitc)
 
 
-    # @on_trait_change('', post_init=True)
-    # @on_trait_change('dsl.datasets_event')
-    def _dsl_updated(self, obj, name, new):
-        self.ds_event = True
+    def _pca_default(self):
+        pca = CalcContainer(dsc=self.dsc)
+        return PcaPluginController(pca)
 
 
-    # @on_trait_change('dsl.ds_name_event')
-    def _ds_name_updated(self, obj, name, new):
-        self.dsname_event = True
+    def _prefmap_default(self):
+        prefmap = CalcContainer(dsc=self.dsc)
+        return PrefmapPluginController(prefmap)
+
+
+    def _conjoint_default(self):
+        conjoint = CalcContainer(dsc=self.dsc)
+        return ConjointPluginController(conjoint)
+
+
+    def _toggle_advanced(self):
+        self.en_advanced = not self.en_advanced
+        print(self.en_advanced)
 
 
     # The main view
     traits_ui_view = View(
         Group(
-            Item('dsl', editor=InstanceEditor(view=tree_view),
-                 style='custom', label="Datasets", show_label=False),
-            Item('pca', editor=InstanceEditor(),
+            Item('dsc', editor=tree_editor, label="Datasets", show_label=False),
+            Item('basic_stat', editor=InstanceEditor(view=bs_plugin_view),
+                 style='custom', label="Basic stat", show_label=False),
+            Item('pca', editor=InstanceEditor(view=pca_plugin_view),
                  style='custom', label="PCA", show_label=False),
-            Item('prefmap', editor=InstanceEditor(),
+            Item('prefmap', editor=InstanceEditor(view=prefmap_plugin_view),
                  style='custom', label="Prefmap", show_label=False),
-            Item('conjoint', editor=InstanceEditor(),
+            Item('conjoint', editor=InstanceEditor(view=conjoint_plugin_view),
                  style='custom', label="Conjoint", show_label=False),
             layout='tabbed'
             ), # end UI tabs group
@@ -144,7 +137,7 @@ class MainUi(HasTraits):
         title = 'Consumer Check',
         menubar = MenuBar(
             Menu(import_action, close_action, exit_action, name='&File'),
-#            Menu(advanced_action, name='&Settings'),
+            ## Menu(advanced_action, name='&Settings'),
             Menu(about_action, user_manual_action, name='&Help'),
             ),
         handler = MainViewHandler
@@ -163,8 +156,6 @@ if __name__ == '__main__':
 
     logger.info('Start interactive')
 
-    dsl = all_dsc()
-    mother = MainUi(dsl=dsl)
-    # mother = MainUi()
+    mother = MainUi(dsc=all_dsc())
     with np.errstate(invalid='ignore'):
         ui = mother.configure_traits()

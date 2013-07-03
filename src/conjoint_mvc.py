@@ -1,6 +1,5 @@
-# stdlib imports
+# std lib imports
 import sys
-import numpy as np
 from itertools import combinations
 import logging
 logging.basicConfig(level=logging.INFO,
@@ -15,6 +14,9 @@ if __name__ == '__main__':
 else:
     logger = logging.getLogger(__name__)
 
+# Scipy lib imports
+import numpy as np
+import pandas as pd
 
 # Enthought imports
 from traits.api import (HasTraits, Button, Bool, Enum, Instance, List, Str,
@@ -26,7 +28,6 @@ from traitsui.menu import OKButton
 from dataset import DataSet
 from ds_table_view import DSTableViewer
 from plot_windows import LinePlotWindow
-# from ds_matrix_view import matrix_view
 from conjoint_machine import ConjointMachine
 from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
 from plugin_tree_helper import WindowLauncher
@@ -169,7 +170,7 @@ class AConjointHandler(ModelView):
                 func_name='plot_interaction', func_parms=tuple([p_one, p_two]))
             for nn, p_one, p_two in int_plot_launchers]
 
-        # self.model.mother_ref.update_conjoint_tree = True
+        self.model.mother_ref.update_conjoint_tree = True
 
 
     def show_random(self):
@@ -212,7 +213,7 @@ class AConjointHandler(ModelView):
         dstv.edit_traits(view=dstv.get_view(), parent=self.model.mother_ref.win_handle, kind='live')
 
 
-    def plot_main_effects(self, attr_name,):
+    def plot_main_effects(self, attr_name):
         mep = MainEffectsPlot(self.model.result, attr_name, self.me_plot_launchers)
         spw = LinePlotWindow(
             plot=mep,
@@ -268,13 +269,10 @@ class AConjointHandler(ModelView):
 
 
     def cj_res_ds_adapter(self, cj_res, name='Dataset Viewer'):
-        dm = DataSet(_ds_name=name)
-        logger.debug(cj_res['data'])
-        dm.matrix = cj_res['data']
-        logger.debug(cj_res['colNames'])
-        dm.variable_names = list(cj_res['colNames'])
-        logger.debug(cj_res['rowNames'])
-        dm.object_names = list(cj_res['rowNames'])
+        cj_df = pd.DataFrame(cj_res['data'])
+        cj_df.index = cj_res['rowNames']
+        cj_df.columns = cj_res['colNames']
+        dm = DataSet(mat=cj_df, display_name=name)
         return dm
 
 
@@ -341,7 +339,7 @@ a_conjoint_view = View(
 
 if __name__ == '__main__':
     from tests.conftest import conjoint_dsc
-    dsl = conjoint_dsc()
+    dsc = conjoint_dsc()
 
 
     class MocMother(HasTraits):
@@ -352,15 +350,15 @@ if __name__ == '__main__':
         consumer_attr_set = Instance(DataSet)
 
     moc = MocMother()
-    moc.design_set = dsl.get_by_id('design')
-    moc.consumer_attr_set = dsl.get_by_id('consumerattributes')
+    moc.design_set = dsc.get_by_id('design')
+    moc.consumer_attr_set = dsc.get_by_id('consumerattributes')
     moc.print_traits()
 
     model = AConjointModel(
         nid='conjoint',
         name='Conjoint test',
         mother_ref=moc,
-        cons_liking=dsl.get_by_id('odour-flavour_liking'))
+        cons_liking=dsc.get_by_id('odour-flavour_liking'))
 
 
     class AConjointTestHandler(AConjointHandler):

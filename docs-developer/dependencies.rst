@@ -17,8 +17,8 @@ enable    4.2.0       Support for Chaco
 pyparsing 1.5.6       Needed by Enable, not installed automatic by pip
 xlrd      0.8.0       For reading XL spredsheet
 openpyxl  1.5.8       For reading XL spredsheet
-pytest    2.2.4       Testing framework
-pandas    0.8.0       Matrix container
+pytest    2.3.0       Testing framework
+pandas    0.10.1      Matrix container
 bbfreeze  1.0.0       Extracting stand alone innstalation for Windows
 
 

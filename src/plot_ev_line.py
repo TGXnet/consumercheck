@@ -4,7 +4,7 @@ import numpy as np
 
 # Enthought library imports
 from chaco.api import ArrayPlotData
-from traits.api import Callable, List, HasTraits, implements
+from traits.api import List, HasTraits, implements, Property
 from enable.api import ColorTrait
 from chaco.tools.api import ZoomTool, PanTool
 
@@ -41,7 +41,7 @@ class EVPlotData(ArrayPlotData):
     pn = List()
 
 
-    def add_line_ds(self, values, color, view_data):
+    def add_line_ds(self, values, color, view_data=None):
         """Add dataset for a EV line plot"""
         
         set_n = len(self.pc_ds)
@@ -70,28 +70,27 @@ class EVLinePlot(PlotBase):
     """
     implements(IEVLinePlot)
 
+    plot_data = Property()
 
-    def __init__(self, ev_vector=None, color=None, legend=None, view_data=None, **kwtraits):
+
+
+    def __init__(self, expl_var=None, **kwargs):
         """Constructor signature.
 
-        :param pc_matrix: Array with PC datapoints
-        :type pc_matrix: array
-
-        Args:
-          1. pc_matrix: Array with PC datapoints
-          2. lables: Labels for the PC datapoints
-          3. color: Color used in plot for this PC set
-          4. expl_vars: Map with PC to explained variance contribution (%) for PC
+        :param expl_var: Calibrated and validated explained variance for each calculated PC.
+        :type pc_matrix: DataSet
 
         Returns:
           A new created plot object
 
         """
         data = EVPlotData()
-        super(EVLinePlot, self).__init__(data, **kwtraits)
+        super(EVLinePlot, self).__init__(data, **kwargs)
 
-        if ev_vector is not None:
-            self.add_EV_set(ev_vector, color, legend, view_data)
+        if expl_var is not None:
+            # FIXME: Do more inteligente coloring based on the dataset.style
+            self.add_EV_set(expl_var.mat.xs('cal'), 'darkviolet', 'Calibrated', expl_var)
+            self.add_EV_set(expl_var.mat.xs('val'), 'darkgoldenrod', 'Validated', expl_var)
 
         self.x_axis.title = "# of principal components"
         self.y_axis.title = "Explained variance [%]"
@@ -101,20 +100,19 @@ class EVLinePlot(PlotBase):
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
 
 
-    def add_EV_set(self, ev_vector, color=None, legend=None, view_data=None):
+    def add_EV_set(self, expl_var, color=None, legend=None, ev_data=None):
         """Add a PC dataset with metadata.
 
         Args:
-          1. ev_vector: List() with datapoints for a explained variance line
+          1. expl_var: List() with datapoints for a explained variance line
           2. color: Color used in plot for this PC set
 
         """
         
-        #Insert a 0 to start vector in origo
-        # ev_vector = np.insert(ev_vector,0,0)
-        
-        set_id = self.data.add_line_ds(ev_vector, color, view_data)
-        self._plot_EV(set_id,legend)
+        cum_expl_var = np.cumsum(np.insert(expl_var.values, 0, 0, axis=0), axis=0)
+
+        set_id = self.data.add_line_ds(cum_expl_var, color, ev_data)
+        self._plot_EV(set_id, legend)
 
 
     def show_labels(self, set_id=None, show=True):
@@ -150,6 +148,11 @@ class EVLinePlot(PlotBase):
         self.plots.values()[0][0].index._data = self.data.arrays['index']
         
         return pn
+
+
+    def _get_plot_data(self):
+        return self.data.pc_ds[0].view_data
+
 
 
 if __name__ == '__main__':

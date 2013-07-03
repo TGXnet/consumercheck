@@ -11,7 +11,7 @@ import numpy as np
 # Enthought library imports
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Int, List, HasTraits, implements
+from traits.api import Bool, Int, List, HasTraits, implements, Property
 from enable.api import ColorTrait
 
 
@@ -75,7 +75,7 @@ class PCPlotData(ArrayPlotData):
         if color is not None:
             pcds.color = color
         if expl_vars is not None:
-            pcds.expl_vars = expl_vars
+            pcds.expl_vars = list(expl_vars.mat.xs('cal'))
         if view_data is not None:
             pcds.view_data = view_data
         self.pc_ds.append(pcds)
@@ -97,9 +97,11 @@ class PCScatterPlot(PlotBase):
     # Should new labels be visible?
     visible_new_labels = Bool(True)
     visible_datasets = Int(3)
+    plot_data = Property()
 
 
-    def __init__(self, pc_matrix=None, labels=None, color=None, expl_vars=None, view_data=None, **kwtraits):
+
+    def __init__(self, pc_matrix=None, expl_vars=None, **kwargs):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -116,28 +118,28 @@ class PCScatterPlot(PlotBase):
 
         """
         data = PCPlotData()
-        super(PCScatterPlot, self).__init__(data, **kwtraits)
+        super(PCScatterPlot, self).__init__(data, **kwargs)
         self._adjust_range()
 
         if pc_matrix is not None:
-            self.add_PC_set(pc_matrix, labels, color, expl_vars, view_data)
+            self.add_PC_set(pc_matrix, expl_vars)
 
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
         
 
-    def add_PC_set(self, matrix, labels=None, color=None, expl_vars=None, view_data=None):
+    def add_PC_set(self, pc_matrix, expl_vars=None):
         """Add a PC dataset with metadata.
 
         Args:
-          1. matrix: Array with PC datapoints
-          2. lables: Labels for the PC datapoints
-          3. color: Color used in plot for this PC set
-
+          1. pc_matrix: DataSet with PC datapoints
+          2. expl_vars: DataSet with explained variance
         """
-        matrix_t = matrix.transpose()
-        set_id = self.data.add_PC_set(matrix_t, labels, color, expl_vars, view_data)
+        matrix_t = pc_matrix.values.transpose()
+        labels = pc_matrix.obj_n
+        color = pc_matrix.style.fg_color
+        set_id = self.data.add_PC_set(matrix_t, labels, color, expl_vars, pc_matrix)
         self._plot_PC(set_id)
 
 
@@ -251,8 +253,8 @@ class PCScatterPlot(PlotBase):
             self.x_axis.title = tx[0]+' X'+tx[1]+', Y'+tx[2]
             self.y_axis.title = ty[0]+' X'+ty[1]+', Y'+ty[2]
         else:
-            self.x_axis.title = ' '.join(tx)  
-            self.y_axis.title = ' '.join(ty)           
+            self.x_axis.title = ' '.join(tx)
+            self.y_axis.title = ' '.join(ty)
 
 
     def _add_plot_data_labels(self, plot_render, point_data, set_id):
@@ -265,7 +267,7 @@ class PCScatterPlot(PlotBase):
             label_obj = DataLabel(
                 component = plot_render,
                 data_point = (x[i], y[i]),
-                label_format = label,
+                label_format = str(label),
                 visible = self.visible_new_labels,
                 ## marker_color = pt_color,
                 # text_color = 'black',
@@ -273,7 +275,7 @@ class PCScatterPlot(PlotBase):
                 border_visible = False,
                 marker_visible = False,
                 # bgcolor = color,
-                bgcolor = (0.5, 0.5, 0.5, 0.1),
+                bgcolor = (0.5, 0.5, 0.5, 0.0),
                 ## label_position = 'bottom left',
                 ## bgcolor = 'transparent',
                 )
@@ -408,6 +410,10 @@ class PCScatterPlot(PlotBase):
             transverse_mapper=self.x_mapper
             )
         self.underlays.append(ygrid)
+
+
+    def _get_plot_data(self):
+        return self.data.pc_ds[0].view_data
 
 
 def calc_bounds(data_low, data_high, margin, tight_bounds):

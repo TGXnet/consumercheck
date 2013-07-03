@@ -1,14 +1,15 @@
-"""
-DataSet module
---------------
 
-.. moduleauthor:: Thomas Graff <graff.thomas@gmail.com>
+# Std lib imports
+import warnings
+import itertools as _itr
 
-"""
+# Num lib imports
+import numpy as _np
+import pandas as _pd
 
-# Enthought imports
-from traits.api import (HasTraits, Array, Str, Int, Enum, File,
-                        List, Bool, Property, on_trait_change)
+# ETS imports
+import traits.api as _traits
+from enable.api import ColorTrait
 
 
 DS_TYPES = ['Design variable',
@@ -17,109 +18,105 @@ DS_TYPES = ['Design variable',
             'Consumer characteristics']
 
 
-class DataSet(HasTraits):
-    """Container for one array of related data.
+class DataSet(_traits.HasTraits):
+    '''Dataset for holding one matrix
 
-    Consist of matrix and metadata
+    and associated metadata
+    The reccomended access methods as properties for the DataSet object:
+     * id: An identity string that is unique for each object
+     * display_name: An human friendly name that for the datataset
+     * kind: The dataset type
+     * missing_data: Boolean value indicatin if the dataset have "holes"
+     * n_vars: Number of variables
+     * n_objs: Number of objects
+     * var_n: List containing variable names
+     * obj_n: List containing object names
+     * values: The matrix values as an 2D Numpy array
+     * mat: The matrix as an Pandas DataFrame
+    '''
+    mat = _traits.Instance(_pd.DataFrame, ())
 
-    Attributes:
+    _id = _traits.Int()
+    id = _traits.Property()
+    new_id = _itr.count(start=101).next
 
-    * matrix: The number array
-    * _ds_id: *Technical* identity for this dataset.
-    * _ds_name: Userfriendly name.
-    * _dataset_type: Selection among predefined types
-    * variable_names: List of column names
-    * object_names: List of row names
-    * active_variables: Index list of selected columns
-    * active_objects: Index list of selected rows
-    * n_rows: Number of rows in dataset
-    * n_cols: Number of cols in dataset
+    display_name = _traits.Str('Unnamed dataset')
 
-    """
-    matrix = Array(desc = 'Data matrix')
-    """The number array"""
-    
-    # FIXME: Public
-    _ds_id = Str('no_id', label = 'Dict key name')
-    """A *technical* identity for this dataset.
+    kind = _traits.Enum(DS_TYPES)
 
-    Should not be displayed to the user.
+    style = _traits.Instance('VisualStyle', ())
 
-    """
+    subs = _traits.List('SubSet')
 
-    # FIXME: Public
-    _ds_name = Str(
-        'Unnamed dataset',
-        desc = 'User friendly display name',
-        label = 'Dataset name')
+    # FIXME: This dataset has missing data
+    # do you want to do somthing about it?
+    # * throw rows/cols with missing data
+    # * do imputation
+    missing_data = _traits.Property(_traits.Bool)
 
-    _dataset_type = Enum(DS_TYPES,
-                         desc = 'Classify dataset',
-                         label = 'Dataset type')
-
-    _source_file = File(label = 'Source file')
-
-    variable_names = List(trait=Str, desc = 'Variable names')
-
-    object_names = List(trait=Str, desc = 'Object names')
-
-    active_variables = List(trait=Int)
-
-    active_objects = List(trait=Int)
-
-    _is_calculated = Bool(False, lable='Calculated?')
-
-    n_rows = Property(label = 'Rows', desc = 'Number of objects')
-
-    n_cols = Property(label = 'Cols', desc = 'Number of variables')
+    n_vars = _traits.Property()
+    n_objs = _traits.Property()
+    var_n = _traits.Property()
+    obj_n = _traits.Property()
+    values = _traits.Property()
 
 
-    @on_trait_change('matrix')
-    def _all_active(self):
-        self.active_objects = range(self.matrix.shape[0])
+    def _get_values(self):
+        if self.missing_data:
+            return _np.ma.masked_invalid(self.mat.values)
+        else:
+            return self.mat.values
+
+
+    def _get_n_vars(self):
+        return self.mat.shape[1]
+
+
+    def _get_n_objs(self):
+        return self.mat.shape[0]
+
+
+    def _get_var_n(self):
+        return list(self.mat.columns)
+
+
+    def _get_obj_n(self):
+        return list(self.mat.index)
+
+
+    def __id_default(self):
+        return DataSet.new_id()
+
+
+    def _get_id(self):
+        return str(self._id)
+
+
+    def _get_missing_data(self):
+        # FIXME: I must look more into this
         try:
-            self.active_variables = range(self.matrix.shape[1])
-        except IndexError:
-            self.active_variables = range(len(self.matrix.dtype))
+            return _np.any(_np.isnan(self.mat.values))
+        except TypeError:
+            return False
 
 
-    def _get_n_rows(self):
-        if self.matrix.shape[0] > 0:
-            return self.matrix.shape[0]
-        else:
-            return 0
-
-    def _get_n_cols(self):
-        if self.matrix.shape[0] > 0:
-            try:
-                return self.matrix.shape[1]
-            except IndexError:
-                return len(self.matrix.dtype)
-        else:
-            return 0
-
-    def subset(self):
-        """Extract a subset of this dataset
-
-        The subset is determined by the **active_[variables|objects]**.
-
-        :returns: Object like this
-        :rtype: DataSet
-
-        """
-        mod_ds = super(DataSet, self).clone_traits()
-        mod_ds.matrix = self.matrix[self.active_objects][:,self.active_variables]
-        if self.variable_names:
-            mod_ds.variable_names = [self.variable_names[i] for i in self.active_variables]
-        if self.object_names:
-            mod_ds.object_names = [self.object_names[i] for i in self.active_objects]
-        return mod_ds
+    def __eq__(self, other):
+        return self.id == other
 
 
-#end DataSet
+    def __ne__(self, other):
+        return self.id != other
 
 
-if __name__ == '__main__':
-    from importer_main import ImporterMain
-    fi = ImporterMain()
-    ds = fi.import_data('./datasets/Vine/A_labels.txt', True, True)
+
+class VisualStyle(_traits.HasTraits):
+    fg_color = ColorTrait('black')
+    bg_color = ColorTrait('white')
+
+
+class SubSet(_traits.HasTraits):
+    id = _traits.Str()
+    name = _traits.Str()
+    row_selector = _traits.List(_traits.Int())
+    col_selector = _traits.List(_traits.Int())
+    gr_style = VisualStyle()

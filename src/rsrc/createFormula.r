@@ -3,8 +3,8 @@
  {
    data.compl<-data[complete.cases(data),]
    nrow.compl<-nrow(data.compl)
-   source(paste(getwd(),"/rsrc/checkNumberInteract.r",sep=""))
-   source(paste(getwd(),"/rsrc/createFormulaAllFixRand.r",sep=""))
+   source("checkNumberInteract.r")
+   source("createFormulaAllFixRand.r")
    
    f<-function(x){
      is.factor(data[,which(colnames(data)==x)])

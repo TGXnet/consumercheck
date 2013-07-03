@@ -18,10 +18,10 @@ class DSListTabHandler(Handler):
 
 
 ds_list_tab = View(
-    Item('_ds_name'),
-    Item('_dataset_type'),
-    Item('n_rows', style='readonly'),
-    Item('n_cols', style='readonly'),
+    Item('display_name'),
+    Item('kind'),
+    # Item('n_objs', style='readonly'),
+    # Item('n_vars', style='readonly'),
     Item('handler.show_slicer'),
     handler=DSListTabHandler(),
     )

@@ -37,7 +37,7 @@ class DatasetMatrix(HasTraits):
             obj_names = self.row_names)
 
         view = View(
-            Item('matrix', editor=TabularEditor(adapter=aa),
+            Item('values', editor=TabularEditor(adapter=aa),
                  # width=900, height=400,
                  show_label=False),
             title=header_txt,

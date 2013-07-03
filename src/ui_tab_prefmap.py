@@ -89,6 +89,6 @@ if __name__ == '__main__':
     container = plugin_mother_mock()
     prefmap_plugin = PrefmapPlugin(mother_ref=container)
     # To force populating selection list
-    prefmap_plugin.prefmaps_handler.dsl_changed()
+    prefmap_plugin.prefmaps_handler.dsc_changed()
     with np.errstate(invalid='ignore'):
         prefmap_plugin.configure_traits()

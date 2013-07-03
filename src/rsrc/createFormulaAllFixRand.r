@@ -1,19 +1,19 @@
 
 
 #create formula with all random and fixed effects and their interactions
-createFormulaAllFixRand<-function(structure, data, response, fixed, random, corr)
+createFormulaAllFixRand <- function(structure, data, response, fixed, random, corr)
 {
    
-   f1<-function(x){
-     is.factor(data[,which(colnames(data)==x)])
+   f1 <- function(x){
+     is.factor(data[, which(colnames(data) == x)])
    }
   
-   formula1<-NULL
-   is.cov.present<-FALSE
-   covs<-fixed$Product[which(unlist(lapply(fixed$Product,f1))!=TRUE)]
-   if(length(covs)>0)
-     is.cov.present<-TRUE
-   formula.covs<-paste(covs,collapse="+")
+   formula1 <- NULL
+   is.cov.present <- FALSE
+   covs <- fixed$Product[which(unlist(lapply(fixed$Product,f1))!=TRUE)]
+   if(length(covs) > 0)
+     is.cov.present <- TRUE
+   formula.covs <- paste(covs,collapse="+")
      
      
    
@@ -24,20 +24,23 @@ createFormulaAllFixRand<-function(structure, data, response, fixed, random, corr
            break
          if(structure==2 & j>2)
            break
-         inter.fix<-combn(c(fixed$Product, fixed$Consumer), j, simplify = FALSE)
+         inter.fix <- combn(c(fixed$Product, fixed$Consumer), j, simplify = FALSE)
          
          #put in formula all fixed factor combinations of j'th order
          for(k in 1:length(inter.fix))
          {
-            eff.fix<-paste(inter.fix[[k]],collapse=":")
-            if(checkNumberInteract(data,inter.fix[[k]]))
+            eff.fix <- paste(inter.fix[[k]],collapse=":")
+            if(checkComb(data,inter.fix[[k]]))
               next()
             if(is.null(formula1))
-               formula1<-paste(response, "~", eff.fix, sep="")
+               formula1 <- paste(response, "~", eff.fix, sep="")
             else 
-               formula1<-paste(formula1,"+", eff.fix, sep="")
+               formula1 <- paste(formula1,"+", eff.fix, sep="")
             
-                      
+            
+            # not to include factors associated with Consumer into random part
+            if(length(which((inter.fix[[k]] %in% fixed$Consumer)==TRUE))>0)
+              next
             #create all combinations of i'th order of random effects (interactions with fixed)
             for(i in 1:length(random))
             {
@@ -47,12 +50,12 @@ createFormulaAllFixRand<-function(structure, data, response, fixed, random, corr
                for(l in 1:length(inter.rand))
                { 
                                   
-                 if(checkNumberInteract(data,c(inter.rand[[l]],inter.fix[[k]])))
+                 if(checkComb(data,c(inter.rand[[l]],inter.fix[[k]])))
                    next()
                  # if the consumer attributes are present in a fixed part
-                 if(!is.null(fixed$Consumer) && length(which(inter.rand[[l]] %in% "Consumer"==TRUE))!=0)
-                   eff.rand<-paste(c(inter.rand[[l]],fixed$Consumer),collapse=":")
-                 else
+                 #if(!is.null(fixed$Consumer) && length(which(inter.rand[[l]] %in% "Consumer"==TRUE))!=0)
+                 # eff.rand<-paste(c(inter.rand[[l]],fixed$Consumer),collapse=":")
+                 #else
                    eff.rand<-paste(inter.rand[[l]],collapse=":")
                  ind.cov<-which(unlist(lapply(inter.fix[[k]],f1))!=TRUE)
                  #eff.fix.ind.fix<-paste(inter.fix[[k]][-ind.cov],collapse=":")
@@ -74,9 +77,10 @@ createFormulaAllFixRand<-function(structure, data, response, fixed, random, corr
                  {
                    # if the attributes associated with Consumer are present then
                    # eliminate this attribute from eff.fix
-                   eff.fix.rand<-if(!is.null(fixed$Consumer)) paste(inter.fix[[k]][!inter.fix[[k]] %in% fixed$Consumer], collapse=":") else eff.fix
-                   if(eff.fix.rand=="")
-                     next
+                   #eff.fix.rand<-if(!is.null(fixed$Consumer)) paste(inter.fix[[k]][!inter.fix[[k]] %in% fixed$Consumer], collapse=":") else eff.fix
+                   eff.fix.rand <- eff.fix
+                   #if(eff.fix.rand=="")
+                   # next
                    if(is.cov.present)
                    {
                      if(corr)
@@ -103,13 +107,13 @@ createFormulaAllFixRand<-function(structure, data, response, fixed, random, corr
         for(l in 1:length(inter.rand))
         { 
               
-          if(checkNumberInteract(data,inter.rand[[l]]))
+          if(checkComb(data,inter.rand[[l]]))
              next()
           
           # if the consumer attributes are present in a fixed part
-          if(!is.null(fixed$Consumer) && length(which(inter.rand[[l]] %in% "Consumer"==TRUE))!=0)
-             eff.rand<-paste(c(inter.rand[[l]],fixed$Consumer),collapse=":")
-          else
+          #if(!is.null(fixed$Consumer) && length(which(inter.rand[[l]] %in% "Consumer"==TRUE))!=0)
+          #   eff.rand<-paste(c(inter.rand[[l]],fixed$Consumer),collapse=":")
+          #else
              eff.rand<-paste(inter.rand[[l]],collapse=":")
           
           if(is.cov.present)

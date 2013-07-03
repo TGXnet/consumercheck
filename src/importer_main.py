@@ -11,10 +11,12 @@ import os.path
 # http://docs.python.org/howto/logging-cookbook.html
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
+# Log what the importe is going to do
+# And log operation completed if success
 
 # Enthought imports
-from traits.api import HasTraits, File, List, Instance
-from traitsui.api import View, UCustom, FileEditor
+from traits.api import HasTraits, Bool, File, List, Instance, Str
+from traitsui.api import View, UCustom, FileEditor, Item
 from traitsui.menu import OKButton, CancelButton
 from pyface.api import FileDialog, OK, CANCEL
 
@@ -25,45 +27,26 @@ from importer_text_file import ImporterTextFile
 from importer_xls_file import ImporterXlsFile
 from importer_xlsx_file import ImporterXlsxFile
 
-
 __all__ = ['ImporterMain']
 
 
 class ImporterMain(HasTraits):
     """Importer class"""
 
-    _file_path = File()
+    _last_open_path = File()
     _files_path = List(File)
-    _datasets = List(DataSet)
-
-    # Dialog for selecting single file
-    one_view = View(
-        UCustom(
-            name='_file_path',
-            editor=FileEditor(
-                filter=['*.csv;*.txt;*.xls;*.xlsx'],
-                ),
-            resizable=True,
-            full_size=True,
-            ),
-        resizable=True,
-        kind='modal',
-        height=600,
-        width=600,
-        buttons=[OKButton, CancelButton],
-        )
+    # _datasets = List(DataSet)
+    _notice_shown = Bool(False)
 
 
     def import_data(self, file_path, have_variable_names = True, have_object_names = True, sep='\t'):
         """Read file and return DataSet objekt"""
         importer = self._make_importer(file_path)
-        importer.make_ds_name()
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
-        importer.separator = sep
-        importer.ds_type = self._pick_ds_type(file_path)
+        importer.delimiter = sep
+        importer.kind = self._pick_kind(file_path)
         ds = importer.import_data()
-        ds = self._add_generic_name(ds, importer)
         return ds
 
 
@@ -72,56 +55,40 @@ class ImporterMain(HasTraits):
         importer = self._make_importer(path)
         importer.edit_traits()
         ds = importer.import_data()
-        ds = self._add_generic_name(ds, importer)
         return ds
 
 
     def dialog_multi_import(self):
         """Open dialog for selecting multiple files and return a list of DataSet's"""
-        self._file_path = conf.get_option('work_dir')
+        self._last_open_path = conf.get_option('work_dir')
+        if not self._notice_shown:
+            notice = ImportNotice()
+            notice.edit_traits()
+            self._notice_shown = True
         status = self._show_file_selector()
         if status == CANCEL:
             return []
+        datasets = []
         for filen in self._files_path:
             importer = self._make_importer(filen)
-            importer.ds_type = self._pick_ds_type(filen)
+            importer.kind = self._pick_kind(filen)
             importer.edit_traits()
             ds = importer.import_data()
-            ds = self._add_generic_name(ds, importer)
-            self._datasets.append(ds)
+            datasets.append(ds)
         conf.set_option('work_dir', filen)
-        return self._datasets
-
-
-    def _add_generic_name(self, ds, importer):
-        if not importer.have_var_names:
-            for i in range(ds.n_cols):
-                ds.variable_names.append('V{}'.format(i+1))
-            importer.have_var_names = True
-        if not importer.have_obj_names:
-            for i in range(ds.n_rows):
-                ds.object_names.append('O{}'.format(i+1))
-            importer.have_obj_names = True
-
-        if importer.have_var_names and ds.n_cols > len(ds.variable_names):
-            raise Exception(
-                'Not variable names for all columns',
-                ds.n_cols, len(ds.variable_names))
-        if importer.have_obj_names and ds.n_rows > len(ds.object_names):
-            raise Exception(
-                'Not object names for all rows',
-                ds.n_rows, len(ds.object_names))
-        return ds
+        return datasets
 
 
     # For select multi file dialog
     def _show_file_selector(self):
         dlg = FileDialog(
             action='open files',
-            default_directory=self._file_path,
+            default_directory=self._last_open_path,
             title='Import data')
         status = dlg.open()
         if status == OK:
+            print(dlg.paths)
+            print(self._files_path)
             self._files_path = dlg.paths
         elif status == CANCEL:
             pass
@@ -140,9 +107,12 @@ class ImporterMain(HasTraits):
             return ImporterTextFile(file_path=path)
 
 
-    def _pick_ds_type(self, filen):
+    def _pick_kind(self, filen):
         '''Available types:
-        ['Design variable', 'Sensory profiling', 'Consumer liking', 'Consumer characteristics']
+         * Design variable
+         * Sensory profiling
+         * Consumer liking
+         * Consumer characteristics
         Defined in dataset.py
         '''
         filen = filen.lower()
@@ -158,9 +128,37 @@ class ImporterMain(HasTraits):
             return 'Sensory profiling'
         return 'Sensory profiling'
 
+
     def _identify_filetype(self, path):
         fn = os.path.basename(path)
         return fn.partition('.')[2].lower()
+
+
+class ImportNotice(HasTraits):
+    message = Str('''
+This program allows for importing four different types of data:
+ * Qualitative descriptive analysis (QDA); rows: samples - columns: sensory attributes.
+ * Consumer acceptance data; rows: samples - columns: consumers.
+ * Consumer characteristics; rows: consumers - columns: characteristics.
+ * Experimental design; rows: samples - columns: design variables.
+
+Preference mapping: the two last one will not be used.
+Conjoint analysis: the first one will not be used.
+
+If you experience problems when reading data from an Excel sheet; mark, copy, paste and save the actual data set in sheet 1 of a new Excel window.
+'''
+        )
+
+    traits_view = View(
+        Item('message', show_label=False, springy=True, style='custom' ),
+        title='Data import notice',
+        height=300,
+        width=600,
+        resizable=True,
+        buttons=[OKButton],
+        kind='modal',
+        )
+
 
 #Instantiate DND
 DND = ImporterMain()
@@ -168,6 +166,6 @@ DND = ImporterMain()
 
 if __name__ == '__main__':
     fi = ImporterMain()
-    dsl = fi.dialog_multi_import()
-    for ds in dsl:
+    dsc = fi.dialog_multi_import()
+    for ds in dsc:
         ds.print_traits()

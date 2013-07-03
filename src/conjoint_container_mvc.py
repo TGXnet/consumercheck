@@ -8,6 +8,7 @@ from traitsui.menu import OKButton
 
 # Local imports
 from conjoint_mvc import AConjointHandler, AConjointModel
+from dataset_container import get_ds_by_name
 from dataset import DataSet
 
 
@@ -16,7 +17,7 @@ class ConjointsContainer(HasTraits):
     name = Str('Conjoint results')
     win_handle = Any()
     mother_ref = Instance(HasTraits)
-    dsl = DelegatesTo('mother_ref')
+    dsc = DelegatesTo('mother_ref')
     mappings = List(AConjointHandler)
 
     selected_design = Str()
@@ -28,15 +29,13 @@ class ConjointsContainer(HasTraits):
     chosen_consumer_likings = List(Str)
     model_structure_type = Enum(1, 2, 3)
 
+    update_conjoint_tree = Event()
+
 
     def add_mapping(self, liking_set_id):
-
-        def get_set(set_id):
-            return self.dsl.get_by_id(set_id)
-
-        liking_set = get_set(liking_set_id)
-        map_name = liking_set._ds_name
-        map_id = liking_set._ds_id
+        liking_set = self.dsc[liking_set_id]
+        map_name = liking_set.display_name
+        map_id = liking_set.id
         mapping_model = AConjointModel(
             mother_ref=self,
             nid=map_id, name=map_name,
@@ -62,7 +61,7 @@ class ConjointsHandler(ModelView):
     available_consumer_attr_vars = List()
     available_consumer_likings = List()
 
-    update_conjoint_tree = Event()
+    
 
     model_desc = Str(
         '''
@@ -83,45 +82,40 @@ class ConjointsHandler(ModelView):
     @on_trait_change('model:mother_ref:[ds_event,dsname_event]')
     def _ds_changed(self, info):
 
-        def id_by_type(ds_type):
-            return self.model.dsl.get_id_list_by_type(ds_type)
+        dsc = self.model.dsc
 
-        def name_from_id(ds_id):
-            return self.model.dsl.get_by_id(ds_id)._ds_name
+        designs = dsc.get_id_name_map('Design variable')
+        self.available_designs = [idn[1] for idn in designs]
 
-        self.available_designs = [name_from_id(i)
-                                  for i in id_by_type('Design variable')]
-        self.available_consumer_attrs = [name_from_id(i)
-                                         for i in id_by_type('Consumer characteristics')]
-        self.available_consumer_likings = [(i, name_from_id(i))
-                                           for i in id_by_type('Consumer liking')]
+        consc = dsc.get_id_name_map('Consumer characteristics')
+        self.available_consumer_attrs = [idn[1] for idn in consc]
+
+        self.available_consumer_likings = dsc.get_id_name_map('Consumer liking')
 
         # Reset design whne dataset is removed
         if self.model.selected_design and (self.model.selected_design not in self.available_designs):
             self.model.chosen_design_vars = []
             self.available_design_vars = []
-            self.model.selected_design = ''
+            # self.model.selected_design = ''
         # Reset consumer chararcteristics when dataset i removed
         if self.model.selected_consumer_attr and (self.model.selected_consumer_attr not in self.available_consumer_attrs):
             self.model.choosen_consumer_attr_vars = []
             self.available_consumer_attr_vars = []
-            self.model.selected_consumer_attr = ''
+            # self.model.selected_consumer_attr = ''
 
 
     @on_trait_change('model:selected_design')
     def _handle_design_choice(self, obj, ref, new):
-        if new:
-            self.model.design_set = obj.dsl.get_by_name(new)
-            obj.chosen_design_vars = []
-            self.available_design_vars = self.model.design_set.variable_names
+        self.model.design_set = get_ds_by_name(new, obj.dsc)
+        obj.chosen_design_vars = []
+        self.available_design_vars = self.model.design_set.var_n
 
 
     @on_trait_change('model:selected_consumer_attr')
     def _handle_attributes(self, obj, ref, old, new):
-        if new:
-            self.model.consumer_attr_set = obj.dsl.get_by_name(new)
-            obj.chosen_consumer_attr_vars = []
-            self.available_consumer_attr_vars = self.model.consumer_attr_set.variable_names
+        self.model.consumer_attr_set = get_ds_by_name(new, obj.dsc)
+        obj.chosen_consumer_attr_vars = []
+        self.available_consumer_attr_vars = self.model.consumer_attr_set.var_n
 
 
     @on_trait_change('model:chosen_consumer_likings')

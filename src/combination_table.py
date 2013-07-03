@@ -1,4 +1,4 @@
-from traits.api import HasTraits, Str, List, Bool, Any, Event, on_trait_change, Tuple
+from traits.api import HasTraits, Int, Str, List, Bool, Any, Event, on_trait_change, Tuple
 from traitsui.api import View, Item, TableEditor
 from traitsui.table_column import ObjectColumn
 from traitsui.extras.checkbox_column import CheckboxColumn
@@ -17,7 +17,7 @@ class CombCheck(CheckboxColumn):
 
 class Row(HasTraits):
     name = Str()
-    nid = Str()
+    nid = Any()
     # ck1, ck2, ...
     ck_ = Bool(False)
 
@@ -120,8 +120,8 @@ if __name__ == '__main__':
     def test_print():
         print(comb.get_selected_combinations())
 
-    row = [('a', 'Alfa'), ('b', 'Bravo'), ('c', 'Charlie')]
-    col = [(1, 'One'), (1, 'Two'), (1, 'Three')]
+    row = [(1, 'Alfa'), (2, 'Bravo'), (3, 'Charlie')]
+    col = [(1, 'One'), (2, 'Two'), (3, 'Three')]
     comb = CombinationTable(
         row_set = row,
         col_set = col)

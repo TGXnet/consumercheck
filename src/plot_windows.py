@@ -6,16 +6,18 @@ from os.path import join as pjoin
 
 # Enthought library imports
 from enable.api import Component, ComponentEditor
-from traits.api import HasTraits, Instance, Bool, Str, File, Button, on_trait_change
+from traits.api import HasTraits, Any, Instance, Bool, Str, File, List, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
-from traitsui.menu import OKButton
-from chaco.api import Plot, GridPlotContainer
+# from traitsui.menu import OKButton
+from chaco.api import DataView, GridPlotContainer
 from pyface.api import FileDialog, OK
 from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 #Local imports
-from ui_results import TableViewController
-from ds_matrix_view import TableViewer
+# from ui_results import TableViewController
+# from ds_matrix_view import TableViewer
+from ds_table_view import DSTableViewer
+from plugin_tree_helper import ViewNavigator, WindowLauncher
 
 
 #===============================================================================
@@ -37,25 +39,35 @@ class TitleHandler(Handler):
 
 
 class PlotWindow(HasTraits):
-    mother_ref = Instance(HasTraits)
+
+    plot = Instance(DataView)
+    res = Any()
+    view_loop = List(WindowLauncher)
+    plot_navigator = Instance(ViewNavigator)
 
     next_plot = Button('Next plot')
     previous_plot = Button('Previous plot')
     view_table = Button('View result table')
 
+
+    def _plot_navigator_default(self):
+        return ViewNavigator(res=self.res, view_loop=self.view_loop)
+
+
     @on_trait_change('next_plot')
     def goto_next_plot(self, obj, name, new):
-        self.mother_ref.show_next_plot(self)
+        self.plot = self.plot_navigator.show_next()
+
 
     @on_trait_change('previous_plot')
     def goto_previous_plot(self, obj, name, new):
-        self.mother_ref.show_previous_plot(self)
+        self.plot = self.plot_navigator.show_previous()
+
 
     @on_trait_change('view_table')
     def show_table(self, obj, name, new):
-        tv = TableViewer(obj.plot.data.pc_ds[0].view_data)
-        tv.edit_traits()
-
+        tv = DSTableViewer(obj.plot.plot_data)
+        tv.edit_traits(view=tv.get_view())
 
 
 
@@ -64,7 +76,6 @@ class SinglePlotWindow(PlotWindow):
 
     FIXME: Or should the name be PC plot window
     """
-    plot = Instance(Plot)
 
     # Buttons
     eq_axis = Bool(False)
@@ -73,11 +84,6 @@ class SinglePlotWindow(PlotWindow):
     vis_toggle = Button('Visibility')
     vistog = Bool(False)
 
-    ## x_up = Button('X+')
-    ## x_down = Button('X-')
-    ## y_up = Button('Y+')
-    ## y_down = Button('Y-')
-    ## reset_xy = Button('Reset axis')
     save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
                           width=32, height=32)
     y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
@@ -193,7 +199,8 @@ class LinePlotWindow(PlotWindow):
     """Window for embedding line plot
 
     """
-    plot = Instance(Component)
+    # plot = Instance(Component)
+
     eq_axis = Bool(False)
     show_labels = Bool(True)
     title_text = Str("ConsumerCheck")
@@ -250,6 +257,7 @@ class MultiPlotWindow(HasTraits):
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
+        # FIXME: This can be done nicer
         obj.plots.component_grid[0][0].show_labels(show=new)
         obj.plots.component_grid[0][1].show_labels(show=new)
         obj.plots.component_grid[1][0].show_labels(show=new)
@@ -308,28 +316,31 @@ class FileEditor(HasTraits):
 
 if __name__ == '__main__':
     import numpy as np
+    import pandas as pd
     from plot_pc_scatter import PCScatterPlot
+    from dataset import DataSet, VisualStyle
 
-    set1 = np.array([
-        [-0.3, 0.4, 0.9],
-        [-0.1, 0.2, 0.7],
-        [-0.1, 0.1, 0.1],
-        ])
+    def clust1ds():
+        """Manual random pick from the Iris datast: setosa"""
+        ds = DataSet(
+            mat = pd.DataFrame(
+                [[5.1,3.5,1.4,0.2],
+                 [4.6,3.4,1.4,0.3],
+                 [5.4,3.7,1.5,0.2],
+                 [5.7,3.8,1.7,0.3],
+                 [5.4,3.4,1.7,0.2],
+                 [4.8,3.1,1.6,0.2],
+                 [4.6,3.6,1.0,0.2]],
+                index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
+                columns = ['V1', 'V2', 'V3', 'V4']),
+            display_name='Some values', kind='Sensory profiling',
+            # style=VisualStyle(fg_color=(0.8, 0.2, 0.1, 1.0)),
+            style=VisualStyle(fg_color='indigo'),
+            )
+        return ds
 
-    set2 = np.array([
-        [-1.3, -0.4, -0.9],
-        [-1.1, -0.2, -0.7],
-        [-1.2, -0.1, -0.1],
-        ])
-
-    label1 = ['s1pt1', 's1pt2', 's1pt3']
-    label2 = ['s2pt1', 's2pt2', 's2pt3']
-    plot = PCScatterPlot()
-    ## plot = PCScatterPlot(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-    plot.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-    plot.add_PC_set(set2, labels=label2, color=(0.2, 0.9, 0.1, 1.0))
-    plot.plot_circle(True)
-
+    mydata = clust1ds()
+    plot = PCScatterPlot(mydata)
     pw = SinglePlotWindow(plot=plot)
 
     with np.errstate(invalid='ignore'):

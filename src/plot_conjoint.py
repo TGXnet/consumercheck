@@ -18,9 +18,8 @@ from ui_results import TableViewController
 
 
 class MainEffectsPlot(DataView):
-    def __init__(self, conj_res, attr_name, pl_ref):
+    def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
-        self.pl_ref = pl_ref
         self._adapt_conj_main_effect_data(conj_res, attr_name)
         self._create_plot()
 
@@ -29,9 +28,9 @@ class MainEffectsPlot(DataView):
         """FIXME: Can this bee extracted as an utility function
         that will return an result object but only with the needed values?
         """
-        ls_means = conj_res['lsmeansTable']['data']
-        ls_means_labels = conj_res['lsmeansTable']['rowNames']
-        cn = list(conj_res['lsmeansTable']['colNames'])
+        ls_means = conj_res.lsmeansTable['data']
+        ls_means_labels = conj_res.lsmeansTable['rowNames']
+        cn = list(conj_res.lsmeansTable['colNames'])
         nli = cn.index('Estimate')
         cn = cn[:nli]
 
@@ -57,27 +56,49 @@ class MainEffectsPlot(DataView):
             self.ls_label_names.append(pl)
             self.ls_label_pos.append(i + 1)
 
+        # Create a longer index line for average line
+        idx = [int(val) for val in selected[attr_name]]
+        span = idx[-1] - idx[0]
+        avg_idx = [idx[0] - span, idx[-1] + span]
+
         self.apd = ArrayPlotData()
-        self.apd.set_data('index', [int(val) for val in selected[attr_name]])
+        self.apd.set_data('index', idx)
+        self.apd.set_data('avg_index', avg_idx)
         self.apd.set_data('values', [float(val) for val in selected[' Estimate ']])
         self.apd.set_data('ylow', [float(val) for val in selected[' Lower CI ']])
         self.apd.set_data('yhigh', [float(val) for val in selected[' Upper CI ']])
-        self.apd.set_data('average', [conj_res['meanLiking'] for
+        self.apd.set_data('average', [conj_res.meanLiking for
                                       val in selected[attr_name]])
         self.data = self.apd
 
 
         # Get p value for attribute
-        anova_values = conj_res['anovaTable']['data']
-        anova_names = conj_res['anovaTable']['rowNames']
+        # Before Conjoint update from 2013-03-18
+        ## anova_values = conj_res.anovaTable['data']
+        ## anova_names = conj_res.anovaTable['rowNames']
+        ## picker = anova_names == attr_name
+        ## p_value = anova_values[picker, 3][0]
+        ## self.p_value = p_value
+
+        anova_values = conj_res.anovaTable['data']
+        anova_names = conj_res.anovaTable['rowNames']
         picker = anova_names == attr_name
-        p_value = anova_values[picker, 3][0]
+        # p_value = anova_values[picker, 3][0]
+        if isinstance(picker, bool):
+            picker = np.array([picker])
+        var_row = anova_values[picker]
+        p_str = var_row['Pr(>F)'][0]
+        try:
+            p_value = float(p_str)
+        except ValueError:
+            p_value = 0.0
         self.p_value = p_value
 
 
     def _create_plot(self):
         #Prepare data for plots
         x = ArrayDataSource(self.apd['index'])
+        xx = ArrayDataSource(self.apd['avg_index'])
         y = ArrayDataSource(self.apd['values'])
         ylow = ArrayDataSource(self.apd['ylow'])
         yhigh = ArrayDataSource(self.apd['yhigh'])
@@ -117,7 +138,7 @@ class MainEffectsPlot(DataView):
         #Create averageplot
         y_name='average'
         plot_y_average = LinePlot(
-            index=x, index_mapper=index_mapper,
+            index=xx, index_mapper=index_mapper,
             value=yaverage, value_mapper=value_mapper,
             name=y_name,
             color='green')
@@ -158,9 +179,8 @@ class MainEffectsPlot(DataView):
 
 class InteractionPlot(DataView):
 
-    def __init__(self, conj_res, attr_one_name, attr_two_name, pl_ref):
+    def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
-        self.pl_ref = pl_ref
         self.conj_res = conj_res
         self.attr_one_name = attr_one_name
         self.attr_two_name = attr_two_name
@@ -178,7 +198,7 @@ class InteractionPlot(DataView):
         else:
             self.index_attr, self.line_attr = self.attr_two_name, self.attr_one_name
 
-        ls_means = self.conj_res['lsmeansTable']['data']
+        ls_means = self.conj_res.lsmeansTable['data']
 
         picker_one = ls_means[self.index_attr] != 'NA'
         picker_two = ls_means[self.line_attr] != 'NA'
@@ -192,16 +212,26 @@ class InteractionPlot(DataView):
 
 
         # Get p value for attribute
-        anova_values = self.conj_res['anovaTable']['data']
-        anova_names = self.conj_res['anovaTable']['rowNames']
+        anova_values = self.conj_res.anovaTable['data']
+        anova_names = self.conj_res.anovaTable['rowNames']
         try:
             attr_name = "{0}:{1}".format(self.attr_one_name, self.attr_two_name)
             picker = anova_names == attr_name
-            p_value = anova_values[picker, 3][0]
+            var_row = anova_values[picker]
+            p_str = var_row['Pr(>F)'][0]
+            try:
+                p_value = float(p_str)
+            except ValueError:
+                p_value = 0.0
         except IndexError:
             attr_name = "{0}:{1}".format(self.attr_two_name, self.attr_one_name)
             picker = anova_names == attr_name
-            p_value = anova_values[picker, 3][0]
+            var_row = anova_values[picker]
+            p_str = var_row['Pr(>F)'][0]
+            try:
+                p_value = float(p_str)
+            except ValueError:
+                p_value = 0.0
         self.p_value = p_value
 
         # Set border color

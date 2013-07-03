@@ -16,7 +16,7 @@ class PrefmapsContainer(HasTraits):
     # Instance(MainUi)?
     # WeakRef?
     mother_ref = Instance(HasTraits)
-    dsl = DelegatesTo('mother_ref')
+    dsc = DelegatesTo('mother_ref')
     mappings = List(APrefmapHandler)
 
     # Fitting parameters
@@ -31,10 +31,10 @@ class PrefmapsContainer(HasTraits):
         id_c - Consumer dataset id
         id_s - Sensory dataset id
         '''
-        ds_c = self.dsl.get_by_id(id_c)
-        ds_s = self.dsl.get_by_id(id_s)
+        ds_c = self.dsc[id_c]
+        ds_s = self.dsc[id_s]
         map_id = id_c+id_s
-        map_name = ds_c._ds_name + ' - ' + ds_s._ds_name
+        map_name = ds_c.display_name + ' - ' + ds_s.display_name
         mapping_model = APrefmapModel(
             mother_ref=self, nid=map_id, name=map_name,  ds_C=ds_c, ds_S=ds_s)
         mapping_handler = APrefmapHandler(mapping_model)
@@ -68,22 +68,15 @@ class PrefmapsHandler(ModelView):
 
 
     @on_trait_change('model:mother_ref:ds_event')
-    def dsl_changed(self):
+    def dsc_changed(self):
         self._update_comb()
         self.comb._generate_combinations()
 
 
     def _update_comb(self):
-        sens_list = []
-        cons_list = []
-        
-        for a in self.model.dsl.get_id_list_by_type('Sensory profiling'):
-            sens_list.append((a, self.model.dsl.get_by_id(a)._ds_name))
-        for b in self.model.dsl.get_id_list_by_type('Consumer liking'):
-            cons_list.append((b, self.model.dsl.get_by_id(b)._ds_name))
-        self.comb.col_set = sens_list
-        self.comb.row_set = cons_list
-            
+        dsc = self.model.dsc
+        self.comb.col_set = dsc.get_id_name_map('Sensory profiling')
+        self.comb.row_set = dsc.get_id_name_map('Consumer liking')
 
 
     @on_trait_change('comb:combination_updated')

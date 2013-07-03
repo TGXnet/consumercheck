@@ -1,18 +1,10 @@
 # Per directory py.test helper functions
-'''
-# FIXME: Update to py.test 2.3 funcargs
-# syntetic ds
-# vell know ds from file
-# pure random ds
-# Data set container/collection
-# All datasets
-# Related prefmap datasets
-# Related Conjoint datasets
-# Datasets with vaiable degree of missing data
+'''PY.test resources
 '''
 import pytest
 
 # Std lib imports
+import copy
 import logging
 
 # Configure logging
@@ -28,6 +20,7 @@ logging.basicConfig(
 logging.info("Test start")
 
 import numpy as np
+import pandas as pd
 import os.path as osp
 
 
@@ -38,27 +31,9 @@ def check_trait_interface():
     traits.has_traits.CHECK_INTERFACES = 1
 
 
-# @pytest.fixture(params=['wx', 'qt'])
-# def ets_gui_toolkit(request):
-#     from traits.etsconfig.api import ETSConfig
-#     ETSConfig.toolkit = request.param
-
-
-@pytest.fixture
-def gui_qt():
-    from traits.etsconfig.api import ETSConfig
-    ETSConfig.toolkit = 'qt'
-
-
-@pytest.fixture
-def gui_wx():
-    from traits.etsconfig.api import ETSConfig
-    ETSConfig.toolkit = 'wx'
-
-
 # Local imports
 from dataset import DataSet
-from dataset_collection import DatasetCollection
+from dataset_container import DatasetContainer
 from importer_main import ImporterMain
 
 
@@ -71,7 +46,7 @@ def tdd():
 
 
 # Available test data
-# Format: folder, file_name, ds_name, ds_type
+# Format: folder, file_name, ds_name, kind
 
 CONJOINT = [
     ('Conjoint', 'design.txt', 'Tine yogurt design', 'Design variable'),
@@ -80,8 +55,12 @@ CONJOINT = [
     ('Conjoint', 'odour-flavour_liking.txt', 'Odour-flavor', 'Consumer liking'),
     ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),
     ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Design variable'),
-    ('BarleyBread', 'BB_E_consAttr.txt', 'Estland? consumers', 'Consumer characteristics'),
-    ('BarleyBread', 'BB_E_liking.txt', 'Estland? liking data', 'Consumer liking'),]
+    ('BarleyBread', 'BB_E_consAttr.txt', 'Estland consumers', 'Consumer characteristics'),
+    ('BarleyBread', 'BB_E_liking.txt', 'Estland liking data', 'Consumer liking'),
+    ('HamData', 'Ham_consumer_attributes.txt', 'Ham-cons char.', 'Consumer characteristics'),
+    ('HamData', 'Ham_consumer_liking.txt', 'Ham-liking', 'Consumer liking'),
+    ('HamData', 'Ham_design.txt', 'Ham-design', 'Design variable'),
+    ]
 
 
 VINE = [
@@ -89,51 +68,202 @@ VINE = [
     ('Vine', 'B_labels.txt', 'Vine set B', 'Consumer liking'),
     ('Vine', 'C_labels.txt', 'Vine set C', 'Consumer liking'),
     ('Vine', 'D_labels.txt', 'Vine set D', 'Consumer liking'),
-    ('Vine', 'E_labels.txt', 'Vine set E', 'Consumer liking'),]
+    ('Vine', 'E_labels.txt', 'Vine set E', 'Consumer liking'),
+    ]
 
 
 CHEESE = [
-    ('Cheese', 'ConsumerLiking.xls', 'Cheese liking', 'Consumer liking'),
-    ('Cheese', 'ConsumerValues.xls', 'Consumer info', 'Consumer characteristics'),
-    ('Cheese', 'SensoryData.xls', 'Sensory profiling', 'Sensory profiling'),]
+    ('Cheese', 'ConsumerLiking.txt', 'Cheese liking', 'Consumer liking'),
+    ('Cheese', 'ConsumerValues.txt', 'Consumer info', 'Consumer characteristics'),
+    ('Cheese', 'SensoryData.txt', 'Sensory profiling', 'Sensory profiling'),
+    ]
 
 
+# Create datasets
 
 @pytest.fixture
 def simple_ds():
     '''Makes a simple syntetic dataset'''
 
-    ds = DataSet()
-    ds.matrix = np.array([
-        [1.1, 1.2, 1.3],
-        [2.1, 2.2, 2.3],
-        [3.1, 3.2, 3.3]])
-
-    ds.variable_names = ['V1', 'V2', 'V3']
-    ds.object_names = ['O1', 'O2', 'O3']
+    ds = DataSet(display_name='Some values', kind='Sensory profiling')
+    ds.mat = pd.DataFrame(
+        [[1.1, 1.2, 1.3],
+         [2.1, 2.2, 2.3],
+         [3.1, 3.2, 3.3]],
+        index = ['O1', 'O2', 'O3'],
+        columns = ['V1', 'V2', 'V3'])
 
     return ds
 
 
 @pytest.fixture
-def iris_ds(tdd):
+def zero_var_ds():
+    '''Makes a simple syntetic dataset'''
+
+    ds = DataSet(display_name='Some values', kind='Sensory profiling')
+    ds.mat = pd.DataFrame(
+        [[1.1, 1.2, 1.3],
+         [2.1, 1.2, 2.3],
+         [3.1, 1.2, 3.3]],
+        index = ['O1', 'O2', 'O3'],
+        columns = ['V1', 'V2', 'V3'])
+
+    return ds
+
+
+discrete_nl = [
+    [3, 5, 7, 8, 1, 9, 7, 3],
+    [1, 8, 2, 5, 5, 2, 7, 5],
+    [2, 1, 2, 5, 6, 3, 9, 6],
+    [8, 4, 8, 4, 8, 1, 2, 4],
+    [6, 5, 3, 7, 6, 9, 2, 2]]
+
+
+@pytest.fixture
+def discrete_ds():
+    '''Make a dataset with discrete walues'''
+
+    ds = DataSet(display_name='Discrete values', kind='Consumer characteristics')
+    idxn = ['O'+str(i+1) for i in range(5)]
+    coln = ['V'+str(j+1) for j in range(8)]
+    ds.mat = pd.DataFrame(discrete_nl, index = idxn, columns = coln)
+    return ds
+
+
+@pytest.fixture
+def discrete_nans_ds():
+    '''Make a dataset with discrete walues'''
+
+    missing = copy.deepcopy(discrete_nl)
+    missing[1][6:8] = [np.nan for i in range(2)]
+    missing[2][6:8] = [np.nan for i in range(2)]
+    missing[3][0:8:3] = [np.nan for i in range(3)]
+    missing[4][1:8:3] = [np.nan for i in range(3)]
+
+    ds = DataSet(display_name='Discrete and missing', kind='Consumer characteristics')
+    idxn = ['O'+str(i+1) for i in range(5)]
+    coln = ['V'+str(j+1) for j in range(8)]
+    ds.mat = pd.DataFrame(missing, index = idxn, columns = coln)
+
+    # This does not work by now
+    # When i set integer type to nan, a large value is inserted
+    ## ds = discrete_ds()
+    ## ds.display_name = 'Discrete values, some missing'
+    ## ds.mat.ix['O2':'O3','V5':'V7'] = np.nan
+    ## ds.mat.ix['O4','V1':'V8':2] = np.nan
+    ## ds.mat.ix['O5','V2':'V8':2] = np.nan
+    return ds
+
+
+@pytest.fixture
+def hist_ds():
+    '''Make dataset for histograms'''
+    rows_cols = (12, 45)
+    random = False
+
+    if random:
+        norm = np.random.normal(loc=5.0, scale=2.0, size=rows_cols)
+        normi = norm.astype('int')
+        end = normi.max()
+        hl = []
+        for row in normi:
+            hl.append(list(np.bincount(row, minlength=end+1)))
+    else:
+        hl = [[ 0,  3,  5,  8,  9,  5,  5,  8,  0,  2,],
+              [ 1,  3,  6,  6, 11,  7,  5,  4,  2,  0,],
+              [ 1,  2,  2,  9,  8,  8,  7,  6,  1,  1,],
+              [ 0,  1,  7,  8, 12,  3,  4,  7,  2,  1,],
+              [ 0,  2,  2,  4,  5, 13, 10,  6,  1,  2,],
+              [ 0,  4,  6,  3, 15,  8,  6,  1,  2,  0,],
+              [ 1,  2,  5, 10,  4, 11,  6,  5,  1,  0,],
+              [ 1,  3,  1, 11, 10,  9,  8,  0,  0,  2,],
+              [ 1,  2,  4, 10, 11,  3,  3, 10,  1,  0,],
+              [ 2,  3,  3,  5, 10,  8,  4,  5,  3,  2,],
+              [ 1,  1,  4,  8,  7,  9,  9,  3,  1,  2,],
+              [ 1,  2,  6,  8,  4, 10,  6,  3,  4,  1,],]
+
+    rown = ["O{}".format(i+1) for i in range(rows_cols[0])]
+    hdf = pd.DataFrame(hl, index=rown)
+    return DataSet(mat=hdf, display_name="Test histogram")
+
+
+@pytest.fixture
+def boxplot_ds():
+    '''Make dataset for testing box plot'''
+    rows_cols = (12, 45)
+    random = True
+    rown = ["O{}".format(i+1) for i in range(rows_cols[0])]
+
+    if random:
+        norm = np.random.normal(loc=5.0, scale=2.0, size=rows_cols)
+        normi = norm.astype('int')
+        stat = pd.DataFrame(index=rown)
+        stat['min'] = np.percentile(normi, 0, axis=1)
+        stat['perc25'] = np.percentile(normi, 25, axis=1)
+        stat['med'] = np.percentile(normi, 50, axis=1)
+        stat['perc75'] = np.percentile(normi, 75, axis=1)
+        stat['max'] = np.percentile(normi, 100, axis=1)
+    else:
+        stat = pd.DataFrame(
+            data=[[4.733333, 2.184796, 10, 1],
+                  [4.533333, 1.961859, 9, 1],
+                  [4.844444, 1.685962, 9, 2],
+                  [4.422222, 1.960600, 8, 1],
+                  [4.711111, 2.146027, 9, 0],
+                  [4.511111, 1.927834, 9, 0],
+                  [4.577778, 1.971901, 10, 1],
+                  [4.800000, 1.571977, 8, 1],
+                  [3.822222, 1.980896, 9, 0],
+                  [4.133333, 2.295890, 10, 0],
+                  [4.444444, 1.880373, 10, 1],
+                  [4.244444, 1.863754, 9, 0]],
+            index=rown,
+            columns=['mean', 'std', 'max', 'min'])
+
+    return DataSet(mat=stat, display_name="Test box plot")
+
+
+
+@pytest.fixture
+def iris_ds():
     '''Return the Iris dataset
 
     http://archive.ics.uci.edu/ml/datasets/Iris
     '''
+    home = tdd()
     importer = ImporterMain()
-    iris_url = osp.join(tdd, 'Iris', 'irisNoClass.data')
+    iris_url = osp.join(home, 'Iris', 'irisNoClass.data')
     ds = importer.import_data(iris_url, False, False, ',')
     return ds
 
 
+@pytest.fixture
+def synth_dsc():
+    dsc = DatasetContainer()
+    dsc.add(simple_ds(), discrete_ds(), discrete_nans_ds(), iris_ds())
+    return dsc
+
+
+# Read datasets from files
+
 @pytest.fixture(scope="module")
 def conjoint_dsc():
     '''Get Conjoint std. test datasets '''
-    dsc = DatasetCollection()
+    dsc = DatasetContainer()
 
     for mi in CONJOINT:
-        dsc.add_dataset(imp_ds(mi))
+        dsc.add(imp_ds(mi))
+
+    return dsc
+
+
+@pytest.fixture(scope="module")
+def prefmap_dsc():
+    '''Get liking and sensory std. test datasets '''
+    dsc = DatasetContainer()
+
+    for mi in CHEESE:
+        dsc.add(imp_ds(mi))
 
     return dsc
 
@@ -141,24 +271,27 @@ def conjoint_dsc():
 @pytest.fixture(scope="module")
 def all_dsc():
     '''Data set container/collection mock'''
-    dsc = DatasetCollection()
+    dsc = DatasetContainer()
 
-    ad = CONJOINT + VINE + CHEESE
+    # ad = CONJOINT + VINE + CHEESE
+    ad = CHEESE + CONJOINT
 
     for mi in ad:
-        dsc.add_dataset(imp_ds(mi))
+        dsc.add(imp_ds(mi))
+    dsc.add(discrete_ds())
+    dsc.add(discrete_nans_ds())
 
     return dsc
 
 
 def imp_ds(ds_meta_info):
-    folder, file_name, ds_name, ds_type = ds_meta_info
+    folder, file_name, ds_name, kind = ds_meta_info
     importer = ImporterMain()
     home = tdd()
     ds_url = osp.join(home, folder, file_name)
     ds = importer.import_data(ds_url)
-    ds._ds_name = ds_name
-    ds._dataset_type = ds_type
+    ds.display_name = ds_name
+    ds.kind = kind
     return ds
 
 
@@ -201,63 +334,6 @@ def conj_res():
     return res
 
 
-
-@pytest.fixture
-def plugin_mother_mock():
-    from traits.api import HasTraits, Instance, Bool, Event, on_trait_change
-
-    class PluginMotherMock(HasTraits):
-        """Main frame for testing method tabs
-        """
-        test_subject = Instance(HasTraits)
-        dsl = Instance(DatasetCollection)
-        ds_event = Event()
-        dsname_event = Event()
-        en_advanced = Bool(True)
-
-        def _dsl_default(self):
-            return all_dsc()
-
-        def _test_subject_changed(self, old, new):
-            if old is not None:
-                if hasattr(old, 'mother_ref'):
-                    old.mother_ref = None
-            if new is not None:
-                if hasattr(new, 'mother_ref'):
-                    new.mother_ref = self
-
-
-        # @on_trait_change('dsl', post_init=True)
-        @on_trait_change('dsl')
-        def _dsl_updated(self, obj, name, new):
-            print("main: dsl changed")
-            self.ds_event = True
-
-    
-    return PluginMotherMock()
-
-
-# FIXME: Old stuff
-
-def pytest_funcarg__simple_plot(request):
-    """Yield a simple plot for testing plot windows"""
-    from plot_pc_scatter import PCScatterPlot
-    set1 = np.array([
-        [-0.3, 0.4, 0.9],
-        [-0.1, 0.2, 0.7],
-        [-0.1, 0.3, 0.1],
-        [0.1, 0.2, 0.1],
-        ])
-    label1 = ['s1pt1', 's1pt2', 's1pt3', 's1pt4']
-    expl_vars = [37.34, 9.4, 0.3498]
-    color = (0.7, 0.9, 0.4, 1.0)
-    sp = PCScatterPlot(set1, label1, color, expl_vars)
-    ## sp.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-
-    return sp
-
-
-
 ## More ideas
 '''
 # Taken fra a PyConAU presentation
@@ -289,16 +365,6 @@ def test_foo4():
 
 # parameterize testing
 # ex to increate the ratio of missing data in a matrix
-@pytest.mark.parameterize(("input", "expected"), [
-        ("3+5", 8),
-        ("2+4", 6),
-        ("6*9", 42),
-])
-def test_eval(input, expected):
-    assert eval(input) == expected
-
-
-# org generate test functions
 
 # monkeypatching - can be problematic
 
@@ -331,15 +397,13 @@ class WinPdbInvoke(object):
         import rpdb2
         rpdb2.start_embedded_debugger('0')
 
-'''
 
 # Suggestion for how to simulate a user in testing
-'''
+
 import time
 import threading
 
 from test_ui import MyClass, MyController
-
 
 class MocAsyncTestUser(threading.Thread):
 

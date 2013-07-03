@@ -7,9 +7,12 @@ import pyper
 import numpy as np
 from threading import Thread
 from itertools import combinations
+from plugin_base import Result
+
 
 # Setup logging
 import logging
+logging.basicConfig(level=logging.DEBUG)
 if __name__ == '__main__':
     logger = logging.getLogger('tgxnet.nofima.cc.' + __file__.split('.')[0])
 else:
@@ -52,12 +55,14 @@ class ConjointMachine(object):
 
 
     def _load_conjoint_resources(self):
-        self.r('library(MixMod)')
+        ## self.r('library(MixMod)')
         self.r('library(Hmisc)')
-        self.r('library(lme4)')
+        ## self.r('library(lme4)')
+        self.r('library(lmerTest)')
         # Set R working directory independent of Python working directory
-        self.r('setwd("{0}")'.format(self.r_origo))
-        self.r('source("rsrc/conjoint.r")')
+        r_wd = op.join(self.r_origo, "rsrc")
+        self.r('setwd("{0}")'.format(r_wd))
+        self.r('source("conjoint.r")')
         # Diagnostic output
         r_env = 'R environment\n'
         r_env += self.r('getwd()')
@@ -67,10 +72,10 @@ class ConjointMachine(object):
         logger.info(r_env)
 
 
-    def synchronous_calculation(self, structure,
-                                consAtts, selected_consAtts,
-                                design, selected_designVars,
-                                consLiking, py_merge=True):
+    def synchronous_calculation(self, design, selected_designVars,
+                                consLiking, structure=1,
+                                consAtts=None, selected_consAtts=[],
+                                py_merge=True):
         """Starts a conjoint calculation and return when the result is ready
         Parameters:
          * structure: 1, 2 or 3
@@ -84,15 +89,19 @@ class ConjointMachine(object):
         """
         self._prepare_data(structure, consAtts, selected_consAtts,
                            design, selected_designVars, consLiking, py_merge)
+
+        ## print(self.headerList)
+        ## np.set_printoptions(threshold=100, edgeitems=10)
+        ## print(self.finalData)
         self._copy_values_into_r_env()
         self._run_conjoint()
         return self.get_result()
 
 
-    def schedule_calculation(self, structure,
-                             consAtts, selected_consAtts,
-                             design, selected_designVars,
-                             consLiking, py_merge=True):
+    def schedule_calculation(self, design, selected_designVars,
+                             consLiking, structure=1,
+                             consAtts=None, selected_consAtts=[],
+                             py_merge=True):
         """Starts a conjoint calculation and return when the result is ready
         Parameters:
          * structure: 1, 2 or 3
@@ -133,7 +142,7 @@ class ConjointMachine(object):
         throw_chrs = string.maketrans(
             string.ascii_letters, ' '*len(string.ascii_letters))
         # Filter dataset name
-        liking_name = consLiking._ds_name.encode('ascii', 'ignore')
+        liking_name = consLiking.display_name.encode('ascii', 'ignore')
         self.consLikingTag = liking_name.translate(None, throw_chrs)
 
         # self._check_completeness()
@@ -150,8 +159,8 @@ class ConjointMachine(object):
     def _check2d_interaction(self, attr1, attr2):
         from pprint import pprint
         print(attr1, attr2)
-        vns = self.consAtts.variable_names
-        mat = self.consAtts.matrix
+        vns = self.consAtts.var_n
+        mat = self.consAtts.values
         ind1 = vns.index(attr1)
         ind2 = vns.index(attr2)
         uniq1 = np.unique(mat[:,ind1])
@@ -197,24 +206,26 @@ class ConjointMachine(object):
         # consumer attributes and design
         
         # Get content from design array
-        desData = self.design.matrix
-        desVarNames = self.design.variable_names
-        desObjNames = self.design.object_names
+        desData = self.design.values
+        desVarNames = self.design.var_n
+        desObjNames = self.design.obj_n
         
         # Get content form cosumer liking array
-        consData = self.consLiking.matrix
-        consVarNames = self.consLiking.variable_names
+        consData = self.consLiking.values
+        consVarNames = self.consLiking.var_n
         
         # Get content from consumer attributes array
-        attrData = self.consAtts.matrix
-        attrVarNames = self.consAtts.variable_names
+        if self.consAtts and not self.consAtts.mat.empty:
+            attrData = self.consAtts.values
+            attrVarNames = self.consAtts.var_n
         
         # Make list with column names
         self.headerList = ['Consumer', self.consLikingTag]
         self.headerList.extend(desVarNames)
-        self.headerList.extend(attrVarNames)
+        if self.consAtts and not self.consAtts.mat.empty:
+            self.headerList.extend(attrVarNames)
 
-        # Now construct conjoint matrix
+        # Now construct conjoint values
         # -----------------------------
         allConsList = []
         consRows = np.shape(desData)[0]
@@ -236,10 +247,11 @@ class ConjointMachine(object):
             # Append consumer attributes for each row (there are as many rows as there
             # are products for the specific consumer)   
             attrBlockList = []
-            attrList = attrData[consInd,:]
-            for rowInd in range(consRows):
-                attrBlockList.append(attrList)
-            consList.append(np.vstack(attrBlockList))
+            if self.consAtts and not self.consAtts.mat.empty:
+                attrList = attrData[consInd,:]
+                for rowInd in range(consRows):
+                    attrBlockList.append(attrList)
+                consList.append(np.vstack(attrBlockList))
             
             # Convert consumer specific entry to an array and collect in allConsList
             consArr = np.hstack(consList)
@@ -258,25 +270,25 @@ class ConjointMachine(object):
             self.r('colnames(conjDF) <- conjDataVarNames')
         else:
             # Consumer attributes
-            self.r['consAttMat'] = self.consAtts.matrix
-            self.r['consAttVars'] = asciify(self.consAtts.variable_names)
-            self.r['consAttObj'] = asciify(self.consAtts.object_names)
+            self.r['consAttMat'] = self.consAtts.values
+            self.r['consAttVars'] = asciify(self.consAtts.var_n)
+            self.r['consAttObj'] = asciify(self.consAtts.obj_n)
             self.r('consum.attr <- as.data.frame(consAttMat)')
             self.r('colnames(consum.attr) <- consAttVars')
             self.r('rownames(consum.attr) <- consAttObj')
 
-            # Design matrix
-            self.r['designMat'] = self.design.matrix
-            self.r['designVars'] = asciify(self.design.variable_names)
-            self.r['designObj'] = asciify(self.design.object_names)
+            # Design values
+            self.r['designMat'] = self.design.values
+            self.r['designVars'] = asciify(self.design.var_n)
+            self.r['designObj'] = asciify(self.design.obj_n)
             self.r('design.matr <- as.data.frame(designMat)')
             self.r('colnames(design.matr) <- designVars')
             self.r('rownames(design.matr) <- designObj')
 
             # Consumer liking data
-            self.r['consLikingMat'] = self.consLiking.matrix
-            self.r['consLikingVars'] = asciify(self.consLiking.variable_names)
-            self.r['consLikingObj'] = asciify(self.consLiking.object_names)
+            self.r['consLikingMat'] = self.consLiking.values
+            self.r['consLikingVars'] = asciify(self.consLiking.var_n)
+            self.r['consLikingObj'] = asciify(self.consLiking.obj_n)
             self.r('cons.liking <- as.data.frame(consLikingMat)')
             self.r('colnames(cons.liking) <- consLikingVars')
             self.r('rownames(cons.liking) <- consLikingObj')
@@ -337,13 +349,13 @@ class ConjointMachine(object):
 
 
     def get_result(self):
-        result = {}
-        result['randomTable'] = self._randomTable()
-        result['anovaTable'] = self._anovaTable()
-        result['lsmeansTable'] = self._lsmeansTable()
-        result['lsmeansDiffTable'] = self._lsmeansDiffTable()
-        result['residualsTable'] = self._residualsTable()
-        result['meanLiking'] = self._calcMeanLiking()
+        result = Result('Conjoint')
+        result.randomTable = self._randomTable()
+        result.anovaTable = self._anovaTable()
+        result.lsmeansTable = self._lsmeansTable()
+        result.lsmeansDiffTable = self._lsmeansDiffTable()
+        result.residualsTable = self._residualsTable()
+        result.meanLiking = self._calcMeanLiking()
 
         return result
 
@@ -409,7 +421,7 @@ class ConjointMachine(object):
         Returns residuals from R conjoint function.
         """
         # Get size of liking data array. 
-        numRows, numCols = np.shape(self.consLiking.matrix)
+        numRows, numCols = np.shape(self.consLiking.values)
 
         self.r('residTab <- res.gm[[1]][5]')
 
@@ -418,14 +430,14 @@ class ConjointMachine(object):
             self.r['residTab']['residuals'],
             (numRows, numCols))
 
-        residTableDict['rowNames'] = self.consLiking.object_names
-        residTableDict['colNames'] = self.consLiking.variable_names
+        residTableDict['rowNames'] = self.consLiking.obj_n
+        residTableDict['colNames'] = self.consLiking.var_n
 
         return residTableDict
 
 
     def _calcMeanLiking(self):
-        return np.mean(self.consLiking.matrix)
+        return np.mean(self.consLiking.values)
 
 
 class ConjointCalcThread(Thread):
@@ -441,24 +453,30 @@ class ConjointCalcThread(Thread):
 
 def asciify(names):
     """Take a list of unicodes and turn each elemet into ascii strings"""
-    return [n.encode('ascii', 'ignore') for n in names]
+    return [str(n).encode('ascii', 'ignore') for n in names]
 
 
 if __name__ == '__main__':
     print("Hello World")
-    from tests.conftest import conjoint_dsc as cjd_maker
-    cm = ConjointMachine()
+    from dataset import DataSet
+    from dataset_container import get_ds_by_name
+    from tests.conftest import conjoint_dsc
+    cm = ConjointMachine(start_r=True)
 
     selected_structure = 1
-    conjoint_dsc = cjd_maker()
-    consAttr = conjoint_dsc.get_by_id('consumerattributes')
-    odflLike = conjoint_dsc.get_by_id('odour-flavour_liking')
-    consistencyLike = conjoint_dsc.get_by_id('consistency_liking')
-    overallLike = conjoint_dsc.get_by_id('overall_liking')
-    designVar = conjoint_dsc.get_by_id('design')
+    dsc = conjoint_dsc()
+    consAttr = get_ds_by_name('Consumers', dsc)
+    odflLike = get_ds_by_name('Odour-flavor', dsc)
+    consistencyLike = get_ds_by_name('Consistency', dsc)
+    overallLike = get_ds_by_name('Overall', dsc)
+    designVar = get_ds_by_name('Tine yogurt design', dsc)
     selected_consAttr = ['Sex']
     selected_designVar = ['Flavour', 'Sugarlevel']
+    empty = DataSet()
 
-    res = cm.synchronous_calculation(
-        selected_structure, consAttr, selected_consAttr,
-        designVar, selected_designVar, odflLike, True)
+#     res = cm.synchronous_calculation(designVar, selected_designVar, odflLike)
+    res = cm.synchronous_calculation(designVar, selected_designVar,
+                                     odflLike, selected_structure,
+                                     empty, [],
+                                     py_merge=True)
+    res.print_traits()
