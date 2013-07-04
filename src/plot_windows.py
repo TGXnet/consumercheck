@@ -26,16 +26,15 @@ size = (850, 650)
 bg_color="white"
 #===============================================================================
 
-class TitleHandler(Handler):
+class BasePW(Handler):
     """ Change the title on the UI.
 
     """
     win_handle = Any()
 
-
     def init(self, info):
         self.win_handle = info.ui.control
-
+        info.object.hwin = info.ui.control
     
     def object_title_text_changed(self, info):
         """ Called whenever the title_text attribute changes on the handled object.
@@ -44,6 +43,10 @@ class TitleHandler(Handler):
         info.ui.title = info.object.title_text
 
 
+class ViewTablePWH(BasePW):
+    """ Change the title on the UI.
+
+    """
     def object_view_table_changed(self, info):
         tv = DSTableViewer(info.object.plot.plot_data)
         tv.edit_traits(view=tv.get_view(), parent=self.win_handle)
@@ -54,6 +57,7 @@ class PlotWindow(HasTraits):
 
     plot = Instance(DataView)
     res = Any()
+    hwin = Any()
     view_loop = List(WindowLauncher)
     plot_navigator = Instance(ViewNavigator)
 
@@ -195,7 +199,7 @@ class SinglePlotWindow(PlotWindow):
             layout="normal",
             ),
         resizable=True,
-        handler=TitleHandler(),
+        handler=ViewTablePWH(),
         # kind = 'nonmodal',
         width = .5,
         height = .7,
@@ -244,7 +248,7 @@ class LinePlotWindow(PlotWindow):
             layout="normal",
             ),
         resizable=True,
-        handler=TitleHandler(),
+        handler=ViewTablePWH(),
         # kind = 'nonmodal',
         width = .5,
         height = .7,
@@ -263,6 +267,7 @@ class MultiPlotWindow(HasTraits):
     plots = Instance(Component)
     title_text = Str("ConsumerCheck")
     show_labels = Bool(True)
+    hwin = Any()
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
@@ -282,7 +287,7 @@ class MultiPlotWindow(HasTraits):
             Item('show_labels', label="Show labels"),
             orientation = "vertical"),
         resizable=True,
-        handler=TitleHandler(),
+        handler=BasePW(),
         # kind = 'nonmodal',
         width = .5,
         height = .7,

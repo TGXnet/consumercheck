@@ -309,7 +309,7 @@ class InteractionPlot(DataView):
 
 
 
-class TitleHandler(Handler):
+class BasePW(Handler):
     """ Change the title on the UI.
 
     """
@@ -372,7 +372,7 @@ class InteractionPlotWindow(PlotWindow):
             layout="normal",
             ),
         resizable=True,
-        handler=TitleHandler(),
+        handler=BasePW(),
         # kind = 'nonmodal',
         width = .5,
         height = .7,
