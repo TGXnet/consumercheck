@@ -94,7 +94,7 @@ class ModelController(_traitsui.Controller):
                 )
         else:
             raise NotImplementedError(
-                "Not implemented for this platform: ".format(sys.platform))
+                "Not implemented for this platform: {0}".format(sys.platform))
 
 
     def _wind_title(self, res):
