@@ -30,11 +30,23 @@ class TitleHandler(Handler):
     """ Change the title on the UI.
 
     """
+    win_handle = Any()
+
+
+    def init(self, info):
+        self.win_handle = info.ui.control
+
+    
     def object_title_text_changed(self, info):
         """ Called whenever the title_text attribute changes on the handled object.
 
         """
         info.ui.title = info.object.title_text
+
+
+    def object_view_table_changed(self, info):
+        tv = DSTableViewer(info.object.plot.plot_data)
+        tv.edit_traits(view=tv.get_view(), parent=self.win_handle)
 
 
 
@@ -51,7 +63,10 @@ class PlotWindow(HasTraits):
 
 
     def _plot_navigator_default(self):
-        return ViewNavigator(res=self.res, view_loop=self.view_loop)
+        if self.res and self.view_loop:
+            return ViewNavigator(res=self.res, view_loop=self.view_loop)
+        else:
+            return None
 
 
     @on_trait_change('next_plot')
@@ -62,12 +77,6 @@ class PlotWindow(HasTraits):
     @on_trait_change('previous_plot')
     def goto_previous_plot(self, obj, name, new):
         self.plot = self.plot_navigator.show_previous()
-
-
-    @on_trait_change('view_table')
-    def show_table(self, obj, name, new):
-        tv = DSTableViewer(obj.plot.plot_data)
-        tv.edit_traits(view=tv.get_view())
 
 
 
