@@ -1,6 +1,7 @@
 
 # Scipy imports
 import numpy as _np
+from pprint import pprint
 
 # ETS imports
 import traits.api as _traits
@@ -144,7 +145,7 @@ class StackedHistPlot(_chaco.DataView):
         mvals = self.stair_ds
 
         # Create the index range
-        index_range = _chaco.DataRange1D(idx, tight_bounds=True)
+        index_range = _chaco.DataRange1D(idx, tight_bounds=False, low_setting='auto', margin=0.15)
         index_mapper = _chaco.LinearMapper(range=index_range)
 
         # Create the value range
@@ -152,8 +153,8 @@ class StackedHistPlot(_chaco.DataView):
         value_mapper = _chaco.LinearMapper(range=value_range)
 
         colors = color_table.keys()
-
-        for i in range(mvals.get_value_size()-1, 0, -1):
+        bar_names = {}
+        for i in range(mvals.get_value_size()-1, -1, -1):
             vals = _chaco.ArrayDataSource(mvals.get_data(axes=i))
             bars = _chaco.BarPlot(index=idx, value=vals,
                                   value_mapper=value_mapper,
@@ -161,7 +162,12 @@ class StackedHistPlot(_chaco.DataView):
                                   line_color='black',
                                   fill_color=colors[i%len(colors)],
                                   bar_width=0.8, antialias=False)
+            name = str(self.ds.var_n[i])
+            bar_names[name] = bars
             self.add(bars)
+        legend = _chaco.Legend(component=self, padding=2, align="ur")
+        legend.plots = bar_names
+        self.overlays.append(legend)
         return bars
 
 
@@ -281,8 +287,9 @@ class BoxPlot(_chaco.DataView):
 if __name__ == '__main__':
     from tests.conftest import hist_ds, boxplot_ds
     # plot = BoxPlot(boxplot_ds())
-    # plot = StackedHistPlot(hist_ds())
-    plot = HistPlot(hist_ds(), 'O3')
+    hd = hist_ds()
+    plot = StackedHistPlot(hd)
+    # plot = HistPlot(hist_ds(), 'O3')
     plot.new_window(True)
 
     ## plot.render_hist(row_id)
