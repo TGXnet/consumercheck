@@ -1,7 +1,6 @@
 
 # Scipy imports
 import numpy as _np
-from pprint import pprint
 
 # ETS imports
 import traits.api as _traits
@@ -130,7 +129,8 @@ class StackedHistPlot(_chaco.DataView):
 
     def __init__(self, ds):
         super(StackedHistPlot, self).__init__(ds=ds)
-        last_renderer = self._render_data()
+        pec = self._calc_percentage()
+        last_renderer = self._render_data(pec)
         self._add_axis(last_renderer)
 
 
@@ -140,7 +140,14 @@ class StackedHistPlot(_chaco.DataView):
         return _chaco.MultiArrayDataSource(stair)
 
 
-    def _render_data(self):
+    def _calc_percentage(self):
+        hist = self.ds.mat.values
+        alt = _np.max(hist.sum(axis=1))
+        pec = hist*100/alt
+        return pec
+
+
+    def _render_data(self, pec):
         idx = _chaco.ArrayDataSource(_np.arange(self.ds.n_objs))
         mvals = self.stair_ds
 
@@ -164,11 +171,33 @@ class StackedHistPlot(_chaco.DataView):
                                   bar_width=0.8, antialias=False)
             name = str(self.ds.var_n[i])
             bar_names[name] = bars
+            num = mvals.get_data(axes=i)
+            pecl = pec[:,i]
+            self._add_data_labels(bars, num, pecl)
             self.add(bars)
         legend = _chaco.Legend(component=self, padding=2, align="ur")
         legend.plots = bar_names
         self.overlays.append(legend)
         return bars
+
+
+    def _add_data_labels(self, renderer, fraction, pec):
+        idx = renderer.index._data
+        val = renderer.value._data
+        for i, v in enumerate(fraction):
+            p = pec[i]
+            label = _chaco.DataLabel(
+                component = renderer,
+                data_point = (idx[i], val[i]),
+                label_text = "{0}%({1})".format(p, v),
+                label_position = 'top',
+                arrow_visible = False,
+                marker_visible = False,
+                border_visible = False,
+                show_label_coords = False,
+                bgcolor = (0.5, 0.5, 0.5, 0.0),
+                )
+            renderer.overlays.append(label)
 
 
 
