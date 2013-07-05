@@ -171,7 +171,7 @@ class StackedHistPlot(_chaco.DataView):
                                   bar_width=0.8, antialias=False)
             name = str(self.ds.var_n[i])
             bar_names[name] = bars
-            num = mvals.get_data(axes=i)
+            num = self.ds.mat.values[:,i]
             pecl = pec[:,i]
             self._add_data_labels(bars, num, pecl)
             self.add(bars)
