@@ -44,14 +44,19 @@ class ConjointMachine(object):
 
 
     def _start_r_interpreter(self):
+#        Rbin = op.join(self.r_origo, 'Rdist', 'R-2.15.1', 'bin', 'R.exe')
+#        Rlib = op.join(self.r_origo, 'Rdist', 'R-2.15.1', 'library')
         Rbin = op.join(self.r_origo, 'R-2.15.1', 'bin', 'R.exe')
+        Rlib = op.join(self.r_origo, 'R-2.15.1', 'library')
         logger.info("Try R path: {0}".format(Rbin))
         if op.exists(Rbin):
             logger.info("R.exe found")
+            self.r = pyper.R(RCMD=Rbin, use_pandas=False)
+            self.r('.libPaths("{0}")'.format(Rlib))
         else:
             Rbin = 'R'
             logger.info("R.exe not found, so we are depending on system wide R installation")
-        self.r = pyper.R(RCMD=Rbin, use_pandas=False)
+            self.r = pyper.R(RCMD=Rbin, use_pandas=False)
 
 
     def _load_conjoint_resources(self):
