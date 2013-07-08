@@ -26,7 +26,14 @@ class ErrorMessage(_traits.HasTraits):
 
 class PcaController(ModelController):
     '''Controller for one PCA object'''
-    window_launchers = _traits.List(_traits.Instance(WindowLauncher))
+    window_launchers = _traits.List(_traits.Instance(WindowLauncher))    
+    win_handle = _traits.Any()
+
+
+    def init(self, info):
+        self.win_handle = info.ui.control
+        info.object.hwin = info.ui.control
+
 
     def _name_default(self):
         return self.model.ds.display_name
@@ -68,9 +75,8 @@ class PcaController(ModelController):
 
     def _show_zero_var_warning(self):
         dlg = ErrorMessage()
-        for vn in self.model.zero_variance:
-            dlg.err_msg += vn + ', '
-        dlg.edit_traits()
+        dlg.err_msg = ', '.join(self.model.zero_variance)
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
     def open_overview(self):
