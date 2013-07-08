@@ -125,7 +125,7 @@ Model structure descriptions:
                 for comb in combinations(vn, 2)]
         else:
             int_plot_launchers = []
-
+        print('inter', int_plot_launchers, vn, self.model.model_struct)
         self.int_plot_launchers = [
             WindowLauncher(
                 owner_ref=self, node_name=nn,
@@ -210,7 +210,6 @@ conjoint_view = _traitsui.View(
     _traitsui.Item('controller.name', style='readonly', label='Consumer likings'),
     _traitsui.Item('controller.design_name', style='readonly', label='Design'),
     _traitsui.Item('controller.cons_attr_name', style='readonly', label='Consumer charactersitics'),
-    _traitsui.Item('model_struct', style='simple', label='Model'),
     _traitsui.Group(
         _traitsui.Item('controller.model_desc',
                        editor=_traitsui.HTMLEditor(),
@@ -274,6 +273,8 @@ class ConjointPluginController(PluginController):
     sel_cons_char = _traits.List()
     consumer_vars = _traits.List()
 
+    model_struct = _traits.Enum('Struct 1', 'Struct 2', 'Struct 3')
+
 
     dummy_model_controller = _traits.Instance(ConjointController)
 
@@ -336,20 +337,20 @@ for variables with a large number of categories.
         self.consumer_vars = varn
 
 
-    @_traits.on_trait_change('sel_design_var')
-    def _upd_design_var(self, obj, name, old_value, new_value):
-        if isinstance(self.selected_object, ModelController):
-            self.selected_object.model.design_vars = new_value
-        elif isinstance(self.selected_object, WindowLauncher):
-            self.selected_object.owner_ref.model.design_vars = new_value
-
-
-    @_traits.on_trait_change('sel_cons_char')
-    def _upd_cons_char(self, obj, name, old_value, new_value):
-        if isinstance(self.selected_object, ModelController):
-            self.selected_object.model.consumers_vars = new_value
-        elif isinstance(self.selected_object, WindowLauncher):
-            self.selected_object.owner_ref.model.consumers_vars = new_value
+#    @_traits.on_trait_change('sel_design_var')
+#    def _upd_design_var(self, obj, name, old_value, new_value):
+#        if isinstance(self.selected_object, ModelController):
+#            self.selected_object.model.design_vars = new_value
+#        elif isinstance(self.selected_object, WindowLauncher):
+#            self.selected_object.owner_ref.model.design_vars = new_value
+#
+#
+#    @_traits.on_trait_change('sel_cons_char')
+#    def _upd_cons_char(self, obj, name, old_value, new_value):
+#        if isinstance(self.selected_object, ModelController):
+#            self.selected_object.model.consumers_vars = new_value
+#        elif isinstance(self.selected_object, WindowLauncher):
+#            self.selected_object.owner_ref.model.consumers_vars = new_value
 
 
     @_traits.on_trait_change('selected_consumer_liking_sets')
@@ -380,6 +381,7 @@ for variables with a large number of categories.
                               consumers_vars=self.sel_cons_char,
                               liking=l)
         calculation = ConjointController(calc_model)
+        calculation._update_plot_lists()
         self.model.add(calculation)
 
 
@@ -445,6 +447,7 @@ selection_view = _traitsui.Group(
             ),
         orientation='horizontal',
         ),
+        _traitsui.Item('controller.model_struct', style='simple', label='Model'),
     label='Select dataset',
     show_border=True,
     )
