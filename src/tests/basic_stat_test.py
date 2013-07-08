@@ -21,10 +21,10 @@ def test_discrete_row_wise(discrete_ds):
     summary = res.summary
     hist = res.hist
     assert summary.var_n == ['min', 'perc25', 'med', 'perc75', 'max']
-    assert hist.mat.shape == (5, 11)
+    assert hist.mat.shape == (5, 9)
     assert summary.mat.shape == (5, 5)
     # FIXME: Maybe this should be converted to strings
-    assert hist.var_n == range(11)
+    assert hist.var_n == range(1, 10)
     assert hist.obj_n == ['O{}'.format(i+1) for i in range(5)]
 
 
@@ -36,10 +36,10 @@ def test_discrete_column_wise(discrete_ds):
     summary = res.summary
     hist = res.hist
     assert summary.var_n == ['min', 'perc25', 'med', 'perc75', 'max']
-    assert hist.mat.shape == (8, 11)
+    assert hist.mat.shape == (8, 9)
     assert summary.mat.shape == (8, 5)
     # FIXME: Maybe this should be converted to strings
-    assert hist.var_n == range(11)
+    assert hist.var_n == range(1, 10)
     assert hist.obj_n == ['V{}'.format(i+1) for i in range(8)]
 
 
