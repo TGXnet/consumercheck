@@ -125,7 +125,7 @@ Model structure descriptions:
                 for comb in combinations(vn, 2)]
         else:
             int_plot_launchers = []
-        print('inter', int_plot_launchers, vn, self.model.model_struct)
+
         self.int_plot_launchers = [
             WindowLauncher(
                 owner_ref=self, node_name=nn,

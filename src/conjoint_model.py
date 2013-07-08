@@ -73,20 +73,16 @@ class Conjoint(Model):
     @_traits.on_trait_change('owner_ref.model_struct')
     def _struc_altered(self, new):
         self.model_struct = new
-        print('Struc updated', new)
 
 
     @_traits.on_trait_change('owner_ref.sel_design_var')
     def _des_var_altered(self, new):
         self.design_vars = new
-        print('Des var', new)
 
 
     @_traits.on_trait_change('owner_ref.sel_cons_char')
     def _cons_char_altered(self, new):
         self.consumers_vars = new
-        print('Des var', new)
-
 
 
     @_traits.cached_property
