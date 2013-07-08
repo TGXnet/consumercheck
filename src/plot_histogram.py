@@ -129,6 +129,7 @@ class StackedHistPlot(_chaco.DataView):
 
     def __init__(self, ds):
         super(StackedHistPlot, self).__init__(ds=ds)
+        print(self.ds.mat)
         pec = self._calc_percentage()
         last_renderer = self._render_data(pec)
         self._add_axis(last_renderer)
@@ -167,7 +168,7 @@ class StackedHistPlot(_chaco.DataView):
                                   value_mapper=value_mapper,
                                   index_mapper=index_mapper,
                                   line_color='black',
-                                  fill_color=colors[i%len(colors)],
+                                  fill_color=colors[(i+1)%len(colors)],
                                   bar_width=0.8, antialias=False)
             name = str(self.ds.var_n[i])
             bar_names[name] = bars
@@ -190,7 +191,7 @@ class StackedHistPlot(_chaco.DataView):
                 component = renderer,
                 data_point = (idx[i], val[i]),
                 label_text = "{0}%({1})".format(p, v),
-                label_position = 'top',
+                label_position = 'bottom',
                 arrow_visible = False,
                 marker_visible = False,
                 border_visible = False,
