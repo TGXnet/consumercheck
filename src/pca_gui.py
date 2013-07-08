@@ -88,15 +88,16 @@ class PcaController(ModelController):
         wl = self.window_launchers
         title = self._wind_title(res)
 
-        sp = multiplot_factory(scores_plot, res, wl, title)
-        lp = multiplot_factory(loadings_plot, res, wl, title)
-        clp = multiplot_factory(corr_load_plot, res, wl, title)
-        evp = multiplot_factory(expl_var_plot, res, wl, title)
+        mpw = MultiPlotWindow(title_text=title)
+
+        sp = multiplot_factory(scores_plot, res, wl, title, mpw)
+        lp = multiplot_factory(loadings_plot, res, wl, title, mpw)
+        clp = multiplot_factory(corr_load_plot, res, wl, title, mpw)
+        evp = multiplot_factory(expl_var_plot, res, wl, title, mpw)
 
         ds_plots = [[sp, lp],
                     [clp, evp]]
 
-        mpw = MultiPlotWindow(title_text=title)
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)
