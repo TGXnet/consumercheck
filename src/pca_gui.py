@@ -26,7 +26,14 @@ class ErrorMessage(_traits.HasTraits):
 
 class PcaController(ModelController):
     '''Controller for one PCA object'''
-    window_launchers = _traits.List(_traits.Instance(WindowLauncher))
+    window_launchers = _traits.List(_traits.Instance(WindowLauncher))    
+    win_handle = _traits.Any()
+
+
+    def init(self, info):
+        self.win_handle = info.ui.control
+        info.object.hwin = info.ui.control
+
 
     def _name_default(self):
         return self.model.ds.display_name
@@ -68,9 +75,8 @@ class PcaController(ModelController):
 
     def _show_zero_var_warning(self):
         dlg = ErrorMessage()
-        for vn in self.model.zero_variance:
-            dlg.err_msg += vn + ', '
-        dlg.edit_traits()
+        dlg.err_msg = ', '.join(self.model.zero_variance)
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
     def open_overview(self):
@@ -88,15 +94,16 @@ class PcaController(ModelController):
         wl = self.window_launchers
         title = self._wind_title(res)
 
-        sp = multiplot_factory(scores_plot, res, wl, title)
-        lp = multiplot_factory(loadings_plot, res, wl, title)
-        clp = multiplot_factory(corr_load_plot, res, wl, title)
-        evp = multiplot_factory(expl_var_plot, res, wl, title)
+        mpw = MultiPlotWindow(title_text=title)
+
+        sp = multiplot_factory(scores_plot, res, wl, title, mpw)
+        lp = multiplot_factory(loadings_plot, res, wl, title, mpw)
+        clp = multiplot_factory(corr_load_plot, res, wl, title, mpw)
+        evp = multiplot_factory(expl_var_plot, res, wl, title, mpw)
 
         ds_plots = [[sp, lp],
                     [clp, evp]]
 
-        mpw = MultiPlotWindow(title_text=title)
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)

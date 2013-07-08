@@ -70,6 +70,21 @@ class Conjoint(Model):
     res = _traits.Property(depends_on='design_vars, consumers_vars, model_struct')
 
 
+    @_traits.on_trait_change('owner_ref.model_struct')
+    def _struc_altered(self, new):
+        self.model_struct = new
+
+
+    @_traits.on_trait_change('owner_ref.sel_design_var')
+    def _des_var_altered(self, new):
+        self.design_vars = new
+
+
+    @_traits.on_trait_change('owner_ref.sel_cons_char')
+    def _cons_char_altered(self, new):
+        self.consumers_vars = new
+
+
     @_traits.cached_property
     def _get_res(self):
         if not self.cm.run_state:

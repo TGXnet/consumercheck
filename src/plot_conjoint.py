@@ -7,7 +7,8 @@ from traits.api import Instance, Bool, Str, Button, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
 from chaco.api import (ArrayPlotData, LabelAxis, DataView, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
-                       add_default_grids, ScatterPlot, LinePlot, PlotAxis)
+                       add_default_grids, ScatterPlot, LinePlot, PlotAxis,
+                       PlotGraphicsContext)
 from chaco.tools.api import ZoomTool, PanTool, LegendTool
 from chaco.example_support import COLOR_PALETTE
 
@@ -176,6 +177,16 @@ class MainEffectsPlot(DataView):
             self.border_color = (0.5, 0.5, 0.5, 0.8)
 
 
+    def export_image(self, fname, size=(800,600)):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)
+
+
+
 
 class InteractionPlot(DataView):
 
@@ -307,9 +318,17 @@ class InteractionPlot(DataView):
         # Add the traits inspector tool to the container
         # self.tools.append(TraitsTool(self))
 
+    def export_image(self, fname, size=(800,600)):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)
 
 
-class TitleHandler(Handler):
+
+class BasePW(Handler):
     """ Change the title on the UI.
 
     """
@@ -372,7 +391,7 @@ class InteractionPlotWindow(PlotWindow):
             layout="normal",
             ),
         resizable=True,
-        handler=TitleHandler(),
+        handler=BasePW(),
         # kind = 'nonmodal',
         width = .5,
         height = .7,

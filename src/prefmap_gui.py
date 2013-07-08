@@ -66,17 +66,18 @@ class PrefmapController(ModelController):
         wl = self.window_launchers
         title = self._wind_title(res)
 
-        sp = multiplot_factory(scores_plot, res, wl, title)
-        clp = multiplot_factory(corr_loadings_plot, res, wl, title)
-        evc = multiplot_factory(expl_var_x_plot, res, wl, title)
-        evs = multiplot_factory(expl_var_y_plot, res, wl, title)
+        mpw = MultiPlotWindow(title_text=title)
+
+        sp = multiplot_factory(scores_plot, res, wl, title, mpw)
+        clp = multiplot_factory(corr_loadings_plot, res, wl, title, mpw)
+        evc = multiplot_factory(expl_var_x_plot, res, wl, title, mpw)
+        evs = multiplot_factory(expl_var_y_plot, res, wl, title, mpw)
 
         ds_plots = [
             [sp, clp],
             [evc, evs]
             ]
 
-        mpw = MultiPlotWindow(title_text=title)
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)

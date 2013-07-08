@@ -73,7 +73,7 @@ class ModelController(_traitsui.Controller):
             self._show_plot_window(win)
         elif isinstance(viewable, DataSet):
             table = DSTableViewer(viewable)
-            table.edit_traits(view=table.get_view(), kind='live')
+            table.edit_traits(view=table.get_view(), kind='live', parent=self.win_handle)
         else:
             raise NotImplementedError("Do not know how to open this")
 
@@ -94,7 +94,7 @@ class ModelController(_traitsui.Controller):
                 )
         else:
             raise NotImplementedError(
-                "Not implemented for this platform: ".format(sys.platform))
+                "Not implemented for this platform: {0}".format(sys.platform))
 
 
     def _wind_title(self, res):

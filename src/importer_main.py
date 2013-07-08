@@ -72,9 +72,12 @@ class ImporterMain(HasTraits):
         for filen in self._files_path:
             importer = self._make_importer(filen)
             importer.kind = self._pick_kind(filen)
-            importer.edit_traits()
-            ds = importer.import_data()
-            datasets.append(ds)
+            ui = importer.edit_traits()
+            if ui.result:
+                ds = importer.import_data()
+                datasets.append(ds)
+            else:
+                continue
         conf.set_option('work_dir', filen)
         return datasets
 

@@ -154,6 +154,15 @@ class EVLinePlot(PlotBase):
         return self.data.pc_ds[0].view_data
 
 
+    def export_image(self, fname, size=(800,600)):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)
+
+
 
 if __name__ == '__main__':
     line = np.array([56.4, 78.9, 96.0, 99.4])
