@@ -42,8 +42,7 @@ class Pca(Model):
             std_ds = True
         else:
             std_ds = False
-        self._check_std_dev()
-        if self.zero_variance and self.standardise:
+        if self.standardise and self._have_zero_std_var():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.zero_variance)
         pca = PCA(self.ds.values,
@@ -52,14 +51,16 @@ class Pca(Model):
         return self._pack_res(pca)
 
 
-    def _check_std_dev(self):
+    def _have_zero_std_var(self):
         sv = self.ds.values.std(axis=0)
         dm = sv < self.min_std
         if _np.any(dm):
             vv = _np.array(self.ds.var_n)
             self.zero_variance = list(vv[_np.nonzero(dm)])
+            return True
         else:
             self.zero_variance = []
+            return False
 
 
     def _get_max_pc(self):
