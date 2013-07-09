@@ -168,7 +168,7 @@ class StackedHistPlot(_chaco.DataView):
                                   value_mapper=value_mapper,
                                   index_mapper=index_mapper,
                                   line_color='black',
-                                  fill_color=colors[(i+1)%len(colors)],
+                                  fill_color=colors[(i+2)%len(colors)],
                                   bar_width=0.8, antialias=False)
             name = str(self.ds.var_n[i])
             bar_names[name] = bars
