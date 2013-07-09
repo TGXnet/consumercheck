@@ -6,7 +6,8 @@ import pandas as _pd
 import traits.api as _traits
 
 # Local imports
-from plsr import nipalsPLS2 as PLS
+from plsr import nipalsPLS2 as PLSR
+from pcr import nipalsPCR as PCR
 from dataset import DataSet
 from plugin_base import Model, Result
 
@@ -25,6 +26,7 @@ class Prefmap(Model):
     standardise_x = _traits.Bool(False)
     standardise_y = _traits.Bool(False)
     int_ext_mapping = _traits.Enum('Internal', 'External')
+    prefmap_method = _traits.Enum('PLSR', 'PCR')
     calc_n_pc = _traits.Int()
     min_pc = 2
     max_pc = _traits.Property()
@@ -32,10 +34,16 @@ class Prefmap(Model):
 
     def _get_res(self):
         print(self.ds_X.display_name)
-        pls = PLS(self.ds_X.values, self.ds_Y.values,
-                  numPC=self.calc_n_pc, cvType=["loo"],
-                  Xstand=self.standardise_x, Ystand=self.standardise_y)
-        return self._pack_res(pls)
+        if self.prefmap_method == 'PLSR':
+            pls = PLSR(self.ds_X.values, self.ds_Y.values,
+                      numPC=self.calc_n_pc, cvType=["loo"],
+                      Xstand=self.standardise_x, Ystand=self.standardise_y)
+            return self._pack_res(pls)
+        elif self.prefmap_method == 'PCR':
+            pcr = PCR(self.ds_X.values, self.ds_Y.values,
+                      numPC=self.calc_n_pc, cvType=["loo"],
+                      Xstand=self.standardise_x, Ystand=self.standardise_y)
+            return self._pack_res(pcr)
 
 
     def _get_ds_X(self):
