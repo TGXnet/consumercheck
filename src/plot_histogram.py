@@ -129,7 +129,6 @@ class StackedHistPlot(_chaco.DataView):
 
     def __init__(self, ds):
         super(StackedHistPlot, self).__init__(ds=ds)
-        print(self.ds.mat)
         pec = self._calc_percentage()
         last_renderer = self._render_data(pec)
         self._add_axis(last_renderer)
