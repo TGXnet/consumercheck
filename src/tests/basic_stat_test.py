@@ -5,10 +5,10 @@
 import pytest
 
 # Local imports
-from basic_stat_model import BasicStat, extract_summary, extract_histogram
+from basic_stat_model import BasicStat
 from basic_stat_gui import BasicStatPluginController
 from dataset_container import DatasetContainer
-from plugin_tree_helper import CalcContainer
+from plugin_base import CalcContainer
 
 
 # Testing one analysis module
@@ -18,13 +18,13 @@ def test_discrete_row_wise(discrete_ds):
     # Row-wise is default
     bs = BasicStat(ds=discrete_ds)
     res = bs.res
-    summary = extract_summary(res)
-    hist = extract_histogram(res)
-    assert summary.var_n == ['mean', 'std', 'min', 'max']
-    assert hist.mat.shape == (5, 11)
-    assert summary.mat.shape == (5, 4)
+    summary = res.summary
+    hist = res.hist
+    assert summary.var_n == ['min', 'perc25', 'med', 'perc75', 'max']
+    assert hist.mat.shape == (5, 9)
+    assert summary.mat.shape == (5, 5)
     # FIXME: Maybe this should be converted to strings
-    assert hist.var_n == range(11)
+    assert hist.var_n == range(1, 10)
     assert hist.obj_n == ['O{}'.format(i+1) for i in range(5)]
 
 
@@ -33,13 +33,13 @@ def test_discrete_column_wise(discrete_ds):
     bs = BasicStat(ds=discrete_ds)
     bs.summary_axis = 'Column-wise'
     res = bs.res
-    summary = extract_summary(res)
-    hist = extract_histogram(res)
-    assert summary.var_n == ['mean', 'std', 'min', 'max']
-    assert hist.mat.shape == (8, 11)
-    assert summary.mat.shape == (8, 4)
+    summary = res.summary
+    hist = res.hist
+    assert summary.var_n == ['min', 'perc25', 'med', 'perc75', 'max']
+    assert hist.mat.shape == (8, 9)
+    assert summary.mat.shape == (8, 5)
     # FIXME: Maybe this should be converted to strings
-    assert hist.var_n == range(11)
+    assert hist.var_n == range(1, 10)
     assert hist.obj_n == ['V{}'.format(i+1) for i in range(8)]
 
 
@@ -49,8 +49,8 @@ def test_missing(discrete_nans_ds):
 
     bs.summary_axis = 'Row-wise'
     res = bs.res
-    summary = extract_summary(res)
-    hist = extract_histogram(res)
+    summary = res.summary
+    hist = res.hist
     nans = hist.mat['missing']
     assert nans.sum() == 10
     hist_sums = hist.mat.sum(axis=1)
@@ -59,8 +59,8 @@ def test_missing(discrete_nans_ds):
 
     bs.summary_axis = 'Column-wise'
     res = bs.res
-    summary = extract_summary(res)
-    hist = extract_histogram(res)
+    summary = res.summary
+    hist = res.hist
     nans = hist.mat['missing']
     assert nans.sum() == 10
     hist_sums = hist.mat.sum(axis=1)

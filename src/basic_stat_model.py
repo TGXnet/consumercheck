@@ -64,6 +64,13 @@ class BasicStat(Model):
         # https://github.com/numpy/numpy/issues/823
         mat = self.ds.values.astype(_np.int16)
         end = mat.max() + 2
+        begin = mat.min()
+        split = range(begin, end)
+
+        def hist(v):
+            r = _np.histogram(v, bins=split)
+            return r[0]
+
 
         if self.ds.missing_data:
             hl = []
@@ -84,14 +91,12 @@ class BasicStat(Model):
         else:
             if self.summary_axis == 'Row-wise':
                 idx = self.ds.obj_n
-                it = [(i, Ellipsis) for i in range(mat.shape[0])]
+                hl = _np.apply_along_axis(hist, 1, mat)
             else:
                 idx = self.ds.var_n
-                it = [(Ellipsis, i) for i in range(mat.shape[1])]
+                hl = _np.apply_along_axis(hist, 0, mat).T
 
-            hl = [list(_np.bincount(mat[i], minlength=end)) for i in it]
-
-        ht = _pd.DataFrame(hl, index=idx)
+        ht = _pd.DataFrame(hl, index=idx, columns=split[:-1])
         if self.ds.missing_data:
             ht['missing'] = _np.ma.count_masked(mat, axis=dr)
 
