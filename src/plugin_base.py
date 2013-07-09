@@ -54,13 +54,17 @@ class ModelController(_traitsui.Controller):
         return self.id != other
 
 
+    def get_result(self):
+        return self.model.res
+
+
     def open_window(self, viewable, view_loop):
         """Expected viewable is by now:
           + Plot subtype
           + DataSet type
         """
         if isinstance(viewable, _chaco.DataView):
-            res = self.model.res
+            res = self.get_result()
 
             win = SinglePlotWindow(
                 plot=viewable,

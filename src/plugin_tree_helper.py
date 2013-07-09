@@ -12,7 +12,7 @@ import traits.api as _traits
 
 def dclk_activator(obj):
     open_win_func = obj.view_creator
-    res = obj.owner_ref.model.res
+    res = obj.owner_ref.get_result()
     loop = getattr(obj.owner_ref, obj.loop_name)
     if len(obj.func_parms) < 1:
         view = open_win_func(res)

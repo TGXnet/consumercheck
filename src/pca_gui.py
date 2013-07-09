@@ -4,6 +4,7 @@ import traits.api as _traits
 import traitsui.api as _traitsui
 
 # Local imports
+from dataset import DataSet
 from pca_model import Pca, InComputeable
 from ui_results import TableViewController
 from plot_ev_line import EVLinePlot
@@ -23,11 +24,9 @@ class ErrorMessage(_traits.HasTraits):
                        buttons=[_traitsui.OKButton], title='Warning')
 
 
-
 class PcaController(ModelController):
     '''Controller for one PCA object'''
-    window_launchers = _traits.List(_traits.Instance(WindowLauncher))    
-    win_handle = _traits.Any()
+    window_launchers = _traits.List(_traits.Instance(WindowLauncher))
 
 
     def init(self, info):
@@ -79,18 +78,29 @@ class PcaController(ModelController):
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
+    def get_result(self):
+        try:
+            res = self.model.res
+        except InComputeable:
+            self._show_zero_var_warning()
+            df = self.model.ds.mat.drop(self.model.zero_variance, axis=1)
+            olds = self.model.ds
+            self.model.ds = DataSet(mat=df,
+                                    display_name=olds.display_name,
+                                    kind=olds.kind)
+            res = self.model.res
+
+        return res
+
+
     def open_overview(self):
         """Make PCA overview plot.
 
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
         for each of the datasets.
         """
-        try:
-            res = self.model.res
-        except InComputeable:
-            self._show_zero_var_warning()
-            return
-
+        res = self.get_result()
+ 
         wl = self.window_launchers
         title = self._wind_title(res)
 
