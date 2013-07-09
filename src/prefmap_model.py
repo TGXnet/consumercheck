@@ -33,7 +33,6 @@ class Prefmap(Model):
 
 
     def _get_res(self):
-        print(self.ds_X.display_name)
         if self.prefmap_method == 'PLSR':
             pls = PLSR(self.ds_X.values, self.ds_Y.values,
                       numPC=self.calc_n_pc, cvType=["loo"],
