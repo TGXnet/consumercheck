@@ -37,7 +37,7 @@ class DatasetContainer(_traits.HasTraits):
             self.dsl.append(ds)
 
 
-    def get_id_name_map(self, kind_filter=None):
+    def get_id_name_map(self, kind_filter=None, kind_exclude=None):
         """Get a lis of tuples with dataset id and names
         """
         if kind_filter is not None:
@@ -47,6 +47,13 @@ class DatasetContainer(_traits.HasTraits):
                 return [(ds.id, ds.display_name)
                         for ds in self.dsl
                         if ds.kind == kind_filter]
+        if kind_exclude is not None:
+            if kind_exclude not in DS_TYPES:
+                raise ValueError("Not valid dataset type:", kind_exclude, DS_TYPES)
+            else:
+                return [(ds.id, ds.display_name)
+                        for ds in self.dsl
+                        if ds.kind != kind_exclude]
         else:
             return [(ds.id, ds.display_name)
                     for ds in self.dsl]
