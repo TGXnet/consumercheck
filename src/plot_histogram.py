@@ -86,7 +86,7 @@ class HistPlot(_chaco.DataView):
     def _add_axis(self, renderer):
         left_axis = _chaco.PlotAxis(renderer, orientation='left')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Categories',
+                                       title='Samples',
                                        positions = range(self.ds.n_vars),
                                        labels = [str(vn) for vn in self.ds.var_n],
                                        tick_interval=1.0,
@@ -204,7 +204,7 @@ class StackedHistPlot(_chaco.DataView):
     def _add_axis(self, renderer):
         left_axis = _chaco.PlotAxis(renderer, orientation='left')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Categories',
+                                       title='Samples',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
                                        tick_interval=1.0,
@@ -285,7 +285,7 @@ class BoxPlot(_chaco.DataView):
     def _add_axis(self, renderer):
         left_axis = _chaco.PlotAxis(renderer, orientation='left')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Categories',
+                                       title='Samples',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
                                        tick_interval=1.0,
