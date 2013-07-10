@@ -16,6 +16,7 @@ traits.has_traits.CHECK_INTERFACES = 0
 from traits.api import push_exception_handler
 
 # Local imports
+import cc_config as conf
 from splash_screen import splash
 from main_ui import MainUi
 from exception_handler import tgx_exception_handler
@@ -26,7 +27,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format=log_format,
     # datefmt='%m-%d %H:%M',
-    filename='scum.log',
+    filename=conf.log_file_url(),
     filemode='w')
 
 console = logging.StreamHandler()
