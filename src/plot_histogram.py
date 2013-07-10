@@ -117,6 +117,15 @@ class HistPlot(_chaco.DataView):
         return self.ds
 
 
+    def export_image(self, fname, size=(800,600)):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = _chaco.PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)
+
+
 
 class StackedHistPlot(_chaco.DataView):
     '''Plot histogram values for each row stacked on to of each other'''
@@ -232,6 +241,16 @@ class StackedHistPlot(_chaco.DataView):
 
 
 
+    def export_image(self, fname, size=(800,600)):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = _chaco.PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)
+
+
+
 class BoxPlot(_chaco.DataView):
     '''A box plot
 
@@ -310,6 +329,15 @@ class BoxPlot(_chaco.DataView):
 
     def _get_plot_data(self):
         return self.ds
+
+
+    def export_image(self, fname, size=(800,600)):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = _chaco.PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)
 
 
 
