@@ -1,27 +1,16 @@
-# Per directory py.test helper functions
 '''PY.test resources
 '''
-import pytest
-
 # Std lib imports
-import copy
 import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+import os.path as osp
+import copy
 
-# Configure logging
-logging.basicConfig(
-    level=logging.WARNING,
-    # level=logging.INFO,
-    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-    # datefmt='%m-%d %H:%M',
-    datefmt='%y%m%dT%H:%M:%S',
-    # filename='/temp/myapp.log',
-    # filemode='w',
-    )
-logging.info("Test start")
-
+# Scipy imports
 import numpy as np
 import pandas as pd
-import os.path as osp
+
+import pytest
 
 
 @pytest.fixture

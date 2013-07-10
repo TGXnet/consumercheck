@@ -3,16 +3,10 @@
 Read a file and make a dataset object.
 
 """
-# Stdlib imports
+# Std lib imports
+import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import os.path
-
-# import logging
-# Log everything, and send it to stderr.
-# http://docs.python.org/howto/logging-cookbook.html
-# logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.WARNING)
-# Log what the importe is going to do
-# And log operation completed if success
 
 # Enthought imports
 from traits.api import HasTraits, Bool, File, List, Instance, Str

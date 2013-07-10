@@ -1,16 +1,25 @@
 
-# Stdlib imports
-import sys
+# Std lib imports
 import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+import sys
 import traceback
-
-logger = logging.getLogger('tgxnet.nofima.cc.exception')
 
 # Enthought imports
 from traits.api import HasTraits, Button, Str, push_exception_handler
 from traitsui.api import View, Item
 from traitsui.menu import OKButton
 
+
+class ErrorDialog(HasTraits):
+    message = Str('Something went wrong, check logfile for details')
+    traits_view=View(
+        Item('message', style='readonly', show_label=False, springy=True),
+        buttons=[OKButton],
+        resizable=True,
+        width=300,
+        height=150,
+        )
 
 # Exception handler
 def tgx_exception_handler(object, trait_name, old, new):
@@ -26,27 +35,18 @@ def tgx_exception_handler(object, trait_name, old, new):
             'new value: %s.\n%s\n' % ( object, trait_name, old, new,
             ''.join( traceback.format_exception( *sys.exc_info() ) ) ) )
 
-    try:
-        logger.exception(
-            'Exception occurred in traits notification handler for '
-            'object: %s, trait: %s, old value: %s, new value: %s' %
-            ( object, trait_name, old, new ) )
-    except Exception:
-        # Ignore anything we can't log the above way:
-        pass
+    ## try:
+    ##     logger.exception(
+    ##         'Exception occurred in traits notification handler for '
+    ##         'object: %s, trait: %s, old value: %s, new value: %s' %
+    ##         ( object, trait_name, old, new ) )
+    ## except Exception:
+    ##     # Ignore anything we can't log the above way:
+    ##     pass
 
-    class ErrorDialog(HasTraits):
-        message = Str('Something went wrong, check logfile for details')
-        traits_view=View(
-            Item('message', style='readonly', show_label=False, springy=True),
-            buttons=[OKButton],
-            resizable=True,
-            width=300,
-            height=150,
-            )
 
     # FIXME: Make sure only one is open at the time
-    # ErrorDialog().edit_traits()
+    print("Something went wrong")
 
 
 if __name__ == '__main__':

@@ -1,18 +1,8 @@
 
 # Std lib imports
-from itertools import combinations
 import logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    # datefmt='%m-%d %H:%M',
-                    datefmt='%y%m%dT%H:%M:%S',
-                    # filename='/temp/myapp.log',
-                    # filemode='w',
-                    )
-if __name__ == '__main__':
-    logger = logging.getLogger('tgxnet.nofima.cc.' + __file__.split('.')[0])
-else:
-    logger = logging.getLogger(__name__)
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+from itertools import combinations
 
 # Scipy lib imports
 import numpy as _np

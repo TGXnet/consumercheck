@@ -32,7 +32,7 @@ logging.basicConfig(
 console = logging.StreamHandler()
 console.setLevel(logging.WARNING)
 console_formatter = logging.Formatter(log_format)
-console.setFormatter(consolle_formatter)
+console.setFormatter(console_formatter)
 # add the handler to the root logger
 logging.getLogger('').addHandler(console)
 

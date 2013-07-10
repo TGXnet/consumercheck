@@ -1,22 +1,19 @@
 
-# Import necessary modules
+# Std lib imports
+import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import __builtin__
 import os.path as op
 import string
-import pyper
-import numpy as np
 from threading import Thread
 from itertools import combinations
+
+# Scipy imports
+import pyper
+import numpy as np
+
+# Local imports
 from plugin_base import Result
-
-
-# Setup logging
-import logging
-logging.basicConfig(level=logging.DEBUG)
-if __name__ == '__main__':
-    logger = logging.getLogger('tgxnet.nofima.cc.' + __file__.split('.')[0])
-else:
-    logger = logging.getLogger(__name__)
 
 
 class ConjointMachine(object):

@@ -1,11 +1,8 @@
 
 # StdLib imports
-import os.path
 import logging
-# Log everything, and send it to stderr.
-# http://docs.python.org/howto/logging-cookbook.html
-# logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+import os.path
 
 # SciPy imports
 import pandas as _pd
@@ -128,7 +125,7 @@ class FilePreviewer(Handler):
                     break
                 if not ('\r' in line or '\n' in line):
                     fp.readline()
-                logging.debug("linje {}: {}".format(i, line.rstrip('\n')))
+                logger.debug("linje {}: {}".format(i, line.rstrip('\n')))
                 lines.append(line.rstrip('\n'))
         self._raw_lines = lines
 

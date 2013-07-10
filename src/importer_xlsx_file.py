@@ -1,13 +1,13 @@
-# StdLib imports
-import os.path
-# from StringIO import StringIO
-from openpyxl.reader.excel import load_workbook
-# import logging
-# Log everything, and send it to stderr.
-# http://docs.python.org/howto/logging-cookbook.html
-# logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.WARNING)
 
+# Std lib imports
+import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+import os.path
+
+# Scipy imports
+import numpy as np
+import pandas as _pd
+from openpyxl.reader.excel import load_workbook
 
 # Enthought imports
 from traits.api import implements, HasTraits, File, Bool, Str, Int, List
@@ -18,10 +18,6 @@ from traitsui.menu import OKButton, CancelButton
 # Local imports
 from importer_interfaces import IDataImporter
 from dataset import DS_TYPES, DataSet
-
-#Import NumPy
-import numpy as np
-import pandas as _pd
 
 
 class RawLineAdapter(TabularAdapter):

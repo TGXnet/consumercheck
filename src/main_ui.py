@@ -1,9 +1,9 @@
 
-# stdlib imports
+# Std lib imports
 import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import webbrowser
 from os import path, pardir
-logger = logging.getLogger(__name__)
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Any, Event
@@ -57,6 +57,7 @@ class MainViewHandler(Handler):
 
     def init(self, info):
         # Close splash window
+        logger.info('Init main ui')
         info.object.win_handle = info.ui.control
         try:
             info.object.splash.close()
@@ -147,13 +148,6 @@ class MainUi(HasTraits):
 if __name__ == '__main__':
     import numpy as np
     from tests.conftest import all_dsc
-    lfn = __file__.split('.')[0]+'.log'
-    logging.basicConfig(level=logging.INFO,
-                        # format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                        # datefmt='%m-%d %H:%M',
-                        filename=lfn,
-                        filemode='w')
-
     logger.info('Start interactive')
 
     mother = MainUi(dsc=all_dsc())
