@@ -11,15 +11,15 @@ class PrefmapPicker(HasTraits):
     sel_col = List()
     combinations = List(Tuple())
     combination_updated = Event()
-    get_selected = Button('Add mapping')
 
 
-    @on_trait_change('get_selected')
+    @on_trait_change('sel_row,sel_col')
     def _new_selection(self, obj, name, old_value, new_value):
+        if not (self.sel_row and self.sel_col):
+            return
         sel = (self.sel_row[0], self.sel_col[0])
+        self.combinations = []
         self.combinations.append(sel)
-        self.sel_row = []
-        self.sel_col = []
         self.combination_updated = True
 
 
@@ -43,7 +43,6 @@ class PrefmapPicker(HasTraits):
                 ),
             orientation='horizontal',
         ),
-        Item('get_selected', show_label=False),
         resizable=True,
         )
 
