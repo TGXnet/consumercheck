@@ -84,8 +84,6 @@ class ImporterMain(HasTraits):
             title='Import data')
         status = dlg.open()
         if status == OK:
-            print(dlg.paths)
-            print(self._files_path)
             self._files_path = dlg.paths
         elif status == CANCEL:
             pass
