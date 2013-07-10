@@ -142,8 +142,12 @@ def loadings_y_plot(res):
 
 def corr_loadings_plot(res):
     plot = PCScatterPlot(title='Correlation loadings')
-    plot.add_PC_set(res.corr_loadings_x, res.expl_var_x)
-    plot.add_PC_set(res.corr_loadings_y, res.expl_var_y)
+    clx = res.corr_loadings_x
+    clx.style.fg_color = 'blue'
+    cly = res.corr_loadings_y
+    cly.style.fg_color = 'red'
+    plot.add_PC_set(clx, res.expl_var_x)
+    plot.add_PC_set(cly, res.expl_var_y)
     plot.plot_circle(True)
     return plot
 
