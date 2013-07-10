@@ -207,9 +207,9 @@ no_view = _traitsui.View()
 
 
 conjoint_view = _traitsui.View(
-    _traitsui.Item('controller.name', style='readonly', label='Consumer likings'),
-    _traitsui.Item('controller.design_name', style='readonly', label='Design'),
-    _traitsui.Item('controller.cons_attr_name', style='readonly', label='Consumer charactersitics'),
+    ## _traitsui.Item('controller.name', style='readonly', label='Consumer likings'),
+    ## _traitsui.Item('controller.design_name', style='readonly', label='Design'),
+    ## _traitsui.Item('controller.cons_attr_name', style='readonly', label='Consumer charactersitics'),
     _traitsui.Group(
         _traitsui.Item('controller.model_desc',
                        editor=_traitsui.HTMLEditor(),
