@@ -1,5 +1,6 @@
 
 # Scipy libs imports
+import numpy as _np
 import pandas as _pd
 
 # ETS imports
@@ -10,6 +11,10 @@ from plsr import nipalsPLS2 as PLSR
 from pcr import nipalsPCR as PCR
 from dataset import DataSet
 from plugin_base import Model, Result
+
+
+class InComputeable(Exception):
+    pass
 
 
 class Prefmap(Model):
@@ -30,9 +35,15 @@ class Prefmap(Model):
     calc_n_pc = _traits.Int()
     min_pc = 2
     max_pc = _traits.Property()
+    min_std = _traits.Float(0.001)
+    C_zero_std = _traits.List()
+    S_zero_std = _traits.List()
 
 
     def _get_res(self):
+        if self._have_zero_std():
+            raise InComputeable('Matrix have variables with zero variance',
+                                self.C_zero_std, self.S_zero_std)
         if self.prefmap_method == 'PLSR':
             pls = PLSR(self.ds_X.values, self.ds_Y.values,
                       numPC=self.calc_n_pc, cvType=["loo"],
@@ -43,6 +54,53 @@ class Prefmap(Model):
                       numPC=self.calc_n_pc, cvType=["loo"],
                       Xstand=self.standardise_x, Ystand=self.standardise_y)
             return self._pack_res(pcr)
+
+
+    def _have_zero_std(self):
+        self.C_zero_std = []
+        self.S_zero_std = []
+        if self._std_C() and self._std_S():
+            rC = self._C_have_zero_std_var()
+            rS = self._S_have_zero_std_var()
+            return rC or rS
+        elif self._std_C():
+            return self._C_have_zero_std_var()
+        elif self._std_S():
+            return self._S_have_zero_std_var()
+
+
+    def _std_C(self):
+        if self.int_ext_mapping == 'Internal':
+            return self.standardise_x
+        else:
+            return self.standardise_y
+
+
+    def _std_S(self):
+        if self.int_ext_mapping == 'Internal':
+            return self.standardise_y
+        else:
+            return self.standardise_x
+
+
+    def _C_have_zero_std_var(self):
+        self.C_zero_std = self._check_zero_std(self.ds_C)
+        return bool(self.C_zero_std)
+
+
+    def _S_have_zero_std_var(self):
+        self.S_zero_std = self._check_zero_std(self.ds_S)
+        return bool(self.S_zero_std)
+
+
+    def _check_zero_std(self, ds):
+        zero_std_var = []
+        sv = ds.values.std(axis=0)
+        dm = sv < self.min_std
+        if _np.any(dm):
+            vv = _np.array(ds.var_n)
+            zero_std_var = list(vv[_np.nonzero(dm)])
+        return zero_std_var
 
 
     def _get_ds_X(self):

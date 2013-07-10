@@ -4,7 +4,8 @@ import traits.api as _traits
 import traitsui.api as _traitsui
 
 # Local imports
-from prefmap_model import Prefmap
+from dataset import DataSet
+from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot
 # from combination_table import CombinationTable
@@ -17,6 +18,11 @@ from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
+class ErrorMessage(_traits.HasTraits):
+    err_msg = _traits.Str()
+    traits_view = _traitsui.View(_traitsui.Item('err_msg', style='readonly',
+                            label='Zero variance variables'),
+                       buttons=[_traitsui.OKButton], title='Warning')
 
 
 class PrefmapController(ModelController):
@@ -52,6 +58,34 @@ class PrefmapController(ModelController):
                 for nn, fn in std_launchers]
 
 
+    def _show_zero_var_warning(self):
+        dlg = ErrorMessage()
+        dlg.err_msg = ', '.join(self.model.C_zero_std+self.model.S_zero_std)
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
+
+
+    def get_result(self):
+        try:
+            res = self.model.res
+        except InComputeable:
+            self._show_zero_var_warning()
+            if self.model.C_zero_std:
+                df = self.model.ds_C.mat.drop(self.model.C_zero_std, axis=1)
+                olds = self.model.ds_C
+                self.model.ds_C = DataSet(mat=df,
+                                          display_name=olds.display_name,
+                                          kind=olds.kind)
+            if self.model.S_zero_std:
+                df = self.model.ds_S.mat.drop(self.model.S_zero_std, axis=1)
+                olds = self.model.ds_S
+                self.model.ds_S = DataSet(mat=df,
+                                          display_name=olds.display_name,
+                                          kind=olds.kind)
+            res = self.model.res
+
+        return res
+
+
     def open_overview(self):
         """Make Prefmap overview plot.
 
@@ -62,7 +96,7 @@ class PrefmapController(ModelController):
          * expl. var
         for each of the datasets.
         """
-        res = self.model.res
+        res = self.get_result()
         wl = self.window_launchers
         title = self._wind_title(res)
 
@@ -238,9 +272,9 @@ if __name__ == '__main__':
     one_branch = False
 
     # Folder, File name, Display name, DS type
-    ds_C_meta = ('Cheese', 'ConsumerLiking.txt',
+    ds_C_meta = ('Cheese', 'ConsumerLike_mod.txt',
                  'Cheese liking', 'Consumer liking')
-    ds_S_meta = ('Cheese', 'SensoryData.txt',
+    ds_S_meta = ('Cheese', 'SensoryData_mod.txt',
                  'Cheese profiling', 'Sensory profiling')
     C = imp_ds(ds_C_meta)
     S = imp_ds(ds_S_meta)
