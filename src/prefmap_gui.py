@@ -130,6 +130,7 @@ no_view = _traitsui.View()
 prefmap_view = _traitsui.View(
     _traitsui.Item('controller.name', style='readonly'),
     _traitsui.Item('int_ext_mapping', style='custom', label='Mapping'),
+    _traitsui.Item('prefmap_method', style='custom', label='Method'),
     _traitsui.Item('standardise_x', label='Standardise X',
                    style='custom', show_label=True),
     _traitsui.Item('standardise_y', label='Standardise Y',
