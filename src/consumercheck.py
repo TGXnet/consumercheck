@@ -1,7 +1,6 @@
 # stdlib imports
 import logging
 import os.path as op
-import optparse
 import numpy as np
 import __builtin__
 
@@ -21,40 +20,31 @@ from splash_screen import splash
 from main_ui import MainUi
 from exception_handler import tgx_exception_handler
 
+log_format = '%(asctime)s - %(name)s:%(lineno)d - %(levelname)s - %(message)s'
 
-# Setup logging
-LOGGING_LEVELS = {
-    'critical': logging.CRITICAL,
-    'error': logging.ERROR,
-    'warning': logging.WARNING,
-    'info': logging.INFO,
-    'debug': logging.DEBUG,
-    }
-LOG_FILENAME = 'cc.log'
+logging.basicConfig(
+    level=logging.DEBUG,
+    format=log_format,
+    # datefmt='%m-%d %H:%M',
+    filename='scum.log',
+    filemode='w')
+
+console = logging.StreamHandler()
+console.setLevel(logging.WARNING)
+console_formatter = logging.Formatter(log_format)
+console.setFormatter(consolle_formatter)
+# add the handler to the root logger
+logging.getLogger('').addHandler(console)
+
+cc_logger = logging.getLogger('tgxnet.nofima.cc')
+cc_logger.info('Starting ConsumerCheck')
+
 
 # FIXME: Global var hack
 __builtin__.cc_base_dir = op.dirname(op.abspath(__file__))
 
 
 def main():
-    parser = optparse.OptionParser()
-    parser.add_option('-l', '--logging-level', help='Logging level')
-    parser.add_option('-f', '--logging-file', help='Logging file name')
-    (options, args) = parser.parse_args()
-
-    # Configure logging
-    logging_level = LOGGING_LEVELS.get(options.logging_level, logging.DEBUG)
-    logging.basicConfig(
-        level=logging_level,
-        # filename=options.logging_file,
-        filename=LOG_FILENAME,
-        # format='%(asctime)s %(levelname)s: %(message)s %(pathname)s:%(lineno)d',
-        # datefmt='%Y-%m-%d %H:%M:%S'
-        filemode='w',
-        )
-    logger = logging.getLogger('tgxnet.nofima.cc')
-    logger.info('Starting ConsumerCheck')
-
     # Open splashscreen
     splash.open()
 
@@ -69,5 +59,3 @@ def main():
 if __name__ == '__main__':
     with np.errstate(invalid='ignore'):
         main()
-
-#### EOF ######################################################################
