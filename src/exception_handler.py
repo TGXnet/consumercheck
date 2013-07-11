@@ -1,10 +1,12 @@
 
 # Std lib imports
 import logging
-# logging.basicConfig()
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import sys
+import time
+import cStringIO
 import traceback
+
 
 # Enthought imports
 from traits.api import HasTraits, Button, Str, push_exception_handler
@@ -40,11 +42,15 @@ The program may or may not continue to work after this.
 # State variable to indicate whether the error dialoge have been shown or not
 shown = False
 
-# Exception handler
+# ETS Traits exception handler
 def tgx_exception_handler(obj, trait_name, old, new):
     """ Logs any exceptions generated in a trait notification handler.
     """
+    print("Something went wrong")
+    print("traits exception handler called")
+
     global shown
+
     # When the stack depth is too great, the logger can't always log the
     # message. Make sure that it goes to the console at a minimum:
     excp_class, excp = sys.exc_info()[:2]
@@ -56,6 +62,7 @@ def tgx_exception_handler(obj, trait_name, old, new):
             'handler for object: %s, trait: %s, old value: %s, '
             'new value: %s.\n%s\n' % (obj, trait_name, old, new, trace_text))
 
+    # Write to logfile
     try:
         logger.exception(
             'Exception occurred in traits notification handler for '
@@ -65,25 +72,67 @@ def tgx_exception_handler(obj, trait_name, old, new):
         # Ignore anything we can't log the above way:
         pass
 
-    print("Something went wrong")
-    # FIXME: Make sure only one is open at the time
     if not shown:
         ed = ErrorDialog()
-        ed.edit_traits(kind='modal')
+        ed.configure_traits(kind='modal')
         shown = True
 
 
+# Activate by setting:
+# sys.excepthook = excepthook
+
+def excepthook(excType, excValue, tracebackobj):
+    """
+    Global function to catch unhandled exceptions.
+    
+    @param excType exception type
+    @param excValue exception value
+    @param tracebackobj traceback object
+    """
+    global shown
+
+    print("Something went wrong")
+    print("Excepthook called")
+
+    separator = '-' * 80
+    notice = \
+        """An unhandled exception has been captured by excepthook()\n"""
+    tbinfofile = cStringIO.StringIO()
+    traceback.print_tb(tracebackobj, None, tbinfofile)
+    tbinfofile.seek(0)
+    tbinfo = tbinfofile.read()
+    errmsg = '%s: \n%s' % (str(excType), str(excValue))
+    sections = [separator, errmsg, separator, tbinfo]
+    msg = '\n'.join(sections)
+
+    try:
+        logger.exception(str(notice)+str(msg))
+    except Exception:
+        # Ignore anything we can't log the above way:
+        pass
+
+    if not shown:
+        ed = ErrorDialog()
+        ed.configure_traits(kind='modal')
+        shown = True
+
+
+
 if __name__ == '__main__':
-    class TestException(HasTraits):
-        test = Button('Test exception handler')
+    logging.basicConfig(level=logging.DEBUG)
+    ## class TestException(HasTraits):
+    ##     test = Button('Test exception handler')
 
-        def _test_fired(self):
-            to = 1/0
+    ##     def _test_fired(self):
+    ##         1/0
 
-        traits_view = View(
-            Item('test', show_label=False)
-            )
+    ##     traits_view = View(
+    ##         Item('test', show_label=False)
+    ##         )
 
-    old_handler = push_exception_handler(tgx_exception_handler)
-    te = TestException()
-    te.configure_traits()
+    ## old_handler = push_exception_handler(tgx_exception_handler)
+    ## te = TestException()
+    ## te.configure_traits()
+    sys.excepthook = excepthook
+    print("Start test")
+    1/0

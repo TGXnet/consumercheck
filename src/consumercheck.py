@@ -3,6 +3,7 @@ import logging
 import os.path as op
 import numpy as np
 import __builtin__
+import sys
 
 # Enthought imports
 #from traits.etsconfig.api import ETSConfig
@@ -19,7 +20,7 @@ from traits.api import push_exception_handler
 import cc_config as conf
 from splash_screen import splash
 from main_ui import MainUi
-from exception_handler import tgx_exception_handler
+from exception_handler import tgx_exception_handler, excepthook
 
 log_format = '%(asctime)s - %(name)s:%(lineno)d - %(levelname)s - %(message)s'
 
@@ -30,17 +31,18 @@ logging.basicConfig(
     filename=conf.log_file_url(),
     filemode='w')
 
-console = logging.StreamHandler()
-console.setLevel(logging.WARNING)
-console_formatter = logging.Formatter(log_format)
-console.setFormatter(console_formatter)
-# add the handler to the root logger
-logging.getLogger('').addHandler(console)
+## console = logging.StreamHandler()
+## console.setLevel(logging.WARNING)
+## console_formatter = logging.Formatter(log_format)
+## console.setFormatter(console_formatter)
+## # add the handler to the root logger
+## logging.getLogger('').addHandler(console)
 
 cc_logger = logging.getLogger('tgxnet.nofima.cc')
 cc_logger.info('Starting ConsumerCheck')
 
-# Set exception handler
+# Set exception handlers
+sys.excepthook = excepthook
 push_exception_handler(tgx_exception_handler,
                        reraise_exceptions=False,
                        main=True,
