@@ -40,6 +40,16 @@ logging.getLogger('').addHandler(console)
 cc_logger = logging.getLogger('tgxnet.nofima.cc')
 cc_logger.info('Starting ConsumerCheck')
 
+# Set exception handler
+push_exception_handler(tgx_exception_handler,
+                       reraise_exceptions=False,
+                       main=True,
+                       locked=True)
+## push_exception_handler(handler=lambda o,t,ov,nv: None,
+##                        reraise_exceptions=False,
+##                        main=True,
+##                        locked=True )
+
 
 # FIXME: Global var hack
 __builtin__.cc_base_dir = op.dirname(op.abspath(__file__))
@@ -49,8 +59,6 @@ def main():
     # Open splashscreen
     splash.open()
 
-    # Set exception handler
-    push_exception_handler(tgx_exception_handler)
     mother = MainUi(
         splash = splash,
         )

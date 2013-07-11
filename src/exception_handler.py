@@ -45,7 +45,6 @@ def tgx_exception_handler(obj, trait_name, old, new):
     """ Logs any exceptions generated in a trait notification handler.
     """
     global shown
-
     # When the stack depth is too great, the logger can't always log the
     # message. Make sure that it goes to the console at a minimum:
     excp_class, excp = sys.exc_info()[:2]
@@ -61,7 +60,7 @@ def tgx_exception_handler(obj, trait_name, old, new):
         logger.exception(
             'Exception occurred in traits notification handler for '
             'object: %s, trait: %s, old value: %s, new value: %s' %
-            ( obj, trait_name, old, new ) )
+            (obj, trait_name, old, new))
     except Exception:
         # Ignore anything we can't log the above way:
         pass
