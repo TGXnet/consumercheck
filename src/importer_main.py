@@ -144,6 +144,7 @@ This program allows for importing four different types of data:
 Preference mapping: the two last one will not be used.
 Conjoint analysis: the first one will not be used.
 
+ConsumerCheck are not able to handle non-English characters in the row and column names.
 If you experience problems when reading data from an Excel sheet; mark, copy, paste and save the actual data set in sheet 1 of a new Excel window.
 '''
         )
