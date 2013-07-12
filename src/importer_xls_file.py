@@ -95,7 +95,6 @@ class ImporterXlsFile(HasTraits):
     transpose = Bool(False)
     have_var_names = Bool(True)
     have_obj_names = Bool(True)
-    ds_id = Str()
     ds_name = Str()
     kind = Str()
     kind_list = List(DS_TYPES)
@@ -105,7 +104,7 @@ class ImporterXlsFile(HasTraits):
         fn = os.path.basename(self.file_path)
         fn = fn.partition('.')[0]
         fn = fn.lower()
-        self.ds_id = self.ds_name = fn
+        self.ds_name = fn
 
     def import_data(self):
         self.ds = DataSet(
@@ -151,6 +150,29 @@ class ImporterXlsFile(HasTraits):
         return self.ds
 
 
+    def import_data_pd(self):
+        self.ds = DataSet(
+            kind=self.kind,
+            display_name=self.ds_name
+            )
+
+        xls = _pd.ExcelFile(self.file_path)
+        sheet_name = xls.sheet_names[0]
+        if self.have_obj_names:
+            ic = 0
+        else:
+            ic = None
+        if self.have_var_names:
+            hd = 0
+        else:
+            hd = None
+        matrix = xls.parse(sheet_name, header=hd, index_col=ic)
+        self.ds.mat = matrix
+
+        return self.ds
+
+
+
     pre_view = View(
         Group(
             Item('file_path', style='readonly'),
@@ -158,7 +180,6 @@ class ImporterXlsFile(HasTraits):
                  id='table',
                  editor=preview_table),
             ## Item('transpose'),
-            Item('ds_id', style='readonly', label='File name'),
             Item('ds_name', label='Dataset name'),
             Item('kind', editor=EnumEditor(name='kind_list'), label='Dataset type'),
             Item('have_var_names', label='Existing variable names',
