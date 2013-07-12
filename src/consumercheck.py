@@ -45,7 +45,7 @@ cc_logger = logging.getLogger('tgxnet.nofima.cc')
 cc_logger.info('Starting ConsumerCheck')
 
 # Set exception handlers
-sys.excepthook = excepthook
+# sys.excepthook = excepthook
 push_exception_handler(tgx_exception_handler,
                        reraise_exceptions=False,
                        main=True,
