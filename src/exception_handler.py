@@ -106,7 +106,7 @@ def excepthook(excType, excValue, tracebackobj):
     msg = '\n'.join(sections)
 
     try:
-        logger.exception(str(notice)+str(msg))
+        logger.error(str(notice)+str(msg))
     except Exception:
         # Ignore anything we can't log the above way:
         pass

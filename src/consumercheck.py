@@ -23,13 +23,16 @@ from main_ui import MainUi
 from exception_handler import tgx_exception_handler, excepthook
 
 log_format = '%(asctime)s - %(name)s:%(lineno)d - %(levelname)s - %(message)s'
+log_file = conf.log_file_url()
 
 logging.basicConfig(
     level=logging.DEBUG,
     format=log_format,
     # datefmt='%m-%d %H:%M',
-    filename=conf.log_file_url(),
+    filename=log_file,
     filemode='w')
+
+print("Messages is writen to logfile: {0}".format(log_file))
 
 ## console = logging.StreamHandler()
 ## console.setLevel(logging.WARNING)
