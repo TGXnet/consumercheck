@@ -55,16 +55,20 @@ class ImporterMain(HasTraits):
     def dialog_multi_import(self):
         """Open dialog for selecting multiple files and return a list of DataSet's"""
         self._last_open_path = conf.get_option('work_dir')
+        logger.debug('Last imported file: %s', self._last_open_path)
         if not self._notice_shown:
             notice = ImportNotice()
             notice.edit_traits()
             self._notice_shown = True
         status = self._show_file_selector()
         if status == CANCEL:
+            logger.info('Cancel file imports')
             return []
         datasets = []
+        logger.debug('File(s) to import: \n%s', '\n'.join(self._files_path))
         for filen in self._files_path:
             importer = self._make_importer(filen)
+            logger.info('Attempting to import %s with %s', filen, type(importer))
             importer.kind = self._pick_kind(filen)
             ui = importer.edit_traits()
             if ui.result:
