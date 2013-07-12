@@ -164,6 +164,7 @@ DND = ImporterMain()
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     fi = ImporterMain()
     dsc = fi.dialog_multi_import()
     for ds in dsc:

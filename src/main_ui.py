@@ -148,6 +148,7 @@ class MainUi(HasTraits):
 if __name__ == '__main__':
     import numpy as np
     from tests.conftest import all_dsc
+    logging.basicConfig(level=logging.DEBUG)
     logger.info('Start interactive')
 
     mother = MainUi(dsc=all_dsc())
