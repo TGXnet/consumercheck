@@ -11,7 +11,6 @@ from enable.colors import color_table
 from dataset import DataSet
 
 
-
 class HistPlot(_chaco.DataView):
 
     ds = _traits.Instance(DataSet)
@@ -135,7 +134,6 @@ class StackedHistPlot(_chaco.DataView):
     plot_data = _traits.Property()
 
 
-
     def __init__(self, ds):
         super(StackedHistPlot, self).__init__(ds=ds)
         pec = self._calc_percentage()
@@ -184,7 +182,9 @@ class StackedHistPlot(_chaco.DataView):
             pecl = pec[:,i]
             self._add_data_labels(bars, num, pecl)
             self.add(bars)
-        legend = _chaco.Legend(component=self, padding=2, align="ur")
+        rvn = bar_names.keys()
+        rvn.sort(reverse=True)
+        legend = _chaco.Legend(component=self, padding=2, align="ur", labels=rvn)
         legend.plots = bar_names
         self.overlays.append(legend)
         return bars
@@ -238,7 +238,6 @@ class StackedHistPlot(_chaco.DataView):
 
     def _get_plot_data(self):
         return self.ds
-
 
 
     def export_image(self, fname, size=(800,600)):
