@@ -194,6 +194,8 @@ class StackedHistPlot(_chaco.DataView):
         idx = renderer.index._data
         val = renderer.value._data
         for i, v in enumerate(fraction):
+            if not v:
+                continue
             p = pec[i]
             label = _chaco.DataLabel(
                 component = renderer,
