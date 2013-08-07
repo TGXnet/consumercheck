@@ -72,3 +72,8 @@ def test_wxpython():
 def test_pyside():
     pyside_meta = pkg_resources.get_distribution("PySide")
     assert pyside_meta.version == '1.1.2'
+
+
+def test_colormath():
+    color_meta = pkg_resources.get_distribution("colormath")
+    assert color_meta.version == '1.0.8'

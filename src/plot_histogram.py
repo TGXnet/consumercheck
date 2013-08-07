@@ -5,11 +5,10 @@ import numpy as _np
 # ETS imports
 import traits.api as _traits
 import chaco.api as _chaco
-from enable.colors import color_table
 
 # Local imports
 from dataset import DataSet
-
+from utilities import hue_span
 
 class HistPlot(_chaco.DataView):
 
@@ -166,7 +165,7 @@ class StackedHistPlot(_chaco.DataView):
         value_range = _chaco.DataRange1D(mvals, tight_bounds=True)
         value_mapper = _chaco.LinearMapper(range=value_range)
 
-        colors = color_table.keys()
+        colors = hue_span(mvals.get_value_size())
         bar_names = {}
         for i in range(mvals.get_value_size()-1, -1, -1):
             vals = _chaco.ArrayDataSource(mvals.get_data(axes=i))
@@ -174,7 +173,7 @@ class StackedHistPlot(_chaco.DataView):
                                   value_mapper=value_mapper,
                                   index_mapper=index_mapper,
                                   line_color='black',
-                                  fill_color=colors[(i+2)%len(colors)],
+                                  fill_color=colors[i],
                                   bar_width=0.8, antialias=False)
             name = str(self.ds.var_n[i])
             bar_names[name] = bars
@@ -343,7 +342,8 @@ class BoxPlot(_chaco.DataView):
 
 
 if __name__ == '__main__':
-    from tests.conftest import hist_ds, boxplot_ds
+    from tests.conftest import hist_ds
+    # from tests.conftest import boxplot_ds
     # plot = BoxPlot(boxplot_ds())
     hd = hist_ds()
     plot = StackedHistPlot(hd)
