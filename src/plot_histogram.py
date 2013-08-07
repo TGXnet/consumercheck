@@ -5,12 +5,10 @@ import numpy as _np
 # ETS imports
 import traits.api as _traits
 import chaco.api as _chaco
-from enable.colors import color_table
 
 # Local imports
 from dataset import DataSet
-
-
+from utilities import hue_span
 
 class HistPlot(_chaco.DataView):
 
@@ -135,7 +133,6 @@ class StackedHistPlot(_chaco.DataView):
     plot_data = _traits.Property()
 
 
-
     def __init__(self, ds):
         super(StackedHistPlot, self).__init__(ds=ds)
         pec = self._calc_percentage()
@@ -168,7 +165,7 @@ class StackedHistPlot(_chaco.DataView):
         value_range = _chaco.DataRange1D(mvals, tight_bounds=True)
         value_mapper = _chaco.LinearMapper(range=value_range)
 
-        colors = color_table.keys()
+        colors = hue_span(mvals.get_value_size())
         bar_names = {}
         for i in range(mvals.get_value_size()-1, -1, -1):
             vals = _chaco.ArrayDataSource(mvals.get_data(axes=i))
@@ -176,7 +173,7 @@ class StackedHistPlot(_chaco.DataView):
                                   value_mapper=value_mapper,
                                   index_mapper=index_mapper,
                                   line_color='black',
-                                  fill_color=colors[(i+2)%len(colors)],
+                                  fill_color=colors[i],
                                   bar_width=0.8, antialias=False)
             name = str(self.ds.var_n[i])
             bar_names[name] = bars
@@ -184,7 +181,9 @@ class StackedHistPlot(_chaco.DataView):
             pecl = pec[:,i]
             self._add_data_labels(bars, num, pecl)
             self.add(bars)
-        legend = _chaco.Legend(component=self, padding=2, align="ur")
+        rvn = bar_names.keys()
+        rvn.sort(reverse=True)
+        legend = _chaco.Legend(component=self, padding=2, align="ur", labels=rvn)
         legend.plots = bar_names
         self.overlays.append(legend)
         return bars
@@ -194,6 +193,8 @@ class StackedHistPlot(_chaco.DataView):
         idx = renderer.index._data
         val = renderer.value._data
         for i, v in enumerate(fraction):
+            if not v:
+                continue
             p = pec[i]
             label = _chaco.DataLabel(
                 component = renderer,
@@ -238,7 +239,6 @@ class StackedHistPlot(_chaco.DataView):
 
     def _get_plot_data(self):
         return self.ds
-
 
 
     def export_image(self, fname, size=(800,600)):
@@ -342,7 +342,8 @@ class BoxPlot(_chaco.DataView):
 
 
 if __name__ == '__main__':
-    from tests.conftest import hist_ds, boxplot_ds
+    from tests.conftest import hist_ds
+    # from tests.conftest import boxplot_ds
     # plot = BoxPlot(boxplot_ds())
     hd = hist_ds()
     plot = StackedHistPlot(hd)
