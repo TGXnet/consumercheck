@@ -11,6 +11,7 @@ import numpy as np
 import numpy.linalg as npla
 import statTools as st
 import cross_val as cv
+import matplotlib.pyplot as plt
 
 
 
@@ -76,10 +77,10 @@ class nipalsPCR:
         # variables of X whichever is smallest (numPC). If number of  
         # PC's IS provided, then number is checked against maxPC and set to
         # numPC if provided number is larger.
-        if 'numPC' not in kargs.keys():
+        if 'numPC' not in kargs.keys(): 
             self.numPC = min(np.shape(arrX))
         else:
-            maxNumPC = min(np.shape(arrX))
+            maxNumPC = min(np.shape(arrX))           
             if kargs['numPC'] > maxNumPC:
                 self.numPC = maxNumPC
             else:
@@ -110,8 +111,8 @@ class nipalsPCR:
         # Standardise X if requested by user, otherwise center X.
         if self.Xstand == True:
             self.Xmeans = np.average(self.arrX_input, axis=0)            
-            Xstd = np.std(self.arrX_input, axis=0, ddof=1)
-            self.arrX = (self.arrX_input - self.Xmeans) / Xstd
+            self.Xstd = np.std(self.arrX_input, axis=0, ddof=1)
+            self.arrX = (self.arrX_input - self.Xmeans) / self.Xstd
         else:
             self.Xmeans = np.average(self.arrX_input, axis=0)            
             self.arrX = self.arrX_input - self.Xmeans
@@ -120,8 +121,8 @@ class nipalsPCR:
         # Standardise Y if requested by user, otherwise center Y.
         if self.Ystand == True:            
             self.Ymeans = np.average(self.arrY_input, axis=0)
-            Ystd = np.std(self.arrY_input, axis=0, ddof=1)
-            self.arrY = (self.arrY_input - self.Ymeans) / Ystd
+            self.Ystd = np.std(self.arrY_input, axis=0, ddof=1)
+            self.arrY = (self.arrY_input - self.Ymeans) / self.Ystd
         else:           
             self.Ymeans = np.average(self.arrY_input, axis=0)
             self.arrY = self.arrY_input - self.Ymeans
@@ -237,7 +238,7 @@ class nipalsPCR:
             predXcal = np.dot(part_arrT, np.transpose(part_arrP))
             
             if self.Xstand == True:
-                Xhat = (predXcal * Xstd) + self.Xmeans
+                Xhat = (predXcal * self.Xstd) + self.Xmeans
             else:
                 Xhat = predXcal + self.Xmeans
             self.calXpredList.append(Xhat)
@@ -358,8 +359,8 @@ class nipalsPCR:
             # Depending on whether Y was standardised or not compute Yhat
             # accordingly.            
             if self.Ystand == True:
-                Yhat_stand = np.dot(np.dot(x_scores, np.transpose(y_loadings)))
-                Yhat = (Yhat_stand * Ystd.reshape(1,-1)) + self.Ymeans.reshape(1,-1)
+                Yhat_stand = np.dot(x_scores, np.transpose(y_loadings))
+                Yhat = (Yhat_stand * self.Ystd.reshape(1,-1)) + self.Ymeans.reshape(1,-1)
             else:
                 Yhat = np.dot(x_scores, np.transpose(y_loadings)) + self.Ymeans.reshape(1,-1)           
             self.calYpredList.append(Yhat)
@@ -640,7 +641,7 @@ class nipalsPCR:
                     self.valXpredDict[ind+1].append(valPredX)
                     
                     if self.Ystand == True:
-                        valPredY =(valPredY_proc * y_train_std) + \
+                        valPredY =(valPredY_proc * Y_train_std) + \
                                 Y_train_mean
                     else:
                         valPredY = valPredY_proc + Y_train_mean
