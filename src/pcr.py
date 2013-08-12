@@ -11,7 +11,7 @@ import numpy as np
 import numpy.linalg as npla
 import statTools as st
 import cross_val as cv
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 
