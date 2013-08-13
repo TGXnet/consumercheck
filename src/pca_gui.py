@@ -7,6 +7,7 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from pca_model import Pca, InComputeable
 from ui_results import TableViewController
+from dialogs import ErrorMessage
 from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot
 from plot_windows import MultiPlotWindow
@@ -15,13 +16,6 @@ from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activat
 from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
 
-
-
-class ErrorMessage(_traits.HasTraits):
-    err_msg = _traits.Str()
-    traits_view = _traitsui.View(_traitsui.Item('err_msg', style='readonly',
-                            label='Zero variance variables'),
-                       buttons=[_traitsui.OKButton], title='Warning')
 
 
 class PcaController(ModelController):
@@ -74,7 +68,8 @@ class PcaController(ModelController):
 
     def _show_zero_var_warning(self):
         dlg = ErrorMessage()
-        dlg.err_msg = ', '.join(self.model.zero_variance)
+        dlg.err_msg = 'Removed zero variance variables'
+        dlg.err_val = ', '.join(self.model.zero_variance)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
@@ -294,12 +289,12 @@ pca_plugin_view = make_plugin_view('Pca', pca_nodes, selection_view, pca_view)
 
 if __name__ == '__main__':
     print("PCA GUI test start")
-    from tests.conftest import iris_ds, synth_dsc
+    from tests.conftest import iris_ds, synth_dsc, zero_var_ds
     one_branch = False
 
     if one_branch:
-        iris = iris_ds()
-        pca = Pca(ds=iris)
+        tds = zero_var_ds()
+        pca = Pca(ds=tds)
         pc = PcaController(pca)
         test = TestOneNode(one_model=pc)
         test.configure_traits(view=dummy_view(pca_nodes))

@@ -8,6 +8,7 @@ from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot
+from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
 from dataset_container import DatasetContainer
@@ -16,13 +17,6 @@ from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
-
-
-class ErrorMessage(_traits.HasTraits):
-    err_msg = _traits.Str()
-    traits_view = _traitsui.View(_traitsui.Item('err_msg', style='readonly',
-                            label='Zero variance variables'),
-                       buttons=[_traitsui.OKButton], title='Warning')
 
 
 class PrefmapController(ModelController):
@@ -60,7 +54,8 @@ class PrefmapController(ModelController):
 
     def _show_zero_var_warning(self):
         dlg = ErrorMessage()
-        dlg.err_msg = ', '.join(self.model.C_zero_std+self.model.S_zero_std)
+        dlg.err_msg = 'Removed zero variance variables'
+        dlg.err_val = ', '.join(self.model.C_zero_std+self.model.S_zero_std)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 

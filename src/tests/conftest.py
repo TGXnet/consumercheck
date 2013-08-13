@@ -87,9 +87,9 @@ def simple_ds():
 
 @pytest.fixture
 def zero_var_ds():
-    '''Makes a simple syntetic dataset'''
+    '''Dataset with zero variance variable'''
 
-    ds = DataSet(display_name='Some values', kind='Sensory profiling')
+    ds = DataSet(display_name='Zero var variable', kind='Sensory profiling')
     ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 1.2, 2.3],
@@ -229,7 +229,7 @@ def iris_ds():
 @pytest.fixture
 def synth_dsc():
     dsc = DatasetContainer()
-    dsc.add(simple_ds(), discrete_ds(), discrete_nans_ds(), iris_ds())
+    dsc.add(simple_ds(), discrete_ds(), discrete_nans_ds(), zero_var_ds(), iris_ds())
     return dsc
 
 
