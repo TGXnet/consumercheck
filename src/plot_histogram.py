@@ -40,7 +40,8 @@ class HistPlot(_chaco.DataView):
         vals = _chaco.ArrayDataSource(self.ds.mat.ix[self.row_id].values)
 
         # Create the index range
-        index_range = _chaco.DataRange1D(idx)
+        index_range = _chaco.DataRange1D(
+            idx, tight_bounds=False, low_setting='auto', margin=0.15)
         index_mapper = _chaco.LinearMapper(range=index_range)
 
         # Create the value range
@@ -158,7 +159,8 @@ class StackedHistPlot(_chaco.DataView):
         mvals = self.stair_ds
 
         # Create the index range
-        index_range = _chaco.DataRange1D(idx, tight_bounds=False, low_setting='auto', margin=0.15)
+        index_range = _chaco.DataRange1D(
+            idx, tight_bounds=False, low_setting='auto', margin=0.15)
         index_mapper = _chaco.LinearMapper(range=index_range)
 
         # Create the value range
@@ -346,8 +348,8 @@ if __name__ == '__main__':
     # from tests.conftest import boxplot_ds
     # plot = BoxPlot(boxplot_ds())
     hd = hist_ds()
-    plot = StackedHistPlot(hd)
-    # plot = HistPlot(hist_ds(), 'O3')
+    # plot = StackedHistPlot(hd)
+    plot = HistPlot(hist_ds(), 'O3')
     plot.new_window(True)
 
     ## plot.render_hist(row_id)
