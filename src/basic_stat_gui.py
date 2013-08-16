@@ -2,14 +2,11 @@
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
-import chaco.api as _chaco
 
 #Local imports
 from basic_stat_model import BasicStat
 from plot_histogram import BoxPlot, HistPlot, StackedHistPlot
-from plot_windows import LinePlotWindow, SinglePlotWindow
-from window_helper import multiplot_factory
-from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
+from plugin_tree_helper import (WindowLauncher, dclk_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
 
