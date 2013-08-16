@@ -60,6 +60,7 @@ class PlotWindow(HasTraits):
     hwin = Any()
     view_loop = List(WindowLauncher)
     plot_navigator = Instance(ViewNavigator)
+    title_text = Str("ConsumerCheck")
 
     next_plot = Button('Next plot')
     previous_plot = Button('Previous plot')
@@ -113,7 +114,6 @@ class SinglePlotWindow(PlotWindow):
     reset_xy = SVGButton(filename=pjoin(os.getcwd(), 'reset_xy.svg'),
                          width=32, height=32)
 
-    title_text = Str("ConsumerCheck")
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
@@ -211,9 +211,6 @@ class LinePlotWindow(PlotWindow):
     """Window for embedding line plot
 
     """
-    title_text = Str("ConsumerCheck")
-
-
     traits_view = View(
         Group(
             Group(

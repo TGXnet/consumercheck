@@ -345,7 +345,6 @@ class InteractionPlotWindow(PlotWindow):
     """Window for embedding line plot
 
     """
-    title_text = Str("ConsumerCheck")
     flip = Bool(False)
 
     @on_trait_change('flip')
