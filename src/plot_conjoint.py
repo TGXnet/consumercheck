@@ -6,7 +6,7 @@ import pandas as _pd
 # Enthought library imports
 from enable.api import ComponentEditor
 from traits.api import Bool, Instance, on_trait_change
-from traitsui.api import View, Group, Item, Label, Handler
+from traitsui.api import View, Group, Item, Label
 from chaco.api import (ArrayPlotData, LabelAxis, DataView, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
                        add_default_grids, ScatterPlot, LinePlot, PlotAxis,
@@ -17,7 +17,7 @@ from chaco.example_support import COLOR_PALETTE
 
 #Local imports
 from dataset import DataSet
-from plot_windows import PlotWindow, LinePlotWindow
+from plot_windows import PlotWindow, LinePlotWindow, ViewTablePWH
 
 
 class MainEffectsPlot(DataView):
@@ -196,12 +196,15 @@ class MainEffectsPlot(DataView):
 
 class InteractionPlot(DataView):
 
+    plot_data = Instance(DataSet)
+
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
         self.conj_res = conj_res
         self.attr_one_name = attr_one_name
         self.attr_two_name = attr_two_name
         self._adapt_conj_interaction_data()
+        
 
 
     def _adapt_conj_interaction_data(self, flip=False):
@@ -214,6 +217,9 @@ class InteractionPlot(DataView):
             self.index_attr, self.line_attr = self.attr_one_name, self.attr_two_name
         else:
             self.index_attr, self.line_attr = self.attr_two_name, self.attr_one_name
+
+        res = adapter_conj_interaction_data(self.conj_res, self.index_attr, self.line_attr)
+        self.plot_data = DataSet(mat=res)
 
         ls_means = self.conj_res.lsmeansTable['data']
 
@@ -324,6 +330,8 @@ class InteractionPlot(DataView):
         # Add the traits inspector tool to the container
         # self.tools.append(TraitsTool(self))
 
+
+
     def export_image(self, fname, size=(800,600)):
         """Save plot as png image."""
         # self.outer_bounds = list(size)
@@ -331,18 +339,6 @@ class InteractionPlot(DataView):
         gc = PlotGraphicsContext(self.outer_bounds)
         gc.render_component(self)
         gc.save(fname, file_format=None)
-
-
-
-class BasePW(Handler):
-    """ Change the title on the UI.
-
-    """
-    def object_title_text_changed(self, info):
-        """ Called whenever the title_text attribute changes on the handled object.
-
-        """
-        info.ui.title = info.object.title_text
 
 
 
@@ -379,7 +375,7 @@ class InteractionPlotWindow(PlotWindow):
             layout="normal",
             ),
         resizable=True,
-        handler=BasePW(),
+        handler=ViewTablePWH(),
         # kind = 'nonmodal',
         width = .5,
         height = .7,
@@ -450,16 +446,61 @@ def adapter_main_effect_data(conj_res, attr_name):
     return pd
 
 
+def adapter_conj_interaction_data(conj_res, index_attr, line_attr):
+    ls_means = conj_res.lsmeansTable['data']
+
+    picker_one = ls_means[index_attr] != 'NA'
+    picker_two = ls_means[line_attr] != 'NA'
+    # Picker is an boolean selction vector
+    picker = np.logical_and(picker_one, picker_two)
+    selected = ls_means[picker][[index_attr, line_attr, ' Estimate ']]
+
+    lines = sorted(list(set(selected[line_attr])))
+    indexes = sorted(list(set(selected[index_attr])))
+    index_labels = ['{0} {1}'.format(index_attr, i) for i in indexes]
+
+    # Get p value for attribute
+    anova_values = conj_res.anovaTable['data']
+    anova_names = conj_res.anovaTable['rowNames']
+    try:
+        attr_name = "{0}:{1}".format(index_attr, line_attr)
+        picker = anova_names == attr_name
+        var_row = anova_values[picker]
+        p_str = var_row['Pr(>F)'][0]
+        try:
+            p_value = float(p_str)
+        except ValueError:
+            p_value = 0.0
+    except IndexError:
+        attr_name = "{0}:{1}".format(line_attr, index_attr)
+        picker = anova_names == attr_name
+        var_row = anova_values[picker]
+        p_str = var_row['Pr(>F)'][0]
+        try:
+            p_value = float(p_str)
+        except ValueError:
+            p_value = 0.0
+
+    # for hvert nytt plot trenger vi bare et nytt dataset
+    vals = []
+    for i, line in enumerate(lines):
+        line_data_picker = selected[line_attr] == line
+        line_data = selected[line_data_picker]
+        vals.append([float(val) for val in line_data[' Estimate ']])
+    ln = ["{0} {1}".format(line_attr, line) for line in lines]
+    res = _pd.DataFrame(vals, index=ln, columns=index_labels)
+    return res
+
+
 if __name__ == '__main__':
     print("Test start")
     from tests.conftest import conj_res
     res = conj_res()
 
-    mep = MainEffectsPlot(res, 'Flavour')
-    pw = LinePlotWindow(plot=mep)
-    pw.configure_traits()
-    # iap = InteractionPlot(res, 'Sex', 'Flavour')
-    ## iap = InteractionPlot(res, 'Flavour', 'Sex', None)
-    ## pw = InteractionPlotWindow(plot=iap)
+    ## mep = MainEffectsPlot(res, 'Flavour')
+    ## pw = LinePlotWindow(plot=mep)
     ## pw.configure_traits()
+    iap = InteractionPlot(res, 'Sex', 'Flavour')
+    pw = InteractionPlotWindow(plot=iap)
+    pw.configure_traits()
     print("The end")
