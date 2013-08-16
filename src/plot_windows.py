@@ -64,6 +64,8 @@ class PlotWindow(HasTraits):
     next_plot = Button('Next plot')
     previous_plot = Button('Previous plot')
     view_table = Button('View result table')
+    save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
+                          width=32, height=32)
 
 
     def _plot_navigator_default(self):
@@ -72,15 +74,18 @@ class PlotWindow(HasTraits):
         else:
             return None
 
-
     @on_trait_change('next_plot')
     def goto_next_plot(self, obj, name, new):
         self.plot = self.plot_navigator.show_next()
 
-
     @on_trait_change('previous_plot')
     def goto_previous_plot(self, obj, name, new):
         self.plot = self.plot_navigator.show_previous()
+
+    @on_trait_change('save_plot')
+    def render_plot(self, obj, name, old, new):
+        fe = FileEditor()
+        fe._save_as_img(obj)
 
 
 
@@ -93,12 +98,10 @@ class SinglePlotWindow(PlotWindow):
     # Buttons
     eq_axis = Bool(False)
     show_labels = Bool(True)
-    save_plot = Button('Save plot image')
+#    save_plot = Button('Save plot image')
     vis_toggle = Button('Visibility')
     vistog = Bool(False)
 
-    save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
-                          width=32, height=32)
     y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
                        width=32, height=32)
     y_up = SVGButton(filename=pjoin(os.getcwd(), 'y_up.svg'),
@@ -160,11 +163,6 @@ class SinglePlotWindow(PlotWindow):
             y = n
         obj.plot.set_x_y_pc(x, y)
 
-    @on_trait_change('save_plot')
-    def render_plot(self, obj, name, old, new):
-        fe = FileEditor()
-        fe._save_as_img(obj)
-        
     @on_trait_change('vis_toggle')
     def switch_visibility(self, obj, name, new):
         obj.plot.show_points()
@@ -182,18 +180,19 @@ class SinglePlotWindow(PlotWindow):
                 ),
             Label('Scroll to zoom and drag to pan in plot.'),
             Group(
+                Item('save_plot', show_label=False),
+                Item('view_table', show_label=False),
+                Item('previous_plot', show_label=False),
+                Item('next_plot', show_label=False),
+                # PC related controls
                 Item('eq_axis', label="Orthonormal axis"),
                 Item('show_labels', label="Show labels"),
                 Item('vis_toggle', show_label=False, defined_when='vistog'),
-                Item('view_table', show_label=False),
-                Item('save_plot', show_label=False),
                 Item('x_down', show_label=False),
                 Item('x_up', show_label=False),
                 Item('reset_xy', show_label=False),
                 Item('y_up', show_label=False),
                 Item('y_down', show_label=False),
-                Item('previous_plot', show_label=False),
-                Item('next_plot', show_label=False),
                 orientation="horizontal",
                 ),
             layout="normal",
@@ -212,20 +211,7 @@ class LinePlotWindow(PlotWindow):
     """Window for embedding line plot
 
     """
-    # plot = Instance(Component)
-
-    eq_axis = Bool(False)
-    show_labels = Bool(True)
     title_text = Str("ConsumerCheck")
-
-    @on_trait_change('show_labels')
-    def switch_labels(self, obj, name, new):
-        # ds_id = name.partition('_')[2]
-        obj.plot.show_labels(show=new)
-
-    @on_trait_change('eq_axis')
-    def switch_axis(self, obj, name, new):
-        obj.plot.toggle_eq_axis(new)
 
 
     traits_view = View(
@@ -240,6 +226,7 @@ class LinePlotWindow(PlotWindow):
                 ),
             Label('Scroll to zoom and drag to pan in plot.'),
             Group(
+                Item('save_plot', show_label=False),
                 Item('view_table', show_label=False),
                 Item('previous_plot', show_label=False),
                 Item('next_plot', show_label=False),

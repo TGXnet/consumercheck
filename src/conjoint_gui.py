@@ -12,11 +12,12 @@ import pandas as _pd
 import traits.api as _traits
 import traitsui.api as _traitsui
 
-
 # Local imports
 from dataset import DataSet
 from conjoint_model import Conjoint
-from plot_conjoint import MainEffectsPlot, InteractionPlot
+from ds_table_view import DSTableViewer
+from plot_windows import LinePlotWindow
+from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
@@ -122,6 +123,42 @@ Model structure descriptions:
                 loop_name='int_plot_launchers',
                 view_creator=plot_interaction, func_parms=tuple([p_one, p_two]))
             for nn, p_one, p_two in int_plot_launchers]
+
+
+    def open_window(self, viewable, view_loop):
+        """Expected viewable is by now:
+          + Plot subtype
+          + DataSet type
+        """
+        if isinstance(viewable, MainEffectsPlot):
+            res = self.get_result()
+
+            win = LinePlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=view_loop,
+                title_text=self._wind_title(res),
+                vistog=False
+                )
+
+            self._show_plot_window(win)
+        elif isinstance(viewable, InteractionPlot):
+            res = self.get_result()
+
+            win = InteractionPlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=view_loop,
+                title_text=self._wind_title(res),
+                vistog=False
+                )
+
+            self._show_plot_window(win)
+        elif isinstance(viewable, DataSet):
+            table = DSTableViewer(viewable)
+            table.edit_traits(view=table.get_view(), kind='live', parent=self.win_handle)
+        else:
+            raise NotImplementedError("Do not know how to open this")
 
 
     def _wind_title(self, res):

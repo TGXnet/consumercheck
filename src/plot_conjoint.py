@@ -1,3 +1,4 @@
+
 # SciPy imports
 import numpy as np
 
@@ -344,26 +345,8 @@ class InteractionPlotWindow(PlotWindow):
     """Window for embedding line plot
 
     """
-    plot = Instance(Component)
-    eq_axis = Bool(False)
-    show_labels = Bool(True)
-    view_table = Button('View result table')
     title_text = Str("ConsumerCheck")
     flip = Bool(False)
-
-    @on_trait_change('show_labels')
-    def switch_labels(self, obj, name, new):
-        # ds_id = name.partition('_')[2]
-        obj.plot.show_labels(show=new)
-
-    @on_trait_change('eq_axis')
-    def switch_axis(self, obj, name, new):
-        obj.plot.toggle_eq_axis(new)
-
-    @on_trait_change('view_table')
-    def show_table(self, obj, name, new):
-        tvc = TableViewController(model=obj.plot)
-        tvc.configure_traits()
 
     @on_trait_change('flip')
     def flip_interaction(self, obj, name, new):
@@ -382,6 +365,7 @@ class InteractionPlotWindow(PlotWindow):
                 ),
             Label('Scroll to zoom and drag to pan in plot.'),
             Group(
+                Item('save_plot', show_label=False),
                 Item('view_table', show_label=False),
                 Item('previous_plot', show_label=False),
                 Item('next_plot', show_label=False),
