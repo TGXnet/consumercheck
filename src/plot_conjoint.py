@@ -1,10 +1,11 @@
 
 # SciPy imports
 import numpy as np
+import pandas as _pd
 
 # Enthought library imports
-from enable.api import Component, ComponentEditor
-from traits.api import Instance, Bool, Str, Button, on_trait_change
+from enable.api import ComponentEditor
+from traits.api import Bool, Instance, on_trait_change
 from traitsui.api import View, Group, Item, Label, Handler
 from chaco.api import (ArrayPlotData, LabelAxis, DataView, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
@@ -15,13 +16,18 @@ from chaco.example_support import COLOR_PALETTE
 
 
 #Local imports
+from dataset import DataSet
 from plot_windows import PlotWindow, LinePlotWindow
-from ui_results import TableViewController
 
 
 class MainEffectsPlot(DataView):
+
+    plot_data = Instance(DataSet)
+    
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
+        res = adapter_main_effect_data(conj_res, attr_name)
+        self.plot_data = DataSet(mat=res)
         self._adapt_conj_main_effect_data(conj_res, attr_name)
         self._create_plot()
 
@@ -185,7 +191,6 @@ class MainEffectsPlot(DataView):
         gc = PlotGraphicsContext(self.outer_bounds)
         gc.render_component(self)
         gc.save(fname, file_format=None)
-
 
 
 
@@ -383,12 +388,74 @@ class InteractionPlotWindow(PlotWindow):
 
 
 
+
+def adapter_main_effect_data(conj_res, attr_name):
+    """FIXME: Can this bee extracted as an utility function
+    that will return an result object but only with the needed values?
+    """
+    ls_means = conj_res.lsmeansTable['data']
+    ls_means_labels = conj_res.lsmeansTable['rowNames']
+    cn = list(conj_res.lsmeansTable['colNames'])
+    nli = cn.index('Estimate')
+    cn = cn[:nli]
+
+    # The folowing logic is about selecting rows from the result sets.
+    # The picker i an boolean vector that selects the rows i will plot.
+
+    # First; select all rows where the given attribute have an index value
+    picker = ls_means[attr_name] != 'NA'
+
+    # Then; exclude all the interaction rows where the given attribute
+    # is a part of the interaction
+    exclude = [ls_means[col] != 'NA' for col in cn if col != attr_name]
+    for out in exclude:
+        picker = np.logical_and(picker, np.logical_not(out))
+
+    # Use the boolean selection vector to select the wanted rows from the result set
+    selected = ls_means[picker]
+    selected_labels = ls_means_labels[picker]
+
+    ls_label_names = []
+    for i, pl in enumerate(selected_labels):
+        ls_label_names.append(pl)
+
+    pd = _pd.DataFrame(index=ls_label_names)
+    pd['values'] = [float(val) for val in selected[' Estimate ']]
+    pd['ylow'] = [float(val) for val in selected[' Lower CI ']]
+    pd['yhigh'] = [float(val) for val in selected[' Upper CI ']]
+    pd['average'] = [conj_res.meanLiking for val in selected[attr_name]]
+
+    # Get p value for attribute
+    # Before Conjoint update from 2013-03-18
+    ## anova_values = conj_res.anovaTable['data']
+    ## anova_names = conj_res.anovaTable['rowNames']
+    ## picker = anova_names == attr_name
+    ## p_value = anova_values[picker, 3][0]
+    ## self.p_value = p_value
+
+    anova_values = conj_res.anovaTable['data']
+    anova_names = conj_res.anovaTable['rowNames']
+    picker = anova_names == attr_name
+    # p_value = anova_values[picker, 3][0]
+    if isinstance(picker, bool):
+        picker = np.array([picker])
+    var_row = anova_values[picker]
+    p_str = var_row['Pr(>F)'][0]
+    try:
+        p_value = float(p_str)
+    except ValueError:
+        p_value = 0.0
+
+    # return (pd, p_value)
+    return pd
+
+
 if __name__ == '__main__':
     print("Test start")
     from tests.conftest import conj_res
     res = conj_res()
 
-    mep = MainEffectsPlot(res, 'Flavour', None)
+    mep = MainEffectsPlot(res, 'Flavour')
     pw = LinePlotWindow(plot=mep)
     pw.configure_traits()
     # iap = InteractionPlot(res, 'Sex', 'Flavour')
