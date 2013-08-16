@@ -22,7 +22,7 @@ def check_trait_interface():
 
 # Local imports
 from dataset import DataSet
-from dataset_container import DatasetContainer
+from dataset_container import DatasetContainer, get_ds_by_name
 from importer_main import ImporterMain
 
 
@@ -301,21 +301,20 @@ def conj_res():
 
         from conjoint_machine import ConjointMachine
         dsc = conjoint_dsc()
-        consAttr = dsc.get_by_id('consumerattributes')
-        odflLike = dsc.get_by_id('odour-flavour_liking')
-        consistencyLike = dsc.get_by_id('consistency_liking')
-        overallLike = dsc.get_by_id('overall_liking')
-        designVar = dsc.get_by_id('design')
+        consAttr = get_ds_by_name('Consumers', dsc)
+        odflLike = get_ds_by_name('Odour-flavor', dsc)
+        consistencyLike = get_ds_by_name('Consistency', dsc)
+        overallLike = get_ds_by_name('Overall', dsc)
+        designVar = get_ds_by_name('Tine yogurt design', dsc)
         selected_structure = 2
         selected_consAttr = ['Sex']
         selected_designVar = ['Flavour', 'Sugarlevel']
         consLiking = odflLike
 
         cm = ConjointMachine()
-        res = cm.synchronous_calculation(selected_structure,
-                                     consAttr, selected_consAttr,
-                                     designVar, selected_designVar,
-                                     consLiking)
+        res = cm.synchronous_calculation(designVar, selected_designVar,
+                                         consLiking, selected_structure,
+                                         consAttr, selected_consAttr)
 
         with open(cache_fn, 'w') as fp:
             pickle.dump(res, fp)
