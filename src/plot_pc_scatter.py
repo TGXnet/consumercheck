@@ -98,10 +98,10 @@ class PCScatterPlot(PlotBase):
     visible_new_labels = Bool(True)
     visible_datasets = Int(3)
     plot_data = Property()
+    expl_y_vars = List()
 
 
-
-    def __init__(self, pc_matrix=None, expl_vars=None, **kwargs):
+    def __init__(self, pc_matrix=None, expl_vars=None, expl_y_vars=None, **kwargs):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -121,13 +121,17 @@ class PCScatterPlot(PlotBase):
         super(PCScatterPlot, self).__init__(data, **kwargs)
         self._adjust_range()
 
+        # FIXME: This is a hack to show PC1 X(%), Y(%) for prefmap scores
+        if expl_y_vars is not None:
+            self.expl_y_vars = list(expl_y_vars.mat.xs('cal'))
+
         if pc_matrix is not None:
             self.add_PC_set(pc_matrix, expl_vars)
 
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
-        
+
 
     def add_PC_set(self, pc_matrix, expl_vars=None):
         """Add a PC dataset with metadata.
@@ -245,6 +249,14 @@ class PCScatterPlot(PlotBase):
             try:
                 ev_x = pcds.expl_vars[self.data.x_no-1]
                 ev_y = pcds.expl_vars[self.data.y_no-1]
+                tx.append('({0:.0f}%)'.format(ev_x))
+                ty.append('({0:.0f}%)'.format(ev_y))
+            except IndexError:
+                pass
+        if self.expl_y_vars is not None:
+            try:
+                ev_x = self.expl_y_vars[self.data.x_no-1]
+                ev_y = self.expl_y_vars[self.data.y_no-1]
                 tx.append('({0:.0f}%)'.format(ev_x))
                 ty.append('({0:.0f}%)'.format(ev_y))
             except IndexError:

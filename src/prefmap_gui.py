@@ -121,7 +121,7 @@ class PrefmapController(ModelController):
 
 # Plot creators
 def scores_plot(res):
-    plot = PCScatterPlot(res.scores_x, res.expl_var_x, title='Scores')
+    plot = PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='Scores')
     return plot
 
 
@@ -271,9 +271,9 @@ if __name__ == '__main__':
     one_branch = False
 
     # Folder, File name, Display name, DS type
-    ds_C_meta = ('Cheese', 'ConsumerLike_mod.txt',
+    ds_C_meta = ('Cheese', 'ConsumerLiking.txt',
                  'Cheese liking', 'Consumer liking')
-    ds_S_meta = ('Cheese', 'SensoryData_mod.txt',
+    ds_S_meta = ('Cheese', 'SensoryData.txt',
                  'Cheese profiling', 'Sensory profiling')
     C = imp_ds(ds_C_meta)
     S = imp_ds(ds_S_meta)
