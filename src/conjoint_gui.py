@@ -436,7 +436,7 @@ selection_view = _traitsui.Group(
                            style='simple',
                            show_label=False,
                            ),
-            _traitsui.Label('Design variables:'),
+            _traitsui.Label('Variables:'),
             _traitsui.Item('controller.sel_design_var',
                            editor=_traitsui.CheckListEditor(
                                name='controller.design_vars'),
@@ -452,7 +452,7 @@ selection_view = _traitsui.Group(
                            style='simple',
                            show_label=False,
                            ),
-            _traitsui.Label('Consumer characteristics variables:'),
+            _traitsui.Label('Variables:'),
             _traitsui.Item('controller.sel_cons_char',
                            editor=_traitsui.CheckListEditor(
                                name='controller.consumer_vars'),
