@@ -25,7 +25,7 @@ def line_curve():
     val = cal / 1.3
     ds = DataSet(
         mat=pd.DataFrame([cal, val],
-                         index=['cal', 'val'],
+                         index=['calibrated', 'validated'],
                          columns=['PC-1', 'PC-2', 'PC-3', 'PC-4', 'PC-5', 'PC-6', 'PC-7', 'PC-8']),
         display_name='My data', kind='Sensory profiling',
         style=VisualStyle(fg_color='indigo'),

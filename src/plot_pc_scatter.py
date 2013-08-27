@@ -75,7 +75,7 @@ class PCPlotData(ArrayPlotData):
         if color is not None:
             pcds.color = color
         if expl_vars is not None:
-            pcds.expl_vars = list(expl_vars.mat.xs('cal'))
+            pcds.expl_vars = list(expl_vars.mat.xs('calibrated'))
         if view_data is not None:
             pcds.view_data = view_data
         self.pc_ds.append(pcds)
@@ -123,7 +123,7 @@ class PCScatterPlot(PlotBase):
 
         # FIXME: This is a hack to show PC1 X(%), Y(%) for prefmap scores
         if expl_y_vars is not None:
-            self.expl_y_vars = list(expl_y_vars.mat.xs('cal'))
+            self.expl_y_vars = list(expl_y_vars.mat.xs('calibrated'))
 
         if pc_matrix is not None:
             self.add_PC_set(pc_matrix, expl_vars)

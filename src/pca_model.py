@@ -110,7 +110,7 @@ class Pca(Model):
         res.expl_var = DataSet(
             mat=_pd.DataFrame(
                 data=[cal, val],
-                index=['cal', 'val'],
+                index=['calibrated', 'validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
             display_name=self.ds.display_name)

@@ -89,8 +89,8 @@ class EVLinePlot(PlotBase):
 
         if expl_var is not None:
             # FIXME: Do more inteligente coloring based on the dataset.style
-            self.add_EV_set(expl_var.mat.xs('cal'), 'darkviolet', 'Calibrated', expl_var)
-            self.add_EV_set(expl_var.mat.xs('val'), 'darkgoldenrod', 'Validated', expl_var)
+            self.add_EV_set(expl_var.mat.xs('calibrated'), 'darkviolet', 'Calibrated', expl_var)
+            self.add_EV_set(expl_var.mat.xs('validated'), 'darkgoldenrod', 'Validated', expl_var)
 
         self.x_axis.title = "# of principal components"
         self.y_axis.title = "Explained variance [%]"
