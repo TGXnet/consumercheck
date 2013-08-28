@@ -1,3 +1,6 @@
+
+import numpy as _np
+
 from traits.api import Color, Property, List, Array, Button, Str
 from traitsui.api import Controller, View, Item, TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
@@ -14,6 +17,11 @@ class ArrayAdapter(TabularAdapter):
 
     def _get_index_text(self, name):
         return str(self.obj_names[self.row])
+
+    def get_format ( self, object, trait, row, column ):
+        if isinstance(self.content, (_np.float64, float)):
+            return '%.2f'
+        return self._result_for( 'get_format', object, trait, row, column )
 
 
 
