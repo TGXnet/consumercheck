@@ -258,7 +258,7 @@ conjoint_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[ConjointController],
-        label='=Base tables',
+        label='=Analysis results',
         children='table_win_launchers',
         view=conjoint_view,
         menu=[]),

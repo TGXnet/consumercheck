@@ -185,7 +185,7 @@ prefmap_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[PrefmapController],
-        label='=Overview',
+        label='=Overview plot',
         children='window_launchers',
         view=prefmap_view,
         menu=[],
