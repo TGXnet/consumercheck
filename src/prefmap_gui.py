@@ -186,6 +186,9 @@ prefmap_nodes = [
     _traitsui.TreeNode(
         node_for=[PrefmapController],
         label='=Overview plot',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
         children='window_launchers',
         view=prefmap_view,
         menu=[],

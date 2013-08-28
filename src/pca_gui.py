@@ -215,6 +215,9 @@ pca_nodes = [
     _traitsui.TreeNode(
         node_for=[PcaController],
         label='=Overview plot',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
         children='window_launchers',
         view=pca_view,
         menu=[],
