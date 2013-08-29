@@ -229,18 +229,10 @@ class PrefmapPluginController(PluginController):
 
     @_traits.on_trait_change('comb:combination_updated', post_init=True)
     def _handle_selection(self, obj, name, old, new):
-        selection = set(self.comb.get_selected_combinations())
-        if selection.difference(self.last_selection):
-            added = selection.difference(self.last_selection)
-            self.last_selection = selection
-            added = list(added)[0]
-            self._make_calculation(added[0], added[1])
-        elif self.last_selection.difference(selection):
-            removed = self.last_selection.difference(selection)
-            removed = list(removed)[0]
-            rem_id = '{0}{1}'.format(removed[0], removed[1])
-            self.last_selection = selection
-            self.model.remove(rem_id)
+        self.model.calculations = []
+        selection = self.comb.get_selected_combinations()[0]
+        self._make_calculation(selection[0], selection[1])
+
 
 
     def _make_calculation(self, id_c, id_s):
