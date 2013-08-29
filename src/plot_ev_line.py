@@ -141,9 +141,13 @@ class EVLinePlot(PlotBase):
         
         self.data.pn.append(pn)
 
+        line_styles = ['solid', 'dot dash', 'dash', 'dot', 'long dash']
+
         #plot
         rl = self.plot(pd, type='line', name=pn,
-                       color=self.data.pc_ds[set_id-1].color)
+                       color=self.data.pc_ds[set_id-1].color,
+                       line_style=line_styles[set_id-1%4]
+                       )
 
         self.plots.values()[0][0].index._data = self.data.arrays['index']
         

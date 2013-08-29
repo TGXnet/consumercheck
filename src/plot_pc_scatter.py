@@ -231,9 +231,12 @@ class PCScatterPlot(PlotBase):
         pd = (x_id, y_id)
         # plot name
         pn = 'plot_{}'.format(set_id)
+
+        markers = ['dot', 'square', 'triangle', 'circle', 'inverted_triangle', 'cross']
+
         #plot
         rl = self.plot(pd, type='scatter', name=pn,
-                       marker='dot', marker_size=2,
+                       marker=markers[set_id-1%5], marker_size=2,
                        color=self.data.pc_ds[set_id-1].color,)
         # Set axis title
         self._set_plot_axis_title()
