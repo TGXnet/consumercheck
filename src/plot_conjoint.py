@@ -304,6 +304,8 @@ class InteractionPlot(DataView):
 
         # for hvert nytt plot trenger vi bare et nytt dataset
 
+        line_styles = ['solid', 'dot dash', 'dash', 'dot', 'long dash']
+
         for i, line in enumerate(lines):
             line_data_picker = selected[self.line_attr] == line
             line_data = selected[line_data_picker]
@@ -313,6 +315,7 @@ class InteractionPlot(DataView):
                             index_mapper=LinearMapper(range=self.index_range),
                             value_mapper=LinearMapper(range=self.value_range),
                             color=COLOR_PALETTE[i],
+                            line_style=line_styles[i%4]
                             )
             self.add(plot)
             plots["{0} {1}".format(self.line_attr, line)] = plot
