@@ -21,7 +21,7 @@ def check_trait_interface():
 
 
 # Local imports
-from dataset import DataSet
+from dataset import DataSet, VisualStyle
 from dataset_container import DatasetContainer, get_ds_by_name
 from importer_main import ImporterMain
 
@@ -223,6 +223,27 @@ def iris_ds():
     importer = ImporterMain()
     iris_url = osp.join(home, 'Iris', 'irisNoClass.data')
     ds = importer.import_data(iris_url, False, False, ',')
+    return ds
+
+
+@pytest.fixture
+def clust1ds():
+    """Manual random pick from the Iris datast: setosa"""
+    ds = DataSet(
+        mat = pd.DataFrame(
+            [[5.1,3.5,1.4,0.2],
+             [4.6,3.4,1.4,0.3],
+             [5.4,3.7,1.5,0.2],
+             [5.7,3.8,1.7,0.3],
+             [5.4,3.4,1.7,0.2],
+             [4.8,3.1,1.6,0.2],
+             [4.6,3.6,1.0,0.2]],
+            index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
+            columns = ['V1', 'V2', 'V3', 'V4']),
+        display_name='Some values', kind='Sensory profiling',
+        # style=VisualStyle(fg_color=(0.8, 0.2, 0.1, 1.0)),
+        style=VisualStyle(fg_color='indigo'),
+        )
     return ds
 
 
