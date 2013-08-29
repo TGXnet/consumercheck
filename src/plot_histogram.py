@@ -1,4 +1,7 @@
 
+# Std lib imports
+import copy
+
 # Scipy imports
 import numpy as _np
 
@@ -113,7 +116,9 @@ class HistPlot(_chaco.DataView):
 
 
     def _get_plot_data(self):
-        return self.ds
+        nds = copy.deepcopy(self.ds)
+        nds.mat = self.ds.mat.transpose()
+        return nds
 
 
     def export_image(self, fname, size=(800,600)):
@@ -240,7 +245,9 @@ class StackedHistPlot(_chaco.DataView):
 
 
     def _get_plot_data(self):
-        return self.ds
+        nds = copy.deepcopy(self.ds)
+        nds.mat = self.ds.mat.transpose()
+        return nds
 
 
     def export_image(self, fname, size=(800,600)):
@@ -330,7 +337,9 @@ class BoxPlot(_chaco.DataView):
 
 
     def _get_plot_data(self):
-        return self.ds
+        nds = copy.deepcopy(self.ds)
+        nds.mat = self.ds.mat.transpose()
+        return nds
 
 
     def export_image(self, fname, size=(800,600)):
