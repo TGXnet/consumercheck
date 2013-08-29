@@ -142,8 +142,7 @@ class BasicStatPluginController(PluginController):
 
     def _get_selectable(self, not_all=True):
         if not_all:
-            return (self.model.dsc.get_id_name_map('Consumer liking') +
-                    self.model.dsc.get_id_name_map('Consumer characteristics'))
+            return self.model.dsc.get_id_name_map('Consumer liking')
         else:
             return self.model.dsc.get_id_name_map()
 
