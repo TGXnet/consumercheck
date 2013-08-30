@@ -10,7 +10,7 @@ from ui_results import TableViewController
 from dialogs import ErrorMessage
 from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot
-from plot_windows import MultiPlotWindow
+from plot_windows import OverviewPlotWindow
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
@@ -99,7 +99,7 @@ class PcaController(ModelController):
         wl = self.window_launchers
         title = self._wind_title(res)
 
-        mpw = MultiPlotWindow(title_text=title)
+        mpw = OverviewPlotWindow(title_text=title)
 
         sp = multiplot_factory(scores_plot, res, wl, title, mpw)
         lp = multiplot_factory(loadings_plot, res, wl, title, mpw)

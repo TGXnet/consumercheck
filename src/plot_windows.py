@@ -16,6 +16,7 @@ from enable.savage.trait_defs.ui.svg_button import SVGButton
 #Local imports
 # from ui_results import TableViewController
 # from ds_matrix_view import TableViewer
+from plot_pc_scatter import PCScatterPlot
 from ds_table_view import DSTableViewer
 from plugin_tree_helper import ViewNavigator, WindowLauncher
 
@@ -26,16 +27,15 @@ size = (850, 650)
 bg_color="white"
 #===============================================================================
 
-class BasePW(Handler):
+
+class PWC(Handler):
     """ Change the title on the UI.
 
     """
-    win_handle = Any()
-
     def init(self, info):
-        self.win_handle = info.ui.control
         info.object.hwin = info.ui.control
-    
+
+
     def object_title_text_changed(self, info):
         """ Called whenever the title_text attribute changes on the handled object.
 
@@ -43,17 +43,15 @@ class BasePW(Handler):
         info.ui.title = info.object.title_text
 
 
-class ViewTablePWH(BasePW):
-    """ Change the title on the UI.
-
-    """
-    def object_view_table_changed(self, info):
-        tv = DSTableViewer(info.object.plot.plot_data)
-        tv.edit_traits(view=tv.get_view(), parent=self.win_handle)
-
+    def object_save_plot_changed(self, info):
+        fe = FileEditor()
+        fe._save_as_img(info.object)
 
 
 class PlotWindow(HasTraits):
+    """Base class for both single and multiplot windows
+
+    """
     res = Any()
     hwin = Any()
     view_loop = List(WindowLauncher)
@@ -61,10 +59,22 @@ class PlotWindow(HasTraits):
     save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
                           width=32, height=32)
 
-    @on_trait_change('save_plot')
-    def render_plot(self, obj, name, old, new):
-        fe = FileEditor()
-        fe._save_as_img(obj)
+
+
+class SinglePWC(PWC):
+    """ Change the title on the UI.
+
+    """
+    def object_view_table_changed(self, info):
+        tv = DSTableViewer(info.object.plot.plot_data)
+        tv.edit_traits(view=tv.get_view(), parent=info.object.hwin)
+
+    def object_next_plot_changed(self, info):
+        info.object.plot = info.object.plot_navigator.show_next()
+
+    @on_trait_change('previous_plot')
+    def object_previous_plot_changed(self, info):
+        info.object.plot = info.object.plot_navigator.show_previous()
 
 
 
@@ -84,14 +94,6 @@ class SinglePlotWindow(PlotWindow):
         else:
             return None
 
-    @on_trait_change('next_plot')
-    def goto_next_plot(self, obj, name, new):
-        self.plot = self.plot_navigator.show_next()
-
-    @on_trait_change('previous_plot')
-    def goto_previous_plot(self, obj, name, new):
-        self.plot = self.plot_navigator.show_previous()
-
     plot_gr = Group(
         Item('plot', editor=ComponentEditor(size = size, bgcolor = bg_color),
              show_label=False),
@@ -108,36 +110,36 @@ class SinglePlotWindow(PlotWindow):
 
     extra_gr = Group()
 
-    def default_traits_view(self):
-        traits_view = View(
-            Group(
-                Include('plot_gr'),
-                Label('Scroll to zoom and drag to pan in plot.'),
-                Include('main_gr'),
-                Include('extra_gr'),
-                layout="normal",
-                ),
-            resizable=True,
-            handler=ViewTablePWH(),
-            # kind = 'nonmodal',
-            width = .5,
-            height = .7,
-            buttons = ["OK"]
-            )
-        return traits_view
+    ## def default_traits_view(self):
+    traits_view = View(
+        Group(
+            Include('plot_gr'),
+            Label('Scroll to zoom and drag to pan in plot.'),
+            Include('main_gr'),
+            Include('extra_gr'),
+            layout="normal",
+            ),
+        resizable=True,
+        handler=SinglePWC(),
+        # kind = 'nonmodal',
+        width = .5,
+        height = .7,
+        buttons = ["OK"]
+        )
+
 
 
 
 class PCPlotWindow(SinglePlotWindow):
-    """Window for embedding single plot
+    """Window for embedding principal component plots
 
-    FIXME: Or should the name be PC plot window
     """
     eq_axis = Bool(False)
     show_labels = Bool(True)
     # Prefmap correlation loading visibility togling
     vis_toggle = Button('Visibility')
     vistog = Bool(False)
+    show_extra = Bool(False)
 
     y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
                        width=32, height=32)
@@ -151,6 +153,14 @@ class PCPlotWindow(SinglePlotWindow):
                          width=32, height=32)
 
 
+    @on_trait_change('plot')
+    def _update_controls(self, obj, name, new):
+        if isinstance(new, PCScatterPlot):
+            obj.show_extra = True
+        else:
+            obj.show_extra = False
+
+    
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
         obj.plot.show_labels(show= new)
@@ -213,8 +223,8 @@ class PCPlotWindow(SinglePlotWindow):
         Item('show_labels', label="Show labels"),
         Item('vis_toggle', show_label=False, defined_when='vistog'),
         orientation="horizontal",
+        visible_when='show_extra',
         )
-
 
 
 class MultiPlotWindow(PlotWindow):
@@ -249,7 +259,7 @@ class OverviewPlotWindow(MultiPlotWindow):
             Item('show_labels', label="Show labels"),
             orientation = "vertical"),
         resizable=True,
-        handler=BasePW(),
+        handler=PWC(),
         # kind = 'nonmodal',
         width = .5,
         height = .7,
@@ -292,12 +302,11 @@ class FileEditor(HasTraits):
 
 if __name__ == '__main__':
     import numpy as np
-    from plot_pc_scatter import PCScatterPlot
     from tests.conftest import clust1ds
 
     mydata = clust1ds()
     plot = PCScatterPlot(mydata)
-    pw = SinglePlotWindow(plot=plot)
+    pw = PCPlotWindow(plot=plot)
 
     with np.errstate(invalid='ignore'):
         pw.configure_traits()
