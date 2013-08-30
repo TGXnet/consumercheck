@@ -10,7 +10,7 @@ import chaco.api as _chaco
 # Local imports
 from dataset import DataSet
 from ds_table_view import DSTableViewer
-from plot_windows import SinglePlotWindow, PCPlotWindow
+from plot_windows import PCPlotWindow
 from dataset_container import DatasetContainer
 from plugin_tree_helper import WindowLauncher
 
