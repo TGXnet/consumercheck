@@ -65,6 +65,13 @@ class SinglePWC(PWC):
     """ Change the title on the UI.
 
     """
+    def object_title_text_changed(self, info):
+        """ Called whenever the title_text attribute changes on the handled object.
+
+        """
+        info.ui.title = info.object.title_text
+        info.object.plot.title = info.object.title_text
+
     def object_view_table_changed(self, info):
         tv = DSTableViewer(info.object.plot.plot_data)
         tv.edit_traits(view=tv.get_view(), parent=info.object.hwin)
@@ -228,7 +235,7 @@ class PCPlotWindow(SinglePlotWindow):
 
 
 class MultiPlotWindow(PlotWindow):
-    pass
+    plots = Instance(Component)
 
 
 class OverviewPlotWindow(MultiPlotWindow):
@@ -238,7 +245,6 @@ class OverviewPlotWindow(MultiPlotWindow):
     Set plots.shape to tuple(rows, columns) to indicate the layout of the plots
 
     """
-    plots = Instance(Component)
     show_labels = Bool(True)
 
     @on_trait_change('show_labels')

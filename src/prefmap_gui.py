@@ -12,7 +12,7 @@ from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
 from dataset_container import DatasetContainer
-from plot_windows import MultiPlotWindow
+from plot_windows import OverviewPlotWindow
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
@@ -95,7 +95,7 @@ class PrefmapController(ModelController):
         wl = self.window_launchers
         title = self._wind_title(res)
 
-        mpw = MultiPlotWindow(title_text=title)
+        mpw = OverviewPlotWindow(title_text=title)
 
         sp = multiplot_factory(scores_plot, res, wl, title, mpw)
         clp = multiplot_factory(corr_loadings_plot, res, wl, title, mpw)

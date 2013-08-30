@@ -4,9 +4,8 @@ import numpy as np
 import pandas as _pd
 
 # Enthought library imports
-from enable.api import ComponentEditor
 from traits.api import Bool, Instance, on_trait_change
-from traitsui.api import View, Group, Item, Label
+from traitsui.api import Group, Item
 from chaco.api import (ArrayPlotData, LabelAxis, DataView, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
                        add_default_grids, ScatterPlot, LinePlot, PlotAxis,
@@ -17,7 +16,7 @@ from chaco.example_support import COLOR_PALETTE
 
 #Local imports
 from dataset import DataSet
-from plot_windows import PlotWindow, LinePlotWindow, ViewTablePWH
+from plot_windows import SinglePlotWindow
 
 
 class MainEffectsPlot(DataView):
@@ -345,7 +344,7 @@ class InteractionPlot(DataView):
 
 
 
-class InteractionPlotWindow(PlotWindow):
+class InteractionPlotWindow(SinglePlotWindow):
     """Window for embedding line plot
 
     """
@@ -355,36 +354,7 @@ class InteractionPlotWindow(PlotWindow):
     def flip_interaction(self, obj, name, new):
         obj.plot._adapt_conj_interaction_data(new)
 
-
-    traits_view = View(
-        Group(
-            Group(
-                Item('plot',
-                     editor=ComponentEditor(
-                         size = (850, 650),
-                         bgcolor="white"),
-                     show_label=False),
-                orientation = "vertical"
-                ),
-            Label('Scroll to zoom and drag to pan in plot.'),
-            Group(
-                Item('save_plot', show_label=False),
-                Item('view_table', show_label=False),
-                Item('previous_plot', show_label=False),
-                Item('next_plot', show_label=False),
-                Item('flip', show_label=True),
-                orientation="horizontal",
-                ),
-            layout="normal",
-            ),
-        resizable=True,
-        handler=ViewTablePWH(),
-        # kind = 'nonmodal',
-        width = .5,
-        height = .7,
-        buttons = ["OK"]
-        )
-
+    extra_gr = Group(Item('flip'))
 
 
 
@@ -501,7 +471,7 @@ if __name__ == '__main__':
     res = conj_res()
 
     ## mep = MainEffectsPlot(res, 'Flavour')
-    ## pw = LinePlotWindow(plot=mep)
+    ## pw = SinglePlotWindow(plot=mep)
     ## pw.configure_traits()
     iap = InteractionPlot(res, 'Sex', 'Flavour')
     pw = InteractionPlotWindow(plot=iap)

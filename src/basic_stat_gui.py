@@ -195,7 +195,7 @@ if __name__ == '__main__':
         tods = TestOneNode(one_model=bsc)
         tods.configure_traits(view=dummy_view(bs_nodes))
     else:
-        bsp = CalcContainer(dsc=synth_dsc())
+        bsp = CalcContainer(dsc=all_dsc())
         bspc = BasicStatPluginController(bsp)
         bspc.configure_traits(
             view=bs_plugin_view)

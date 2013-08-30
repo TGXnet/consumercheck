@@ -16,7 +16,7 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from conjoint_model import Conjoint
 from ds_table_view import DSTableViewer
-from plot_windows import LinePlotWindow
+from plot_windows import SinglePlotWindow
 from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
@@ -133,7 +133,7 @@ Model structure descriptions:
         if isinstance(viewable, MainEffectsPlot):
             res = self.get_result()
 
-            win = LinePlotWindow(
+            win = SinglePlotWindow(
                 plot=viewable,
                 res=res,
                 view_loop=view_loop,
