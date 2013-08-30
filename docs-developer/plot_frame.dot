@@ -1,0 +1,20 @@
+/* Created by Thomas Graff <graff.thomas@gmail.com> */
+
+/* Graph */
+digraph plot_frame {
+    node [color=lightblue2, shape=box, style=filled, width=1.75, height=1.5];
+
+    /* Nodes */
+    plot_window [label="PlotWindow\nsave_plot, title_text, res"];
+    single_plot_window [label="SinglePlotWindow\nview_table, prev/next"];
+    pc_plot_window [label="PCPlotWindow\nortonormal, PC_up/down, show_label"];
+    multi_plot_window [label="MultiPlotWindow"];
+    overview_plot_window [label="OverviewPlotWindow\nshow_labels"];
+    conj_main_effect_plot_window [label="MainEffectsPlotWindow\nshow_error"];
+    conj_interaction_plot_window [label="InteractionPlotWindow\nflip"];
+
+    /* Edges */
+    plot_window -> {single_plot_window; multi_plot_window}
+    single_plot_window -> {pc_plot_window; conj_interaction_plot_window}
+    multi_plot_window -> overview_plot_window;
+}

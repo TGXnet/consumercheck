@@ -1,0 +1,36 @@
+/* Created by Thomas Graff <graff.thomas@gmail.com> */
+
+/* Graph */
+digraph plot_frame {
+    node [color=lightblue2, shape=box, style=filled, width=1.75, height=1.5];
+
+    /* Nodes */
+    /* ETS classes */
+    has_traits [label="HasTraits"];
+    data_view [label="DataView"];
+    plot [label="Plot"];
+    array_plot_data [label="ArrayPlotData"];
+
+    /* CC classes */
+    plot_base [label="PlotBase"];
+    main_effects [label="MainEffectsPlot"];
+    interaction [label="InteractionPlot"];
+    ev_line [label="EVLinePlot"];
+    pc_scatter [label="PCScatterPlot"];
+    hist [label="HistPlot"];
+    stacked_hist [label="StackedHistPlot"];
+    box [label="BoxPlot"];
+    
+    /* Plot data */
+    ev_dataset [label="EVDataSet"];
+    ev_plot_data [label="EVPlotData"];
+    pc_dataset [label="PCDataSet"];
+    pc_plot_data [label="PCPlotData"];
+    
+    /* Edges */
+    plot -> plot_base;
+    data_view -> {main_effects; interaction; hist; stacked_hist; box}
+    plot_base -> {ev_line; pc_scatter}
+    has_traits -> {ev_dataset; pc_dataset}
+    array_plot_data -> {ev_plot_data; pc_plot_data}
+}
