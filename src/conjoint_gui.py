@@ -352,7 +352,7 @@ class ConjointPluginController(PluginController):
         for k, v in nn:
             if v > 5:
                 warn = """
-{0} have {1} categories. Conjoint is not suitable
+{0} has {1} categories. Conjoint is not suitable
 for variables with a large number of categories.
 """.format(k, v)
                 cw = ConjointWarning(messages=warn)

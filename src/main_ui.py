@@ -123,7 +123,7 @@ class MainUi(HasTraits):
         Group(
             Item('dsc', editor=tree_editor, label="Datasets", show_label=False),
             Item('basic_stat', editor=InstanceEditor(view=bs_plugin_view),
-                 style='custom', label="Basic stat", show_label=False),
+                 style='custom', label="Basic stat liking", show_label=False),
             Item('pca', editor=InstanceEditor(view=pca_plugin_view),
                  style='custom', label="PCA", show_label=False),
             Item('prefmap', editor=InstanceEditor(view=prefmap_plugin_view),
