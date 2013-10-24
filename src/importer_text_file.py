@@ -17,7 +17,7 @@ from traits.api import implements
 # Local imports
 from dataset import DS_TYPES, DataSet
 from importer_interfaces import IDataImporter
-
+from importer_file_base import ImporterFileBase
 
 
 class RawLineAdapter(TabularAdapter):
@@ -116,10 +116,10 @@ class FilePreviewer(Handler):
         return preview_matrix
 
 
-    def _probe_read(self, obj, no_lines=100, length=200):
+    def _probe_read(self, obj, lines=100, length=200):
         lines = []
         with open(obj.file_path, 'rU') as fp:
-            for i in range(no_lines):
+            for i in range(lines):
                 line = fp.readline(length)
                 if not line:
                     break
@@ -134,21 +134,14 @@ preview_handler = FilePreviewer()
 
 
 
-class ImporterTextFile(HasTraits):
+class ImporterTextFile(ImporterFileBase):
     implements(IDataImporter)
 
-    file_path = File()
     delimiter = Enum('\t', ',', ' ')
     decimal_mark = Enum('period', 'comma')
     char_encoding = Enum(
         ('ascii', 'utf_8', 'latin_1')
         )
-    transpose = Bool(False)
-    have_var_names = Bool(True)
-    have_obj_names = Bool(True)
-    ds_name = Str('Unnamed dataset')
-    kind = Str('Design variable')
-    kind_list = List(DS_TYPES)
 
 
     def import_data(self):
@@ -207,14 +200,6 @@ class ImporterTextFile(HasTraits):
             kind=self.kind,
             )
         return ds
-
-
-    def _ds_name_default(self):
-        # FIXME: Find a better more general solution
-        fn = os.path.basename(self.file_path)
-        fn = fn.partition('.')[0]
-        fn = fn.lower()
-        return fn
 
 
     traits_view = View(
