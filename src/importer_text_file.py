@@ -174,25 +174,25 @@ class ImporterTextFile(HasTraits):
             )
 
         # FIXME: This is hackish
+        # I have to know the matrix shape to use converters
         if self.decimal_mark == 'comma':
 
-            def commatofloat(anum):
-                return float(anum.replace(',', '.'))
+            def c2f(a_num):
+                '''Alfanumeric with comma to float'''
+                return float(a_num.replace(',', '.'))
 
-            convs = {}
-            for i in range(dsdf.shape[1]):
-                convs[i] = commatofloat
+            convs = {k: c2f for k in dsdf.columns}
 
-                dsdf = _pd.read_csv(
-                    filepath_or_buffer=self.file_path,
-                    delimiter=self.delimiter,
-                    header=header,
-                    index_col=index_col,
-                    keep_default_na=True,
-                    na_values=['?'],
-                    encoding=self.char_encoding,
-                    converters=convs,
-                    )
+            dsdf = _pd.read_csv(
+                filepath_or_buffer=self.file_path,
+                delimiter=self.delimiter,
+                header=header,
+                index_col=index_col,
+                keep_default_na=True,
+                na_values=['?'],
+                encoding=self.char_encoding,
+                converters=convs,
+                )
 
 
         if not self.have_var_names:

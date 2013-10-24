@@ -106,51 +106,52 @@ class ImporterXlsFile(HasTraits):
         fn = fn.lower()
         self.ds_name = fn
 
+
+    ## def import_data_old(self):
+    ##     self.ds = DataSet(
+    ##         kind=self.kind,
+    ##         display_name=self.ds_name
+    ##         )
+
+    ##     raw_data = xlrd.open_workbook(self.file_path)
+    ##     data_sheet = raw_data.sheet_by_index(0)
+    ##     c_table = []
+    ##     for x in range(data_sheet.nrows):
+    ##         c_row = []
+    ##         for y in range(data_sheet.ncols):
+    ##             c_row.append((data_sheet.cell_value(x,y)))
+    ##         c_table.append(c_row)
+
+    ##     if self.have_obj_names:
+    ##         objnamelist = data_sheet.col_values(0)
+    ##         if self.have_var_names:
+    ##             objnamelist.pop(0)
+
+    ##         for i in range(1, len(c_table)):
+    ##             c_table[i].pop(0)
+
+    ##         obj_names = []
+    ##         for sh in objnamelist:
+    ##             obj_names.append(unicode(sh))
+
+    ##     if self.have_var_names:
+    ##         varnamelist = data_sheet.row_values(0)
+    ##         if self.have_obj_names:
+    ##             varnamelist.pop(0)
+    ##         c_table.pop(0)
+
+    ##         var_names = []
+    ##         for sh in varnamelist:
+    ##             var_names.append(unicode(sh))
+
+    ##     full_table = np.array(c_table)
+    ##     matrix = _pd.DataFrame(full_table, index=obj_names, columns=var_names)
+    ##     self.ds.mat = matrix
+
+    ##     return self.ds
+
+
     def import_data(self):
-        self.ds = DataSet(
-            kind=self.kind,
-            display_name=self.ds_name
-            )
-
-        raw_data = xlrd.open_workbook(self.file_path)
-        data_sheet = raw_data.sheet_by_index(0)
-        c_table = []
-        for x in range(data_sheet.nrows):
-            c_row = []
-            for y in range(data_sheet.ncols):
-                c_row.append((data_sheet.cell_value(x,y)))
-            c_table.append(c_row)
-
-        if self.have_obj_names:
-            objnamelist = data_sheet.col_values(0)
-            if self.have_var_names:
-                objnamelist.pop(0)
-
-            for i in range(1, len(c_table)):
-                c_table[i].pop(0)
-
-            obj_names = []
-            for sh in objnamelist:
-                obj_names.append(unicode(sh))
-
-        if self.have_var_names:
-            varnamelist = data_sheet.row_values(0)
-            if self.have_obj_names:
-                varnamelist.pop(0)
-            c_table.pop(0)
-
-            var_names = []
-            for sh in varnamelist:
-                var_names.append(unicode(sh))
-
-        full_table = np.array(c_table)
-        matrix = _pd.DataFrame(full_table, index=obj_names, columns=var_names)
-        self.ds.mat = matrix
-
-        return self.ds
-
-
-    def import_data_pd(self):
         self.ds = DataSet(
             kind=self.kind,
             display_name=self.ds_name

@@ -9,17 +9,16 @@ logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import os.path
 
 # Enthought imports
-from traits.api import HasTraits, Bool, File, List, Instance, Str
-from traitsui.api import View, UCustom, FileEditor, Item
-from traitsui.menu import OKButton, CancelButton
+from traits.api import HasTraits, Bool, File, List, Str
+from traitsui.api import View, Item
+from traitsui.menu import OKButton
 from pyface.api import FileDialog, OK, CANCEL
 
 # Local imports
 import cc_config as conf
-from dataset import DataSet
 from importer_text_file import ImporterTextFile
 from importer_xls_file import ImporterXlsFile
-from importer_xlsx_file import ImporterXlsxFile
+# from importer_xlsx_file import ImporterXlsxFile
 
 __all__ = ['ImporterMain']
 
@@ -29,12 +28,14 @@ class ImporterMain(HasTraits):
 
     _last_open_path = File()
     _files_path = List(File)
-    # _datasets = List(DataSet)
     _notice_shown = Bool(False)
 
 
     def import_data(self, file_path, have_variable_names = True, have_object_names = True, sep='\t'):
-        """Read file and return DataSet objekt"""
+        """Read file and return DataSet objekt
+
+        Does not show any UI.
+        """
         importer = self._make_importer(file_path)
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
@@ -45,7 +46,10 @@ class ImporterMain(HasTraits):
 
 
     def dnd_import_data(self, path):
-        """Open dialog for selecting a file, import and return the DataSet"""
+        """Drag and drop reactor
+
+        Open dialog for dragged file, import and return the DataSet
+        """
         importer = self._make_importer(path)
         importer.edit_traits()
         ds = importer.import_data()
@@ -53,30 +57,40 @@ class ImporterMain(HasTraits):
 
 
     def dialog_multi_import(self):
-        """Open dialog for selecting multiple files and return a list of DataSet's"""
+        """Multi file import
+
+        Open dialog for selecting multiple files.
+        Shows a settings dialog for each selected file
+        return a list of imported DataSet's
+        """
         self._last_open_path = conf.get_option('work_dir')
         logger.debug('Last imported file: %s', self._last_open_path)
+
+        # Show info about legal data format
         if not self._notice_shown:
             notice = ImportNotice()
             notice.edit_traits()
             self._notice_shown = True
+
+        # Select files
         status = self._show_file_selector()
         if status == CANCEL:
             logger.info('Cancel file imports')
             return []
         datasets = []
         logger.debug('File(s) to import: \n%s', '\n'.join(self._files_path))
-        for filen in self._files_path:
-            importer = self._make_importer(filen)
-            logger.info('Attempting to import %s with %s', filen, type(importer))
-            importer.kind = self._pick_kind(filen)
+
+        for file_n in self._files_path:
+            importer = self._make_importer(file_n)
+            logger.info('Attempting to import %s with %s', file_n, type(importer))
+            importer.kind = self._pick_kind(file_n)
             ui = importer.edit_traits()
             if ui.result:
                 ds = importer.import_data()
                 datasets.append(ds)
             else:
                 continue
-        conf.set_option('work_dir', filen)
+        conf.set_option('work_dir', file_n)
         return datasets
 
 
@@ -98,15 +112,15 @@ class ImporterMain(HasTraits):
         fext = self._identify_filetype(path)
         if fext in ['txt', 'csv']:
             return ImporterTextFile(file_path=path)
-        elif fext in ['xls']:
+        elif fext in ['xls', 'xlsx', 'xlsm']:
             return ImporterXlsFile(file_path=path)
-        elif fext in ['xlsx', 'xlsm']:
-            return ImporterXlsxFile(file_path=path)
+        ## elif fext in ['xlsx', 'xlsm']:
+        ##     return ImporterXlsxFile(file_path=path)
         else:
             return ImporterTextFile(file_path=path)
 
 
-    def _pick_kind(self, filen):
+    def _pick_kind(self, file_n):
         '''Available types:
          * Design variable
          * Sensory profiling
@@ -114,16 +128,16 @@ class ImporterMain(HasTraits):
          * Consumer characteristics
         Defined in dataset.py
         '''
-        filen = filen.lower()
-        if 'design' in filen:
+        file_n = file_n.lower()
+        if 'design' in file_n:
             return 'Design variable'
-        elif 'liking' in filen:
+        elif 'liking' in file_n:
             return 'Consumer liking'
-        elif 'attr' in filen:
+        elif 'attr' in file_n:
             return 'Consumer characteristics'
-        elif 'sensory' in filen:
+        elif 'sensory' in file_n:
             return 'Sensory profiling'
-        elif 'qda' in filen:
+        elif 'qda' in file_n:
             return 'Sensory profiling'
         return 'Sensory profiling'
 
@@ -170,3 +184,4 @@ if __name__ == '__main__':
     dsc = fi.dialog_multi_import()
     for ds in dsc:
         ds.print_traits()
+        print(ds.mat.dtypes)
