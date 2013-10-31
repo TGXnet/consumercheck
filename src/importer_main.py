@@ -40,7 +40,6 @@ class ImporterMain(HasTraits):
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
         importer.delimiter = sep
-        importer.kind = self._pick_kind(file_path)
         ds = importer.import_data()
         return ds
 
@@ -83,7 +82,6 @@ class ImporterMain(HasTraits):
         for file_n in self._files_path:
             importer = self._make_importer(file_n)
             logger.info('Attempting to import %s with %s', file_n, type(importer))
-            importer.kind = self._pick_kind(file_n)
             ui = importer.edit_traits()
             if ui.result:
                 ds = importer.import_data()
@@ -114,32 +112,8 @@ class ImporterMain(HasTraits):
             return ImporterTextFile(file_path=path)
         elif fext in ['xls', 'xlsx', 'xlsm']:
             return ImporterXlsFile(file_path=path)
-        ## elif fext in ['xlsx', 'xlsm']:
-        ##     return ImporterXlsxFile(file_path=path)
         else:
             return ImporterTextFile(file_path=path)
-
-
-    def _pick_kind(self, file_n):
-        '''Available types:
-         * Design variable
-         * Sensory profiling
-         * Consumer liking
-         * Consumer characteristics
-        Defined in dataset.py
-        '''
-        file_n = file_n.lower()
-        if 'design' in file_n:
-            return 'Design variable'
-        elif 'liking' in file_n:
-            return 'Consumer liking'
-        elif 'attr' in file_n:
-            return 'Consumer characteristics'
-        elif 'sensory' in file_n:
-            return 'Sensory profiling'
-        elif 'qda' in file_n:
-            return 'Sensory profiling'
-        return 'Sensory profiling'
 
 
     def _identify_filetype(self, path):

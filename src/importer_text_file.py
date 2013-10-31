@@ -2,20 +2,19 @@
 # StdLib imports
 import logging
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
-import os.path
 
 # SciPy imports
 import pandas as _pd
 
 # Enthought imports
-from traits.api import HasTraits, Event, Str, Unicode, Int, Bool, File, List, Enum
+from traits.api import Event, Str, Unicode, Int, List, Enum
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
 from traits.api import implements
 
 # Local imports
-from dataset import DS_TYPES, DataSet
+from dataset import DataSet
 from importer_interfaces import IDataImporter
 from importer_file_base import ImporterFileBase
 
@@ -116,10 +115,10 @@ class FilePreviewer(Handler):
         return preview_matrix
 
 
-    def _probe_read(self, obj, lines=100, length=200):
+    def _probe_read(self, obj, n_lines=100, length=200):
         lines = []
         with open(obj.file_path, 'rU') as fp:
-            for i in range(lines):
+            for i in range(n_lines):
                 line = fp.readline(length)
                 if not line:
                     break
