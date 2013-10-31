@@ -48,7 +48,7 @@ class HistPlot(_chaco.DataView):
         index_mapper = _chaco.LinearMapper(range=index_range)
 
         # Create the value range
-        value_range = _chaco.DataRange1D(vals, high=self.ceiling)
+        value_range = _chaco.DataRange1D(vals, low_setting=0, high_setting=self.ceiling)
         value_mapper = _chaco.LinearMapper(range=value_range)
 
         # Create the plot
