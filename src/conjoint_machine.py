@@ -340,6 +340,10 @@ class ConjointMachine(object):
         rCommand_runAnalysis = self.get_conj_r_cmd()
         r_resp = self.r(rCommand_runAnalysis)
         logger.info(r_resp)
+        # Diagnostics
+        r_state = 'Object in R after calculation is done\n'
+        r_state += self.r('objects()')
+        logger.info(r_state)
 
 
     def get_conj_r_cmd(self):
@@ -460,6 +464,8 @@ def asciify(names):
 
 if __name__ == '__main__':
     print("Hello World")
+    logging.basicConfig(level=logging.DEBUG)
+    logger.info('Start interactive')
     from dataset import DataSet
     from dataset_container import get_ds_by_name
     from tests.conftest import conjoint_dsc
