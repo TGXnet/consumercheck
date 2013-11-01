@@ -41,8 +41,6 @@ class ConjointMachine(object):
 
 
     def _start_r_interpreter(self):
-#        Rbin = op.join(self.r_origo, 'Rdist', 'R-2.15.1', 'bin', 'R.exe')
-#        Rlib = op.join(self.r_origo, 'Rdist', 'R-2.15.1', 'library')
         Rbin = op.join(self.r_origo, 'R-2.15.1', 'bin', 'R.exe')
         Rlib = op.join(self.r_origo, 'R-2.15.1', 'library')
         logger.info("Try R path: {0}".format(Rbin))
@@ -57,15 +55,13 @@ class ConjointMachine(object):
 
 
     def _load_conjoint_resources(self):
-        ## self.r('library(MixMod)')
         self.r('library(Hmisc)')
-        ## self.r('library(lme4)')
         self.r('library(lmerTest)')
         # Set R working directory independent of Python working directory
         r_wd = op.join(self.r_origo, "rsrc")
         self.r('setwd("{0}")'.format(r_wd))
         self.r('source("conjoint.r")')
-        # Diagnostic output
+        # Diagnostic to loggin system
         r_env = 'R environment\n'
         r_env += self.r('getwd()')
         r_env += self.r('.libPaths()')
@@ -76,8 +72,7 @@ class ConjointMachine(object):
 
     def synchronous_calculation(self, design, selected_designVars,
                                 consLiking, structure=1,
-                                consAtts=None, selected_consAtts=[],
-                                py_merge=True):
+                                consAtts=None, selected_consAtts=[]):
         """Starts a conjoint calculation and return when the result is ready
         Parameters:
          * structure: 1, 2 or 3
@@ -86,11 +81,10 @@ class ConjointMachine(object):
          * design: ds type
          * selected_designVars: List with design column names
          * consLiking: ds type
-         * py_merge: bool Indicated whether the merge of the data should happend
          in python or in R.
         """
         self._prepare_data(structure, consAtts, selected_consAtts,
-                           design, selected_designVars, consLiking, py_merge)
+                           design, selected_designVars, consLiking)
 
         ## print(self.headerList)
         ## np.set_printoptions(threshold=100, edgeitems=10)
@@ -102,8 +96,7 @@ class ConjointMachine(object):
 
     def schedule_calculation(self, design, selected_designVars,
                              consLiking, structure=1,
-                             consAtts=None, selected_consAtts=[],
-                             py_merge=True):
+                             consAtts=None, selected_consAtts=[]):
         """Starts a conjoint calculation and return when the result is ready
         Parameters:
          * structure: 1, 2 or 3
@@ -112,7 +105,6 @@ class ConjointMachine(object):
          * design: ds type
          * selected_designVars: List with design column names
          * consLiking: ds type
-         * py_merge: bool Indicated whether the merge of the data should happend
          in python or in R.
         """
 
@@ -120,7 +112,7 @@ class ConjointMachine(object):
             print("Calculation is already running")
         else:
             self._prepare_data(structure, consAtts, selected_consAtts,
-                               design, selected_designVars, consLiking, py_merge)
+                               design, selected_designVars, consLiking)
             self._copy_values_into_r_env()
             self.conjoint_calc_thread = ConjointCalcThread(target=None, args=(), kwargs={})
             self.conjoint_calc_thread.conj = self
@@ -129,7 +121,7 @@ class ConjointMachine(object):
 
 
     def _prepare_data(self, structure, consAtts, selected_consAtts,
-                      design, selected_designVars, consLiking, py_merge):
+                      design, selected_designVars, consLiking):
 
         self.structure = structure
         self.consAtts = consAtts
@@ -137,7 +129,6 @@ class ConjointMachine(object):
         self.design = design
         self.selected_designVars = asciify(selected_designVars)
         self.consLiking = consLiking
-        self.py_merge = py_merge
 
         # Generate consumer liking tag acceptable for R
         # Make list of character to trow away
@@ -148,8 +139,7 @@ class ConjointMachine(object):
         self.consLikingTag = liking_name.translate(None, throw_chrs)
 
         # self._check_completeness()
-        if self.py_merge:
-            self._data_merge()
+        self._data_merge()
 
 
     def _check_completeness(self):
@@ -265,39 +255,10 @@ class ConjointMachine(object):
 
     def _copy_values_into_r_env(self):
         # R merge
-        if self.py_merge:
-            self.r['conjData'] = self.finalData
-            self.r['conjDataVarNames'] = self.headerList
-            self.r('conjDF <- as.data.frame(conjData)')
-            self.r('colnames(conjDF) <- conjDataVarNames')
-        else:
-            # Consumer attributes
-            self.r['consAttMat'] = self.consAtts.values
-            self.r['consAttVars'] = asciify(self.consAtts.var_n)
-            self.r['consAttObj'] = asciify(self.consAtts.obj_n)
-            self.r('consum.attr <- as.data.frame(consAttMat)')
-            self.r('colnames(consum.attr) <- consAttVars')
-            self.r('rownames(consum.attr) <- consAttObj')
-
-            # Design values
-            self.r['designMat'] = self.design.values
-            self.r['designVars'] = asciify(self.design.var_n)
-            self.r['designObj'] = asciify(self.design.obj_n)
-            self.r('design.matr <- as.data.frame(designMat)')
-            self.r('colnames(design.matr) <- designVars')
-            self.r('rownames(design.matr) <- designObj')
-
-            # Consumer liking data
-            self.r['consLikingMat'] = self.consLiking.values
-            self.r['consLikingVars'] = asciify(self.consLiking.var_n)
-            self.r['consLikingObj'] = asciify(self.consLiking.obj_n)
-            self.r('cons.liking <- as.data.frame(consLikingMat)')
-            self.r('colnames(cons.liking) <- consLikingVars')
-            self.r('rownames(cons.liking) <- consLikingObj')
-
-            # Construct a list in R space that holds data and names of liking matrices
-            rCommand_buildLikingList = 'list.consum.liking <- list(matr.liking=list({0}), names.liking=c("{1}"))'.format('cons.liking', self.consLikingTag)
-            self.r(rCommand_buildLikingList)
+        self.r['conjData'] = self.finalData
+        self.r['conjDataVarNames'] = self.headerList
+        self.r('conjDF <- as.data.frame(conjData)')
+        self.r('colnames(conjDF) <- conjDataVarNames')
 
         # Construct R list with R lists of product design variables as well as
         # consumer attributes.
@@ -347,10 +308,7 @@ class ConjointMachine(object):
 
 
     def get_conj_r_cmd(self):
-        if self.py_merge:
-            rCommand_runAnalysis = 'res.gm <- ConjointNoMerge(structure={0}, conjDF, response, fixed, random, facs)'.format(self.structure)
-        else:
-            rCommand_runAnalysis = 'res.gm <- ConjointMerge(structure={0}, consum.attr=consum.attr, design.matr=design.matr, list.consum.liking=list.consum.liking, response, fixed, random, facs)'.format(self.structure)
+        rCommand_runAnalysis = 'res.gm <- conjoint(structure={0}, conjDF, response, fixed, random, facs)'.format(self.structure)
         return rCommand_runAnalysis
 
 
@@ -485,6 +443,5 @@ if __name__ == '__main__':
 #     res = cm.synchronous_calculation(designVar, selected_designVar, odflLike)
     res = cm.synchronous_calculation(designVar, selected_designVar,
                                      odflLike, selected_structure,
-                                     empty, [],
-                                     py_merge=True)
+                                     empty, [])
     res.print_traits()
