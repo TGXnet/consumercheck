@@ -22,13 +22,21 @@ from plot_windows import SinglePlotWindow
 class MainEffectsPlot(DataView):
 
     plot_data = Instance(DataSet)
+    """The data that is plot
+    
+    This is a DataSet
+    """
     
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
         res = adapter_main_effect_data(conj_res, attr_name)
         self.plot_data = DataSet(mat=res)
         self._adapt_conj_main_effect_data(conj_res, attr_name)
-        self._create_plot()
+        # self._create_plot()
+        self._make_plot_frame()
+        self._add_lines()
+        self._add_ci_bars()
+        self._add_avg_line()
 
 
     def _adapt_conj_main_effect_data(self, conj_res, attr_name):
@@ -76,7 +84,7 @@ class MainEffectsPlot(DataView):
         self.apd.set_data('yhigh', [float(val) for val in selected[' Upper CI ']])
         self.apd.set_data('average', [conj_res.meanLiking for
                                       val in selected[attr_name]])
-        self.data = self.apd
+        # self.data = self.apd
 
 
         # Get p value for attribute
@@ -102,14 +110,119 @@ class MainEffectsPlot(DataView):
         self.p_value = p_value
 
 
+    def _make_plot_frame(self):
+        self.index_range.tight_bounds = False
+        self.index_range.margin = 0.05
+        self.value_range.tight_bounds = False
+        index = self.mk_ads('index')
+        self.index_range.add(index)
+        for name in ['values', 'ylow', 'yhigh', 'average']:
+            value = self.mk_ads(name)
+            self.value_range.add(value)
+
+        index_axis = LabelAxis(
+            component=self,
+            mapper=self.index_mapper,
+            orientation="bottom",
+            tick_weight=1, tick_label_rotate_angle = 90,
+            labels=self.ls_label_names,
+            positions = self.ls_label_pos)
+
+        self.x_axis = index_axis
+
+        zoom = ZoomTool(self, tool_mode="box", always_on=False)
+        pan = PanTool(self)
+        self.tools.append(zoom)
+        self.tools.append(pan)
+
+        add_default_grids(self)
+
+        # Set border color
+        self.border_width = 10
+
+        if self.p_value < 0.001:
+            self.border_color = (1.0, 0.0, 0.0, 0.8)
+        elif self.p_value < 0.01:
+            self.border_color = (0.0, 1.0, 0.0, 0.8)
+        elif self.p_value < 0.05:
+            self.border_color = (1.0, 1.0, 0.0, 0.8)
+        else:
+            self.border_color = (0.5, 0.5, 0.5, 0.8)
+
+
+    def _add_lines(self):
+        index = self.mk_ads('index')
+        value = self.mk_ads('values')
+
+        #Create lineplot
+        plot_line = LinePlot(
+            index=index, index_mapper=self.index_mapper,
+            value=value, value_mapper=self.value_mapper,
+            name='line')
+
+        #Add datapoint enhancement
+        plot_scatter = ScatterPlot(
+            index=index, index_mapper=self.index_mapper,
+            value=value, value_mapper=self.value_mapper,
+            color="blue", marker_size=5,
+            name='scatter',
+        )
+
+        self.add(plot_line, plot_scatter)
+
+
+    def _add_ci_bars(self):
+        #Create vertical bars to indicate confidence interval
+        index = self.mk_ads('index')
+        value_lo = self.mk_ads('ylow')
+        value_hi = self.mk_ads('yhigh')
+
+        plot_ci = ErrorBarPlot(
+            index=index, index_mapper=self.index_mapper,
+            value_low = value_lo, value_high = value_hi,
+            value_mapper = self.value_mapper,
+            border_visible=True,
+            name='CIbars')
+
+        self.add(plot_ci)
+
+
+    def _add_avg_line(self):
+        #Create averageplot
+        idx = self.plot_data.mat['index']
+        span = idx[-1] - idx[0]
+        index = ArrayDataSource([idx[0] - span, idx[-1] + span])
+
+        avg = self.plot_data.mat['average'][0]
+        value = ArrayDataSource([avg, avg])
+        # value = self.mk_ads('average')
+
+        plot_average = LinePlot(
+            index=index, index_mapper=self.index_mapper,
+            value=value, value_mapper=self.value_mapper,
+            color='green',
+            name='average',
+        )
+
+        self.add(plot_average)
+
+
+
+
+
+    def mk_ads(self, name):
+        return ArrayDataSource(self.plot_data.mat[name].values)
+
+
     def _create_plot(self):
         #Prepare data for plots
-        x = ArrayDataSource(self.apd['index'])
+
+        x = self.mk_ads('index')
         xx = ArrayDataSource(self.apd['avg_index'])
-        y = ArrayDataSource(self.apd['values'])
-        ylow = ArrayDataSource(self.apd['ylow'])
-        yhigh = ArrayDataSource(self.apd['yhigh'])
-        yaverage = ArrayDataSource(self.apd['average'])
+        y = self.mk_ads('values')
+        ylow = self.mk_ads('ylow')
+        yhigh = self.mk_ads('yhigh')
+        yaverage = self.mk_ads('average')
         
         index_mapper = LinearMapper(
             range=DataRange1D(x, tight_bounds=False, margin=0.05))
@@ -389,6 +502,7 @@ def adapter_main_effect_data(conj_res, attr_name):
         ls_label_names.append(pl)
 
     pd = _pd.DataFrame(index=ls_label_names)
+    pd['index'] = [int(val) for val in selected[attr_name]]
     pd['values'] = [float(val) for val in selected[' Estimate ']]
     pd['ylow'] = [float(val) for val in selected[' Lower CI ']]
     pd['yhigh'] = [float(val) for val in selected[' Upper CI ']]
@@ -470,10 +584,16 @@ if __name__ == '__main__':
     from tests.conftest import conj_res
     res = conj_res()
 
-    ## mep = MainEffectsPlot(res, 'Flavour')
-    ## pw = SinglePlotWindow(plot=mep)
-    ## pw.configure_traits()
-    iap = InteractionPlot(res, 'Sex', 'Flavour')
-    pw = InteractionPlotWindow(plot=iap)
+    mep = MainEffectsPlot(res, 'Flavour')
+    pw = SinglePlotWindow(plot=mep)
+    print(pw.plot.plot_data.mat)
     pw.configure_traits()
+    ## iap = InteractionPlot(res, 'Sex', 'Flavour')
+    ## pw = InteractionPlotWindow(plot=iap)
+    ## pw.configure_traits()
     print("The end")
+
+
+
+
+
