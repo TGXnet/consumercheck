@@ -31,7 +31,7 @@ class MainEffectsPlot(DataView):
         super(MainEffectsPlot, self).__init__()
         res = adapter_main_effect_data(conj_res.lsmeansTable, attr_name)
         self.plot_data = DataSet(mat=res)
-        self.p_value = self._get_p_value(conj_res.anovaTable, attr_name)
+        self.p_value = get_p_value(conj_res.anovaTable, attr_name)
         self.average = conj_res.meanLiking
 
         self._make_plot_frame()
@@ -40,36 +40,20 @@ class MainEffectsPlot(DataView):
         self._add_avg_line()
 
 
-    def _get_p_value(self, anova_table, attr_name):
-        # Get p value for attribute
-        # Before Conjoint update from 2013-03-18
-
-        anova_values = anova_table['data']
-        anova_names = anova_table['rowNames']
-        picker = anova_names == attr_name
-        # p_value = anova_values[picker, 3][0]
-        # Check if it is only one bool value
-        if isinstance(picker, bool):
-            picker = np.array([picker])
-        var_row = anova_values[picker]
-        p_str = var_row['Pr(>F)'][0]
-        try:
-            p_value = float(p_str)
-        except ValueError:
-            p_value = 0.0
-        return p_value
-
-
     def _make_plot_frame(self):
+        # Adjust spacing
         self.index_range.tight_bounds = False
         self.index_range.margin = 0.05
         self.value_range.tight_bounds = False
+
+        # Update plot ranges and mappers
         index = self.mk_ads('index')
         self.index_range.add(index)
         for name in ['values', 'ylow', 'yhigh']:
             value = self.mk_ads(name)
             self.value_range.add(value)
 
+        # Use named labels for index axis
         labels = list(self.plot_data.mat.index)
         label_index = self.plot_data.mat['index'].values
 
@@ -91,7 +75,7 @@ class MainEffectsPlot(DataView):
 
         add_default_grids(self)
 
-        # Set border color
+        # Set border color based on p_value
         self.border_width = 10
 
         if self.p_value < 0.001:
@@ -377,6 +361,28 @@ def adapter_main_effect_data(ls_means_table, attr_name):
     return pd
 
 
+def get_p_value(anova_table, attr_name):
+    # Get p value for attribute
+    # Before Conjoint update from 2013-03-18
+
+    anova_values = anova_table['data']
+    anova_names = anova_table['rowNames']
+    picker = anova_names == attr_name
+    # p_value = anova_values[picker, 3][0]
+    # Check if it is only one bool value
+    if isinstance(picker, bool):
+        picker = np.array([picker])
+    var_row = anova_values[picker]
+    p_str = var_row['Pr(>F)'][0]
+    try:
+        p_value = float(p_str)
+    except ValueError:
+        p_value = 0.0
+    return p_value
+
+
+
+
 def adapter_conj_interaction_data(conj_res, index_attr, line_attr):
     ls_means = conj_res.lsmeansTable['data']
 
@@ -436,8 +442,3 @@ if __name__ == '__main__':
     ## pw = InteractionPlotWindow(plot=iap)
     ## pw.configure_traits()
     print("The end")
-
-
-
-
-
