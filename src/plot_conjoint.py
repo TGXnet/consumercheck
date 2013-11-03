@@ -29,9 +29,11 @@ class MainEffectsPlot(DataView):
     
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
-        res = adapter_main_effect_data(conj_res, attr_name)
+        res = adapter_main_effect_data(conj_res.lsmeansTable, attr_name)
         self.plot_data = DataSet(mat=res)
-        self._adapt_conj_main_effect_data(conj_res, attr_name)
+        self.p_value = self._get_p_value(conj_res.anovaTable, attr_name)
+        self.average = conj_res.meanLiking
+
         # self._create_plot()
         self._make_plot_frame()
         self._add_lines()
@@ -110,23 +112,48 @@ class MainEffectsPlot(DataView):
         self.p_value = p_value
 
 
+    def _get_p_value(self, anova_table, attr_name):
+        # Get p value for attribute
+        # Before Conjoint update from 2013-03-18
+
+        anova_values = anova_table['data']
+        anova_names = anova_table['rowNames']
+        picker = anova_names == attr_name
+        # p_value = anova_values[picker, 3][0]
+        # Check if it is only one bool value
+        if isinstance(picker, bool):
+            picker = np.array([picker])
+        var_row = anova_values[picker]
+        p_str = var_row['Pr(>F)'][0]
+        try:
+            p_value = float(p_str)
+        except ValueError:
+            p_value = 0.0
+        return p_value
+
+
+
     def _make_plot_frame(self):
         self.index_range.tight_bounds = False
         self.index_range.margin = 0.05
         self.value_range.tight_bounds = False
         index = self.mk_ads('index')
         self.index_range.add(index)
-        for name in ['values', 'ylow', 'yhigh', 'average']:
+        for name in ['values', 'ylow', 'yhigh']:
             value = self.mk_ads(name)
             self.value_range.add(value)
+
+        labels = list(self.plot_data.mat.index)
+        label_index = self.plot_data.mat['index'].values
 
         index_axis = LabelAxis(
             component=self,
             mapper=self.index_mapper,
             orientation="bottom",
-            tick_weight=1, tick_label_rotate_angle = 90,
-            labels=self.ls_label_names,
-            positions = self.ls_label_pos)
+            tick_weight=1, 
+            tick_label_rotate_angle=90,
+            labels=labels,
+            positions=label_index)
 
         self.x_axis = index_axis
 
@@ -193,7 +220,7 @@ class MainEffectsPlot(DataView):
         span = idx[-1] - idx[0]
         index = ArrayDataSource([idx[0] - span, idx[-1] + span])
 
-        avg = self.plot_data.mat['average'][0]
+        avg = self.average
         value = ArrayDataSource([avg, avg])
         # value = self.mk_ads('average')
 
@@ -471,13 +498,10 @@ class InteractionPlotWindow(SinglePlotWindow):
 
 
 
-def adapter_main_effect_data(conj_res, attr_name):
-    """FIXME: Can this bee extracted as an utility function
-    that will return an result object but only with the needed values?
-    """
-    ls_means = conj_res.lsmeansTable['data']
-    ls_means_labels = conj_res.lsmeansTable['rowNames']
-    cn = list(conj_res.lsmeansTable['colNames'])
+def adapter_main_effect_data(ls_means_table, attr_name):
+    ls_means = ls_means_table['data']
+    ls_means_labels = ls_means_table['rowNames']
+    cn = list(ls_means_table['colNames'])
     nli = cn.index('Estimate')
     cn = cn[:nli]
 
@@ -506,30 +530,8 @@ def adapter_main_effect_data(conj_res, attr_name):
     pd['values'] = [float(val) for val in selected[' Estimate ']]
     pd['ylow'] = [float(val) for val in selected[' Lower CI ']]
     pd['yhigh'] = [float(val) for val in selected[' Upper CI ']]
-    pd['average'] = [conj_res.meanLiking for val in selected[attr_name]]
+    # pd['average'] = [conj_res.meanLiking for val in selected[attr_name]]
 
-    # Get p value for attribute
-    # Before Conjoint update from 2013-03-18
-    ## anova_values = conj_res.anovaTable['data']
-    ## anova_names = conj_res.anovaTable['rowNames']
-    ## picker = anova_names == attr_name
-    ## p_value = anova_values[picker, 3][0]
-    ## self.p_value = p_value
-
-    anova_values = conj_res.anovaTable['data']
-    anova_names = conj_res.anovaTable['rowNames']
-    picker = anova_names == attr_name
-    # p_value = anova_values[picker, 3][0]
-    if isinstance(picker, bool):
-        picker = np.array([picker])
-    var_row = anova_values[picker]
-    p_str = var_row['Pr(>F)'][0]
-    try:
-        p_value = float(p_str)
-    except ValueError:
-        p_value = 0.0
-
-    # return (pd, p_value)
     return pd
 
 
