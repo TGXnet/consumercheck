@@ -361,6 +361,55 @@ def adapter_main_effect_data(ls_means_table, attr_name):
     return pd
 
 
+
+def adapter_main_effect_ds(ls_means_table, attr_name):
+    ls_means = ls_means_table.mat
+    ls_means_labels = ls_means_table.mat.index
+    cn = list(ls_means_table.mat.columns)
+    print(ls_means_labels)
+    print(cn)
+    nli = cn.index('Estimate')
+    cn = cn[:nli]
+    print(cn)
+
+    # The folowing logic is about selecting rows from the result sets.
+    # The picker i an boolean vector that selects the rows i will plot.
+
+    # First; select all rows where the given attribute have an index value
+    picker = ls_means[attr_name] != 'NA'
+    print("select all containing sex")
+    print(picker)
+    # Then; exclude all the interaction rows where the given attribute
+    # is a part of the interaction
+    exclude = [ls_means[col] != 'NA' for col in cn if col != attr_name]
+    print("Exclude")
+    print(exclude)
+    for out in exclude:
+        picker = np.logical_and(picker, np.logical_not(out))
+    print("Final picker")
+    print(picker)
+
+    # Use the boolean selection vector to select the wanted rows from the result set
+    selected = ls_means[picker]
+    print(selected)
+    selected_labels = ls_means_labels[picker]
+    print(selected_labels)
+
+    ls_label_names = []
+    for i, pl in enumerate(selected_labels):
+        ls_label_names.append(pl)
+    print(ls_label_names)
+
+    pd = _pd.DataFrame(index=ls_label_names)
+    pd['index'] = [int(val) for val in selected[attr_name]]
+    pd['values'] = [float(val) for val in selected['Estimate']]
+    pd['ylow'] = [float(val) for val in selected['Lower CI']]
+    pd['yhigh'] = [float(val) for val in selected['Upper CI']]
+    # pd['average'] = [conj_res.meanLiking for val in selected[attr_name]]
+
+    return pd
+
+
 def get_p_value(anova_table, attr_name):
     # Get p value for attribute
     # Before Conjoint update from 2013-03-18
