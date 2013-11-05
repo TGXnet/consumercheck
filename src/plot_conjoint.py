@@ -19,13 +19,29 @@ from dataset import DataSet
 from plot_windows import SinglePlotWindow
 
 
-class MainEffectsPlot(DataView):
-
+class ConjointBasePlot(DataView):
     plot_data = Instance(DataSet)
     """The data that is plot
     
     This is a DataSet
     """
+
+    def mk_ads(self, name):
+        return ArrayDataSource(self.plot_data.mat[name].values)
+
+
+    def export_image(self, fname, size=(800,600)):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)
+
+
+
+class MainEffectsPlot(ConjointBasePlot):
+
     
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
@@ -145,23 +161,8 @@ class MainEffectsPlot(DataView):
         self.add(plot_average)
 
 
-    def mk_ads(self, name):
-        return ArrayDataSource(self.plot_data.mat[name].values)
 
-
-    def export_image(self, fname, size=(800,600)):
-        """Save plot as png image."""
-        # self.outer_bounds = list(size)
-        # self.do_layout(force=True)
-        gc = PlotGraphicsContext(self.outer_bounds)
-        gc.render_component(self)
-        gc.save(fname, file_format=None)
-
-
-
-class InteractionPlot(DataView):
-
-    plot_data = Instance(DataSet)
+class InteractionPlot(ConjointBasePlot):
 
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
@@ -300,16 +301,6 @@ class InteractionPlot(DataView):
 
 
 
-    def export_image(self, fname, size=(800,600)):
-        """Save plot as png image."""
-        # self.outer_bounds = list(size)
-        # self.do_layout(force=True)
-        gc = PlotGraphicsContext(self.outer_bounds)
-        gc.render_component(self)
-        gc.save(fname, file_format=None)
-
-
-
 class InteractionPlotWindow(SinglePlotWindow):
     """Window for embedding line plot
 
@@ -430,8 +421,6 @@ def get_p_value(anova_table, attr_name):
     return p_value
 
 
-
-
 def adapter_conj_interaction_data(conj_res, index_attr, line_attr):
     ls_means = conj_res.lsmeansTable['data']
 
@@ -483,11 +472,11 @@ if __name__ == '__main__':
     from tests.conftest import conj_res
     res = conj_res()
 
-    mep = MainEffectsPlot(res, 'Flavour')
-    pw = SinglePlotWindow(plot=mep)
-    print(pw.plot.plot_data.mat)
+    # mep = MainEffectsPlot(res, 'Flavour')
+    # pw = SinglePlotWindow(plot=mep)
+    # print(pw.plot.plot_data.mat)
+    # pw.configure_traits()
+    iap = InteractionPlot(res, 'Sex', 'Flavour')
+    pw = InteractionPlotWindow(plot=iap)
     pw.configure_traits()
-    ## iap = InteractionPlot(res, 'Sex', 'Flavour')
-    ## pw = InteractionPlotWindow(plot=iap)
-    ## pw.configure_traits()
     print("The end")
