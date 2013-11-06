@@ -67,10 +67,7 @@ class ConjointBasePlot(DataView):
         return self._title.text
 
 
-
-    def _label_axix(self):
-        #Append label and grid
-        # FIXME: Fix function name
+    def _label_axis(self):
         idx = range(len(self.index_labels))
 
         index_axis = LabelAxis(
@@ -97,7 +94,6 @@ class ConjointBasePlot(DataView):
 
 
 class MainEffectsPlot(ConjointBasePlot):
-
     
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
@@ -107,6 +103,7 @@ class MainEffectsPlot(ConjointBasePlot):
         self.average = conj_res.meanLiking
 
         self._make_plot_frame()
+        self._label_axis()
         self._add_lines()
         self._add_ci_bars()
         self._add_avg_line()
@@ -125,23 +122,6 @@ class MainEffectsPlot(ConjointBasePlot):
         for name in ['values', 'ylow', 'yhigh']:
             value = self.mk_ads(name)
             self.value_range.add(value)
-
-        # # Use named labels for index axis
-        # labels = list(self.plot_data.mat.index)
-        # label_index = self.plot_data.mat['index'].values
-
-        # # FIXME: Separate function, like for interaction plot
-        # index_axis = LabelAxis(
-        #     component=self,
-        #     mapper=self.index_mapper,
-        #     orientation="bottom",
-        #     tick_weight=1, 
-        #     tick_label_rotate_angle=90,
-        #     labels=labels,
-        #     positions=label_index)
-
-        # self.x_axis = index_axis
-        self._label_axix()
 
         # FIXME: Join with interaction
         zoom = ZoomTool(self, tool_mode="box", always_on=False)
@@ -248,7 +228,7 @@ class InteractionPlot(ConjointBasePlot):
         self._nullify_plot()
         self._make_plot_frame()
         self._add_lines(flip)
-        self._label_axix()
+        self._label_axis()
         self._add_line_legend()
 
 
@@ -260,11 +240,6 @@ class InteractionPlot(ConjointBasePlot):
 
         self.tools.append(PanTool(self))
         self.tools.append(ZoomTool(self))
-
-        # self.overlays.append(PlotLabel("Conjoint interaction plot",
-        #                                component=self,
-        #                                font = "swiss 16",
-        #                                overlay_position="top"))
 
         # Set border color
         self.border_width = 10
@@ -326,138 +301,6 @@ class InteractionPlot(ConjointBasePlot):
         )
         legend.tools.append(LegendTool(legend, drag_button="right"))
         self.overlays.append(legend)
-
-
-
-    def _adapt_conj_interaction_data(self, flip=False):
-        """
-        attr_one_name: Default index axis
-        attr_two_name: Default lines
-        flip: Decide which attribute to be index and which to be lines
-        """
-        # FIXME: Throw this when new function is werified
-        # self._make_plot_frame()
-        # self._add_lines()
-
-
-        # if not flip:
-        #     self.index_attr, self.line_attr = self.attr_one_name, self.attr_two_name
-        # else:
-        #     self.index_attr, self.line_attr = self.attr_two_name, self.attr_one_name
-
-        # ls_means = self.conj_res.lsmeansTable['data']
-
-        # picker_one = ls_means[self.index_attr] != 'NA'
-        # picker_two = ls_means[self.line_attr] != 'NA'
-        # # Picker is an boolean selction vector
-        # picker = np.logical_and(picker_one, picker_two)
-        # selected = ls_means[picker][[self.index_attr, self.line_attr, ' Estimate ']]
-
-        # lines = sorted(list(set(selected[self.line_attr])))
-        # indexes = sorted(list(set(selected[self.index_attr])))
-        # index_labels = ['{0} {1}'.format(self.index_attr, i) for i in indexes]
-
-
-        # # Get p value for attribute
-        # anova_values = self.conj_res.anovaTable['data']
-        # anova_names = self.conj_res.anovaTable['rowNames']
-        # try:
-        #     attr_name = "{0}:{1}".format(self.attr_one_name, self.attr_two_name)
-        #     picker = anova_names == attr_name
-        #     var_row = anova_values[picker]
-        #     p_str = var_row['Pr(>F)'][0]
-        #     try:
-        #         p_value = float(p_str)
-        #     except ValueError:
-        #         p_value = 0.0
-        # except IndexError:
-        #     attr_name = "{0}:{1}".format(self.attr_two_name, self.attr_one_name)
-        #     picker = anova_names == attr_name
-        #     var_row = anova_values[picker]
-        #     p_str = var_row['Pr(>F)'][0]
-        #     try:
-        #         p_value = float(p_str)
-        #     except ValueError:
-        #         p_value = 0.0
-        # self.p_value = p_value
-
-        # Plot starts here ------------------------
-
-        # Set border color
-        # self.border_width = 10
-
-        # if self.p_value < 0.001:
-        #     self.border_color = (1.0, 0.0, 0.0, 0.8)
-        # elif self.p_value < 0.01:
-        #     self.border_color = (0.0, 1.0, 0.0, 0.8)
-        # elif self.p_value < 0.05:
-        #     self.border_color = (1.0, 1.0, 0.0, 0.8)
-        # else:
-        #     self.border_color = (0.5, 0.5, 0.5, 0.8)
-
-
-        # Nullify all plot related list to make shure we can
-        # make the ploting idempotent
-        # self.plot_components = []
-        # self.index_range.sources = []
-        # self.value_range.sources = []
-        # self.tools = []
-        # self.overlays = []
-
-        # self.index_range.tight_bounds = False
-        # self.value_range.tight_bounds = False
-
-        # idx = ArrayDataSource([int(val) for val in indexes])
-        # self.index_range.sources.append(idx)
-
-        # #Append label and grid
-        # x_axis = LabelAxis(
-        #     self,
-        #     orientation="bottom",
-        #     tick_weight=1,
-        #     tick_label_rotate_angle = 90,
-        #     labels=index_labels,
-        #     positions = [int(val) for val in indexes],
-        #     )
-
-        # self.index_axis = x_axis
-
-        # Add a legend in the upper right corner, and make it relocatable
-        # plots = {}
-        # legend = Legend(component=self, padding=10, align="ur")
-        # legend.tools.append(LegendTool(legend, drag_button="right"))
-        # self.overlays.append(legend)
-
-        # for hvert nytt plot trenger vi bare et nytt dataset
-
-        # line_styles = ['solid', 'dot dash', 'dash', 'dot', 'long dash']
-
-        # for i, line in enumerate(lines):
-        #     line_data_picker = selected[self.line_attr] == line
-        #     line_data = selected[line_data_picker]
-        #     vals = ArrayDataSource([float(val) for val in line_data[' Estimate ']])
-        #     self.value_range.sources.append(vals)
-        #     plot = LinePlot(index=idx, value=vals,
-        #                     index_mapper=LinearMapper(range=self.index_range),
-        #                     value_mapper=LinearMapper(range=self.value_range),
-        #                     color=COLOR_PALETTE[i],
-        #                     line_style=line_styles[i%4]
-        #                     )
-        #     self.add(plot)
-        #     plots["{0} {1}".format(self.line_attr, line)] = plot
-
-        # legend.plots = plots
-
-        # self.tools.append(PanTool(self))
-        # self.overlays.append(ZoomTool(self))
-        # Add the title at the top
-        # self.overlays.append(PlotLabel("Conjoint interaction plot",
-        #                                component=self,
-        #                                font = "swiss 16",
-        #                                overlay_position="top"))
-
-        # Add the traits inspector tool to the container
-        # self.tools.append(TraitsTool(self))
 
 
 
