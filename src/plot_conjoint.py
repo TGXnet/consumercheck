@@ -27,9 +27,25 @@ class ConjointBasePlot(DataView):
     
     This is a DataSet
     """
+    index_labels = List(Str)
 
-    def mk_ads(self, name):
-        return ArrayDataSource(self.plot_data.mat[name].values)
+
+    def _label_axix(self):
+        #Append label and grid
+        # FIXME: Fix function name
+        idx = range(len(self.index_labels))
+
+        index_axis = LabelAxis(
+            component=self,
+            mapper=self.index_mapper,
+            orientation="bottom",
+            tick_weight=1,
+            tick_label_rotate_angle = 90,
+            labels=self.index_labels,
+            positions = idx,
+            )
+
+        self.x_axis = index_axis
 
 
     def export_image(self, fname, size=(800,600)):
@@ -65,28 +81,30 @@ class MainEffectsPlot(ConjointBasePlot):
         self.value_range.tight_bounds = False
 
         # Update plot ranges and mappers
-        index = self.mk_ads('index')
+        self.index_labels = self.plot_data.obj_n
+        index = ArrayDataSource(range(len(self.index_labels)))
         self.index_range.add(index)
         for name in ['values', 'ylow', 'yhigh']:
             value = self.mk_ads(name)
             self.value_range.add(value)
 
-        # Use named labels for index axis
-        labels = list(self.plot_data.mat.index)
-        label_index = self.plot_data.mat['index'].values
+        # # Use named labels for index axis
+        # labels = list(self.plot_data.mat.index)
+        # label_index = self.plot_data.mat['index'].values
 
-        # FIXME: Separate function, like for interaction plot
-        index_axis = LabelAxis(
-            component=self,
-            mapper=self.index_mapper,
-            orientation="bottom",
-            tick_weight=1, 
-            tick_label_rotate_angle=90,
-            labels=labels,
-            positions=label_index)
+        # # FIXME: Separate function, like for interaction plot
+        # index_axis = LabelAxis(
+        #     component=self,
+        #     mapper=self.index_mapper,
+        #     orientation="bottom",
+        #     tick_weight=1, 
+        #     tick_label_rotate_angle=90,
+        #     labels=labels,
+        #     positions=label_index)
 
-        self.x_axis = index_axis
-        
+        # self.x_axis = index_axis
+        self._label_axix()
+
         # FIXME: Join with interaction
         zoom = ZoomTool(self, tool_mode="box", always_on=False)
         pan = PanTool(self)
@@ -109,7 +127,8 @@ class MainEffectsPlot(ConjointBasePlot):
 
 
     def _add_lines(self):
-        index = self.mk_ads('index')
+        # index = self.mk_ads('index')
+        index = ArrayDataSource(range(len(self.index_labels)))
         value = self.mk_ads('values')
 
         #Create lineplot
@@ -131,7 +150,8 @@ class MainEffectsPlot(ConjointBasePlot):
 
     def _add_ci_bars(self):
         #Create vertical bars to indicate confidence interval
-        index = self.mk_ads('index')
+        # index = self.mk_ads('index')
+        index = ArrayDataSource(range(len(self.index_labels)))
         value_lo = self.mk_ads('ylow')
         value_hi = self.mk_ads('yhigh')
 
@@ -147,7 +167,8 @@ class MainEffectsPlot(ConjointBasePlot):
 
     def _add_avg_line(self):
         #Create averageplot
-        idx = self.plot_data.mat['index']
+        # idx = self.plot_data.mat['index']
+        idx = range(len(self.index_labels))
         span = idx[-1] - idx[0]
         index = ArrayDataSource([idx[0] - span, idx[-1] + span])
 
@@ -165,13 +186,17 @@ class MainEffectsPlot(ConjointBasePlot):
         self.add(plot_average)
 
 
+    def mk_ads(self, name):
+        return ArrayDataSource(self.plot_data.mat[name].values)
+
+
 
 class InteractionPlot(ConjointBasePlot):
 
     # LinPlot name to LinPlot mapper
     # Used by Plot legend
     plots = Dict(Str, LinePlot)
-    index_labels = List(Str)
+
 
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
@@ -250,23 +275,6 @@ class InteractionPlot(ConjointBasePlot):
             )
             self.add(plot)
             self.plots[name] = plot
-
-
-    def _label_axix(self):
-        #Append label and grid
-        idx = range(len(self.index_labels))
-
-        index_axis = LabelAxis(
-            component=self,
-            mapper=self.index_mapper,
-            orientation="bottom",
-            tick_weight=1,
-            tick_label_rotate_angle = 90,
-            labels=self.index_labels,
-            positions = idx,
-            )
-
-        self.x_axis = index_axis
 
 
     def _add_line_legend(self):
@@ -456,7 +464,7 @@ def adapter_main_effect_data(ls_means_table, attr_name):
         ls_label_names.append(pl)
 
     pd = _pd.DataFrame(index=ls_label_names)
-    pd['index'] = [int(val) for val in selected[attr_name]]
+    # pd['index'] = [int(val) for val in selected[attr_name]]
     pd['values'] = [float(val) for val in selected[' Estimate ']]
     pd['ylow'] = [float(val) for val in selected[' Lower CI ']]
     pd['yhigh'] = [float(val) for val in selected[' Upper CI ']]
@@ -493,7 +501,7 @@ def adapter_main_effect_ds(ls_means_table, attr_name):
         ls_label_names.append(pl)
 
     pd = _pd.DataFrame(index=ls_label_names)
-    pd['index'] = [int(val) for val in selected[attr_name]]
+    # pd['index'] = [int(val) for val in selected[attr_name]]
     pd['values'] = [float(val) for val in selected['Estimate']]
     pd['ylow'] = [float(val) for val in selected['Lower CI']]
     pd['yhigh'] = [float(val) for val in selected['Upper CI']]
@@ -570,11 +578,12 @@ if __name__ == '__main__':
     from tests.conftest import conj_res
     res = conj_res()
 
-    # mep = MainEffectsPlot(res, 'Flavour')
-    # pw = SinglePlotWindow(plot=mep)
-    # print(pw.plot.plot_data.mat)
-    # pw.configure_traits()
+    mep = MainEffectsPlot(res, 'Flavour')
+    pw = SinglePlotWindow(plot=mep)
+    print(pw.plot.plot_data.mat)
+    pw.configure_traits()
     iap = InteractionPlot(res, 'Sex', 'Flavour')
     pw = InteractionPlotWindow(plot=iap)
+    print(pw.plot.plot_data.mat)
     pw.configure_traits()
     print("The end")
