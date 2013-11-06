@@ -4,17 +4,19 @@ import numpy as np
 import pandas as _pd
 
 # Enthought library imports
-from traits.api import Bool, Dict, Instance, on_trait_change, Str
+# FIXME: Namespace import
+from traits.api import Bool, Dict, Instance, List, on_trait_change, Str
 from traitsui.api import Group, Item
-from chaco.api import (ArrayPlotData, LabelAxis, DataView, Legend, PlotLabel,
-                       ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
-                       add_default_grids, ScatterPlot, LinePlot, PlotAxis,
+from chaco.api import (LabelAxis, DataView, Legend, PlotLabel,
+                       ErrorBarPlot, ArrayDataSource,
+                       add_default_grids, ScatterPlot, LinePlot,
                        PlotGraphicsContext)
 from chaco.tools.api import ZoomTool, PanTool, LegendTool
 from chaco.example_support import COLOR_PALETTE
 
 
 #Local imports
+# FIXME: Namespace import
 from dataset import DataSet
 from plot_windows import SinglePlotWindow
 
@@ -73,6 +75,7 @@ class MainEffectsPlot(ConjointBasePlot):
         labels = list(self.plot_data.mat.index)
         label_index = self.plot_data.mat['index'].values
 
+        # FIXME: Separate function, like for interaction plot
         index_axis = LabelAxis(
             component=self,
             mapper=self.index_mapper,
@@ -83,7 +86,8 @@ class MainEffectsPlot(ConjointBasePlot):
             positions=label_index)
 
         self.x_axis = index_axis
-
+        
+        # FIXME: Join with interaction
         zoom = ZoomTool(self, tool_mode="box", always_on=False)
         pan = PanTool(self)
         self.tools.append(zoom)
@@ -167,34 +171,25 @@ class InteractionPlot(ConjointBasePlot):
     # LinPlot name to LinPlot mapper
     # Used by Plot legend
     plots = Dict(Str, LinePlot)
+    index_labels = List(Str)
 
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
         res = adapter_conj_interaction_data(conj_res.lsmeansTable, attr_one_name, attr_two_name)
         self.plot_data = DataSet(mat=res)
-        print(self.plot_data.mat)
-        # self.p_value = get_interaction_p_value(conj_res.anovaTable, attr_one_name, attr_two_name)
-        self.p_value = 0.0001
-        print(self.p_value)
+        self.p_value = get_interaction_p_value(conj_res.anovaTable, attr_one_name, attr_two_name)
         self.plot_interaction()
-
-        # FIXME: The old way
-        self.conj_res = conj_res
-        self.attr_one_name = attr_one_name
-        self.attr_two_name = attr_two_name
-        # self._adapt_conj_interaction_data()
 
 
     def plot_interaction(self, flip=False):
         self._nullify_plot()
         self._make_plot_frame()
         self._add_lines(flip)
-        self._label_axix(flip)
+        self._label_axix()
         self._add_line_legend()
 
 
     def _make_plot_frame(self):
-
         # Adjust spacing
         self.index_range.tight_bounds = False
         self.index_range.margin = 0.05
@@ -233,52 +228,33 @@ class InteractionPlot(ConjointBasePlot):
 
 
     def _add_lines(self, flip=False):
-        # Default er en kollonne en linje
+        # When non fliped is index objects
         if flip:
-            idx = ArrayDataSource(range(self.plot_data.n_vars))
+            self.index_labels = self.plot_data.var_n
+            pl_itr = self.plot_data.mat.iterrows()
         else:
-            idx = ArrayDataSource(range(self.plot_data.n_objs))
+            self.index_labels = self.plot_data.obj_n
+            pl_itr = self.plot_data.mat.iteritems()
+        idx = ArrayDataSource(range(len(self.index_labels)))
         self.index_range.add(idx)
 
         line_styles = ['solid', 'dot dash', 'dash', 'dot', 'long dash']
         i = 0
-
-        if flip:
-            for name, row in self.plot_data.mat.iterrows():
-                i += 1
-                vals = ArrayDataSource(row.values)
-                self.value_range.add(vals)
-                # self.value_range.sources.append(vals)
-                plot = LinePlot(index=idx, index_mapper=self.index_mapper,
-                                value=vals, value_mapper=self.value_mapper,
-                                color=COLOR_PALETTE[i], line_style=line_styles[i%4]
-                )
-                self.add(plot)
-                self.plots[name] = plot
-        else:
-            for name, col in self.plot_data.mat.iteritems():
-                i += 1
-                vals = ArrayDataSource(col.values)
-                self.value_range.add(vals)
-                # self.value_range.sources.append(vals)
-                plot = LinePlot(index=idx, index_mapper=self.index_mapper,
-                                value=vals, value_mapper=self.value_mapper,
-                                color=COLOR_PALETTE[i], line_style=line_styles[i%4]
-                )
-                self.add(plot)
-                self.plots[name] = plot
-        print(self.plots)
+        for name, vec in pl_itr:
+            i += 1
+            vals = ArrayDataSource(vec.values)
+            self.value_range.add(vals)
+            plot = LinePlot(index=idx, index_mapper=self.index_mapper,
+                            value=vals, value_mapper=self.value_mapper,
+                            color=COLOR_PALETTE[i], line_style=line_styles[i%4]
+            )
+            self.add(plot)
+            self.plots[name] = plot
 
 
-    def _label_axix(self, flip=False):
+    def _label_axix(self):
         #Append label and grid
-        if flip:
-            idx = range(self.plot_data.n_vars)
-            x_labels = self.plot_data.var_n
-        else:
-            idx = range(self.plot_data.n_objs)
-            x_labels = self.plot_data.obj_n
-        print(x_labels)
+        idx = range(len(self.index_labels))
 
         index_axis = LabelAxis(
             component=self,
@@ -286,7 +262,7 @@ class InteractionPlot(ConjointBasePlot):
             orientation="bottom",
             tick_weight=1,
             tick_label_rotate_angle = 90,
-            labels=x_labels,
+            labels=self.index_labels,
             positions = idx,
             )
 
@@ -312,6 +288,7 @@ class InteractionPlot(ConjointBasePlot):
         attr_two_name: Default lines
         flip: Decide which attribute to be index and which to be lines
         """
+        # FIXME: Throw this when new function is werified
         # self._make_plot_frame()
         # self._add_lines()
 
@@ -427,10 +404,10 @@ class InteractionPlot(ConjointBasePlot):
         # self.tools.append(PanTool(self))
         # self.overlays.append(ZoomTool(self))
         # Add the title at the top
-        self.overlays.append(PlotLabel("Conjoint interaction plot",
-                                       component=self,
-                                       font = "swiss 16",
-                                       overlay_position="top"))
+        # self.overlays.append(PlotLabel("Conjoint interaction plot",
+        #                                component=self,
+        #                                font = "swiss 16",
+        #                                overlay_position="top"))
 
         # Add the traits inspector tool to the container
         # self.tools.append(TraitsTool(self))
@@ -493,39 +470,27 @@ def adapter_main_effect_ds(ls_means_table, attr_name):
     ls_means = ls_means_table.mat
     ls_means_labels = ls_means_table.mat.index
     cn = list(ls_means_table.mat.columns)
-    print(ls_means_labels)
-    print(cn)
     nli = cn.index('Estimate')
     cn = cn[:nli]
-    print(cn)
 
     # The folowing logic is about selecting rows from the result sets.
     # The picker i an boolean vector that selects the rows i will plot.
 
     # First; select all rows where the given attribute have an index value
     picker = ls_means[attr_name] != 'NA'
-    print("select all containing sex")
-    print(picker)
     # Then; exclude all the interaction rows where the given attribute
     # is a part of the interaction
     exclude = [ls_means[col] != 'NA' for col in cn if col != attr_name]
-    print("Exclude")
-    print(exclude)
     for out in exclude:
         picker = np.logical_and(picker, np.logical_not(out))
-    print("Final picker")
-    print(picker)
 
     # Use the boolean selection vector to select the wanted rows from the result set
     selected = ls_means[picker]
-    print(selected)
     selected_labels = ls_means_labels[picker]
-    print(selected_labels)
 
     ls_label_names = []
     for i, pl in enumerate(selected_labels):
         ls_label_names.append(pl)
-    print(ls_label_names)
 
     pd = _pd.DataFrame(index=ls_label_names)
     pd['index'] = [int(val) for val in selected[attr_name]]
