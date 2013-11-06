@@ -97,7 +97,7 @@ class MainEffectsPlot(ConjointBasePlot):
     
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
-        res = slice_main_effect_data(conj_res.lsmeansTable, attr_name)
+        res = slice_main_effect_ds(conj_res.lsmeansTable, attr_name)
         self.plot_data = DataSet(mat=res)
         self.p_value = get_main_p_value(conj_res.anovaTable, attr_name)
         self.average = conj_res.meanLiking
@@ -218,7 +218,7 @@ class InteractionPlot(ConjointBasePlot):
 
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
-        res = slice_interaction_data(conj_res.lsmeansTable, attr_one_name, attr_two_name)
+        res = slice_interaction_ds(conj_res.lsmeansTable, attr_one_name, attr_two_name)
         self.plot_data = DataSet(mat=res)
         self.p_value = get_interaction_p_value(conj_res.anovaTable, attr_one_name, attr_two_name)
         self.plot_interaction()
@@ -357,6 +357,7 @@ def slice_main_effect_data(ls_means_table, attr_name):
 
 
 def slice_main_effect_ds(ls_means_table, attr_name):
+    # FIXME: Use proper Pandas DataFrame indexing
     ls_means = ls_means_table.mat
     ls_means_labels = ls_means_table.mat.index
     cn = list(ls_means_table.mat.columns)
@@ -392,10 +393,28 @@ def slice_main_effect_ds(ls_means_table, attr_name):
     return pd
 
 
-def get_main_p_value(anova_table, attr_name):
+def old_get_main_p_value(anova_table, attr_name):
     # Get p value for attribute
     anova_values = anova_table['data']
     anova_names = anova_table['rowNames']
+    picker = anova_names == attr_name
+    # Check if it is only one bool value
+    if isinstance(picker, bool):
+        picker = np.array([picker])
+    var_row = anova_values[picker]
+    p_str = var_row['Pr(>F)'][0]
+    try:
+        p_value = float(p_str)
+    except ValueError:
+        p_value = 0.0
+
+    return p_value
+
+
+def get_main_p_value(anova_table, attr_name):
+    # Get p value for attribute
+    anova_values = anova_table.mat
+    anova_names = anova_table.mat.index
     picker = anova_names == attr_name
     # Check if it is only one bool value
     if isinstance(picker, bool):
@@ -435,10 +454,56 @@ def slice_interaction_data(ls_means_table, index_attr, line_attr):
     return res
 
 
-def get_interaction_p_value(anova_table, index_attr, line_attr):
+def slice_interaction_ds(ls_means_table, index_attr, line_attr):
+    # FIXME: Use proper Pandas DataFrame indexing
+    ls_means = ls_means_table.mat
+
+    picker_one = ls_means[index_attr] != 'NA'
+    picker_two = ls_means[line_attr] != 'NA'
+    # Picker is an boolean selction vector
+    picker = np.logical_and(picker_one, picker_two)
+    selected = ls_means[picker][[index_attr, line_attr, 'Estimate']]
+
+    lines = sorted(list(set(selected[line_attr])))
+    indexes = sorted(list(set(selected[index_attr])))
+    index_labels = ['{0} {1}'.format(index_attr, i) for i in indexes]
+
+    # for hvert nytt plot trenger vi bare et nytt dataset
+    vals = []
+    for i, line in enumerate(lines):
+        line_data_picker = selected[line_attr] == line
+        line_data = selected[line_data_picker]
+        vals.append([float(val) for val in line_data['Estimate']])
+    ln = ["{0} {1}".format(line_attr, line) for line in lines]
+    res = _pd.DataFrame(vals, index=ln, columns=index_labels)
+
+    return res
+
+
+def old_get_interaction_p_value(anova_table, index_attr, line_attr):
     # Get p value for attribute
     anova_values = anova_table['data']
     anova_names = anova_table['rowNames']
+    try:
+        attr_name = "{0}:{1}".format(index_attr, line_attr)
+        var_row = anova_values[anova_names == attr_name]
+        p_str = var_row['Pr(>F)'][0]
+    except IndexError:
+        attr_name = "{0}:{1}".format(line_attr, index_attr)
+        var_row = anova_values[anova_names == attr_name]
+        p_str = var_row['Pr(>F)'][0]
+    try:
+        p_value = float(p_str)
+    except ValueError:
+        p_value = 0.0
+    
+    return p_value
+
+
+def get_interaction_p_value(anova_table, index_attr, line_attr):
+    # Get p value for attribute
+    anova_values = anova_table.mat
+    anova_names = anova_table.mat.index
     try:
         attr_name = "{0}:{1}".format(index_attr, line_attr)
         var_row = anova_values[anova_names == attr_name]
