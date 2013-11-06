@@ -97,7 +97,7 @@ class MainEffectsPlot(ConjointBasePlot):
     
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
-        res = adapter_main_effect_data(conj_res.lsmeansTable, attr_name)
+        res = slice_main_effect_data(conj_res.lsmeansTable, attr_name)
         self.plot_data = DataSet(mat=res)
         self.p_value = get_main_p_value(conj_res.anovaTable, attr_name)
         self.average = conj_res.meanLiking
@@ -218,7 +218,7 @@ class InteractionPlot(ConjointBasePlot):
 
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
-        res = adapter_conj_interaction_data(conj_res.lsmeansTable, attr_one_name, attr_two_name)
+        res = slice_interaction_data(conj_res.lsmeansTable, attr_one_name, attr_two_name)
         self.plot_data = DataSet(mat=res)
         self.p_value = get_interaction_p_value(conj_res.anovaTable, attr_one_name, attr_two_name)
         self.plot_interaction()
@@ -318,7 +318,7 @@ class InteractionPlotWindow(SinglePlotWindow):
 
 
 
-def adapter_main_effect_data(ls_means_table, attr_name):
+def slice_main_effect_data(ls_means_table, attr_name):
     ls_means = ls_means_table['data']
     ls_means_labels = ls_means_table['rowNames']
     cn = list(ls_means_table['colNames'])
@@ -356,7 +356,7 @@ def adapter_main_effect_data(ls_means_table, attr_name):
 
 
 
-def adapter_main_effect_ds(ls_means_table, attr_name):
+def slice_main_effect_ds(ls_means_table, attr_name):
     ls_means = ls_means_table.mat
     ls_means_labels = ls_means_table.mat.index
     cn = list(ls_means_table.mat.columns)
@@ -410,7 +410,7 @@ def get_main_p_value(anova_table, attr_name):
     return p_value
 
 
-def adapter_conj_interaction_data(ls_means_table, index_attr, line_attr):
+def slice_interaction_data(ls_means_table, index_attr, line_attr):
     ls_means = ls_means_table['data']
 
     picker_one = ls_means[index_attr] != 'NA'
