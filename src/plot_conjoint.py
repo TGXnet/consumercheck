@@ -5,7 +5,7 @@ import pandas as _pd
 
 # Enthought library imports
 # FIXME: Namespace import
-from traits.api import Bool, Dict, Instance, List, on_trait_change, Str
+from traits.api import Bool, Delegate, Dict, Instance, List, on_trait_change, Property, Str
 from traitsui.api import Group, Item
 from chaco.api import (LabelAxis, DataView, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource,
@@ -28,6 +28,44 @@ class ConjointBasePlot(DataView):
     This is a DataSet
     """
     index_labels = List(Str)
+
+    # Copy from chaco.plot
+    # The title of the plot.
+    title = Property()
+
+    # Use delegates to expose the other PlotLabel attributes of the plot title
+    title_text = Delegate("_title", prefix="text", modify=True)
+
+    # The PlotLabel object that contains the title.
+    _title = Instance(PlotLabel)
+
+
+    def __init__(self):
+        super(ConjointBasePlot, self).__init__()
+        self._init_title()
+
+
+    # def __title_default(self):
+    def _init_title(self):
+        self._title = PlotLabel(font="swiss 16", visible=False,
+                                overlay_position="top", component=self)
+
+
+    def __title_changed(self, old, new):
+        self._overlay_change_helper(old, new)
+
+
+    def _set_title(self, text):
+        self._title.text = text
+        if text.strip() != "":
+            self._title.visible = True
+        else:
+            self._title.visible = False
+
+
+    def _get_title(self):
+        return self._title.text
+
 
 
     def _label_axix(self):
@@ -223,10 +261,10 @@ class InteractionPlot(ConjointBasePlot):
         self.tools.append(PanTool(self))
         self.tools.append(ZoomTool(self))
 
-        self.overlays.append(PlotLabel("Conjoint interaction plot",
-                                       component=self,
-                                       font = "swiss 16",
-                                       overlay_position="top"))
+        # self.overlays.append(PlotLabel("Conjoint interaction plot",
+        #                                component=self,
+        #                                font = "swiss 16",
+        #                                overlay_position="top"))
 
         # Set border color
         self.border_width = 10
@@ -250,6 +288,7 @@ class InteractionPlot(ConjointBasePlot):
         self.value_range.sources = []
         self.tools = []
         self.overlays = []
+        self.overlays.append(self._title)
 
 
     def _add_lines(self, flip=False):
@@ -579,11 +618,11 @@ if __name__ == '__main__':
     res = conj_res()
 
     mep = MainEffectsPlot(res, 'Flavour')
-    pw = SinglePlotWindow(plot=mep)
-    print(pw.plot.plot_data.mat)
-    pw.configure_traits()
+    spw = SinglePlotWindow(plot=mep)
+    print(spw.plot.plot_data.mat)
+    spw.configure_traits()
     iap = InteractionPlot(res, 'Sex', 'Flavour')
-    pw = InteractionPlotWindow(plot=iap)
-    print(pw.plot.plot_data.mat)
-    pw.configure_traits()
+    ipw = InteractionPlotWindow(plot=iap)
+    print(ipw.plot.plot_data.mat)
+    ipw.configure_traits()
     print("The end")
