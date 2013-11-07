@@ -83,6 +83,18 @@ class ConjointBasePlot(DataView):
         self.x_axis = index_axis
 
 
+    def _add_avg_std_err(self, text):
+        info_label = PlotLabel(
+            text=text,
+            component=self,
+            overlay_position='outside bottom',
+            border_width=4,
+            fill_padding=False,
+            hjustify='center',
+        )
+        self.overlays.append(info_label)
+
+
     def export_image(self, fname, size=(800,600)):
         """Save plot as png image."""
         # self.outer_bounds = list(size)
@@ -101,6 +113,7 @@ class MainEffectsPlot(ConjointBasePlot):
         self.plot_data = DataSet(mat=res)
         self.p_value = get_main_p_value(conj_res.anovaTable, attr_name)
         self.average = conj_res.meanLiking
+        self.avg_std_err = calc_avg_std_err(conj_res.lsmeansTable)
 
         self._make_plot_frame()
         self._label_axis()
@@ -122,6 +135,11 @@ class MainEffectsPlot(ConjointBasePlot):
         for name in ['values', 'ylow', 'yhigh']:
             value = self.mk_ads(name)
             self.value_range.add(value)
+
+        # Add label with average standar error
+        avg_text = "Average standar error: {}".format(self.avg_std_err)
+        self._add_avg_std_err(avg_text)
+
 
         # FIXME: Join with interaction
         zoom = ZoomTool(self, tool_mode="box", always_on=False)
@@ -221,6 +239,7 @@ class InteractionPlot(ConjointBasePlot):
         res = slice_interaction_ds(conj_res.lsmeansTable, attr_one_name, attr_two_name)
         self.plot_data = DataSet(mat=res)
         self.p_value = get_interaction_p_value(conj_res.anovaTable, attr_one_name, attr_two_name)
+        self.avg_std_err = calc_avg_std_err(conj_res.lsmeansTable)
         self.plot_interaction()
 
 
@@ -264,6 +283,9 @@ class InteractionPlot(ConjointBasePlot):
         self.tools = []
         self.overlays = []
         self.overlays.append(self._title)
+        # Add label with average standar error
+        avg_text = "Average standar error: {}".format(self.avg_std_err)
+        self._add_avg_std_err(avg_text)
 
 
     def _add_lines(self, flip=False):
@@ -419,6 +441,13 @@ def get_interaction_p_value(anova_table, index_attr, line_attr):
     return p_value
 
 
+def calc_avg_std_err(ls_means_table):
+    std_err_vec = ls_means_table.mat['Standard Error']
+    mean_std_err = std_err_vec.mean()
+    return mean_std_err
+
+
+
 if __name__ == '__main__':
     print("Test start")
     from tests.conftest import conj_res
@@ -433,3 +462,5 @@ if __name__ == '__main__':
     print(ipw.plot.plot_data.mat)
     ipw.configure_traits()
     print("The end")
+
+
