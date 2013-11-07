@@ -27,7 +27,9 @@ def CCPandasDataFrameStr(obj):
 	cols = ', '.join(cp)
 	return 'data.frame({0}, row.names={1}, check.names=FALSE)'.format(cols, getVec(obj.index))
 
-pyper.PandasDataFrameStr = CCPandasDataFrameStr
+# FIXM: Do i realy need to do this
+# Think is was to allow numeric column and index names
+# pyper.PandasDataFrameStr = CCPandasDataFrameStr
 
 
 class ConjointMachine(object):
@@ -330,13 +332,14 @@ class ConjointMachine(object):
             'res[[1]][4]$diffs.lsmeans.table',
             'Pair-wise differences')
         result.residualsTable = self._residualsTable()
+        result.residIndTable = self._residIndTable()
         result.meanLiking = self._calcMeanLiking()
 
         return result
 
 
     def _r_res_to_ds(self, r_ref, ds_name):
-        df = self.r[r_ref]
+        df = self.r.get(r_ref)
         return DataSet(mat=df, display_name=ds_name)
 
 
@@ -345,12 +348,25 @@ class ConjointMachine(object):
         Returns residuals from R conjoint function.
         """
         # Get size of liking data array. 
-        numRows, numCols = np.shape(self.consLiking.values)
+        n_rows, n_cols = np.shape(self.consLiking.values)
 
-        self.r('residTab <- res[[1]][5]')
-        vals = np.reshape(
-            self.r['residTab']['residuals'],
-            (numRows, numCols))
+        r_vec = self.r.get('res[[1]][5]$residuals')
+        vals = np.reshape(r_vec, (n_rows, n_cols))
+        val_df = _pd.DataFrame(vals, index=self.consLiking.obj_n, columns=self.consLiking.var_n)
+        res_ds = DataSet(mat=val_df, display_name='Residuals')
+
+        return res_ds
+
+
+    def _residIndTable(self):
+        """
+        Returns residuals from R conjoint function.
+        """
+        # Get size of liking data array. 
+        n_rows, n_cols = np.shape(self.consLiking.values)
+
+        r_vec = self.r.get('res[[1]][6]$residuals_Indiv')
+        vals = np.reshape(r_vec, (n_rows, n_cols))
         val_df = _pd.DataFrame(vals, index=self.consLiking.obj_n, columns=self.consLiking.var_n)
         res_ds = DataSet(mat=val_df, display_name='Residuals')
 
@@ -410,5 +426,5 @@ if __name__ == '__main__':
                                      odflLike, selected_structure,
                                      empty, [])
     res.print_traits()
-    print(res.anovaTable.mat)
-    print(res.lsmeansTable.mat)
+    print(res.residualsTable.mat)
+    print(res.residIndTable.mat)

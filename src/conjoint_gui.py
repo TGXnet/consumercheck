@@ -81,6 +81,7 @@ Model structure descriptions:
             ("Random effects", random_table),
             ("Pair-wise differences", diff_table),
             ("Residuals", residu_table),
+            ("Residuals individuals", resid_ind_table),
             ]
 
         return [WindowLauncher(owner_ref=self, node_name=nn,
@@ -168,19 +169,6 @@ Model structure descriptions:
 
 
 
-def cj_res_ds_adapter(cj_res, name='Dataset Viewer'):
-    cj_df = _pd.DataFrame(cj_res['data'])
-    if isinstance(cj_res['rowNames'], str):
-        cj_df.index = _np.array([cj_res['rowNames']])
-    else:
-        cj_df.index = cj_res['rowNames']
-    cj_df.columns = cj_res['colNames']
-    dm = DataSet(mat=cj_df, display_name=name)
-
-    return dm
-
-
-
 # View creators
 
 def plot_main_effects(res, attr_name):
@@ -211,6 +199,10 @@ def diff_table(res):
 
 def residu_table(res):
     return res.residualsTable
+
+
+def resid_ind_table(res):
+    return res.residIndTable
 
 
 no_view = _traitsui.View()
