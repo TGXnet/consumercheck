@@ -11,8 +11,10 @@ from itertools import combinations
 # Scipy imports
 import pyper
 import numpy as np
+import pandas as _pd
 
 # Local imports
+from dataset import DataSet
 from plugin_base import Result
 
 
@@ -46,12 +48,12 @@ class ConjointMachine(object):
         logger.info("Try R path: {0}".format(Rbin))
         if op.exists(Rbin):
             logger.info("R.exe found")
-            self.r = pyper.R(RCMD=Rbin, use_pandas=False)
+            self.r = pyper.R(RCMD=Rbin, use_pandas=True)
             self.r('.libPaths("{0}")'.format(Rlib))
         else:
             Rbin = 'R'
             logger.info("R.exe not found, so we are depending on system wide R installation")
-            self.r = pyper.R(RCMD=Rbin, use_pandas=False)
+	    self.r = pyper.R(RCMD=Rbin, use_pandas=True)
 
 
     def _load_conjoint_resources(self):
@@ -129,14 +131,7 @@ class ConjointMachine(object):
         self.design = design
         self.selected_designVars = asciify(selected_designVars)
         self.consLiking = consLiking
-
-        # Generate consumer liking tag acceptable for R
-        # Make list of character to trow away
-        throw_chrs = string.maketrans(
-            string.ascii_letters, ' '*len(string.ascii_letters))
-        # Filter dataset name
-        liking_name = consLiking.display_name.encode('ascii', 'ignore')
-        self.consLikingTag = liking_name.translate(None, throw_chrs)
+        self.consLikingTag = only_letters(consLiking.display_name)
 
         # self._check_completeness()
         self._data_merge()
@@ -200,7 +195,6 @@ class ConjointMachine(object):
         # Get content from design array
         desData = self.design.values
         desVarNames = self.design.var_n
-        desObjNames = self.design.obj_n
         
         # Get content form cosumer liking array
         consData = self.consLiking.values
@@ -250,15 +244,12 @@ class ConjointMachine(object):
             allConsList.append(consArr)
         
         # Put all information into the final data array
-        self.finalData = np.vstack(allConsList)
+        self.finalData = _pd.DataFrame(np.vstack(allConsList), columns=self.headerList)
 
 
     def _copy_values_into_r_env(self):
         # R merge
-        self.r['conjData'] = self.finalData
-        self.r['conjDataVarNames'] = self.headerList
-        self.r('conjDF <- as.data.frame(conjData)')
-        self.r('colnames(conjDF) <- conjDataVarNames')
+        self.r['conjDF'] = self.finalData
 
         # Construct R list with R lists of product design variables as well as
         # consumer attributes.
@@ -308,76 +299,33 @@ class ConjointMachine(object):
 
 
     def get_conj_r_cmd(self):
-        rCommand_runAnalysis = 'res.gm <- conjoint(structure={0}, conjDF, response, fixed, random, facs)'.format(self.structure)
+        rCommand_runAnalysis = 'res <- conjoint(structure={0}, conjDF, response, fixed, random, facs)'.format(self.structure)
         return rCommand_runAnalysis
 
 
     def get_result(self):
         result = Result('Conjoint')
-        result.randomTable = self._randomTable()
-        result.anovaTable = self._anovaTable()
-        result.lsmeansTable = self._lsmeansTable()
-        result.lsmeansDiffTable = self._lsmeansDiffTable()
+        result.randomTable = self._r_res_to_ds(
+            'res[[1]][1]$rand.table',
+            'ANOVA table for random effects')
+        result.anovaTable = self._r_res_to_ds(
+            'res[[1]][2]$anova.table',
+            'ANOVA table for fixed effects')
+        result.lsmeansTable = self._r_res_to_ds(
+            'res[[1]][3]$lsmeans.table',
+            'LS means (main effect and interaction)')
+        result.lsmeansDiffTable = self._r_res_to_ds(
+            'res[[1]][4]$diffs.lsmeans.table',
+            'Pair-wise differences')
         result.residualsTable = self._residualsTable()
         result.meanLiking = self._calcMeanLiking()
 
         return result
 
 
-    def _randomTable(self):
-        """
-        Returns random table from R conjoint function.
-        """
-        self.r('randTab <- res.gm[[1]][1]')
-
-        randTableDict = {}
-        randTableDict['data'] = self.r['randTab']['rand.table']
-        randTableDict['colNames'] = self.r['colnames(randTab$rand.table)']
-        randTableDict['rowNames'] = self.r['rownames(randTab$rand.table)']
-
-        return randTableDict
-
-
-    def _anovaTable(self):
-        """
-        Returns ANOVA table from R conjoint function.
-        """
-        self.r('anovaTab <- res.gm[[1]][2]')
-
-        anovaTableDict = {}
-        anovaTableDict['data'] = self.r['anovaTab']['anova.table']
-        anovaTableDict['colNames'] = self.r['colnames(anovaTab$anova.table)']
-        anovaTableDict['rowNames'] = self.r['rownames(anovaTab$anova.table)']
-
-        return anovaTableDict
-
-
-    def _lsmeansTable(self):
-        """
-        Returns LS means table from R conjoint function.
-        """
-        self.r('lsmeansTab <- res.gm[[1]][3]')
-
-        lsmeansTableDict = {}
-        lsmeansTableDict['data'] = self.r['lsmeansTab']['lsmeans.table']
-        lsmeansTableDict['colNames'] = self.r['colnames(lsmeansTab$lsmeans.table)']
-        lsmeansTableDict['rowNames'] = self.r['rownames(lsmeansTab$lsmeans.table)']
-
-        return lsmeansTableDict
-
-
-    def _lsmeansDiffTable(self):
-        """
-        Returns table of differences between LS means from R conjoint function.
-        """
-        self.r('lsmeansDiffTab <- res.gm[[1]][4]')
-
-        lsmeansDiffTableDict = {}
-        lsmeansDiffTableDict['data'] = self.r['lsmeansDiffTab']['diffs.lsmeans.table']
-        lsmeansDiffTableDict['colNames'] = self.r['colnames(lsmeansDiffTab$diffs.lsmeans.table)']
-        lsmeansDiffTableDict['rowNames'] = self.r['rownames(lsmeansDiffTab$diffs.lsmeans.table)']
-
-        return lsmeansDiffTableDict
+    def _r_res_to_ds(self, r_ref, ds_name):
+        df = self.r[r_ref]
+        return DataSet(mat=df, display_name=ds_name)
 
 
     def _residualsTable(self):
@@ -387,17 +335,14 @@ class ConjointMachine(object):
         # Get size of liking data array. 
         numRows, numCols = np.shape(self.consLiking.values)
 
-        self.r('residTab <- res.gm[[1]][5]')
-
-        residTableDict = {}
-        residTableDict['data'] = np.reshape(
+        self.r('residTab <- res[[1]][5]')
+        vals = np.reshape(
             self.r['residTab']['residuals'],
             (numRows, numCols))
+        val_df = _pd.DataFrame(vals, index=self.consLiking.obj_n, columns=self.consLiking.var_n)
+        res_ds = DataSet(mat=val_df, display_name='Residuals')
 
-        residTableDict['rowNames'] = self.consLiking.obj_n
-        residTableDict['colNames'] = self.consLiking.var_n
-
-        return residTableDict
+        return res_ds
 
 
     def _calcMeanLiking(self):
@@ -420,11 +365,19 @@ def asciify(names):
     return [str(n).encode('ascii', 'ignore') for n in names]
 
 
+def only_letters(name):
+    # Make list of character to trow away
+    throw_chrs = string.maketrans(
+        string.ascii_letters, ' '*len(string.ascii_letters))
+    # Filter dataset name
+    ascii_name = name.encode('ascii', 'ignore')
+    return ascii_name.translate(None, throw_chrs)
+
+
 if __name__ == '__main__':
     print("Hello World")
     logging.basicConfig(level=logging.DEBUG)
     logger.info('Start interactive')
-    from dataset import DataSet
     from dataset_container import get_ds_by_name
     from tests.conftest import conjoint_dsc
     cm = ConjointMachine(start_r=True)
@@ -445,3 +398,5 @@ if __name__ == '__main__':
                                      odflLike, selected_structure,
                                      empty, [])
     res.print_traits()
+    print(res.anovaTable.mat)
+    print(res.lsmeansTable)
