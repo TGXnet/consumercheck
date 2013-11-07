@@ -318,44 +318,6 @@ class InteractionPlotWindow(SinglePlotWindow):
 
 
 
-def slice_main_effect_data(ls_means_table, attr_name):
-    ls_means = ls_means_table['data']
-    ls_means_labels = ls_means_table['rowNames']
-    cn = list(ls_means_table['colNames'])
-    nli = cn.index('Estimate')
-    cn = cn[:nli]
-
-    # The folowing logic is about selecting rows from the result sets.
-    # The picker i an boolean vector that selects the rows i will plot.
-
-    # First; select all rows where the given attribute have an index value
-    picker = ls_means[attr_name] != 'NA'
-
-    # Then; exclude all the interaction rows where the given attribute
-    # is a part of the interaction
-    exclude = [ls_means[col] != 'NA' for col in cn if col != attr_name]
-    for out in exclude:
-        picker = np.logical_and(picker, np.logical_not(out))
-
-    # Use the boolean selection vector to select the wanted rows from the result set
-    selected = ls_means[picker]
-    selected_labels = ls_means_labels[picker]
-
-    ls_label_names = []
-    for i, pl in enumerate(selected_labels):
-        ls_label_names.append(pl)
-
-    pd = _pd.DataFrame(index=ls_label_names)
-    # pd['index'] = [int(val) for val in selected[attr_name]]
-    pd['values'] = [float(val) for val in selected[' Estimate ']]
-    pd['ylow'] = [float(val) for val in selected[' Lower CI ']]
-    pd['yhigh'] = [float(val) for val in selected[' Upper CI ']]
-    # pd['average'] = [conj_res.meanLiking for val in selected[attr_name]]
-
-    return pd
-
-
-
 def slice_main_effect_ds(ls_means_table, attr_name):
     # FIXME: Use proper Pandas DataFrame indexing
     ls_means = ls_means_table.mat
@@ -393,67 +355,6 @@ def slice_main_effect_ds(ls_means_table, attr_name):
     return pd
 
 
-def old_get_main_p_value(anova_table, attr_name):
-    # Get p value for attribute
-    anova_values = anova_table['data']
-    anova_names = anova_table['rowNames']
-    picker = anova_names == attr_name
-    # Check if it is only one bool value
-    if isinstance(picker, bool):
-        picker = np.array([picker])
-    var_row = anova_values[picker]
-    p_str = var_row['Pr(>F)'][0]
-    try:
-        p_value = float(p_str)
-    except ValueError:
-        p_value = 0.0
-
-    return p_value
-
-
-def get_main_p_value(anova_table, attr_name):
-    # Get p value for attribute
-    anova_values = anova_table.mat
-    anova_names = anova_table.mat.index
-    picker = anova_names == attr_name
-    # Check if it is only one bool value
-    if isinstance(picker, bool):
-        picker = np.array([picker])
-    var_row = anova_values[picker]
-    p_str = var_row['Pr(>F)'][0]
-    try:
-        p_value = float(p_str)
-    except ValueError:
-        p_value = 0.0
-
-    return p_value
-
-
-def slice_interaction_data(ls_means_table, index_attr, line_attr):
-    ls_means = ls_means_table['data']
-
-    picker_one = ls_means[index_attr] != 'NA'
-    picker_two = ls_means[line_attr] != 'NA'
-    # Picker is an boolean selction vector
-    picker = np.logical_and(picker_one, picker_two)
-    selected = ls_means[picker][[index_attr, line_attr, ' Estimate ']]
-
-    lines = sorted(list(set(selected[line_attr])))
-    indexes = sorted(list(set(selected[index_attr])))
-    index_labels = ['{0} {1}'.format(index_attr, i) for i in indexes]
-
-    # for hvert nytt plot trenger vi bare et nytt dataset
-    vals = []
-    for i, line in enumerate(lines):
-        line_data_picker = selected[line_attr] == line
-        line_data = selected[line_data_picker]
-        vals.append([float(val) for val in line_data[' Estimate ']])
-    ln = ["{0} {1}".format(line_attr, line) for line in lines]
-    res = _pd.DataFrame(vals, index=ln, columns=index_labels)
-
-    return res
-
-
 def slice_interaction_ds(ls_means_table, index_attr, line_attr):
     # FIXME: Use proper Pandas DataFrame indexing
     ls_means = ls_means_table.mat
@@ -480,23 +381,21 @@ def slice_interaction_ds(ls_means_table, index_attr, line_attr):
     return res
 
 
-def old_get_interaction_p_value(anova_table, index_attr, line_attr):
+def get_main_p_value(anova_table, attr_name):
     # Get p value for attribute
-    anova_values = anova_table['data']
-    anova_names = anova_table['rowNames']
-    try:
-        attr_name = "{0}:{1}".format(index_attr, line_attr)
-        var_row = anova_values[anova_names == attr_name]
-        p_str = var_row['Pr(>F)'][0]
-    except IndexError:
-        attr_name = "{0}:{1}".format(line_attr, index_attr)
-        var_row = anova_values[anova_names == attr_name]
-        p_str = var_row['Pr(>F)'][0]
+    anova_values = anova_table.mat
+    anova_names = anova_table.mat.index
+    picker = anova_names == attr_name
+    # Check if it is only one bool value
+    if isinstance(picker, bool):
+        picker = np.array([picker])
+    var_row = anova_values[picker]
+    p_str = var_row['Pr(>F)'][0]
     try:
         p_value = float(p_str)
     except ValueError:
         p_value = 0.0
-    
+
     return p_value
 
 
