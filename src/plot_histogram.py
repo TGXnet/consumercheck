@@ -48,7 +48,7 @@ class HistPlot(_chaco.DataView):
         index_mapper = _chaco.LinearMapper(range=index_range)
 
         # Create the value range
-        value_range = _chaco.DataRange1D(vals, high=self.ceiling)
+        value_range = _chaco.DataRange1D(vals, low_setting=0, high_setting=self.ceiling)
         value_mapper = _chaco.LinearMapper(range=value_range)
 
         # Create the plot
@@ -86,9 +86,10 @@ class HistPlot(_chaco.DataView):
 
 
     def _add_axis(self, renderer):
-        left_axis = _chaco.PlotAxis(renderer, orientation='left')
+        left_axis = _chaco.PlotAxis(renderer, orientation='left',
+                                    title='Number of consumers')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Samples',
+                                       title='Consumer rating',
                                        positions = range(self.ds.n_vars),
                                        labels = [str(vn) for vn in self.ds.var_n],
                                        tick_interval=1.0,
@@ -219,9 +220,10 @@ class StackedHistPlot(_chaco.DataView):
 
 
     def _add_axis(self, renderer):
-        left_axis = _chaco.PlotAxis(renderer, orientation='left')
+        left_axis = _chaco.PlotAxis(renderer, orientation='left',
+                                    title='Number of consumers')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Samples',
+                                       title='Consumer preference for samples',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
                                        tick_interval=1.0,
@@ -311,7 +313,8 @@ class BoxPlot(_chaco.DataView):
 
 
     def _add_axis(self, renderer):
-        left_axis = _chaco.PlotAxis(renderer, orientation='left')
+        left_axis = _chaco.PlotAxis(renderer, orientation='left',
+                                    title='Number of consumers')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
                                        title='Samples',
                                        positions = range(self.ds.n_objs),
@@ -354,11 +357,11 @@ class BoxPlot(_chaco.DataView):
 
 if __name__ == '__main__':
     from tests.conftest import hist_ds
-    # from tests.conftest import boxplot_ds
-    # plot = BoxPlot(boxplot_ds())
-    hd = hist_ds()
+    from tests.conftest import boxplot_ds
+    plot = BoxPlot(boxplot_ds())
+    # hd = hist_ds()
     # plot = StackedHistPlot(hd)
-    plot = HistPlot(hist_ds(), 'O3')
+    # plot = HistPlot(hist_ds(), 'O3')
     plot.new_window(True)
 
     ## plot.render_hist(row_id)

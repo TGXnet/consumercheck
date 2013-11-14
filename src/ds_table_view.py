@@ -16,7 +16,7 @@ class ArrayAdapter(TabularAdapter):
     obj_names = List()
 
     def _get_index_text(self, name):
-        return str(self.obj_names[self.row])
+        return unicode(self.obj_names[self.row])
 
     def get_format ( self, object, trait, row, column ):
         if isinstance(self.content, (_np.float64, float)):
@@ -34,7 +34,7 @@ class DSTableViewer(Controller):
     def _get_header(self):
         varnames = [('Names', 'index')]
         for i, vn in enumerate(self.model.var_n):
-            varnames.append((str(vn), i))
+            varnames.append((unicode(vn), i))
         return varnames
 
 

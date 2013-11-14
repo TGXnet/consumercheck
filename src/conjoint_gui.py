@@ -81,6 +81,7 @@ Model structure descriptions:
             ("Random effects", random_table),
             ("Pair-wise differences", diff_table),
             ("Residuals", residu_table),
+            ("Residuals individuals", resid_ind_table),
             ]
 
         return [WindowLauncher(owner_ref=self, node_name=nn,
@@ -168,19 +169,6 @@ Model structure descriptions:
 
 
 
-def cj_res_ds_adapter(cj_res, name='Dataset Viewer'):
-    cj_df = _pd.DataFrame(cj_res['data'])
-    if isinstance(cj_res['rowNames'], str):
-        cj_df.index = _np.array([cj_res['rowNames']])
-    else:
-        cj_df.index = cj_res['rowNames']
-    cj_df.columns = cj_res['colNames']
-    dm = DataSet(mat=cj_df, display_name=name)
-
-    return dm
-
-
-
 # View creators
 
 def plot_main_effects(res, attr_name):
@@ -194,38 +182,27 @@ def plot_interaction(res, attr_one, attr_two):
 
 
 def means_table(res):
-    label= 'LS means (main effect and interaction)'
-    cj_dm = cj_res_ds_adapter(res.lsmeansTable, label)
-
-    return cj_dm
+    return res.lsmeansTable
 
 
 def fixed_table(res):
-    label = 'ANOVA table for fixed effects'
-    cj_dm = cj_res_ds_adapter(res.anovaTable, label)
-
-    return cj_dm
+    return res.anovaTable
 
 
 def random_table(res):
-    label = 'ANOVA table for random effects'
-    cj_dm = cj_res_ds_adapter(res.randomTable, label)
-
-    return cj_dm
+    return res.randomTable
 
 
 def diff_table(res):
-    label = 'Pair-wise differences'
-    cj_dm = cj_res_ds_adapter(res.lsmeansDiffTable, label)
-
-    return cj_dm
+    return res.lsmeansDiffTable
 
 
 def residu_table(res):
-    label = 'Residuals'
-    cj_dm = cj_res_ds_adapter(res.residualsTable, label)
+    return res.residualsTable
 
-    return cj_dm
+
+def resid_ind_table(res):
+    return res.residIndTable
 
 
 no_view = _traitsui.View()
@@ -246,6 +223,12 @@ conjoint_view = _traitsui.View(
                        show_label=False),
         orientation='horizontal',
         ),
+    )
+
+
+ds_exp_action = _traitsui.Action(
+    name='Export dataset',
+    action='handler.export_data(editor, object)',
     )
 
 
@@ -278,11 +261,10 @@ conjoint_nodes = [
         node_for=[WindowLauncher],
         label='node_name',
         view=no_view,
-        menu=[],
+        menu=_traitsui.Menu(ds_exp_action),
         on_dclick=dclk_activator,
         )
     ]
-
 
 
 class ConjointPluginController(PluginController):
@@ -411,6 +393,12 @@ for variables with a large number of categories.
         calculation._update_plot_lists()
         self.model.add(calculation)
 
+
+    def export_data(self, editor, obj):
+        parent = editor.get_parent(obj)
+        ind_resid = parent.model.res.residIndTable
+        ind_resid.kind = 'Sensory profiling'
+        self.model.dsc.add(ind_resid)
 
 
 class ConjointWarning(_traits.HasTraits):
