@@ -368,7 +368,7 @@ class ConjointMachine(object):
         r_vec = self.r.get('res[[1]][6]$residuals_Indiv')
         vals = np.reshape(r_vec, (n_rows, n_cols))
         val_df = _pd.DataFrame(vals, index=self.consLiking.obj_n, columns=self.consLiking.var_n)
-        res_ds = DataSet(mat=val_df, display_name='Residuals')
+        res_ds = DataSet(mat=val_df, display_name='Residuals individuals')
 
         return res_ds
 

@@ -226,6 +226,12 @@ conjoint_view = _traitsui.View(
     )
 
 
+ds_exp_action = _traitsui.Action(
+    name='Export dataset',
+    action='handler.export_data(editor, object)',
+    )
+
+
 conjoint_nodes = [
     _traitsui.TreeNode(
         node_for=[ConjointController],
@@ -255,11 +261,10 @@ conjoint_nodes = [
         node_for=[WindowLauncher],
         label='node_name',
         view=no_view,
-        menu=[],
+        menu=_traitsui.Menu(ds_exp_action),
         on_dclick=dclk_activator,
         )
     ]
-
 
 
 class ConjointPluginController(PluginController):
@@ -388,6 +393,12 @@ for variables with a large number of categories.
         calculation._update_plot_lists()
         self.model.add(calculation)
 
+
+    def export_data(self, editor, obj):
+        parent = editor.get_parent(obj)
+        ind_resid = parent.model.res.residIndTable
+        ind_resid.kind = 'Sensory profiling'
+        self.model.dsc.add(ind_resid)
 
 
 class ConjointWarning(_traits.HasTraits):
