@@ -50,6 +50,10 @@ for img in cc_imgs:
     ip = os.path.join('src', img)
     shutil.copy2(ip, ff)
 
+gsource = os.path.join(hf, 'src', 'graphics')
+gdst = os.path.join(ff, 'graphics')
+shutil.copytree(gsource, gdst)
+
 # Copy unzipable packages
 # Renember to delete these from library.zip
 ets_pack = ['pyface', 'enable', 'traitsui']
