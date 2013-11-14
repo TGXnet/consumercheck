@@ -55,7 +55,7 @@ class PlotWindow(HasTraits):
     res = Any()
     hwin = Any()
     view_loop = List(WindowLauncher)
-    title_text = Str("ConsumerCheck")
+    title_text = Str
     save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
                           width=32, height=32)
 
@@ -69,15 +69,19 @@ class SinglePWC(PWC):
         """ Called whenever the title_text attribute changes on the handled object.
 
         """
-        info.ui.title = info.object.title_text
+        # info.ui.title = info.object.title_text
+        super(SinglePWC, self).object_title_text_changed(info)
         info.object.plot.title = info.object.title_text
+
 
     def object_view_table_changed(self, info):
         tv = DSTableViewer(info.object.plot.plot_data)
         tv.edit_traits(view=tv.get_view(), parent=info.object.hwin)
 
+
     def object_next_plot_changed(self, info):
         info.object.plot = info.object.plot_navigator.show_next()
+
 
     @on_trait_change('previous_plot')
     def object_previous_plot_changed(self, info):
@@ -94,6 +98,18 @@ class SinglePlotWindow(PlotWindow):
     next_plot = Button('Next plot')
     previous_plot = Button('Previous plot')
     view_table = Button('View result table')
+
+
+    def __init__(self, *args, **kwargs):
+        super(SinglePlotWindow, self).__init__(*args, **kwargs)
+        if not self.title_text:
+            if self.res:
+                wt = self.res.method_name
+            else:
+                wt = ""
+            pt = self.plot.get_plot_name()
+            self.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
+
 
     def _plot_navigator_default(self):
         if self.res and self.view_loop:
