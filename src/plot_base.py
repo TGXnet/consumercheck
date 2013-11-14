@@ -1,15 +1,15 @@
 
 # Enthought ETS imports
-from traits.api import Callable, Property
-from chaco.api import Plot
+import traits.api as _traits
+import chaco.api as _chaco
 
 
-class PlotBase(Plot):
+class PlotBase(_chaco.Plot):
     # The dataset to return when plot window asks for the data to show in table form
     # I have to override this property as well when i override the getter
-    plot_data = Property()
+    plot_data = _traits.Property()
     # The function to call if the plot is double clicked
-    ld_action_func = Callable()
+    ld_action_func = _traits.Callable()
     # Add extra room for y axis
     padding_left = 75
 
@@ -25,3 +25,60 @@ class PlotBase(Plot):
 
     def _get_plot_data(self):
         raise NotImplementedError('plot_data getter is not implemented')
+
+
+    def get_plot_name(self):
+        return self.plot_data.display_name
+
+
+
+class BasePlot(_chaco.DataView):
+
+    # Copy from chaco.plot
+    # The title of the plot.
+    title = _traits.Property()
+
+    # Use delegates to expose the other PlotLabel attributes of the plot title
+    title_text = _traits.Delegate("_title", prefix="text", modify=True)
+
+    # The PlotLabel object that contains the title.
+    _title = _traits.Instance(_chaco.PlotLabel)
+
+
+    def __init__(self, *args, **kwargs):
+        super(BasePlot, self).__init__(*args, **kwargs)
+        self._init_title()
+
+
+    def _init_title(self):
+        self._title = _chaco.PlotLabel(font="swiss 16", visible=False,
+                                       overlay_position="top", component=self)
+
+
+    def __title_changed(self, old, new):
+        self._overlay_change_helper(old, new)
+
+
+    def _set_title(self, text):
+        self._title.text = text
+        if text.strip() != "":
+            self._title.visible = True
+        else:
+            self._title.visible = False
+
+
+    def _get_title(self):
+        return self._title.text
+
+
+    def get_plot_name(self):
+        return self.plot_data.display_name
+
+
+    def export_image(self, fname, size=(800,600)):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = _chaco.PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)

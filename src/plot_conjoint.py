@@ -18,53 +18,21 @@ from chaco.example_support import COLOR_PALETTE
 #Local imports
 # FIXME: Namespace import
 from dataset import DataSet
+from plot_base import BasePlot
 from plot_windows import SinglePlotWindow
 
 
-class ConjointBasePlot(DataView):
+
+class ConjointBasePlot(BasePlot):
+    """Base class for Conjoint plots
+    """
     plot_data = Instance(DataSet)
     """The data that is plot
     
     This is a DataSet
     """
+
     index_labels = List(Str)
-
-    # Copy from chaco.plot
-    # The title of the plot.
-    title = Property()
-
-    # Use delegates to expose the other PlotLabel attributes of the plot title
-    title_text = Delegate("_title", prefix="text", modify=True)
-
-    # The PlotLabel object that contains the title.
-    _title = Instance(PlotLabel)
-
-
-    def __init__(self):
-        super(ConjointBasePlot, self).__init__()
-        self._init_title()
-
-
-    # def __title_default(self):
-    def _init_title(self):
-        self._title = PlotLabel(font="swiss 16", visible=False,
-                                overlay_position="top", component=self)
-
-
-    def __title_changed(self, old, new):
-        self._overlay_change_helper(old, new)
-
-
-    def _set_title(self, text):
-        self._title.text = text
-        if text.strip() != "":
-            self._title.visible = True
-        else:
-            self._title.visible = False
-
-
-    def _get_title(self):
-        return self._title.text
 
 
     def _label_axis(self):
@@ -95,22 +63,13 @@ class ConjointBasePlot(DataView):
         self.overlays.append(info_label)
 
 
-    def export_image(self, fname, size=(800,600)):
-        """Save plot as png image."""
-        # self.outer_bounds = list(size)
-        # self.do_layout(force=True)
-        gc = PlotGraphicsContext(self.outer_bounds)
-        gc.render_component(self)
-        gc.save(fname, file_format=None)
-
-
 
 class MainEffectsPlot(ConjointBasePlot):
     
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
         res = slice_main_effect_ds(conj_res.lsmeansTable, attr_name)
-        self.plot_data = DataSet(mat=res)
+        self.plot_data = DataSet(mat=res, display_name='Main effects')
         self.p_value = get_main_p_value(conj_res.anovaTable, attr_name)
         self.average = conj_res.meanLiking
         self.avg_std_err = main_avg_std_err(conj_res.lsmeansTable, attr_name)
@@ -237,7 +196,7 @@ class InteractionPlot(ConjointBasePlot):
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
         res = slice_interaction_ds(conj_res.lsmeansTable, attr_one_name, attr_two_name)
-        self.plot_data = DataSet(mat=res)
+        self.plot_data = DataSet(mat=res, display_name='Interaction')
         self.p_value = get_interaction_p_value(conj_res.anovaTable, attr_one_name, attr_two_name)
         self.avg_std_err = inter_avg_std_err(conj_res.lsmeansTable, attr_one_name, attr_two_name)
         self.plot_interaction()

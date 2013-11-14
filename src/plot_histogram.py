@@ -12,57 +12,26 @@ import chaco.api as _chaco
 # Local imports
 from dataset import DataSet
 from utilities import hue_span
+from plot_base import BasePlot
 
 
-class HstBasePlot(_chaco.DataView):
-
-    # Copy from chaco.plot
-    # The title of the plot.
-    title = _traits.Property()
-
-    # Use delegates to expose the other PlotLabel attributes of the plot title
-    title_text = _traits.Delegate("_title", prefix="text", modify=True)
-
-    # The PlotLabel object that contains the title.
-    _title = _traits.Instance(_chaco.PlotLabel)
-
-
-    def __init__(self, *args, **kwargs):
-        super(HstBasePlot, self).__init__(*args, **kwargs)
-        self._init_title()
-        self.title = self.ds.display_name
-
-
-    def _init_title(self):
-        self._title = _chaco.PlotLabel(font="swiss 16", visible=False,
-                                       overlay_position="top", component=self)
-
-
-    def __title_changed(self, old, new):
-        self._overlay_change_helper(old, new)
-
-
-    def _set_title(self, text):
-        self._title.text = text
-        if text.strip() != "":
-            self._title.visible = True
-        else:
-            self._title.visible = False
-
-
-    def _get_title(self):
-        return self._title.text
-
-
-
-class HistPlot(HstBasePlot):
-
+class DescStatBasePlot(BasePlot):
     ds = _traits.Instance(DataSet)
+    plot_data = _traits.Property()
+    """The dataset that is to be shown i table view of the plot data"""
+
+    def _get_plot_data(self):
+        nds = copy.deepcopy(self.ds)
+        nds.mat = self.ds.mat.transpose()
+        return nds
+
+
+class HistPlot(DescStatBasePlot):
+
     row_id = _traits.Any()
     ceiling = _traits.Int()
     head_space = _traits.Float(1.1)
     bars_renderer = _traits.Instance(_chaco.BarPlot)
-    plot_data = _traits.Property()
 
 
     def __init__(self, ds, row_id):
@@ -158,28 +127,11 @@ class HistPlot(HstBasePlot):
         return self._plot_ui_info
 
 
-    def _get_plot_data(self):
-        nds = copy.deepcopy(self.ds)
-        nds.mat = self.ds.mat.transpose()
-        return nds
 
-
-    def export_image(self, fname, size=(800,600)):
-        """Save plot as png image."""
-        # self.outer_bounds = list(size)
-        # self.do_layout(force=True)
-        gc = _chaco.PlotGraphicsContext(self.outer_bounds)
-        gc.render_component(self)
-        gc.save(fname, file_format=None)
-
-
-
-class StackedHistPlot(HstBasePlot):
+class StackedHistPlot(DescStatBasePlot):
     '''Plot histogram values for each row stacked on to of each other'''
 
-    ds = _traits.Instance(DataSet)
     stair_ds = _traits.Instance(_chaco.MultiArrayDataSource)
-    plot_data = _traits.Property()
 
 
     def __init__(self, ds):
@@ -288,32 +240,14 @@ class StackedHistPlot(HstBasePlot):
         return self._plot_ui_info
 
 
-    def _get_plot_data(self):
-        nds = copy.deepcopy(self.ds)
-        nds.mat = self.ds.mat.transpose()
-        return nds
 
-
-    def export_image(self, fname, size=(800,600)):
-        """Save plot as png image."""
-        # self.outer_bounds = list(size)
-        # self.do_layout(force=True)
-        gc = _chaco.PlotGraphicsContext(self.outer_bounds)
-        gc.render_component(self)
-        gc.save(fname, file_format=None)
-
-
-
-class BoxPlot(HstBasePlot):
+class BoxPlot(DescStatBasePlot):
     '''A box plot
 
     This plot takes one DataSet as parameter:
     The DataFrame columns must be on the form:
     mean, std, max, min
     '''
-    ds = _traits.Instance(DataSet)
-    plot_data = _traits.Property()
-
 
     def __init__(self, ds):
         super(BoxPlot, self).__init__(ds=ds)
@@ -381,21 +315,6 @@ class BoxPlot(HstBasePlot):
         return self._plot_ui_info
 
 
-    def _get_plot_data(self):
-        nds = copy.deepcopy(self.ds)
-        nds.mat = self.ds.mat.transpose()
-        return nds
-
-
-    def export_image(self, fname, size=(800,600)):
-        """Save plot as png image."""
-        # self.outer_bounds = list(size)
-        # self.do_layout(force=True)
-        gc = _chaco.PlotGraphicsContext(self.outer_bounds)
-        gc.render_component(self)
-        gc.save(fname, file_format=None)
-
-
 
 if __name__ == '__main__':
     from tests.conftest import hist_ds
@@ -404,10 +323,14 @@ if __name__ == '__main__':
     bds = boxplot_ds()
     hds = hist_ds()
     # bds.print_traits()
-    # plot = BoxPlot(bds)
-    plot = StackedHistPlot(hds)
-    # plot = HistPlot(hds, 'O3')
+    plot1 = BoxPlot(bds)
+    plot2 = StackedHistPlot(hds)
+    plot3 = HistPlot(hds, 'O3')
     # plot.new_window(True)
 
-    plot_wind = PCPlotWindow(plot=plot)
-    plot_wind.configure_traits()
+    for plot in [plot1, plot2, plot3]:
+        plot_wind = PCPlotWindow(
+            plot=plot,
+            # title_text="Tull",
+        )
+        plot_wind.configure_traits()
