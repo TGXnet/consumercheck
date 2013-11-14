@@ -72,7 +72,7 @@ class Pca(Model):
 
 
     def _pack_res(self, pca_obj):
-        res = Result('PCA')
+        res = Result('PCA {0}'.format(self.ds.display_name))
 
         # Scores
         mT = pca_obj.scores()
@@ -82,7 +82,7 @@ class Pca(Model):
                 index=self.ds.obj_n,
                 columns=["PC-{0}".format(i+1) for i in range(mT.shape[1])],
                 ),
-            display_name=self.ds.display_name)
+            display_name='Scores')
 
         # Loadings
         mP = pca_obj.loadings()
@@ -92,7 +92,7 @@ class Pca(Model):
                 index=self.ds.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
                 ),
-            display_name=self.ds.display_name)
+            display_name='Loadings')
 
         # Correlation loadings
         mCL = pca_obj.corrLoadings()
@@ -102,7 +102,7 @@ class Pca(Model):
                 index=self.ds.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mCL.shape[1])],
                 ),
-            display_name=self.ds.display_name)
+            display_name='Correlation loadings')
 
         # Explained variance
         cal = pca_obj.calExplVar()
@@ -113,7 +113,7 @@ class Pca(Model):
                 index=['calibrated', 'validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
-            display_name=self.ds.display_name)
+            display_name='Explained variance')
 
         # Residuals E after each computed PC
         # Return a dictionary with arrays

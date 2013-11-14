@@ -318,7 +318,7 @@ class ConjointMachine(object):
 
 
     def get_result(self):
-        result = Result('Conjoint')
+        result = Result('Conjoint {0}'.format(self.design.display_name))
         result.randomTable = self._r_res_to_ds(
             'res[[1]][1]$rand.table',
             'ANOVA table for random effects')
