@@ -113,7 +113,7 @@ class MainEffectsPlot(ConjointBasePlot):
         self.plot_data = DataSet(mat=res)
         self.p_value = get_main_p_value(conj_res.anovaTable, attr_name)
         self.average = conj_res.meanLiking
-        self.avg_std_err = calc_avg_std_err(conj_res.lsmeansTable)
+        self.avg_std_err = main_avg_std_err(conj_res.lsmeansTable, attr_name)
 
         self._make_plot_frame()
         self._label_axis()
@@ -239,7 +239,7 @@ class InteractionPlot(ConjointBasePlot):
         res = slice_interaction_ds(conj_res.lsmeansTable, attr_one_name, attr_two_name)
         self.plot_data = DataSet(mat=res)
         self.p_value = get_interaction_p_value(conj_res.anovaTable, attr_one_name, attr_two_name)
-        self.avg_std_err = calc_avg_std_err(conj_res.lsmeansTable)
+        self.avg_std_err = inter_avg_std_err(conj_res.lsmeansTable, attr_one_name, attr_two_name)
         self.plot_interaction()
 
 
@@ -441,10 +441,44 @@ def get_interaction_p_value(anova_table, index_attr, line_attr):
     return p_value
 
 
-def calc_avg_std_err(ls_means_table):
-    std_err_vec = ls_means_table.mat['Standard Error']
+def main_avg_std_err(ls_means_table, var_name):
+    picker = lsmeans_main_selector(ls_means_table.mat, var_name)
+    std_err_vec = ls_means_table.mat.loc[picker, 'Standard Error']
     mean_std_err = std_err_vec.mean()
     return mean_std_err
+
+
+def lsmeans_main_selector(df, var_name):
+    # All column labels
+    acl = df.columns
+    # Result column labels
+    rcl = _pd.Index([u'Estimate', u'Standard Error', u'DF', u't-value',
+                     u'Lower CI', u'Upper CI', u'p-value'])
+    # Selection column labels
+    # Set arithmetic
+    scl = acl - rcl - [var_name]
+
+    # Picker
+    p1 = df.loc[:,scl] == 'NA'
+    p2 = p1.all(axis=1)
+
+    return p2
+
+
+def inter_avg_std_err(ls_means_table, var1_name, var2_name):
+    picker = lsmeans_inter_selector(ls_means_table.mat, var1_name, var2_name)
+    std_err_vec = ls_means_table.mat.loc[picker, 'Standard Error']
+    mean_std_err = std_err_vec.mean()
+    return mean_std_err
+
+
+def lsmeans_inter_selector(df, var1_name, var2_name):
+    vcl = [var1_name, var2_name]
+    # Picker
+    p1 = df.loc[:,vcl] != 'NA'
+    p3 = p1.all(axis=1)
+
+    return p3
 
 
 
@@ -462,5 +496,3 @@ if __name__ == '__main__':
     print(ipw.plot.plot_data.mat)
     ipw.configure_traits()
     print("The end")
-
-
