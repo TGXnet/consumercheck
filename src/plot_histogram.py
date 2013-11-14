@@ -13,7 +13,49 @@ import chaco.api as _chaco
 from dataset import DataSet
 from utilities import hue_span
 
-class HistPlot(_chaco.DataView):
+
+class HstBasePlot(_chaco.DataView):
+
+    # Copy from chaco.plot
+    # The title of the plot.
+    title = _traits.Property()
+
+    # Use delegates to expose the other PlotLabel attributes of the plot title
+    title_text = _traits.Delegate("_title", prefix="text", modify=True)
+
+    # The PlotLabel object that contains the title.
+    _title = _traits.Instance(_chaco.PlotLabel)
+
+
+    def __init__(self, *args, **kwargs):
+        super(HstBasePlot, self).__init__(*args, **kwargs)
+        self._init_title()
+        self.title = self.ds.display_name
+
+
+    def _init_title(self):
+        self._title = _chaco.PlotLabel(font="swiss 16", visible=False,
+                                       overlay_position="top", component=self)
+
+
+    def __title_changed(self, old, new):
+        self._overlay_change_helper(old, new)
+
+
+    def _set_title(self, text):
+        self._title.text = text
+        if text.strip() != "":
+            self._title.visible = True
+        else:
+            self._title.visible = False
+
+
+    def _get_title(self):
+        return self._title.text
+
+
+
+class HistPlot(HstBasePlot):
 
     ds = _traits.Instance(DataSet)
     row_id = _traits.Any()
@@ -132,7 +174,7 @@ class HistPlot(_chaco.DataView):
 
 
 
-class StackedHistPlot(_chaco.DataView):
+class StackedHistPlot(HstBasePlot):
     '''Plot histogram values for each row stacked on to of each other'''
 
     ds = _traits.Instance(DataSet)
@@ -262,7 +304,7 @@ class StackedHistPlot(_chaco.DataView):
 
 
 
-class BoxPlot(_chaco.DataView):
+class BoxPlot(HstBasePlot):
     '''A box plot
 
     This plot takes one DataSet as parameter:
@@ -358,50 +400,14 @@ class BoxPlot(_chaco.DataView):
 if __name__ == '__main__':
     from tests.conftest import hist_ds
     from tests.conftest import boxplot_ds
-    plot = BoxPlot(boxplot_ds())
-    # hd = hist_ds()
-    # plot = StackedHistPlot(hd)
-    # plot = HistPlot(hist_ds(), 'O3')
-    plot.new_window(True)
+    from plot_windows import PCPlotWindow
+    bds = boxplot_ds()
+    hds = hist_ds()
+    # bds.print_traits()
+    # plot = BoxPlot(bds)
+    plot = StackedHistPlot(hds)
+    # plot = HistPlot(hds, 'O3')
+    # plot.new_window(True)
 
-    ## plot.render_hist(row_id)
-
-    
-
-    ## plot_stacked_hist(res):
-    ##     ds = extract_hist(res)
-    ##     plot = StackedHistPlot(ds)
-    ##     win = PlotWindow(res, plot)
-    ##     win.open_plot_window(parent_win)
-    ##     return win
-
-
-    ## plot_hist(res, row_id):
-    ##     ds = extract_hist(res)
-    ##     plot = HistogramPlot(ds)
-    ##     win = PlotWindow(res, plot)
-    ##     win.edit_traits(parent=parent_win)
-    ##     return win
-
-
-
-    ## update_histogram(win, row_id):
-    ##     win.plot.render_hist(row_id)
-
-
-    ## replace_plot(win, plot_id):
-    ##     plot = exec(plot_id)
-    ##     win.plot = plot
-
-
-    ## win.replace_plot(plot_creating_func, *args)
-
-
-    ## def replace_plot(self, pcf):
-    ##     self.plot = pcf(self.res, *args)
-
-
-    ## def create_hist_plot(res):
-    ##     ds = extract_hist(res)
-    ##     plot = HistPlot(ds)
-    ##     return plot
+    plot_wind = PCPlotWindow(plot=plot)
+    plot_wind.configure_traits()
