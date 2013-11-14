@@ -138,8 +138,8 @@ Model structure descriptions:
                 plot=viewable,
                 res=res,
                 view_loop=view_loop,
-                title_text=self._wind_title(res),
-                vistog=False
+                # title_text=self._wind_title(res),
+                # vistog=False
                 )
 
             self._show_plot_window(win)
@@ -150,8 +150,8 @@ Model structure descriptions:
                 plot=viewable,
                 res=res,
                 view_loop=view_loop,
-                title_text=self._wind_title(res),
-                vistog=False
+                # title_text=self._wind_title(res),
+                # vistog=False
                 )
 
             self._show_plot_window(win)

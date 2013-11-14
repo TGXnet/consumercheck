@@ -70,7 +70,7 @@ class ModelController(_traitsui.Controller):
                 plot=viewable,
                 res=res,
                 view_loop=view_loop,
-                title_text=self._wind_title(res),
+                # title_text=self._wind_title(res),
                 vistog=False
                 )
 

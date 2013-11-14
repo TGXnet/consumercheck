@@ -18,7 +18,7 @@ def plot_win_creator_closure(plot_func, res, view_loop, title, parent_win):
         win = PCPlotWindow(
             plot=plot,
             res=res,
-            title_text=title,
+            # title_text=title,
             view_loop=view_loop
             )
         if parent_win:
