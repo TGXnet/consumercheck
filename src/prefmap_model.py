@@ -164,22 +164,26 @@ class Prefmap(Model):
 
         # expl_var_x
         cal = pls_obj.X_calExplVar()
+        cum_cal = pls_obj.X_cumCalExplVar()[1:]
         val = pls_obj.X_valExplVar()
+        cum_val = pls_obj.X_cumValExplVar()[1:]
         res.expl_var_x = DataSet(
             mat=_pd.DataFrame(
-                data=[cal, val],
-                index=['calibrated', 'validated'],
+                data=[cal, cum_cal, val, cum_val],
+                index=['calibrated', 'cum_calibrated', 'validated', 'cum_validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
             display_name=self.ds_X.display_name)
 
         # expl_var_y
         cal = pls_obj.Y_calExplVar()
+        cum_cal = pls_obj.Y_cumCalExplVar()[1:]
         val = pls_obj.Y_valExplVar()
+        cum_val = pls_obj.Y_cumValExplVar()[1:]
         res.expl_var_y = DataSet(
             mat=_pd.DataFrame(
-                data=[cal, val],
-                index=['calibrated', 'validated'],
+                data=[cal, cum_cal, val, cum_val],
+                index=['calibrated', 'cum_calibrated', 'validated', 'cum_validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
             display_name=self.ds_Y.display_name)
