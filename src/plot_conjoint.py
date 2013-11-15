@@ -12,7 +12,7 @@ from chaco.api import (LabelAxis, DataView, Legend, PlotLabel,
                        add_default_grids, ScatterPlot, LinePlot,
                        PlotGraphicsContext)
 from chaco.tools.api import ZoomTool, PanTool, LegendTool
-from chaco.example_support import COLOR_PALETTE
+from utilities import COLOR_PALETTE
 
 
 #Local imports
@@ -266,7 +266,7 @@ class InteractionPlot(ConjointBasePlot):
             self.value_range.add(vals)
             plot = LinePlot(index=idx, index_mapper=self.index_mapper,
                             value=vals, value_mapper=self.value_mapper,
-                            color=COLOR_PALETTE[i], line_style=line_styles[i%4]
+                            color=COLOR_PALETTE[i%4], line_style=line_styles[i%4]
             )
             self.add(plot)
             self.plots[name] = plot
