@@ -439,27 +439,13 @@ def calc_bounds(data_low, data_high, margin, tight_bounds):
 
 
 if __name__ == '__main__':
+    from tests.conftest import iris_ds
 
-    set1 = np.array([
-        [-0.3, 0.4, 0.9],
-        [-0.1, 0.2, 0.7],
-        [-0.1, 0.1, 0.1],
-        ])
-
-    set2 = np.array([
-        [-1.3, -0.4, -0.9],
-        #[-1.1, -0.2, -0.7],
-        [-1.1, 1, -0.7],
-        [-1.2, -0.1, -0.1],
-        ])
-
-    label1 = ['s1pt1', 's1pt2', 's1pt3']
-    label2 = ['s2pt1', 's2pt2', 's2pt3']
-    plot = PCScatterPlot()
-    ## plot = PCScatterPlot(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-    plot.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-    plot.add_PC_set(set2, labels=label2, color=(0.2, 0.9, 0.1, 1.0))
-    plot.plot_circle(True)
+    iris = iris_ds()
+    plot = PCScatterPlot(iris)
+    # PCScatterPlot(res.loadings, res.expl_var, title='Loadings')
+    # plot.add_PC_set(iris2)
+    # plot.plot_circle(True)
 
     with np.errstate(invalid='ignore'):
         plot.new_window(True)
