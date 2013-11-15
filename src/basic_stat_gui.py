@@ -102,13 +102,13 @@ bs_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[BasicStatController],
-        label='=Base plots',
+        label='=Plots for all samples',
         children='base_win_launchers',
         view=bs_view,
         menu=[]),
     _traitsui.TreeNode(
         node_for=[BasicStatController],
-        label='=Object histogram',
+        label='=Single Sample histograms',
         children='idx_win_launchers',
         view=bs_view,
         menu=[]),
