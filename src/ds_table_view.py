@@ -1,7 +1,7 @@
 
 import numpy as _np
 
-from traits.api import Color, Property, List, Array, Button, Str
+from traits.api import Color, Property, List, Button, Str
 from traitsui.api import Controller, View, Item, TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton
