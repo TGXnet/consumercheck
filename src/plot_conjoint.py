@@ -34,6 +34,28 @@ class ConjointBasePlot(BasePlot):
     index_labels = List(Str)
 
 
+    def _make_plot_frame(self):
+        # Adjust spacing
+        self.index_range.tight_bounds = False
+        self.index_range.margin = 0.05
+        self.value_range.tight_bounds = False
+
+        self.tools.append(PanTool(self))
+        self.tools.append(ZoomTool(self))
+
+        # Set border color
+        self.border_width = 10
+
+        if self.p_value < 0.001:
+            self.border_color = (1.0, 0.0, 0.0, 0.8)
+        elif self.p_value < 0.01:
+            self.border_color = (0.0, 1.0, 0.0, 0.8)
+        elif self.p_value < 0.05:
+            self.border_color = (1.0, 1.0, 0.0, 0.8)
+        else:
+            self.border_color = (0.5, 0.5, 0.5, 0.8)
+
+
     def _label_axis(self):
         idx = range(len(self.index_labels))
 
@@ -104,11 +126,7 @@ class MainEffectsPlot(ConjointBasePlot):
 
 
     def _make_plot_frame(self):
-        # Adjust spacing
-        self.index_range.tight_bounds = False
-        self.index_range.margin = 0.05
-        self.value_range.tight_bounds = False
-
+        super(MainEffectsPlot, self)._make_plot_frame()
         # Update plot ranges and mappers
         self.index_labels = self.plot_data.obj_n
         index = ArrayDataSource(range(len(self.index_labels)))
@@ -121,26 +139,7 @@ class MainEffectsPlot(ConjointBasePlot):
         avg_text = "Average standar error: {}".format(self.avg_std_err)
         self._add_avg_std_err(avg_text)
 
-
-        # FIXME: Join with interaction
-        zoom = ZoomTool(self, tool_mode="box", always_on=False)
-        pan = PanTool(self)
-        self.tools.append(zoom)
-        self.tools.append(pan)
-
         add_default_grids(self)
-
-        # Set border color based on p_value
-        self.border_width = 10
-
-        if self.p_value < 0.001:
-            self.border_color = (1.0, 0.0, 0.0, 0.8)
-        elif self.p_value < 0.01:
-            self.border_color = (0.0, 1.0, 0.0, 0.8)
-        elif self.p_value < 0.05:
-            self.border_color = (1.0, 1.0, 0.0, 0.8)
-        else:
-            self.border_color = (0.5, 0.5, 0.5, 0.8)
 
 
     def _add_lines(self):
@@ -231,28 +230,6 @@ class InteractionPlot(ConjointBasePlot):
         self._label_axis()
         self._add_line_legend()
         self._add_frame_legend()
-
-
-    def _make_plot_frame(self):
-        # Adjust spacing
-        self.index_range.tight_bounds = False
-        self.index_range.margin = 0.05
-        self.value_range.tight_bounds = False
-
-        self.tools.append(PanTool(self))
-        self.tools.append(ZoomTool(self))
-
-        # Set border color
-        self.border_width = 10
-
-        if self.p_value < 0.001:
-            self.border_color = (1.0, 0.0, 0.0, 0.8)
-        elif self.p_value < 0.01:
-            self.border_color = (0.0, 1.0, 0.0, 0.8)
-        elif self.p_value < 0.05:
-            self.border_color = (1.0, 1.0, 0.0, 0.8)
-        else:
-            self.border_color = (0.5, 0.5, 0.5, 0.8)
 
 
     def _nullify_plot(self):
