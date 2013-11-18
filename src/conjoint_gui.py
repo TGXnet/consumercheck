@@ -211,7 +211,7 @@ no_view = _traitsui.View()
 
 
 conjoint_view = _traitsui.View(
-    _traitsui.Item('controller.model.owner_ref.model_struct', style='simple', label='Model'),
+    _traitsui.Item('controller.model.owner_ref.model_struct', style='simple', show_label=False),
     _traitsui.Item('controller.model_desc',
                    editor=_traitsui.HTMLEditor(),
                    height=270,
