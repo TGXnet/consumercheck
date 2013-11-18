@@ -161,7 +161,6 @@ no_view = _traitsui.View()
 
 
 prefmap_view = _traitsui.View(
-    # _traitsui.Item('controller.name', style='readonly'),
     _traitsui.Item('int_ext_mapping', style='custom', label='Mapping'),
     _traitsui.Item('prefmap_method', style='custom', label='Method'),
     _traitsui.Item('standardise_x', label='Standardise X',
@@ -173,7 +172,8 @@ prefmap_view = _traitsui.View(
                        low_name='min_pc', high_name='max_pc', mode='auto'),
                    style='simple',
                    label='PC to calc:'),
-    )
+    title='Prefmap settings',
+)
 
 
 prefmap_nodes = [
