@@ -5,12 +5,11 @@ import pandas as _pd
 
 # Enthought library imports
 # FIXME: Namespace import
-from traits.api import Bool, Delegate, Dict, Instance, List, on_trait_change, Property, Str
+from traits.api import Bool, Dict, Instance, List, on_trait_change, Str
 from traitsui.api import Group, Item
-from chaco.api import (LabelAxis, DataView, Legend, PlotLabel,
+from chaco.api import (LabelAxis, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource,
-                       add_default_grids, ScatterPlot, LinePlot,
-                       PlotGraphicsContext)
+                       add_default_grids, ScatterPlot, LinePlot)
 from chaco.tools.api import ZoomTool, PanTool, LegendTool
 from utilities import COLOR_PALETTE
 
@@ -35,6 +34,28 @@ class ConjointBasePlot(BasePlot):
     index_labels = List(Str)
 
 
+    def _make_plot_frame(self):
+        # Adjust spacing
+        self.index_range.tight_bounds = False
+        self.index_range.margin = 0.05
+        self.value_range.tight_bounds = False
+
+        self.tools.append(PanTool(self))
+        self.tools.append(ZoomTool(self))
+
+        # Set border color
+        self.border_width = 10
+
+        if self.p_value < 0.001:
+            self.border_color = (1.0, 0.0, 0.0, 0.8)
+        elif self.p_value < 0.01:
+            self.border_color = (0.0, 1.0, 0.0, 0.8)
+        elif self.p_value < 0.05:
+            self.border_color = (1.0, 1.0, 0.0, 0.8)
+        else:
+            self.border_color = (0.5, 0.5, 0.5, 0.8)
+
+
     def _label_axis(self):
         idx = range(len(self.index_labels))
 
@@ -56,11 +77,35 @@ class ConjointBasePlot(BasePlot):
             text=text,
             component=self,
             overlay_position='outside bottom',
-            border_width=4,
+            border_visible=False,
+            border_width=2,
+            margin=6,
             fill_padding=False,
             hjustify='center',
         )
         self.overlays.append(info_label)
+
+
+    def _add_frame_legend(self):
+
+        class DummyPlot(LinePlot):
+            line_width=10.0
+
+        dp = {"p < 0.001": DummyPlot(color=(1.0, 0.0, 0.0)),
+              "p < 0.01" : DummyPlot(color=(0.0, 1.0, 0.0)),
+              "p < 0.05" : DummyPlot(color=(1.0, 1.0, 0.0)),
+              "p >= 0.05": DummyPlot(color=(0.5, 0.5, 0.5))}
+
+        legend = Legend(
+            component=self,
+            padding=10,
+            border_padding=10,
+            align="lr",
+            bgcolor="white",
+            title="Frame legend",
+            plots=dp,
+        )
+        self.overlays.append(legend)
 
 
 
@@ -75,6 +120,7 @@ class MainEffectsPlot(ConjointBasePlot):
         self.avg_std_err = main_avg_std_err(conj_res.lsmeansTable, attr_name)
 
         self._make_plot_frame()
+        self._add_frame_legend()
         self._label_axis()
         self._add_lines()
         self._add_ci_bars()
@@ -82,11 +128,7 @@ class MainEffectsPlot(ConjointBasePlot):
 
 
     def _make_plot_frame(self):
-        # Adjust spacing
-        self.index_range.tight_bounds = False
-        self.index_range.margin = 0.05
-        self.value_range.tight_bounds = False
-
+        super(MainEffectsPlot, self)._make_plot_frame()
         # Update plot ranges and mappers
         self.index_labels = self.plot_data.obj_n
         index = ArrayDataSource(range(len(self.index_labels)))
@@ -99,26 +141,7 @@ class MainEffectsPlot(ConjointBasePlot):
         avg_text = "Average standar error: {}".format(self.avg_std_err)
         self._add_avg_std_err(avg_text)
 
-
-        # FIXME: Join with interaction
-        zoom = ZoomTool(self, tool_mode="box", always_on=False)
-        pan = PanTool(self)
-        self.tools.append(zoom)
-        self.tools.append(pan)
-
         add_default_grids(self)
-
-        # Set border color based on p_value
-        self.border_width = 10
-
-        if self.p_value < 0.001:
-            self.border_color = (1.0, 0.0, 0.0, 0.8)
-        elif self.p_value < 0.01:
-            self.border_color = (0.0, 1.0, 0.0, 0.8)
-        elif self.p_value < 0.05:
-            self.border_color = (1.0, 1.0, 0.0, 0.8)
-        else:
-            self.border_color = (0.5, 0.5, 0.5, 0.8)
 
 
     def _add_lines(self):
@@ -208,28 +231,7 @@ class InteractionPlot(ConjointBasePlot):
         self._add_lines(flip)
         self._label_axis()
         self._add_line_legend()
-
-
-    def _make_plot_frame(self):
-        # Adjust spacing
-        self.index_range.tight_bounds = False
-        self.index_range.margin = 0.05
-        self.value_range.tight_bounds = False
-
-        self.tools.append(PanTool(self))
-        self.tools.append(ZoomTool(self))
-
-        # Set border color
-        self.border_width = 10
-
-        if self.p_value < 0.001:
-            self.border_color = (1.0, 0.0, 0.0, 0.8)
-        elif self.p_value < 0.01:
-            self.border_color = (0.0, 1.0, 0.0, 0.8)
-        elif self.p_value < 0.05:
-            self.border_color = (1.0, 1.0, 0.0, 0.8)
-        else:
-            self.border_color = (0.5, 0.5, 0.5, 0.8)
+        self._add_frame_legend()
 
 
     def _nullify_plot(self):

@@ -325,12 +325,10 @@ class ConjointMachine(object):
         result.anovaTable = self._r_res_to_ds(
             'res[[1]][2]$anova.table',
             'ANOVA table for fixed effects')
-        result.lsmeansTable = self._r_res_to_ds(
-            'res[[1]][3]$lsmeans.table',
-            'LS means (main effect and interaction)')
         result.lsmeansDiffTable = self._r_res_to_ds(
             'res[[1]][4]$diffs.lsmeans.table',
             'Pair-wise differences')
+        result.lsmeansTable = self._lsMeansTable()
         result.residualsTable = self._residualsTable()
         result.residIndTable = self._residIndTable()
         result.meanLiking = self._calcMeanLiking()
@@ -343,6 +341,12 @@ class ConjointMachine(object):
         return DataSet(mat=df, display_name=ds_name)
 
 
+    def _lsMeansTable(self):
+        ls1 = self.r.get('res[[1]][3]$lsmeans.table')
+        ls2 = ls1.drop(['p-value'], axis=1)
+        return DataSet(mat=ls2, display_name='LS means (main effect and interaction)')
+
+
     def _residualsTable(self):
         """
         Returns residuals from R conjoint function.
@@ -353,7 +357,7 @@ class ConjointMachine(object):
         r_vec = self.r.get('res[[1]][5]$residuals')
         vals = np.reshape(r_vec, (n_rows, n_cols))
         val_df = _pd.DataFrame(vals, index=self.consLiking.obj_n, columns=self.consLiking.var_n)
-        res_ds = DataSet(mat=val_df, display_name='Residuals')
+        res_ds = DataSet(mat=val_df, display_name='Full model residuals')
 
         return res_ds
 
@@ -368,7 +372,7 @@ class ConjointMachine(object):
         r_vec = self.r.get('res[[1]][6]$residuals_Indiv')
         vals = np.reshape(r_vec, (n_rows, n_cols))
         val_df = _pd.DataFrame(vals, index=self.consLiking.obj_n, columns=self.consLiking.var_n)
-        res_ds = DataSet(mat=val_df, display_name='Residuals individuals')
+        res_ds = DataSet(mat=val_df, display_name='Double centred residuals')
 
         return res_ds
 

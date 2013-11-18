@@ -33,6 +33,7 @@ class DSHandler(_traitsui.Handler):
     summary = _traits.Str()
 
     def init(self, info):
+        super(DSHandler, self).init(info)
         # FIXME: There must be a better way
         global win_handle
         win_handle = info.ui.control

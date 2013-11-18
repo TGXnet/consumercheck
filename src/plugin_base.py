@@ -39,6 +39,7 @@ class ModelController(_traitsui.Controller):
 
 
     def init(self, info):
+        super(ModelController, self).init(info)
         self.win_handle = info.ui.control
 
 
@@ -129,9 +130,11 @@ class PluginController(_traitsui.Controller):
     update_tree = _traits.Event()
     selected_object = _traits.Any()
     edit_node = _traits.Instance(ModelController)
+    win_handle = _traits.Any()
 
 
     def init(self, info):
+        super(PluginController, self).init(info)
         self.selected_object = self.model
 
 
