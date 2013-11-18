@@ -211,6 +211,7 @@ class PrefmapPluginController(PluginController):
     dummy_model_controller = _traits.Instance(PrefmapController, PrefmapController(Prefmap()))
 
     def init(self, info):
+        super(PrefmapPluginController, self).init(info)
         self._update_comb()
 
 

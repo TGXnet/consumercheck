@@ -39,6 +39,7 @@ class ModelController(_traitsui.Controller):
 
 
     def init(self, info):
+        super(ModelController, self).init(info)
         self.win_handle = info.ui.control
 
 
@@ -133,6 +134,7 @@ class PluginController(_traitsui.Controller):
 
 
     def init(self, info):
+        super(PluginController, self).init(info)
         self.selected_object = self.model
 
 

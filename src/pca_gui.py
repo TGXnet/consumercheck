@@ -24,6 +24,7 @@ class PcaController(ModelController):
 
 
     def init(self, info):
+        super(PcaController, self).init(info)
         self.win_handle = info.ui.control
         info.object.hwin = info.ui.control
 
@@ -239,6 +240,7 @@ class PcaPluginController(PluginController):
 
 
     def init(self, info):
+        super(PcaPluginController, self).init(info)
         self.win_handle = info.ui.control
         info.object.hwin = info.ui.control
 
