@@ -6,7 +6,6 @@ from itertools import combinations
 
 # Scipy lib imports
 import numpy as _np
-import pandas as _pd
 
 # ETS imports
 import traits.api as _traits
@@ -14,6 +13,7 @@ import traitsui.api as _traitsui
 
 # Local imports
 from dataset import DataSet
+from dialogs import ErrorMessage
 from conjoint_model import Conjoint
 from ds_table_view import DSTableViewer
 from plot_windows import SinglePlotWindow
@@ -284,7 +284,6 @@ class ConjointPluginController(PluginController):
 
     model_struct = _traits.Enum('Struct 1', 'Struct 2', 'Struct 3')
 
-
     dummy_model_controller = _traits.Instance(ConjointController)
 
 
@@ -383,6 +382,22 @@ for variables with a large number of categories.
         ##     c = self.model.dsc[self.selected_consumer_characteristics_set]
         ## else:
         ##     c = DataSet(display_name = '-')
+
+        # Check dataset alignment
+        nds = self.design.n_objs
+        nls = l.n_objs
+        nlc = l.n_vars
+        nca = self.consumers.n_objs
+
+        if nca > 0:
+            if (nds != nls) or (nlc != nca):
+                self._show_alignment_warning(nds, nls, nlc, nca)
+                return
+        else:
+            if nds != nls:
+                self._show_alignment_warning(nds, nls, nlc)
+                return
+
         calc_model = Conjoint(owner_ref=self, id=liking_id,
                               ## design=d,
                               design_vars=self.sel_design_var,
@@ -392,6 +407,13 @@ for variables with a large number of categories.
         calculation = ConjointController(calc_model)
         calculation._update_plot_lists()
         self.model.add(calculation)
+
+
+    def _show_alignment_warning(self, nds, nls, nlc, nca=0):
+        dlg = ErrorMessage()
+        dlg.err_msg = 'Alignment mismatch between the dataset'
+        dlg.err_val = 'There is {0} variants in the design matrix and {1} variants in the liking matrix. There is {2} consumers in the liking matrix and {3} consumers in the consumer characteristics matrix'.format(nds, nls, nlc, nca)
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
     def export_data(self, editor, obj):

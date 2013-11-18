@@ -237,9 +237,19 @@ class PrefmapPluginController(PluginController):
     def _make_calculation(self, id_c, id_s):
         ds_c = self.model.dsc[id_c]
         ds_s = self.model.dsc[id_s]
+
+        # Check missing data
         if ds_c.missing_data or ds_s.missing_data:
             self._show_missing_warning()
             return
+
+        # Check dataset alignment
+        ns_c = ds_c.n_objs
+        ns_s = ds_s.n_objs
+        if ns_c != ns_s:
+            self._show_alignment_warning(ns_c, ns_s)
+            return
+
         calc_model = Prefmap(id=id_c+id_s,
                              ds_C=ds_c,
                              ds_S=ds_s)
@@ -251,6 +261,13 @@ class PrefmapPluginController(PluginController):
         dlg = ErrorMessage()
         dlg.err_msg = 'Liking og sensory matrix has holes (missing data)'
         dlg.err_val = 'Prefmap is by now not able to analyze data with holes'
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
+
+
+    def _show_alignment_warning(self, ns_c, ns_s):
+        dlg = ErrorMessage()
+        dlg.err_msg = 'Consumer liking and sensory profiling data does not align'
+        dlg.err_val = 'There is {0} samples in the liking set and {1} samples in the sensory set'.format(ns_c, ns_s)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
