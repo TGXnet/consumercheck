@@ -84,7 +84,7 @@ bs_view = _traitsui.View(
                    # style='custom',
                    show_label=False
                ),
-    title='Summary asxis',
+    title='Basic stat settings',
 )
 
 

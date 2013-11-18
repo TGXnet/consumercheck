@@ -211,19 +211,14 @@ no_view = _traitsui.View()
 
 
 conjoint_view = _traitsui.View(
-    ## _traitsui.Item('controller.name', style='readonly', label='Consumer likings'),
-    ## _traitsui.Item('controller.design_name', style='readonly', label='Design'),
-    ## _traitsui.Item('controller.cons_attr_name', style='readonly', label='Consumer charactersitics'),
-    _traitsui.Group(
-        _traitsui.Item('controller.model_desc',
-                       editor=_traitsui.HTMLEditor(),
-                       height=220,
-                       width=460,
-                       resizable=False,
-                       show_label=False),
-        orientation='horizontal',
-        ),
-    )
+    _traitsui.Item('controller.model_desc',
+                   editor=_traitsui.HTMLEditor(),
+                   height=270,
+                   width=460,
+                   resizable=False,
+                   show_label=False),
+    title='Conjoint settings',
+)
 
 
 ds_exp_action = _traitsui.Action(
@@ -485,10 +480,10 @@ selection_view = _traitsui.Group(
             ),
         orientation='horizontal',
         ),
-        _traitsui.Item('controller.model_struct', style='simple', label='Model'),
+    _traitsui.Item('controller.model_struct', style='simple', label='Model'),
     label='Select dataset',
     show_border=True,
-    )
+)
 
 
 conjoint_plugin_view = make_plugin_view('Conjoint', conjoint_nodes, selection_view, conjoint_view)

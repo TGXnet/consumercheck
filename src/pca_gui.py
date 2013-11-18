@@ -196,14 +196,16 @@ no_view = _traitsui.View()
 
 
 pca_view = _traitsui.View(
-    # _traitsui.Item('controller.name', style='readonly'),
-    # _traitsui.Label('Standardise:'),
     _traitsui.Item('standardise', style='custom', show_label=True),
     _traitsui.Item('calc_n_pc',
-                   editor=_traitsui.RangeEditor(low_name='min_pc', high_name='max_pc', mode='auto'),
+                   editor=_traitsui.RangeEditor(
+                       low_name='min_pc',
+                       high_name='max_pc',
+                       mode='auto'),
                    style='simple',
                    label='PC to calc:'),
-    )
+    title='PCA settings',
+)
 
 
 pca_nodes = [
