@@ -5,12 +5,11 @@ import pandas as _pd
 
 # Enthought library imports
 # FIXME: Namespace import
-from traits.api import Bool, Delegate, Dict, Instance, List, on_trait_change, Property, Str
+from traits.api import Bool, Dict, Instance, List, on_trait_change, Str
 from traitsui.api import Group, Item
-from chaco.api import (LabelAxis, DataView, Legend, PlotLabel,
+from chaco.api import (LabelAxis, Legend, PlotLabel,
                        ErrorBarPlot, ArrayDataSource,
-                       add_default_grids, ScatterPlot, LinePlot,
-                       PlotGraphicsContext)
+                       add_default_grids, ScatterPlot, LinePlot)
 from chaco.tools.api import ZoomTool, PanTool, LegendTool
 from utilities import COLOR_PALETTE
 
@@ -63,6 +62,28 @@ class ConjointBasePlot(BasePlot):
         self.overlays.append(info_label)
 
 
+    def _add_frame_legend(self):
+
+        class DummyPlot(LinePlot):
+            line_width=10.0
+
+        dp = {"p < 0.001": DummyPlot(color=(1.0, 0.0, 0.0)),
+              "p < 0.01" : DummyPlot(color=(0.0, 1.0, 0.0)),
+              "p < 0.05" : DummyPlot(color=(1.0, 1.0, 0.0)),
+              "p >= 0.05": DummyPlot(color=(0.5, 0.5, 0.5))}
+
+        legend = Legend(
+            component=self,
+            padding=10,
+            border_padding=10,
+            align="lr",
+            bgcolor="white",
+            title="Frame legend",
+            plots=dp,
+        )
+        self.overlays.append(legend)
+
+
 
 class MainEffectsPlot(ConjointBasePlot):
     
@@ -75,6 +96,7 @@ class MainEffectsPlot(ConjointBasePlot):
         self.avg_std_err = main_avg_std_err(conj_res.lsmeansTable, attr_name)
 
         self._make_plot_frame()
+        self._add_frame_legend()
         self._label_axis()
         self._add_lines()
         self._add_ci_bars()
@@ -208,6 +230,7 @@ class InteractionPlot(ConjointBasePlot):
         self._add_lines(flip)
         self._label_axis()
         self._add_line_legend()
+        self._add_frame_legend()
 
 
     def _make_plot_frame(self):
