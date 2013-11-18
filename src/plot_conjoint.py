@@ -77,7 +77,9 @@ class ConjointBasePlot(BasePlot):
             text=text,
             component=self,
             overlay_position='outside bottom',
-            border_width=4,
+            border_visible=False,
+            border_width=2,
+            margin=6,
             fill_padding=False,
             hjustify='center',
         )
