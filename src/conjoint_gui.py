@@ -398,6 +398,7 @@ for variables with a large number of categories.
         parent = editor.get_parent(obj)
         ind_resid = parent.model.res.residIndTable
         ind_resid.kind = 'Sensory profiling'
+        ind_resid.display_name = '_double centred residuals'
         self.model.dsc.add(ind_resid)
 
 
