@@ -129,6 +129,7 @@ class PluginController(_traitsui.Controller):
     update_tree = _traits.Event()
     selected_object = _traits.Any()
     edit_node = _traits.Instance(ModelController)
+    win_handle = _traits.Any()
 
 
     def init(self, info):

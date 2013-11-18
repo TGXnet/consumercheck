@@ -237,6 +237,12 @@ class PcaPluginController(PluginController):
 
     dummy_model_controller = _traits.Instance(PcaController, PcaController(Pca()))
 
+
+    def init(self, info):
+        self.win_handle = info.ui.control
+        info.object.hwin = info.ui.control
+
+
     # FIXME: I dont know why the initial populating is not handled by
     # _update_selection_list()
     def _available_ds_default(self):
@@ -267,9 +273,20 @@ class PcaPluginController(PluginController):
 
 
     def _make_calculation(self, ds_id):
-        calc_model = Pca(id=ds_id, ds=self.model.dsc[ds_id])
+        pcads = self.model.dsc[ds_id]
+        if pcads.missing_data:
+            self._show_missing_warning()
+            return
+        calc_model = Pca(id=ds_id, ds=pcads)
         calculation = PcaController(calc_model)
         self.model.add(calculation)
+
+
+    def _show_missing_warning(self):
+        dlg = ErrorMessage()
+        dlg.err_msg = 'This matrix has holes (missing data)'
+        dlg.err_val = 'PCA is by now not able to analyze data with holes'
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
 

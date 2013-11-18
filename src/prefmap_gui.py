@@ -234,13 +234,25 @@ class PrefmapPluginController(PluginController):
         self._make_calculation(selection[0], selection[1])
 
 
-
     def _make_calculation(self, id_c, id_s):
+        ds_c = self.model.dsc[id_c]
+        ds_s = self.model.dsc[id_s]
+        if ds_c.missing_data or ds_s.missing_data:
+            self._show_missing_warning()
+            return
         calc_model = Prefmap(id=id_c+id_s,
-                             ds_C=self.model.dsc[id_c],
-                             ds_S=self.model.dsc[id_s])
+                             ds_C=ds_c,
+                             ds_S=ds_s)
         calculation = PrefmapController(calc_model)
         self.model.add(calculation)
+
+
+    def _show_missing_warning(self):
+        dlg = ErrorMessage()
+        dlg.err_msg = 'Liking og sensory matrix has holes (missing data)'
+        dlg.err_val = 'Prefmap is by now not able to analyze data with holes'
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
+
 
 
 selection_view = _traitsui.Group(
