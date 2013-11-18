@@ -80,8 +80,8 @@ Model structure descriptions:
             ("Fixed effects", fixed_table),
             ("Random effects", random_table),
             ("Pair-wise differences", diff_table),
-            ("Residuals", residu_table),
-            ("Residuals individuals", resid_ind_table),
+            ("Full model residuals", residu_table),
+            ("Double centred residuals", resid_ind_table),
             ]
 
         return [WindowLauncher(owner_ref=self, node_name=nn,

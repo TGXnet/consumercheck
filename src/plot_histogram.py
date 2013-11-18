@@ -290,7 +290,7 @@ class BoxPlot(DescStatBasePlot):
 
     def _add_axis(self, renderer):
         left_axis = _chaco.PlotAxis(renderer, orientation='left',
-                                    title='Number of consumers')
+                                    title='Liking')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
                                        title='Samples',
                                        positions = range(self.ds.n_objs),

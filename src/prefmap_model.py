@@ -170,7 +170,7 @@ class Prefmap(Model):
         res.expl_var_x = DataSet(
             mat=_pd.DataFrame(
                 data=[cal, cum_cal, val, cum_val],
-                index=['calibrated', 'cum_calibrated', 'validated', 'cum_validated'],
+                index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
             display_name=self.ds_X.display_name)
@@ -183,7 +183,7 @@ class Prefmap(Model):
         res.expl_var_y = DataSet(
             mat=_pd.DataFrame(
                 data=[cal, cum_cal, val, cum_val],
-                index=['calibrated', 'cum_calibrated', 'validated', 'cum_validated'],
+                index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
             display_name=self.ds_Y.display_name)

@@ -112,7 +112,7 @@ class Pca(Model):
         res.expl_var = DataSet(
             mat=_pd.DataFrame(
                 data=[cal, cum_cal, val, cum_val],
-                index=['calibrated', 'cum_calibrated', 'validated', 'cum_validated'],
+                index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
             display_name='Explained variance')
