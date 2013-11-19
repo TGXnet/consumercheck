@@ -95,12 +95,14 @@ tree_editor = _traitsui.TreeEditor(
             node_for=[DatasetContainer],
             label='=Datasets',
             children='',
+            auto_open=True,
             view=list_view,
             ),
         _traitsui.TreeNode(
             node_for=[DatasetContainer],
             label='=Datasets',
             children='dsl',
+            auto_open=True,
             view=list_view,
             ),
         DSNode(

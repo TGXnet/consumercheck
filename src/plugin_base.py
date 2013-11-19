@@ -190,7 +190,7 @@ def make_plugin_view(model_name, model_nodes, selection_view, model_view):
                     ),
                 orientation='vertical',
                 ),
-            _traitsui.Spring(width=30),
+            _traitsui.Spring(width=10),
             orientation='horizontal',
             ),
         resizable=True,
