@@ -1,7 +1,8 @@
 """A container for all Datasets in the application
 
 """
-
+# Std lib imports
+import pickle
 
 # Enthought imports
 import traits.api as _traits
@@ -35,6 +36,10 @@ class DatasetContainer(_traits.HasTraits):
         self.dsl.append(ds1)
         for ds in dsn:
             self.dsl.append(ds)
+
+
+    def empty(self):
+        self.dsl = []
 
 
     def get_id_name_map(self, kind_filter=None, kind_exclude=None):
@@ -76,12 +81,23 @@ class DatasetContainer(_traits.HasTraits):
 
     @_traits.on_trait_change('dsl[]')
     def _dsl_updated(self, obj, name, old_value, new_value):
+        # self.save_datasets('test.pkl')
         self.dsl_changed = True
 
 
     @_traits.on_trait_change('dsl:[display_name,kind]')
     def _ds_updated(self, obj, name, old_value, new_value):
         self.ds_changed = True
+
+
+    def save_datasets(self, filename):
+        with open(filename, 'wb') as fp:
+            pickle.dump(self.dsl, fp, pickle.HIGHEST_PROTOCOL)
+
+
+    def read_datasets(self, filename):
+        with open(filename, 'rb') as fp:
+            self.dsl = pickle.load(fp)
 
 
 

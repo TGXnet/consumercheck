@@ -71,6 +71,11 @@ class CCConf(_CP.SafeConfigParser):
         return _op.join(path, APP_NAME + '.log')
 
 
+    def _get_pkl_file_name(self):
+        path = self._get_app_data_dir()
+        return _op.join(path, APP_NAME + '.pkl')
+
+
     def _get_app_data_dir(self):
         if _sys.platform == 'darwin':
             from AppKit import NSSearchPathForDirectoriesInDomains
@@ -117,3 +122,7 @@ def list_options():
 
 def log_file_url():
     return _conf._get_log_file_name()
+
+
+def pkl_file_url():
+    return _conf._get_pkl_file_name()
