@@ -3,6 +3,7 @@
 """
 # Std lib imports
 import pickle
+import itertools as _itr
 
 # Enthought imports
 import traits.api as _traits
@@ -69,7 +70,10 @@ class DatasetContainer(_traits.HasTraits):
 
 
     def __getitem__(self, key):
-        # may raise TypeError
+        # Check if we have more than one dataset with same id
+        like_id = [ds.display_name for ds in self.dsl if ds.id == key]
+        if len(like_id) > 1:
+            raise IndexCollisionError(key, like_id)
         idx = self.dsl.index(key)
         return self.dsl[idx]
 
@@ -98,6 +102,17 @@ class DatasetContainer(_traits.HasTraits):
     def read_datasets(self, filename):
         with open(filename, 'rb') as fp:
             self.dsl = pickle.load(fp)
+        self._reinit_ds_id()
+
+
+    def _reinit_ds_id(self):
+        id_max = max([int(ds.id) for ds in self.dsl])
+        DataSet.new_id = _itr.count(start=id_max+1).next
+
+
+class IndexCollisionError(LookupError):
+    '''Exception to indicat that we have two or more dataset with the same id'''
+    pass
 
 
 
