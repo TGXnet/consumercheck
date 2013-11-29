@@ -45,7 +45,11 @@ class ImporterFileBase(HasTraits):
             return 'Design variable'
         elif 'liking' in file_n:
             return 'Consumer liking'
+        elif 'pref' in file_n:
+            return 'Consumer liking'
         elif 'attr' in file_n:
+            return 'Consumer characteristics'
+        elif 'char' in file_n:
             return 'Consumer characteristics'
         elif 'sensory' in file_n:
             return 'Sensory profiling'
