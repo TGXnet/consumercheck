@@ -242,7 +242,7 @@ class PCPlotWindow(SinglePlotWindow):
         Item('reset_xy', show_label=False),
         Item('y_up', show_label=False),
         Item('y_down', show_label=False),
-        Item('eq_axis', label="Orthonormal axis"),
+        Item('eq_axis', label="Equal scale axis"),
         Item('show_labels', label="Show labels"),
         Item('vis_toggle', show_label=False, defined_when='vistog'),
         orientation="horizontal",
