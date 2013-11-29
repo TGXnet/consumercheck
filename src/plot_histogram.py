@@ -24,7 +24,8 @@ class DescStatBasePlot(BasePlot):
 
     def _get_plot_data(self):
         nds = copy.deepcopy(self.ds)
-        nds.mat = self.ds.mat.transpose()
+        df = self.ds.mat.transpose()
+        nds.mat = df.sort_index(axis=0, ascending=False)
         return nds
 
 
@@ -321,6 +322,13 @@ class BoxPlot(DescStatBasePlot):
                                        )
         renderer.underlays.append(left_axis)
         renderer.underlays.append(bottom_axis)
+
+
+    def _get_plot_data(self):
+        nds = copy.deepcopy(self.ds)
+        df = self.ds.mat.transpose()
+        nds.mat = df.reindex(index=['max', 'perc75', 'med', 'perc25', 'min'])
+        return nds
 
 
     def new_window(self, configure=False):
