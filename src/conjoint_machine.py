@@ -57,8 +57,8 @@ class ConjointMachine(object):
 
 
     def _start_r_interpreter(self):
-        Rbin = op.join(self.r_origo, 'R-2.15.1', 'bin', 'R.exe')
-        Rlib = op.join(self.r_origo, 'R-2.15.1', 'library')
+        Rbin = op.join(self.r_origo, 'R-3.0.2', 'bin', 'R.exe')
+        Rlib = op.join(self.r_origo, 'R-3.0.2', 'library')
         logger.info("Try R path: {0}".format(Rbin))
         if op.exists(Rbin):
             logger.info("R.exe found")
