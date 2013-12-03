@@ -7,12 +7,14 @@ import numpy as _np
 
 # ETS imports
 import traits.api as _traits
+import traitsui.api as _traitsui
 import chaco.api as _chaco
 
 # Local imports
 from dataset import DataSet
 from utilities import hue_span
 from plot_base import BasePlot
+from plot_windows import SinglePlotWindow
 
 
 class DescStatBasePlot(BasePlot):
@@ -22,7 +24,8 @@ class DescStatBasePlot(BasePlot):
 
     def _get_plot_data(self):
         nds = copy.deepcopy(self.ds)
-        nds.mat = self.ds.mat.transpose()
+        df = self.ds.mat.transpose()
+        nds.mat = df.sort_index(axis=0, ascending=False)
         return nds
 
 
@@ -128,6 +131,8 @@ class HistPlot(DescStatBasePlot):
 
 
 
+
+
 class StackedHistPlot(DescStatBasePlot):
     '''Plot histogram values for each row stacked on to of each other'''
 
@@ -136,9 +141,22 @@ class StackedHistPlot(DescStatBasePlot):
 
     def __init__(self, ds):
         super(StackedHistPlot, self).__init__(ds=ds)
+        self.plot_stacked()
+
+
+    def plot_stacked(self, y_percent=False):
+        self._nullify_plot()
         pec = self._calc_percentage()
         last_renderer = self._render_data(pec)
-        self._add_axis(last_renderer)
+        self._add_axis(last_renderer, y_percent)
+
+
+    def _nullify_plot(self):
+        # Nullify all plot related list to make shure we can
+        # make the ploting idempotent
+        self.plot_components = []
+        self.overlays = []
+        self.overlays.append(self._title)
 
 
     def _stair_ds_default(self):
@@ -213,9 +231,14 @@ class StackedHistPlot(DescStatBasePlot):
 
 
 
-    def _add_axis(self, renderer):
-        left_axis = _chaco.PlotAxis(renderer, orientation='left',
-                                    title='Number of consumers')
+    def _add_axis(self, renderer, y_percent=False):
+        if not y_percent:
+            left_axis = _chaco.PlotAxis(renderer, orientation='left',
+                                        title='Number of consumers')
+        else:
+            left_axis = PercentAxis(renderer, orientation='left',
+                                    title='% of consumers')
+
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
                                        title='Consumer preference for samples',
                                        positions = range(self.ds.n_objs),
@@ -224,7 +247,6 @@ class StackedHistPlot(DescStatBasePlot):
                                        )
         renderer.underlays.append(left_axis)
         renderer.underlays.append(bottom_axis)
-
 
 
     def new_window(self, configure=False):
@@ -238,6 +260,7 @@ class StackedHistPlot(DescStatBasePlot):
         else:
             self._plot_ui_info = PlotWindow(plot=self).edit_traits()
         return self._plot_ui_info
+
 
 
 
@@ -301,6 +324,12 @@ class BoxPlot(DescStatBasePlot):
         renderer.underlays.append(bottom_axis)
 
 
+    def _get_plot_data(self):
+        nds = copy.deepcopy(self.ds)
+        df = self.ds.mat.transpose()
+        nds.mat = df.reindex(index=['max', 'perc75', 'med', 'perc25', 'min'])
+        return nds
+
 
     def new_window(self, configure=False):
         """Convenience function that creates a window containing the Plot
@@ -316,10 +345,37 @@ class BoxPlot(DescStatBasePlot):
 
 
 
+class PercentAxis(_chaco.LabelAxis):
+
+    def _compute_tick_positions(self, gc, component=None):
+        n_labels = 10
+        self.tick_interval = 1.0
+        high = self.mapper.range.high
+        self.positions = _np.linspace(0, high, n_labels+1)
+        self.labels = [str(i*100/n_labels) for i in range(n_labels+1)]
+
+        super(PercentAxis, self)._compute_tick_positions(gc, component)
+
+
+
+class StackedPlotWindow(SinglePlotWindow):
+    """Window for embedding line plot
+
+    """
+    percent = _traits.Bool(False)
+
+    @_traits.on_trait_change('percent')
+    def flip_interaction(self, obj, name, new):
+        obj.plot.plot_stacked(new)
+        obj.plot.invalidate_and_redraw()
+
+    extra_gr = _traitsui.Group(_traitsui.Item('percent'))
+
+
+
 if __name__ == '__main__':
     from tests.conftest import hist_ds
     from tests.conftest import boxplot_ds
-    from plot_windows import PCPlotWindow
     bds = boxplot_ds()
     hds = hist_ds()
     # bds.print_traits()
@@ -329,8 +385,8 @@ if __name__ == '__main__':
     # plot.new_window(True)
 
     for plot in [plot1, plot2, plot3]:
-        plot_wind = PCPlotWindow(
+        plot_wind = StackedPlotWindow(
             plot=plot,
-            # title_text="Tull",
+            title_text="Tull",
         )
         plot_wind.configure_traits()

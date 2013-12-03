@@ -47,12 +47,16 @@ class ConjointBasePlot(BasePlot):
         self.border_width = 10
 
         if self.p_value < 0.001:
+            # Red
             self.border_color = (1.0, 0.0, 0.0, 0.8)
         elif self.p_value < 0.01:
-            self.border_color = (0.0, 1.0, 0.0, 0.8)
+            # Orange
+            self.border_color = (1.0, 0.65, 0.0, 0.8)
         elif self.p_value < 0.05:
+            # Yellow
             self.border_color = (1.0, 1.0, 0.0, 0.8)
         else:
+            # Grey (british)
             self.border_color = (0.5, 0.5, 0.5, 0.8)
 
 
@@ -92,7 +96,7 @@ class ConjointBasePlot(BasePlot):
             line_width=10.0
 
         dp = {"p < 0.001": DummyPlot(color=(1.0, 0.0, 0.0)),
-              "p < 0.01" : DummyPlot(color=(0.0, 1.0, 0.0)),
+              "p < 0.01" : DummyPlot(color=(1.0, 0.65, 0.0)),
               "p < 0.05" : DummyPlot(color=(1.0, 1.0, 0.0)),
               "p >= 0.05": DummyPlot(color=(0.5, 0.5, 0.5))}
 
@@ -137,8 +141,8 @@ class MainEffectsPlot(ConjointBasePlot):
             value = self.mk_ads(name)
             self.value_range.add(value)
 
-        # Add label with average standar error
-        avg_text = "Average standar error: {}".format(self.avg_std_err)
+        # Add label with average standard error
+        avg_text = "Average standard error: {}".format(self.avg_std_err)
         self._add_avg_std_err(avg_text)
 
         add_default_grids(self)
@@ -244,8 +248,8 @@ class InteractionPlot(ConjointBasePlot):
         self.tools = []
         self.overlays = []
         self.overlays.append(self._title)
-        # Add label with average standar error
-        avg_text = "Average standar error: {}".format(self.avg_std_err)
+        # Add label with average standard error
+        avg_text = "Average standard error: {}".format(self.avg_std_err)
         self._add_avg_std_err(avg_text)
 
 

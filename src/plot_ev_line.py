@@ -3,7 +3,7 @@
 import numpy as np
 
 # Enthought library imports
-from chaco.api import ArrayPlotData
+from chaco.api import ArrayPlotData, PlotGraphicsContext
 from traits.api import List, HasTraits, implements, Property
 from enable.api import ColorTrait
 from chaco.tools.api import ZoomTool, PanTool
@@ -73,7 +73,6 @@ class EVLinePlot(PlotBase):
     plot_data = Property()
 
 
-
     def __init__(self, expl_var=None, **kwargs):
         """Constructor signature.
 
@@ -95,6 +94,7 @@ class EVLinePlot(PlotBase):
         self.x_axis.title = "# of principal components"
         self.y_axis.title = "Explained variance [%]"
         self.legend_alignment = 'ul'
+        self.legend.visible = True
 
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box",always_on=False))
@@ -144,10 +144,9 @@ class EVLinePlot(PlotBase):
         line_styles = ['solid', 'dot dash', 'dash', 'dot', 'long dash']
 
         #plot
-        rl = self.plot(pd, type='line', name=pn,
-                       color=self.data.pc_ds[set_id-1].color,
-                       line_style=line_styles[set_id-1%4]
-                       )
+        self.plot(pd, type='line', name=pn,
+                  color=self.data.pc_ds[set_id-1].color,
+                  line_style=line_styles[set_id-1%4])
 
         self.plots.values()[0][0].index._data = self.data.arrays['index']
         
@@ -169,10 +168,13 @@ class EVLinePlot(PlotBase):
 
 
 if __name__ == '__main__':
-    line = np.array([56.4, 78.9, 96.0, 99.4])
-    line2 = np.array([26.4, 38.9, 76.0, 79.4, 80.0])
-    plot = EVLinePlot()
-    plot.add_EV_set(line, legend='Fantastisk')
-    plot.add_EV_set(line2, color='blue', legend='Fantastisk Nr. 2')
-    plot.legend.visible = True
+    import pandas as pd
+    cal = np.array([56.4, 78.9, 96.0, 99.4, 99.99])
+    val = np.array([26.4, 38.9, 76.0, 79.4, 80.0])
+    df = pd.DataFrame([cal, val], index=['calibrated', 'validated'])
+    ds = DataSet(mat=df)
+    print(ds.mat)
+
+    plot = EVLinePlot(ds)
+    # plot.legend.visible = True
     plot.new_window(True)

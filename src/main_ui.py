@@ -11,6 +11,7 @@ from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
 # Local imports
+import cc_config as conf
 from dataset_container import DatasetContainer
 from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
@@ -22,6 +23,8 @@ from basic_stat_gui import BasicStatPluginController, bs_plugin_view
 from pca_gui import PcaPluginController, pca_plugin_view
 from prefmap_gui import PrefmapPluginController, prefmap_plugin_view
 from conjoint_gui import ConjointPluginController, conjoint_plugin_view
+
+state_file = conf.pkl_file_url()
 
 
 class MainViewHandler(Handler):
@@ -39,7 +42,7 @@ class MainViewHandler(Handler):
 
 
     def _close_ds(self, info):
-        info.object.dsc.dsl = []
+        info.object.dsc.empty()
 
 
     def view_about(self, info):
@@ -59,10 +62,21 @@ class MainViewHandler(Handler):
         # Close splash window
         logger.info('Init main ui')
         info.object.win_handle = info.ui.control
+
+        # Import workspace
+        try:
+            info.object.dsc.read_datasets(state_file)
+        except IOError:
+            pass
+ 
         try:
             info.object.splash.close()
         except AttributeError:
             pass
+
+
+    def closed(self, info, is_ok):
+        info.object.dsc.save_datasets(state_file)
 
 
 

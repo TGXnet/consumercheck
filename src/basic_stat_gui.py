@@ -5,7 +5,7 @@ import traitsui.api as _traitsui
 
 #Local imports
 from basic_stat_model import BasicStat
-from plot_histogram import BoxPlot, HistPlot, StackedHistPlot
+from plot_histogram import BoxPlot, HistPlot, StackedHistPlot, StackedPlotWindow
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
@@ -58,6 +58,28 @@ class BasicStatController(ModelController):
         return wll
 
 
+    def open_window(self, viewable, view_loop):
+        """Expected viewable is by now:
+          + Plot subtype
+          + DataSet type
+        """
+        if isinstance(viewable, StackedHistPlot):
+            res = self.get_result()
+
+            win = StackedPlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=view_loop,
+                # title_text=self._wind_title(res),
+                # vistog=False
+                )
+
+            self._show_plot_window(win)
+        else:
+            super(BasicStatController, self).open_window(viewable, view_loop)
+
+
+
 # Plots creators
 
 def box_plot(res):
@@ -79,11 +101,10 @@ no_view = _traitsui.View()
 
 
 bs_view = _traitsui.View(
-     _traitsui.Item('summary_axis',
+    _traitsui.Item('summary_axis',
                    # editor=_traitsui.EnumEditor(cols=2),
                    # style='custom',
-                   show_label=False
-               ),
+                   show_label=False),
     title='Basic stat settings',
 )
 
@@ -121,7 +142,8 @@ class BasicStatPluginController(PluginController):
     available_ds = _traits.List()
     selected_ds = _traits.List()
 
-    dummy_model_controller = _traits.Instance(BasicStatController, BasicStatController(BasicStat()))
+    dummy_model_controller = _traits.Instance(BasicStatController,
+                                              BasicStatController(BasicStat()))
 
     # FIXME: I dont know why the initial populating is not handled by
     # _update_selection_list()
