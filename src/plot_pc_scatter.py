@@ -11,7 +11,8 @@ import numpy as np
 # Enthought library imports
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Int, List, HasTraits, implements, Property
+from traits.api import Bool, Int, List, HasTraits, implements, Property, on_trait_change
+from traitsui.api import Item, Group
 from enable.api import ColorTrait
 
 
@@ -19,6 +20,7 @@ from enable.api import ColorTrait
 from dataset import DataSet
 from plot_base import PlotBase
 from plot_interface import IPCScatterPlot
+from plot_windows import PCPlotWindow
 
 
 class PCDataSet(HasTraits):
@@ -436,6 +438,40 @@ def calc_bounds(data_low, data_high, margin, tight_bounds):
         return data_low , data_high
     else:
         return data_low * (1 + margin) , data_high * (1 + margin)
+
+
+
+class CorrLoadPlotWindow(PCPlotWindow):
+    """Window for embedding principal component plots
+
+    """
+    show_x_labels = Bool(True)
+    show_y_labels = Bool(True)
+
+
+    @on_trait_change('show_x_labels')
+    def _switch_x_labels(self, obj, name, new):
+        obj.plot.show_labels(show=new, set_id=1)
+
+
+    @on_trait_change('show_y_labels')
+    def _switch_y_labels(self, obj, name, new):
+        obj.plot.show_labels(show=new, set_id=2)
+
+
+    extra_gr = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_x_labels', label="Show consumer labels"),
+        Item('show_y_labels', label="Show sensory labels"),
+        Item('vis_toggle', show_label=False, defined_when='vistog'),
+        orientation="horizontal",
+        visible_when='show_extra',
+        )
 
 
 if __name__ == '__main__':

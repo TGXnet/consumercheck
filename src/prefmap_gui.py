@@ -7,7 +7,7 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import PCScatterPlot
+from plot_pc_scatter import PCScatterPlot, CorrLoadPlotWindow
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
@@ -112,6 +112,28 @@ class PrefmapController(ModelController):
         self._show_plot_window(mpw)
 
 
+    def open_window(self, viewable, view_loop):
+        """Expected viewable is by now:
+          + Plot subtype
+          + DataSet type
+        """
+        if isinstance(viewable, CLPlot):
+        # if viewable.title == 'Correlation loadings':
+            res = self.get_result()
+
+            win = CorrLoadPlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=view_loop,
+                # title_text=self._wind_title(res),
+                # vistog=False
+                )
+
+            self._show_plot_window(win)
+        else:
+            super(PrefmapController, self).open_window(viewable, view_loop)
+
+
     def _wind_title(self, res):
         dsx_name = self.model.ds_C.display_name
         dsy_name = self.model.ds_S.display_name
@@ -135,15 +157,29 @@ def loadings_y_plot(res):
     return plot
 
 
+class CLPlot(PCScatterPlot):
+
+    def __init__(self, clx, evx, cly, evy, **kwargs):
+        super(CLPlot, self).__init__(**kwargs)
+        clx.style.fg_color = 'blue'
+        self.add_PC_set(clx, evx)
+        cly.style.fg_color = 'red'
+        self.add_PC_set(cly, evy)
+        self.plot_circle(True)
+
+
 def corr_loadings_plot(res):
-    plot = PCScatterPlot(title='Correlation loadings')
+    # plot = PCScatterPlot(title='Correlation loadings')
     clx = res.corr_loadings_x
-    clx.style.fg_color = 'blue'
+    # clx.style.fg_color = 'blue'
     cly = res.corr_loadings_y
-    cly.style.fg_color = 'red'
-    plot.add_PC_set(clx, res.expl_var_x)
-    plot.add_PC_set(cly, res.expl_var_y)
-    plot.plot_circle(True)
+    # cly.style.fg_color = 'red'
+    # plot.add_PC_set(clx, res.expl_var_x)
+    # plot.add_PC_set(cly, res.expl_var_y)
+    # plot.plot_circle(True)
+    plot = CLPlot(clx, res.expl_var_x,
+                  cly, res.expl_var_y,
+                  title='Correlation loadings')
     return plot
 
 
