@@ -106,8 +106,11 @@ class DatasetContainer(_traits.HasTraits):
 
 
     def _reinit_ds_id(self):
-        id_max = max([int(ds.id) for ds in self.dsl])
-        DataSet.new_id = _itr.count(start=id_max+1).next
+        try:
+            id_max = max([int(ds.id) for ds in self.dsl])
+            DataSet.new_id = _itr.count(start=id_max+1).next
+        except ValueError:
+            pass
 
 
 class IndexCollisionError(LookupError):
