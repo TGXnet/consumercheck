@@ -1,6 +1,6 @@
 
 # Local imports
-from plot_windows import SinglePlotWindow
+from plot_windows import SinglePlotWindow, PCPlotWindow
 
 
 def multiplot_factory(plot_func, res, view_loop, title, parent_win=None):
@@ -15,10 +15,10 @@ def plot_win_creator_closure(plot_func, res, view_loop, title, parent_win):
 
     def plot_window_creator():
         plot = plot_func(res)
-        win = SinglePlotWindow(
+        win = PCPlotWindow(
             plot=plot,
             res=res,
-            title_text=title,
+            # title_text=title,
             view_loop=view_loop
             )
         if parent_win:

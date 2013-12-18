@@ -3,29 +3,22 @@
 Read a file and make a dataset object.
 
 """
-# Stdlib imports
+# Std lib imports
+import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import os.path
 
-# import logging
-# Log everything, and send it to stderr.
-# http://docs.python.org/howto/logging-cookbook.html
-# logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.WARNING)
-# Log what the importe is going to do
-# And log operation completed if success
-
 # Enthought imports
-from traits.api import HasTraits, Bool, File, List, Instance, Str
-from traitsui.api import View, UCustom, FileEditor, Item
-from traitsui.menu import OKButton, CancelButton
+from traits.api import HasTraits, Bool, File, List, Str
+from traitsui.api import View, Item
+from traitsui.menu import OKButton
 from pyface.api import FileDialog, OK, CANCEL
 
 # Local imports
 import cc_config as conf
-from dataset import DataSet
 from importer_text_file import ImporterTextFile
 from importer_xls_file import ImporterXlsFile
-from importer_xlsx_file import ImporterXlsxFile
+# from importer_xlsx_file import ImporterXlsxFile
 
 __all__ = ['ImporterMain']
 
@@ -35,23 +28,27 @@ class ImporterMain(HasTraits):
 
     _last_open_path = File()
     _files_path = List(File)
-    # _datasets = List(DataSet)
     _notice_shown = Bool(False)
 
 
     def import_data(self, file_path, have_variable_names = True, have_object_names = True, sep='\t'):
-        """Read file and return DataSet objekt"""
+        """Read file and return DataSet objekt
+
+        Does not show any UI.
+        """
         importer = self._make_importer(file_path)
         importer.have_var_names = have_variable_names
         importer.have_obj_names = have_object_names
         importer.delimiter = sep
-        importer.kind = self._pick_kind(file_path)
         ds = importer.import_data()
         return ds
 
 
     def dnd_import_data(self, path):
-        """Open dialog for selecting a file, import and return the DataSet"""
+        """Drag and drop reactor
+
+        Open dialog for dragged file, import and return the DataSet
+        """
         importer = self._make_importer(path)
         importer.edit_traits()
         ds = importer.import_data()
@@ -59,26 +56,39 @@ class ImporterMain(HasTraits):
 
 
     def dialog_multi_import(self):
-        """Open dialog for selecting multiple files and return a list of DataSet's"""
+        """Multi file import
+
+        Open dialog for selecting multiple files.
+        Shows a settings dialog for each selected file
+        return a list of imported DataSet's
+        """
         self._last_open_path = conf.get_option('work_dir')
+        logger.debug('Last imported file: %s', self._last_open_path)
+
+        # Show info about legal data format
         if not self._notice_shown:
             notice = ImportNotice()
             notice.edit_traits()
             self._notice_shown = True
+
+        # Select files
         status = self._show_file_selector()
         if status == CANCEL:
+            logger.info('Cancel file imports')
             return []
         datasets = []
-        for filen in self._files_path:
-            importer = self._make_importer(filen)
-            importer.kind = self._pick_kind(filen)
+        logger.debug('File(s) to import: \n%s', '\n'.join(self._files_path))
+
+        for file_n in self._files_path:
+            importer = self._make_importer(file_n)
+            logger.info('Attempting to import %s with %s', file_n, type(importer))
             ui = importer.edit_traits()
             if ui.result:
                 ds = importer.import_data()
                 datasets.append(ds)
             else:
                 continue
-        conf.set_option('work_dir', filen)
+        conf.set_option('work_dir', file_n)
         return datasets
 
 
@@ -90,8 +100,6 @@ class ImporterMain(HasTraits):
             title='Import data')
         status = dlg.open()
         if status == OK:
-            print(dlg.paths)
-            print(self._files_path)
             self._files_path = dlg.paths
         elif status == CANCEL:
             pass
@@ -102,34 +110,10 @@ class ImporterMain(HasTraits):
         fext = self._identify_filetype(path)
         if fext in ['txt', 'csv']:
             return ImporterTextFile(file_path=path)
-        elif fext in ['xls']:
+        elif fext in ['xls', 'xlsx', 'xlsm']:
             return ImporterXlsFile(file_path=path)
-        elif fext in ['xlsx', 'xlsm']:
-            return ImporterXlsxFile(file_path=path)
         else:
             return ImporterTextFile(file_path=path)
-
-
-    def _pick_kind(self, filen):
-        '''Available types:
-         * Design variable
-         * Sensory profiling
-         * Consumer liking
-         * Consumer characteristics
-        Defined in dataset.py
-        '''
-        filen = filen.lower()
-        if 'design' in filen:
-            return 'Design variable'
-        elif 'liking' in filen:
-            return 'Consumer liking'
-        elif 'attr' in filen:
-            return 'Consumer characteristics'
-        elif 'sensory' in filen:
-            return 'Sensory profiling'
-        elif 'qda' in filen:
-            return 'Sensory profiling'
-        return 'Sensory profiling'
 
 
     def _identify_filetype(self, path):
@@ -148,6 +132,7 @@ This program allows for importing four different types of data:
 Preference mapping: the two last one will not be used.
 Conjoint analysis: the first one will not be used.
 
+ConsumerCheck is not able to handle non-English characters in the row and column names.
 If you experience problems when reading data from an Excel sheet; mark, copy, paste and save the actual data set in sheet 1 of a new Excel window.
 '''
         )
@@ -168,7 +153,9 @@ DND = ImporterMain()
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     fi = ImporterMain()
     dsc = fi.dialog_multi_import()
     for ds in dsc:
         ds.print_traits()
+        print(ds.mat.dtypes)

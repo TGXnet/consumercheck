@@ -1,27 +1,16 @@
-# Per directory py.test helper functions
 '''PY.test resources
 '''
-import pytest
-
 # Std lib imports
-import copy
 import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+import os.path as osp
+import copy
 
-# Configure logging
-logging.basicConfig(
-    level=logging.WARNING,
-    # level=logging.INFO,
-    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-    # datefmt='%m-%d %H:%M',
-    datefmt='%y%m%dT%H:%M:%S',
-    # filename='/temp/myapp.log',
-    # filemode='w',
-    )
-logging.info("Test start")
-
+# Scipy imports
 import numpy as np
 import pandas as pd
-import os.path as osp
+
+import pytest
 
 
 @pytest.fixture
@@ -32,8 +21,8 @@ def check_trait_interface():
 
 
 # Local imports
-from dataset import DataSet
-from dataset_container import DatasetContainer
+from dataset import DataSet, VisualStyle
+from dataset_container import DatasetContainer, get_ds_by_name
 from importer_main import ImporterMain
 
 
@@ -98,9 +87,9 @@ def simple_ds():
 
 @pytest.fixture
 def zero_var_ds():
-    '''Makes a simple syntetic dataset'''
+    '''Dataset with zero variance variable'''
 
-    ds = DataSet(display_name='Some values', kind='Sensory profiling')
+    ds = DataSet(display_name='Zero var variable', kind='Sensory profiling')
     ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 1.2, 2.3],
@@ -238,9 +227,30 @@ def iris_ds():
 
 
 @pytest.fixture
+def clust1ds():
+    """Manual random pick from the Iris datast: setosa"""
+    ds = DataSet(
+        mat = pd.DataFrame(
+            [[5.1,3.5,1.4,0.2],
+             [4.6,3.4,1.4,0.3],
+             [5.4,3.7,1.5,0.2],
+             [5.7,3.8,1.7,0.3],
+             [5.4,3.4,1.7,0.2],
+             [4.8,3.1,1.6,0.2],
+             [4.6,3.6,1.0,0.2]],
+            index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
+            columns = ['V1', 'V2', 'V3', 'V4']),
+        display_name='Some values', kind='Sensory profiling',
+        # style=VisualStyle(fg_color=(0.8, 0.2, 0.1, 1.0)),
+        style=VisualStyle(fg_color='indigo'),
+        )
+    return ds
+
+
+@pytest.fixture
 def synth_dsc():
     dsc = DatasetContainer()
-    dsc.add(simple_ds(), discrete_ds(), discrete_nans_ds(), iris_ds())
+    dsc.add(simple_ds(), discrete_ds(), discrete_nans_ds(), zero_var_ds(), iris_ds())
     return dsc
 
 
@@ -312,21 +322,20 @@ def conj_res():
 
         from conjoint_machine import ConjointMachine
         dsc = conjoint_dsc()
-        consAttr = dsc.get_by_id('consumerattributes')
-        odflLike = dsc.get_by_id('odour-flavour_liking')
-        consistencyLike = dsc.get_by_id('consistency_liking')
-        overallLike = dsc.get_by_id('overall_liking')
-        designVar = dsc.get_by_id('design')
+        consAttr = get_ds_by_name('Consumers', dsc)
+        odflLike = get_ds_by_name('Odour-flavor', dsc)
+        consistencyLike = get_ds_by_name('Consistency', dsc)
+        overallLike = get_ds_by_name('Overall', dsc)
+        designVar = get_ds_by_name('Tine yogurt design', dsc)
         selected_structure = 2
         selected_consAttr = ['Sex']
         selected_designVar = ['Flavour', 'Sugarlevel']
         consLiking = odflLike
 
         cm = ConjointMachine()
-        res = cm.synchronous_calculation(selected_structure,
-                                     consAttr, selected_consAttr,
-                                     designVar, selected_designVar,
-                                     consLiking)
+        res = cm.synchronous_calculation(designVar, selected_designVar,
+                                         consLiking, selected_structure,
+                                         consAttr, selected_consAttr)
 
         with open(cache_fn, 'w') as fp:
             pickle.dump(res, fp)

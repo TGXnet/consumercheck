@@ -2,14 +2,11 @@
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
-import chaco.api as _chaco
 
 #Local imports
 from basic_stat_model import BasicStat
-from plot_histogram import BoxPlot, HistPlot, StackedHistPlot
-from plot_windows import LinePlotWindow, SinglePlotWindow
-from window_helper import multiplot_factory
-from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
+from plot_histogram import BoxPlot, HistPlot, StackedHistPlot, StackedPlotWindow
+from plugin_tree_helper import (WindowLauncher, dclk_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
 
@@ -61,6 +58,28 @@ class BasicStatController(ModelController):
         return wll
 
 
+    def open_window(self, viewable, view_loop):
+        """Expected viewable is by now:
+          + Plot subtype
+          + DataSet type
+        """
+        if isinstance(viewable, StackedHistPlot):
+            res = self.get_result()
+
+            win = StackedPlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=view_loop,
+                # title_text=self._wind_title(res),
+                # vistog=False
+                )
+
+            self._show_plot_window(win)
+        else:
+            super(BasicStatController, self).open_window(viewable, view_loop)
+
+
+
 # Plots creators
 
 def box_plot(res):
@@ -82,18 +101,12 @@ no_view = _traitsui.View()
 
 
 bs_view = _traitsui.View(
-    _traitsui.Group(
-        # _traitsui.Label('Summary axis:'),
-        _traitsui.Item('summary_axis',
-                       # editor=_traitsui.EnumEditor(cols=2),
-                       # style='custom',
-                       show_label=False
-                       ),
-        label='Summary axis',
-        show_border=True,
-        orientation='vertical',
-        ),
-    )
+    _traitsui.Item('summary_axis',
+                   # editor=_traitsui.EnumEditor(cols=2),
+                   # style='custom',
+                   show_label=False),
+    title='Basic stat settings',
+)
 
 
 bs_nodes = [
@@ -105,13 +118,13 @@ bs_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[BasicStatController],
-        label='=Base plots',
+        label='=Plots for all samples',
         children='base_win_launchers',
         view=bs_view,
         menu=[]),
     _traitsui.TreeNode(
         node_for=[BasicStatController],
-        label='=Object histogram',
+        label='=Single Sample histograms',
         children='idx_win_launchers',
         view=bs_view,
         menu=[]),
@@ -129,7 +142,8 @@ class BasicStatPluginController(PluginController):
     available_ds = _traits.List()
     selected_ds = _traits.List()
 
-    dummy_model_controller = _traits.Instance(BasicStatController, BasicStatController(BasicStat()))
+    dummy_model_controller = _traits.Instance(BasicStatController,
+                                              BasicStatController(BasicStat()))
 
     # FIXME: I dont know why the initial populating is not handled by
     # _update_selection_list()
@@ -145,8 +159,7 @@ class BasicStatPluginController(PluginController):
 
     def _get_selectable(self, not_all=True):
         if not_all:
-            return (self.model.dsc.get_id_name_map('Consumer liking') +
-                    self.model.dsc.get_id_name_map('Consumer characteristics'))
+            return self.model.dsc.get_id_name_map('Consumer liking')
         else:
             return self.model.dsc.get_id_name_map()
 
@@ -199,7 +212,7 @@ if __name__ == '__main__':
         tods = TestOneNode(one_model=bsc)
         tods.configure_traits(view=dummy_view(bs_nodes))
     else:
-        bsp = CalcContainer(dsc=synth_dsc())
+        bsp = CalcContainer(dsc=all_dsc())
         bspc = BasicStatPluginController(bsp)
         bspc.configure_traits(
             view=bs_plugin_view)

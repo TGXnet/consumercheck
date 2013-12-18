@@ -4,19 +4,19 @@ import traits.api as _traits
 import traitsui.api as _traitsui
 
 # Local imports
-from prefmap_model import Prefmap
+from dataset import DataSet
+from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import PCScatterPlot
+from plot_pc_scatter import PCScatterPlot, CorrLoadPlotWindow
+from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
 from dataset_container import DatasetContainer
-from plot_windows import MultiPlotWindow
+from plot_windows import OverviewPlotWindow
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
-
-
 
 
 class PrefmapController(ModelController):
@@ -52,6 +52,35 @@ class PrefmapController(ModelController):
                 for nn, fn in std_launchers]
 
 
+    def _show_zero_var_warning(self):
+        dlg = ErrorMessage()
+        dlg.err_msg = 'Removed zero variance variables'
+        dlg.err_val = ', '.join(self.model.C_zero_std+self.model.S_zero_std)
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
+
+
+    def get_result(self):
+        try:
+            res = self.model.res
+        except InComputeable:
+            self._show_zero_var_warning()
+            if self.model.C_zero_std:
+                df = self.model.ds_C.mat.drop(self.model.C_zero_std, axis=1)
+                olds = self.model.ds_C
+                self.model.ds_C = DataSet(mat=df,
+                                          display_name=olds.display_name,
+                                          kind=olds.kind)
+            if self.model.S_zero_std:
+                df = self.model.ds_S.mat.drop(self.model.S_zero_std, axis=1)
+                olds = self.model.ds_S
+                self.model.ds_S = DataSet(mat=df,
+                                          display_name=olds.display_name,
+                                          kind=olds.kind)
+            res = self.model.res
+
+        return res
+
+
     def open_overview(self):
         """Make Prefmap overview plot.
 
@@ -62,11 +91,11 @@ class PrefmapController(ModelController):
          * expl. var
         for each of the datasets.
         """
-        res = self.model.res
+        res = self.get_result()
         wl = self.window_launchers
         title = self._wind_title(res)
 
-        mpw = MultiPlotWindow(title_text=title)
+        mpw = OverviewPlotWindow(title_text=title)
 
         sp = multiplot_factory(scores_plot, res, wl, title, mpw)
         clp = multiplot_factory(corr_loadings_plot, res, wl, title, mpw)
@@ -83,6 +112,28 @@ class PrefmapController(ModelController):
         self._show_plot_window(mpw)
 
 
+    def open_window(self, viewable, view_loop):
+        """Expected viewable is by now:
+          + Plot subtype
+          + DataSet type
+        """
+        if isinstance(viewable, CLPlot):
+        # if viewable.title == 'Correlation loadings':
+            res = self.get_result()
+
+            win = CorrLoadPlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=view_loop,
+                # title_text=self._wind_title(res),
+                # vistog=False
+                )
+
+            self._show_plot_window(win)
+        else:
+            super(PrefmapController, self).open_window(viewable, view_loop)
+
+
     def _wind_title(self, res):
         dsx_name = self.model.ds_C.display_name
         dsy_name = self.model.ds_S.display_name
@@ -92,7 +143,7 @@ class PrefmapController(ModelController):
 
 # Plot creators
 def scores_plot(res):
-    plot = PCScatterPlot(res.scores_x, res.expl_var_x, title='Scores')
+    plot = PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='Scores')
     return plot
 
 
@@ -106,11 +157,29 @@ def loadings_y_plot(res):
     return plot
 
 
+class CLPlot(PCScatterPlot):
+
+    def __init__(self, clx, evx, cly, evy, **kwargs):
+        super(CLPlot, self).__init__(**kwargs)
+        clx.style.fg_color = 'blue'
+        self.add_PC_set(clx, evx)
+        cly.style.fg_color = 'red'
+        self.add_PC_set(cly, evy)
+        self.plot_circle(True)
+
+
 def corr_loadings_plot(res):
-    plot = PCScatterPlot(title='Correlation loadings')
-    plot.add_PC_set(res.corr_loadings_x, res.expl_var_x)
-    plot.add_PC_set(res.corr_loadings_y, res.expl_var_y)
-    plot.plot_circle(True)
+    # plot = PCScatterPlot(title='Correlation loadings')
+    clx = res.corr_loadings_x
+    # clx.style.fg_color = 'blue'
+    cly = res.corr_loadings_y
+    # cly.style.fg_color = 'red'
+    # plot.add_PC_set(clx, res.expl_var_x)
+    # plot.add_PC_set(cly, res.expl_var_y)
+    # plot.plot_circle(True)
+    plot = CLPlot(clx, res.expl_var_x,
+                  cly, res.expl_var_y,
+                  title='Correlation loadings')
     return plot
 
 
@@ -128,8 +197,8 @@ no_view = _traitsui.View()
 
 
 prefmap_view = _traitsui.View(
-    _traitsui.Item('controller.name', style='readonly'),
     _traitsui.Item('int_ext_mapping', style='custom', label='Mapping'),
+    _traitsui.Item('prefmap_method', style='custom', label='Method'),
     _traitsui.Item('standardise_x', label='Standardise X',
                    style='custom', show_label=True),
     _traitsui.Item('standardise_y', label='Standardise Y',
@@ -139,7 +208,8 @@ prefmap_view = _traitsui.View(
                        low_name='min_pc', high_name='max_pc', mode='auto'),
                    style='simple',
                    label='PC to calc:'),
-    )
+    title='Prefmap settings',
+)
 
 
 prefmap_nodes = [
@@ -151,7 +221,10 @@ prefmap_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[PrefmapController],
-        label='=Overview',
+        label='=Overview plot',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
         children='window_launchers',
         view=prefmap_view,
         menu=[],
@@ -174,6 +247,7 @@ class PrefmapPluginController(PluginController):
     dummy_model_controller = _traits.Instance(PrefmapController, PrefmapController(Prefmap()))
 
     def init(self, info):
+        super(PrefmapPluginController, self).init(info)
         self._update_comb()
 
 
@@ -192,26 +266,47 @@ class PrefmapPluginController(PluginController):
 
     @_traits.on_trait_change('comb:combination_updated', post_init=True)
     def _handle_selection(self, obj, name, old, new):
-        selection = set(self.comb.get_selected_combinations())
-        if selection.difference(self.last_selection):
-            added = selection.difference(self.last_selection)
-            self.last_selection = selection
-            added = list(added)[0]
-            self._make_calculation(added[0], added[1])
-        elif self.last_selection.difference(selection):
-            removed = self.last_selection.difference(selection)
-            removed = list(removed)[0]
-            rem_id = '{0}{1}'.format(removed[0], removed[1])
-            self.last_selection = selection
-            self.model.remove(rem_id)
+        self.model.calculations = []
+        selection = self.comb.get_selected_combinations()[0]
+        self._make_calculation(selection[0], selection[1])
 
 
     def _make_calculation(self, id_c, id_s):
+        ds_c = self.model.dsc[id_c]
+        ds_s = self.model.dsc[id_s]
+
+        # Check missing data
+        if ds_c.missing_data or ds_s.missing_data:
+            self._show_missing_warning()
+            return
+
+        # Check dataset alignment
+        ns_c = ds_c.n_objs
+        ns_s = ds_s.n_objs
+        if ns_c != ns_s:
+            self._show_alignment_warning(ns_c, ns_s)
+            return
+
         calc_model = Prefmap(id=id_c+id_s,
-                             ds_C=self.model.dsc[id_c],
-                             ds_S=self.model.dsc[id_s])
+                             ds_C=ds_c,
+                             ds_S=ds_s)
         calculation = PrefmapController(calc_model)
         self.model.add(calculation)
+
+
+    def _show_missing_warning(self):
+        dlg = ErrorMessage()
+        dlg.err_msg = 'Liking og sensory matrix has holes (missing data)'
+        dlg.err_val = 'Prefmap is by now not able to analyze data with holes'
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
+
+
+    def _show_alignment_warning(self, ns_c, ns_s):
+        dlg = ErrorMessage()
+        dlg.err_msg = 'Consumer liking and sensory profiling data does not align'
+        dlg.err_val = 'There is {0} samples in the liking set and {1} samples in the sensory set'.format(ns_c, ns_s)
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
+
 
 
 selection_view = _traitsui.Group(

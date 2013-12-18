@@ -79,7 +79,7 @@ def expvar1ds():
         mat = pd.DataFrame(
             [[50.8,20.7,5.1,1.9],
              [30.2,12.4,5.4,2.3]],
-            index = ['cal', 'val'],
+            index = ['calibrated', 'validated'],
             columns = ['V1', 'V2', 'V3', 'V4']),
         display_name='Some values', kind='Sensory profiling',
         style=VisualStyle(fg_color='olive'))
@@ -93,7 +93,7 @@ def expvar2ds():
         mat = pd.DataFrame(
             [[38.4,25.7,10.1,7.9],
              [67.2,18.4,9.4,1.3]],
-            index = ['cal', 'val'],
+            index = ['calibrated', 'validated'],
             columns = ['V1', 'V2', 'V3', 'V4']),
         display_name='Some values', kind='Sensory profiling',
         style=VisualStyle(fg_color='olive'))

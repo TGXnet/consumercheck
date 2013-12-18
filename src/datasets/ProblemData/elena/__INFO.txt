@@ -1,0 +1,8 @@
+Problem 1:
+Nordic letters in the Yoghurt_senory.txt file. Because of this no file loads.
+Should implement loading of those files that are actually ok. Not ok to drop import file that otherwise
+would import nicely as it is now.
+
+Problem 2:
+X'X problem as seen before. Hopefully fixed in Alexandras new code.
+

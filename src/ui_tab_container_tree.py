@@ -7,6 +7,8 @@ from dataset_container import DatasetContainer
 from ds_table_view import DSTableViewer
 
 
+win_handle = None
+
 class DSNode(_traitsui.TreeNode):
     '''Cusom tree node for datasets.
     
@@ -31,6 +33,10 @@ class DSHandler(_traitsui.Handler):
     summary = _traits.Str()
 
     def init(self, info):
+        super(DSHandler, self).init(info)
+        # FIXME: There must be a better way
+        global win_handle
+        win_handle = info.ui.control
         mtx = info.object.mat
         self.summary = ''
         rows, cols = mtx.shape
@@ -80,7 +86,7 @@ list_view = _traitsui.View(
 
 def dclk_activator(obj):
     dstv = DSTableViewer(obj)
-    dstv.edit_traits(view=dstv.get_view())
+    dstv.edit_traits(view=dstv.get_view(), parent=win_handle)
 
 
 tree_editor = _traitsui.TreeEditor(
@@ -89,12 +95,14 @@ tree_editor = _traitsui.TreeEditor(
             node_for=[DatasetContainer],
             label='=Datasets',
             children='',
+            auto_open=True,
             view=list_view,
             ),
         _traitsui.TreeNode(
             node_for=[DatasetContainer],
             label='=Datasets',
             children='dsl',
+            auto_open=True,
             view=list_view,
             ),
         DSNode(

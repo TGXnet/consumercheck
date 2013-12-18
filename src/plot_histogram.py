@@ -1,25 +1,40 @@
 
+# Std lib imports
+import copy
+
 # Scipy imports
 import numpy as _np
 
 # ETS imports
 import traits.api as _traits
+import traitsui.api as _traitsui
 import chaco.api as _chaco
-from enable.colors import color_table
 
 # Local imports
 from dataset import DataSet
+from utilities import hue_span
+from plot_base import BasePlot
+from plot_windows import SinglePlotWindow
 
 
-
-class HistPlot(_chaco.DataView):
-
+class DescStatBasePlot(BasePlot):
     ds = _traits.Instance(DataSet)
+    plot_data = _traits.Property()
+    """The dataset that is to be shown i table view of the plot data"""
+
+    def _get_plot_data(self):
+        nds = copy.deepcopy(self.ds)
+        df = self.ds.mat.transpose()
+        nds.mat = df.sort_index(axis=0, ascending=False)
+        return nds
+
+
+class HistPlot(DescStatBasePlot):
+
     row_id = _traits.Any()
     ceiling = _traits.Int()
     head_space = _traits.Float(1.1)
     bars_renderer = _traits.Instance(_chaco.BarPlot)
-    plot_data = _traits.Property()
 
 
     def __init__(self, ds, row_id):
@@ -42,11 +57,12 @@ class HistPlot(_chaco.DataView):
         vals = _chaco.ArrayDataSource(self.ds.mat.ix[self.row_id].values)
 
         # Create the index range
-        index_range = _chaco.DataRange1D(idx)
+        index_range = _chaco.DataRange1D(
+            idx, tight_bounds=False, low_setting='auto', margin=0.15)
         index_mapper = _chaco.LinearMapper(range=index_range)
 
         # Create the value range
-        value_range = _chaco.DataRange1D(vals, high=self.ceiling)
+        value_range = _chaco.DataRange1D(vals, low_setting=0, high_setting=self.ceiling)
         value_mapper = _chaco.LinearMapper(range=value_range)
 
         # Create the plot
@@ -84,9 +100,10 @@ class HistPlot(_chaco.DataView):
 
 
     def _add_axis(self, renderer):
-        left_axis = _chaco.PlotAxis(renderer, orientation='left')
+        left_axis = _chaco.PlotAxis(renderer, orientation='left',
+                                    title='Number of consumers')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Categories',
+                                       title='Consumer rating',
                                        positions = range(self.ds.n_vars),
                                        labels = [str(vn) for vn in self.ds.var_n],
                                        tick_interval=1.0,
@@ -113,25 +130,33 @@ class HistPlot(_chaco.DataView):
         return self._plot_ui_info
 
 
-    def _get_plot_data(self):
-        return self.ds
 
 
 
-class StackedHistPlot(_chaco.DataView):
+class StackedHistPlot(DescStatBasePlot):
     '''Plot histogram values for each row stacked on to of each other'''
 
-    ds = _traits.Instance(DataSet)
     stair_ds = _traits.Instance(_chaco.MultiArrayDataSource)
-    plot_data = _traits.Property()
-
 
 
     def __init__(self, ds):
         super(StackedHistPlot, self).__init__(ds=ds)
+        self.plot_stacked()
+
+
+    def plot_stacked(self, y_percent=False):
+        self._nullify_plot()
         pec = self._calc_percentage()
         last_renderer = self._render_data(pec)
-        self._add_axis(last_renderer)
+        self._add_axis(last_renderer, y_percent)
+
+
+    def _nullify_plot(self):
+        # Nullify all plot related list to make shure we can
+        # make the ploting idempotent
+        self.plot_components = []
+        self.overlays = []
+        self.overlays.append(self._title)
 
 
     def _stair_ds_default(self):
@@ -152,14 +177,15 @@ class StackedHistPlot(_chaco.DataView):
         mvals = self.stair_ds
 
         # Create the index range
-        index_range = _chaco.DataRange1D(idx, tight_bounds=False, low_setting='auto', margin=0.15)
+        index_range = _chaco.DataRange1D(
+            idx, tight_bounds=False, low_setting='auto', margin=0.15)
         index_mapper = _chaco.LinearMapper(range=index_range)
 
         # Create the value range
         value_range = _chaco.DataRange1D(mvals, tight_bounds=True)
         value_mapper = _chaco.LinearMapper(range=value_range)
 
-        colors = color_table.keys()
+        colors = hue_span(mvals.get_value_size())
         bar_names = {}
         for i in range(mvals.get_value_size()-1, -1, -1):
             vals = _chaco.ArrayDataSource(mvals.get_data(axes=i))
@@ -167,7 +193,7 @@ class StackedHistPlot(_chaco.DataView):
                                   value_mapper=value_mapper,
                                   index_mapper=index_mapper,
                                   line_color='black',
-                                  fill_color=colors[(i+2)%len(colors)],
+                                  fill_color=colors[i],
                                   bar_width=0.8, antialias=False)
             name = str(self.ds.var_n[i])
             bar_names[name] = bars
@@ -175,7 +201,9 @@ class StackedHistPlot(_chaco.DataView):
             pecl = pec[:,i]
             self._add_data_labels(bars, num, pecl)
             self.add(bars)
-        legend = _chaco.Legend(component=self, padding=2, align="ur")
+        rvn = bar_names.keys()
+        rvn.sort(reverse=True)
+        legend = _chaco.Legend(component=self, padding=2, align="ur", labels=rvn)
         legend.plots = bar_names
         self.overlays.append(legend)
         return bars
@@ -185,6 +213,8 @@ class StackedHistPlot(_chaco.DataView):
         idx = renderer.index._data
         val = renderer.value._data
         for i, v in enumerate(fraction):
+            if not v:
+                continue
             p = pec[i]
             label = _chaco.DataLabel(
                 component = renderer,
@@ -201,17 +231,22 @@ class StackedHistPlot(_chaco.DataView):
 
 
 
-    def _add_axis(self, renderer):
-        left_axis = _chaco.PlotAxis(renderer, orientation='left')
+    def _add_axis(self, renderer, y_percent=False):
+        if not y_percent:
+            left_axis = _chaco.PlotAxis(renderer, orientation='left',
+                                        title='Number of consumers')
+        else:
+            left_axis = PercentAxis(renderer, orientation='left',
+                                    title='% of consumers')
+
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Categories',
+                                       title='Consumer preference for samples',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
                                        tick_interval=1.0,
                                        )
         renderer.underlays.append(left_axis)
         renderer.underlays.append(bottom_axis)
-
 
 
     def new_window(self, configure=False):
@@ -227,21 +262,15 @@ class StackedHistPlot(_chaco.DataView):
         return self._plot_ui_info
 
 
-    def _get_plot_data(self):
-        return self.ds
 
 
-
-class BoxPlot(_chaco.DataView):
+class BoxPlot(DescStatBasePlot):
     '''A box plot
 
     This plot takes one DataSet as parameter:
     The DataFrame columns must be on the form:
     mean, std, max, min
     '''
-    ds = _traits.Instance(DataSet)
-    plot_data = _traits.Property()
-
 
     def __init__(self, ds):
         super(BoxPlot, self).__init__(ds=ds)
@@ -283,9 +312,10 @@ class BoxPlot(_chaco.DataView):
 
 
     def _add_axis(self, renderer):
-        left_axis = _chaco.PlotAxis(renderer, orientation='left')
+        left_axis = _chaco.PlotAxis(renderer, orientation='left',
+                                    title='Liking')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Categories',
+                                       title='Samples',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
                                        tick_interval=1.0,
@@ -293,6 +323,12 @@ class BoxPlot(_chaco.DataView):
         renderer.underlays.append(left_axis)
         renderer.underlays.append(bottom_axis)
 
+
+    def _get_plot_data(self):
+        nds = copy.deepcopy(self.ds)
+        df = self.ds.mat.transpose()
+        nds.mat = df.reindex(index=['max', 'perc75', 'med', 'perc25', 'min'])
+        return nds
 
 
     def new_window(self, configure=False):
@@ -308,57 +344,49 @@ class BoxPlot(_chaco.DataView):
         return self._plot_ui_info
 
 
-    def _get_plot_data(self):
-        return self.ds
+
+class PercentAxis(_chaco.LabelAxis):
+
+    def _compute_tick_positions(self, gc, component=None):
+        n_labels = 10
+        self.tick_interval = 1.0
+        high = self.mapper.range.high
+        self.positions = _np.linspace(0, high, n_labels+1)
+        self.labels = [str(i*100/n_labels) for i in range(n_labels+1)]
+
+        super(PercentAxis, self)._compute_tick_positions(gc, component)
+
+
+
+class StackedPlotWindow(SinglePlotWindow):
+    """Window for embedding line plot
+
+    """
+    percent = _traits.Bool(False)
+
+    @_traits.on_trait_change('percent')
+    def flip_interaction(self, obj, name, new):
+        obj.plot.plot_stacked(new)
+        obj.plot.invalidate_and_redraw()
+
+    extra_gr = _traitsui.Group(_traitsui.Item('percent'))
 
 
 
 if __name__ == '__main__':
-    from tests.conftest import hist_ds, boxplot_ds
-    # plot = BoxPlot(boxplot_ds())
-    hd = hist_ds()
-    plot = StackedHistPlot(hd)
-    # plot = HistPlot(hist_ds(), 'O3')
-    plot.new_window(True)
+    from tests.conftest import hist_ds
+    from tests.conftest import boxplot_ds
+    bds = boxplot_ds()
+    hds = hist_ds()
+    # bds.print_traits()
+    plot1 = BoxPlot(bds)
+    plot2 = StackedHistPlot(hds)
+    plot3 = HistPlot(hds, 'O3')
+    # plot.new_window(True)
 
-    ## plot.render_hist(row_id)
-
-    
-
-    ## plot_stacked_hist(res):
-    ##     ds = extract_hist(res)
-    ##     plot = StackedHistPlot(ds)
-    ##     win = PlotWindow(res, plot)
-    ##     win.open_plot_window(parent_win)
-    ##     return win
-
-
-    ## plot_hist(res, row_id):
-    ##     ds = extract_hist(res)
-    ##     plot = HistogramPlot(ds)
-    ##     win = PlotWindow(res, plot)
-    ##     win.edit_traits(parent=parent_win)
-    ##     return win
-
-
-
-    ## update_histogram(win, row_id):
-    ##     win.plot.render_hist(row_id)
-
-
-    ## replace_plot(win, plot_id):
-    ##     plot = exec(plot_id)
-    ##     win.plot = plot
-
-
-    ## win.replace_plot(plot_creating_func, *args)
-
-
-    ## def replace_plot(self, pcf):
-    ##     self.plot = pcf(self.res, *args)
-
-
-    ## def create_hist_plot(res):
-    ##     ds = extract_hist(res)
-    ##     plot = HistPlot(ds)
-    ##     return plot
+    for plot in [plot1, plot2, plot3]:
+        plot_wind = StackedPlotWindow(
+            plot=plot,
+            title_text="Tull",
+        )
+        plot_wind.configure_traits()

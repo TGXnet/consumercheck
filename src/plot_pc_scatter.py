@@ -11,7 +11,8 @@ import numpy as np
 # Enthought library imports
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Int, List, HasTraits, implements, Property
+from traits.api import Bool, Int, List, HasTraits, implements, Property, on_trait_change
+from traitsui.api import Item, Group
 from enable.api import ColorTrait
 
 
@@ -19,6 +20,7 @@ from enable.api import ColorTrait
 from dataset import DataSet
 from plot_base import PlotBase
 from plot_interface import IPCScatterPlot
+from plot_windows import PCPlotWindow
 
 
 class PCDataSet(HasTraits):
@@ -75,7 +77,7 @@ class PCPlotData(ArrayPlotData):
         if color is not None:
             pcds.color = color
         if expl_vars is not None:
-            pcds.expl_vars = list(expl_vars.mat.xs('cal'))
+            pcds.expl_vars = list(expl_vars.mat.xs('calibrated'))
         if view_data is not None:
             pcds.view_data = view_data
         self.pc_ds.append(pcds)
@@ -98,10 +100,10 @@ class PCScatterPlot(PlotBase):
     visible_new_labels = Bool(True)
     visible_datasets = Int(3)
     plot_data = Property()
+    expl_y_vars = List()
 
 
-
-    def __init__(self, pc_matrix=None, expl_vars=None, **kwargs):
+    def __init__(self, pc_matrix=None, expl_vars=None, expl_y_vars=None, **kwargs):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -121,13 +123,17 @@ class PCScatterPlot(PlotBase):
         super(PCScatterPlot, self).__init__(data, **kwargs)
         self._adjust_range()
 
+        # FIXME: This is a hack to show PC1 X(%), Y(%) for prefmap scores
+        if expl_y_vars is not None:
+            self.expl_y_vars = list(expl_y_vars.mat.xs('calibrated'))
+
         if pc_matrix is not None:
             self.add_PC_set(pc_matrix, expl_vars)
 
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
-        
+
 
     def add_PC_set(self, pc_matrix, expl_vars=None):
         """Add a PC dataset with metadata.
@@ -227,9 +233,12 @@ class PCScatterPlot(PlotBase):
         pd = (x_id, y_id)
         # plot name
         pn = 'plot_{}'.format(set_id)
+
+        markers = ['dot', 'square', 'triangle', 'circle', 'inverted_triangle', 'cross']
+
         #plot
         rl = self.plot(pd, type='scatter', name=pn,
-                       marker='dot', marker_size=2,
+                       marker=markers[set_id-1%5], marker_size=2,
                        color=self.data.pc_ds[set_id-1].color,)
         # Set axis title
         self._set_plot_axis_title()
@@ -245,6 +254,14 @@ class PCScatterPlot(PlotBase):
             try:
                 ev_x = pcds.expl_vars[self.data.x_no-1]
                 ev_y = pcds.expl_vars[self.data.y_no-1]
+                tx.append('({0:.0f}%)'.format(ev_x))
+                ty.append('({0:.0f}%)'.format(ev_y))
+            except IndexError:
+                pass
+        if self.expl_y_vars is not None:
+            try:
+                ev_x = self.expl_y_vars[self.data.x_no-1]
+                ev_y = self.expl_y_vars[self.data.y_no-1]
                 tx.append('({0:.0f}%)'.format(ev_x))
                 ty.append('({0:.0f}%)'.format(ev_y))
             except IndexError:
@@ -267,7 +284,7 @@ class PCScatterPlot(PlotBase):
             label_obj = DataLabel(
                 component = plot_render,
                 data_point = (x[i], y[i]),
-                label_format = str(label),
+                label_format = unicode(label),
                 visible = self.visible_new_labels,
                 ## marker_color = pt_color,
                 # text_color = 'black',
@@ -423,28 +440,48 @@ def calc_bounds(data_low, data_high, margin, tight_bounds):
         return data_low * (1 + margin) , data_high * (1 + margin)
 
 
+
+class CorrLoadPlotWindow(PCPlotWindow):
+    """Window for embedding principal component plots
+
+    """
+    show_x_labels = Bool(True)
+    show_y_labels = Bool(True)
+
+
+    @on_trait_change('show_x_labels')
+    def _switch_x_labels(self, obj, name, new):
+        obj.plot.show_labels(show=new, set_id=1)
+
+
+    @on_trait_change('show_y_labels')
+    def _switch_y_labels(self, obj, name, new):
+        obj.plot.show_labels(show=new, set_id=2)
+
+
+    extra_gr = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_x_labels', label="Show consumer labels"),
+        Item('show_y_labels', label="Show sensory labels"),
+        Item('vis_toggle', show_label=False, defined_when='vistog'),
+        orientation="horizontal",
+        visible_when='show_extra',
+        )
+
+
 if __name__ == '__main__':
+    from tests.conftest import iris_ds
 
-    set1 = np.array([
-        [-0.3, 0.4, 0.9],
-        [-0.1, 0.2, 0.7],
-        [-0.1, 0.1, 0.1],
-        ])
-
-    set2 = np.array([
-        [-1.3, -0.4, -0.9],
-        #[-1.1, -0.2, -0.7],
-        [-1.1, 1, -0.7],
-        [-1.2, -0.1, -0.1],
-        ])
-
-    label1 = ['s1pt1', 's1pt2', 's1pt3']
-    label2 = ['s2pt1', 's2pt2', 's2pt3']
-    plot = PCScatterPlot()
-    ## plot = PCScatterPlot(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-    plot.add_PC_set(set1, labels=label1, color=(0.8, 0.2, 0.1, 1.0))
-    plot.add_PC_set(set2, labels=label2, color=(0.2, 0.9, 0.1, 1.0))
-    plot.plot_circle(True)
+    iris = iris_ds()
+    plot = PCScatterPlot(iris)
+    # PCScatterPlot(res.loadings, res.expl_var, title='Loadings')
+    # plot.add_PC_set(iris2)
+    # plot.plot_circle(True)
 
     with np.errstate(invalid='ignore'):
         plot.new_window(True)

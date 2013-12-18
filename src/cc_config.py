@@ -62,6 +62,21 @@ class CCConf(_CP.SafeConfigParser):
 
 
     def _get_conf_file_name(self):
+        path = self._get_app_data_dir()
+        return _op.join(path, APP_NAME + '.cfg')
+
+
+    def _get_log_file_name(self):
+        path = self._get_app_data_dir()
+        return _op.join(path, APP_NAME + '.log')
+
+
+    def _get_pkl_file_name(self):
+        path = self._get_app_data_dir()
+        return _op.join(path, APP_NAME + '.pkl')
+
+
+    def _get_app_data_dir(self):
         if _sys.platform == 'darwin':
             from AppKit import NSSearchPathForDirectoriesInDomains
             # http://developer.apple.com
@@ -71,15 +86,14 @@ class CCConf(_CP.SafeConfigParser):
             # NSApplicationSupportDirectory = 14
             # NSUserDomainMask = 1
             # True for expanding the tilde into a fully qualified path
-            appdata = _op.join(NSSearchPathForDirectoriesInDomains(
-                14, 1, True)[0], APP_NAME + '.cfg')
+            path = NSSearchPathForDirectoriesInDomains(14, 1, True)[0]
         elif _sys.platform == 'win32':
-            appdata = _op.join(_environ['APPDATA'], APP_NAME + '.cfg')
+            path = _environ['APPDATA']
         else:
-            appdata = _op.expanduser(
-                _op.join("~", ".config", APP_NAME + '.cfg'))
+            path = _op.expanduser(_op.join("~", ".config"))
 
-        return appdata
+        return path
+
 
 
 _defaults = {option: data[1] for option, data in options_map.iteritems()}
@@ -104,3 +118,11 @@ def list_options():
     for sdt in list(set(options_map.values())):
         options += _conf.items(sdt[0])
     return options
+
+
+def log_file_url():
+    return _conf._get_log_file_name()
+
+
+def pkl_file_url():
+    return _conf._get_pkl_file_name()

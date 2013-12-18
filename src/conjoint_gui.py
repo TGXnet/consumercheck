@@ -1,32 +1,23 @@
 
 # Std lib imports
-from itertools import combinations
 import logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    # datefmt='%m-%d %H:%M',
-                    datefmt='%y%m%dT%H:%M:%S',
-                    # filename='/temp/myapp.log',
-                    # filemode='w',
-                    )
-if __name__ == '__main__':
-    logger = logging.getLogger('tgxnet.nofima.cc.' + __file__.split('.')[0])
-else:
-    logger = logging.getLogger(__name__)
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+from itertools import combinations
 
 # Scipy lib imports
 import numpy as _np
-import pandas as _pd
 
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
 
-
 # Local imports
 from dataset import DataSet
+from dialogs import ErrorMessage
 from conjoint_model import Conjoint
-from plot_conjoint import MainEffectsPlot, InteractionPlot
+from ds_table_view import DSTableViewer
+from plot_windows import SinglePlotWindow
+from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
@@ -89,7 +80,8 @@ Model structure descriptions:
             ("Fixed effects", fixed_table),
             ("Random effects", random_table),
             ("Pair-wise differences", diff_table),
-            ("Residuals", residu_table),
+            ("Full model residuals", residu_table),
+            ("Double centred residuals", resid_ind_table),
             ]
 
         return [WindowLauncher(owner_ref=self, node_name=nn,
@@ -134,23 +126,46 @@ Model structure descriptions:
             for nn, p_one, p_two in int_plot_launchers]
 
 
+    def open_window(self, viewable, view_loop):
+        """Expected viewable is by now:
+          + Plot subtype
+          + DataSet type
+        """
+        if isinstance(viewable, MainEffectsPlot):
+            res = self.get_result()
+
+            win = SinglePlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=view_loop,
+                # title_text=self._wind_title(res),
+                # vistog=False
+                )
+
+            self._show_plot_window(win)
+        elif isinstance(viewable, InteractionPlot):
+            res = self.get_result()
+
+            win = InteractionPlotWindow(
+                plot=viewable,
+                res=res,
+                view_loop=view_loop,
+                # title_text=self._wind_title(res),
+                # vistog=False
+                )
+
+            self._show_plot_window(win)
+        elif isinstance(viewable, DataSet):
+            table = DSTableViewer(viewable)
+            table.edit_traits(view=table.get_view(), kind='live', parent=self.win_handle)
+        else:
+            raise NotImplementedError("Do not know how to open this")
+
+
     def _wind_title(self, res):
         ds_name = self.model.design.display_name
         # mn = res.method_name
         return "{0} | Conjoint - ConsumerCheck".format(ds_name)
-
-
-
-def cj_res_ds_adapter(cj_res, name='Dataset Viewer'):
-    cj_df = _pd.DataFrame(cj_res['data'])
-    if isinstance(cj_res['rowNames'], str):
-        cj_df.index = _np.array([cj_res['rowNames']])
-    else:
-        cj_df.index = cj_res['rowNames']
-    cj_df.columns = cj_res['colNames']
-    dm = DataSet(mat=cj_df, display_name=name)
-
-    return dm
 
 
 
@@ -167,38 +182,27 @@ def plot_interaction(res, attr_one, attr_two):
 
 
 def means_table(res):
-    label= 'LS means (main effect and interaction)'
-    cj_dm = cj_res_ds_adapter(res.lsmeansTable, label)
-
-    return cj_dm
+    return res.lsmeansTable
 
 
 def fixed_table(res):
-    label = 'ANOVA table for fixed effects'
-    cj_dm = cj_res_ds_adapter(res.anovaTable, label)
-
-    return cj_dm
+    return res.anovaTable
 
 
 def random_table(res):
-    label = 'ANOVA table for random effects'
-    cj_dm = cj_res_ds_adapter(res.randomTable, label)
-
-    return cj_dm
+    return res.randomTable
 
 
 def diff_table(res):
-    label = 'Pair-wise differences'
-    cj_dm = cj_res_ds_adapter(res.lsmeansDiffTable, label)
-
-    return cj_dm
+    return res.lsmeansDiffTable
 
 
 def residu_table(res):
-    label = 'Residuals'
-    cj_dm = cj_res_ds_adapter(res.residualsTable, label)
+    return res.residualsTable
 
-    return cj_dm
+
+def resid_ind_table(res):
+    return res.residIndTable
 
 
 no_view = _traitsui.View()
@@ -207,18 +211,20 @@ no_view = _traitsui.View()
 
 
 conjoint_view = _traitsui.View(
-    _traitsui.Item('controller.name', style='readonly', label='Consumer likings'),
-    _traitsui.Item('controller.design_name', style='readonly', label='Design'),
-    _traitsui.Item('controller.cons_attr_name', style='readonly', label='Consumer charactersitics'),
-    _traitsui.Group(
-        _traitsui.Item('controller.model_desc',
-                       editor=_traitsui.HTMLEditor(),
-                       height=220,
-                       width=460,
-                       resizable=False,
-                       show_label=False),
-        orientation='horizontal',
-        ),
+    _traitsui.Item('controller.model.owner_ref.model_struct', style='simple', show_label=False),
+    _traitsui.Item('controller.model_desc',
+                   editor=_traitsui.HTMLEditor(),
+                   height=300,
+                   width=460,
+                   resizable=False,
+                   show_label=False),
+    title='Conjoint settings',
+)
+
+
+ds_exp_action = _traitsui.Action(
+    name='Export dataset',
+    action='handler.export_data(editor, object)',
     )
 
 
@@ -231,7 +237,7 @@ conjoint_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[ConjointController],
-        label='=Base tables',
+        label='=Analysis results',
         children='table_win_launchers',
         view=conjoint_view,
         menu=[]),
@@ -251,11 +257,10 @@ conjoint_nodes = [
         node_for=[WindowLauncher],
         label='node_name',
         view=no_view,
-        menu=[],
+        menu=_traitsui.Menu(ds_exp_action),
         on_dclick=dclk_activator,
         )
     ]
-
 
 
 class ConjointPluginController(PluginController):
@@ -274,7 +279,6 @@ class ConjointPluginController(PluginController):
     consumer_vars = _traits.List()
 
     model_struct = _traits.Enum('Struct 1', 'Struct 2', 'Struct 3')
-
 
     dummy_model_controller = _traits.Instance(ConjointController)
 
@@ -325,7 +329,7 @@ class ConjointPluginController(PluginController):
         for k, v in nn:
             if v > 5:
                 warn = """
-{0} have {1} categories. Conjoint is not suitable
+{0} has {1} categories. Conjoint is not suitable
 for variables with a large number of categories.
 """.format(k, v)
                 cw = ConjointWarning(messages=warn)
@@ -374,6 +378,22 @@ for variables with a large number of categories.
         ##     c = self.model.dsc[self.selected_consumer_characteristics_set]
         ## else:
         ##     c = DataSet(display_name = '-')
+
+        # Check dataset alignment
+        nds = self.design.n_objs
+        nls = l.n_objs
+        nlc = l.n_vars
+        nca = self.consumers.n_objs
+
+        if nca > 0:
+            if (nds != nls) or (nlc != nca):
+                self._show_alignment_warning(nds, nls, nlc, nca)
+                return
+        else:
+            if nds != nls:
+                self._show_alignment_warning(nds, nls, nlc)
+                return
+
         calc_model = Conjoint(owner_ref=self, id=liking_id,
                               ## design=d,
                               design_vars=self.sel_design_var,
@@ -384,6 +404,20 @@ for variables with a large number of categories.
         calculation._update_plot_lists()
         self.model.add(calculation)
 
+
+    def _show_alignment_warning(self, nds, nls, nlc, nca=0):
+        dlg = ErrorMessage()
+        dlg.err_msg = 'Alignment mismatch between the dataset'
+        dlg.err_val = 'There is {0} variants in the design matrix and {1} variants in the liking matrix. There is {2} consumers in the liking matrix and {3} consumers in the consumer characteristics matrix'.format(nds, nls, nlc, nca)
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
+
+
+    def export_data(self, editor, obj):
+        parent = editor.get_parent(obj)
+        ind_resid = parent.model.res.residIndTable
+        ind_resid.kind = 'Sensory profiling'
+        ind_resid.display_name = '_double centred residuals'
+        self.model.dsc.add(ind_resid)
 
 
 class ConjointWarning(_traits.HasTraits):
@@ -409,7 +443,7 @@ selection_view = _traitsui.Group(
                            style='simple',
                            show_label=False,
                            ),
-            _traitsui.Label('Design variables:'),
+            _traitsui.Label('Variables:'),
             _traitsui.Item('controller.sel_design_var',
                            editor=_traitsui.CheckListEditor(
                                name='controller.design_vars'),
@@ -425,7 +459,7 @@ selection_view = _traitsui.Group(
                            style='simple',
                            show_label=False,
                            ),
-            _traitsui.Label('Consumer characteristics variables:'),
+            _traitsui.Label('Variables:'),
             _traitsui.Item('controller.sel_cons_char',
                            editor=_traitsui.CheckListEditor(
                                name='controller.consumer_vars'),
@@ -441,16 +475,16 @@ selection_view = _traitsui.Group(
                            style='custom',
                            show_label=False,
                            width=200,
-                           height=200,
+                           height=100,
                            ),
             show_border=True,
             ),
         orientation='horizontal',
         ),
-        _traitsui.Item('controller.model_struct', style='simple', label='Model'),
+    # _traitsui.Item('controller.model_struct', style='simple', label='Model'),
     label='Select dataset',
     show_border=True,
-    )
+)
 
 
 conjoint_plugin_view = make_plugin_view('Conjoint', conjoint_nodes, selection_view, conjoint_view)

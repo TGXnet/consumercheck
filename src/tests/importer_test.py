@@ -5,11 +5,13 @@
 import pytest
 from os.path import join
 import numpy as np
-from numpy import array, array_equal, allclose
+from numpy import array
+# from numpy import array_equal, allclose
 
 # Local imports
 from importer_text_file import ImporterTextFile
-from importer_main import ImporterMain
+from importer_xls_file import ImporterXlsFile
+# from importer_main import ImporterMain
 
 
 @pytest.fixture
@@ -140,6 +142,18 @@ class TestTextfileImport(object):
         assert ds.n_objs == 12
         assert ds.n_vars == 5
         assert ds.missing_data
+
+
+class TestXlsFileImporter(object):
+
+    def test_xls_import(self, tdd):
+        ip = ImporterXlsFile(
+            file_path=join(tdd, 'Polser', 'Polser_data_nordisk.xls'),
+            have_var_names=True,
+            have_obj_names=True,
+            )
+        ds = ip.import_data()
+        print(ds.mat)
 
 
 ## @pytest.mark.ui

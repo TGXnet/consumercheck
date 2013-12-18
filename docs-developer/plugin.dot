@@ -1,0 +1,31 @@
+/* Created by Thomas Graff <graff.thomas@gmail.com> */
+
+/* Graph */
+digraph plot_frame {
+    node [color=lightblue2, shape=box, style=filled, width=1.75, height=1.5];
+
+    /* Nodes */
+    /* plot_window [label="PlotWindow\nsave_plot, title_text, res"]; */
+    has_traits
+    controller
+    result
+    model
+    model_controller
+    calc_container
+    plugin_controller
+    window_launcher
+    view_navigator
+
+    pca
+    pca_controller
+    pca_plugin_controller
+    
+    
+
+    /* Edges */
+    has_traits -> {result; model; calc_container; controller; window_launcher; view_navigator}
+    model -> pca;
+    controller -> {model_controller; plugin_controller}
+    model_controller -> pca_controller;
+    plugin_controller -> pca_plugin_controller;
+}

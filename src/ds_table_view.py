@@ -1,4 +1,7 @@
-from traits.api import Color, Property, List, Array, Button, Str
+
+import numpy as _np
+
+from traits.api import Color, Property, List, Button, Str
 from traitsui.api import Controller, View, Item, TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton
@@ -13,7 +16,12 @@ class ArrayAdapter(TabularAdapter):
     obj_names = List()
 
     def _get_index_text(self, name):
-        return str(self.obj_names[self.row])
+        return unicode(self.obj_names[self.row])
+
+    def get_format ( self, object, trait, row, column ):
+        if isinstance(self.content, (_np.float64, float)):
+            return '%.2f'
+        return self._result_for( 'get_format', object, trait, row, column )
 
 
 
@@ -26,7 +34,7 @@ class DSTableViewer(Controller):
     def _get_header(self):
         varnames = [('Names', 'index')]
         for i, vn in enumerate(self.model.var_n):
-            varnames.append((str(vn), i))
+            varnames.append((unicode(vn), i))
         return varnames
 
 

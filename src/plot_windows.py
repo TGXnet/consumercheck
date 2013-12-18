@@ -7,7 +7,7 @@ from os.path import join as pjoin
 # Enthought library imports
 from enable.api import Component, ComponentEditor
 from traits.api import HasTraits, Any, Instance, Bool, Str, File, List, Button, on_trait_change
-from traitsui.api import View, Group, Item, Label, Handler
+from traitsui.api import View, Group, Item, Label, Handler, Include
 # from traitsui.menu import OKButton
 from chaco.api import DataView, GridPlotContainer
 from pyface.api import FileDialog, OK
@@ -16,6 +16,7 @@ from enable.savage.trait_defs.ui.svg_button import SVGButton
 #Local imports
 # from ui_results import TableViewController
 # from ds_matrix_view import TableViewer
+# from plot_pc_scatter import PCScatterPlot
 from ds_table_view import DSTableViewer
 from plugin_tree_helper import ViewNavigator, WindowLauncher
 
@@ -26,16 +27,15 @@ size = (850, 650)
 bg_color="white"
 #===============================================================================
 
-class BasePW(Handler):
+
+class PWC(Handler):
     """ Change the title on the UI.
 
     """
-    win_handle = Any()
-
     def init(self, info):
-        self.win_handle = info.ui.control
         info.object.hwin = info.ui.control
-    
+
+
     def object_title_text_changed(self, info):
         """ Called whenever the title_text attribute changes on the handled object.
 
@@ -43,27 +43,72 @@ class BasePW(Handler):
         info.ui.title = info.object.title_text
 
 
-class ViewTablePWH(BasePW):
-    """ Change the title on the UI.
-
-    """
-    def object_view_table_changed(self, info):
-        tv = DSTableViewer(info.object.plot.plot_data)
-        tv.edit_traits(view=tv.get_view(), parent=self.win_handle)
-
+    def object_save_plot_changed(self, info):
+        fe = FileEditor()
+        fe._save_as_img(info.object)
 
 
 class PlotWindow(HasTraits):
+    """Base class for both single and multiplot windows
 
-    plot = Instance(DataView)
+    """
     res = Any()
     hwin = Any()
     view_loop = List(WindowLauncher)
-    plot_navigator = Instance(ViewNavigator)
+    title_text = Str
+    save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
+                          width=32, height=32)
 
+
+
+class SinglePWC(PWC):
+    """ Change the title on the UI.
+
+    """
+    def object_title_text_changed(self, info):
+        """ Called whenever the title_text attribute changes on the handled object.
+
+        """
+        # info.ui.title = info.object.title_text
+        super(SinglePWC, self).object_title_text_changed(info)
+        info.object.plot.title = info.object.title_text
+
+
+    def object_view_table_changed(self, info):
+        tv = DSTableViewer(info.object.plot.plot_data)
+        tv.edit_traits(view=tv.get_view(), parent=info.object.hwin)
+
+
+    def object_next_plot_changed(self, info):
+        info.object.plot = info.object.plot_navigator.show_next()
+
+
+    @on_trait_change('previous_plot')
+    def object_previous_plot_changed(self, info):
+        info.object.plot = info.object.plot_navigator.show_previous()
+
+
+
+class SinglePlotWindow(PlotWindow):
+    """Window for embedding line plot
+
+    """
+    plot = Instance(DataView)
+    plot_navigator = Instance(ViewNavigator)
     next_plot = Button('Next plot')
     previous_plot = Button('Previous plot')
     view_table = Button('View result table')
+
+
+    def __init__(self, *args, **kwargs):
+        super(SinglePlotWindow, self).__init__(*args, **kwargs)
+        if not self.title_text:
+            if self.res:
+                wt = self.res.method_name
+            else:
+                wt = ""
+            pt = self.plot.get_plot_name()
+            self.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
 
 
     def _plot_navigator_default(self):
@@ -72,33 +117,53 @@ class PlotWindow(HasTraits):
         else:
             return None
 
+    plot_gr = Group(
+        Item('plot', editor=ComponentEditor(size = size, bgcolor = bg_color),
+             show_label=False),
+        orientation = "vertical"
+        )
 
-    @on_trait_change('next_plot')
-    def goto_next_plot(self, obj, name, new):
-        self.plot = self.plot_navigator.show_next()
+    main_gr = Group(
+        Item('save_plot', show_label=False),
+        Item('view_table', show_label=False),
+        Item('previous_plot', show_label=False, defined_when='plot_navigator'),
+        Item('next_plot', show_label=False, defined_when='plot_navigator'),
+        orientation="horizontal",
+        )
+
+    extra_gr = Group()
+
+    ## def default_traits_view(self):
+    traits_view = View(
+        Group(
+            Include('plot_gr'),
+            Label('Scroll to zoom and drag to pan in plot.'),
+            Include('main_gr'),
+            Include('extra_gr'),
+            layout="normal",
+            ),
+        resizable=True,
+        handler=SinglePWC(),
+        # kind = 'nonmodal',
+        width = .5,
+        height = .7,
+        buttons = ["OK"]
+        )
 
 
-    @on_trait_change('previous_plot')
-    def goto_previous_plot(self, obj, name, new):
-        self.plot = self.plot_navigator.show_previous()
 
 
+class PCPlotWindow(SinglePlotWindow):
+    """Window for embedding principal component plots
 
-class SinglePlotWindow(PlotWindow):
-    """Window for embedding single plot
-
-    FIXME: Or should the name be PC plot window
     """
-
-    # Buttons
     eq_axis = Bool(False)
     show_labels = Bool(True)
-    save_plot = Button('Save plot image')
+    # Prefmap correlation loading visibility togling
     vis_toggle = Button('Visibility')
     vistog = Bool(False)
+    show_extra = Bool(True)
 
-    save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
-                          width=32, height=32)
     y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
                        width=32, height=32)
     y_up = SVGButton(filename=pjoin(os.getcwd(), 'y_up.svg'),
@@ -110,11 +175,18 @@ class SinglePlotWindow(PlotWindow):
     reset_xy = SVGButton(filename=pjoin(os.getcwd(), 'reset_xy.svg'),
                          width=32, height=32)
 
-    title_text = Str("ConsumerCheck")
 
+    # @on_trait_change('plot')
+    # def _update_controls(self, obj, name, new):
+    #     if isinstance(new, PCScatterPlot):
+    #         obj.show_extra = True
+    #     else:
+    #         obj.show_extra = False
+
+    
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
-        obj.plot.show_labels(show= new)
+        obj.plot.show_labels(show=new, set_id=1)
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
@@ -160,114 +232,36 @@ class SinglePlotWindow(PlotWindow):
             y = n
         obj.plot.set_x_y_pc(x, y)
 
-    @on_trait_change('save_plot')
-    def render_plot(self, obj, name, old, new):
-        fe = FileEditor()
-        fe._save_as_img(obj)
-        
     @on_trait_change('vis_toggle')
     def switch_visibility(self, obj, name, new):
         obj.plot.show_points()
 
-
-    traits_view = View(
-        Group(
-            Group(
-                Item('plot',
-                     editor=ComponentEditor(
-                         size = size,
-                         bgcolor = bg_color),
-                     show_label=False),
-                orientation = "vertical"
-                ),
-            Label('Scroll to zoom and drag to pan in plot.'),
-            Group(
-                Item('eq_axis', label="Orthonormal axis"),
-                Item('show_labels', label="Show labels"),
-                Item('vis_toggle', show_label=False, defined_when='vistog'),
-                Item('view_table', show_label=False),
-                Item('save_plot', show_label=False),
-                Item('x_down', show_label=False),
-                Item('x_up', show_label=False),
-                Item('reset_xy', show_label=False),
-                Item('y_up', show_label=False),
-                Item('y_down', show_label=False),
-                Item('previous_plot', show_label=False),
-                Item('next_plot', show_label=False),
-                orientation="horizontal",
-                ),
-            layout="normal",
-            ),
-        resizable=True,
-        handler=ViewTablePWH(),
-        # kind = 'nonmodal',
-        width = .5,
-        height = .7,
-        buttons = ["OK"]
+    extra_gr = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_labels', label="Show labels"),
+        Item('vis_toggle', show_label=False, defined_when='vistog'),
+        orientation="horizontal",
+        visible_when='show_extra',
         )
 
 
-
-class LinePlotWindow(PlotWindow):
-    """Window for embedding line plot
-
-    """
-    # plot = Instance(Component)
-
-    eq_axis = Bool(False)
-    show_labels = Bool(True)
-    title_text = Str("ConsumerCheck")
-
-    @on_trait_change('show_labels')
-    def switch_labels(self, obj, name, new):
-        # ds_id = name.partition('_')[2]
-        obj.plot.show_labels(show=new)
-
-    @on_trait_change('eq_axis')
-    def switch_axis(self, obj, name, new):
-        obj.plot.toggle_eq_axis(new)
+class MultiPlotWindow(PlotWindow):
+    plots = Instance(Component)
 
 
-    traits_view = View(
-        Group(
-            Group(
-                Item('plot',
-                     editor=ComponentEditor(
-                         size = size,
-                         bgcolor = bg_color),
-                     show_label=False),
-                orientation = "vertical"
-                ),
-            Label('Scroll to zoom and drag to pan in plot.'),
-            Group(
-                Item('view_table', show_label=False),
-                Item('previous_plot', show_label=False),
-                Item('next_plot', show_label=False),
-                orientation="horizontal",
-                ),
-            layout="normal",
-            ),
-        resizable=True,
-        handler=ViewTablePWH(),
-        # kind = 'nonmodal',
-        width = .5,
-        height = .7,
-        buttons = ["OK"]
-        )
-
-
-
-class MultiPlotWindow(HasTraits):
+class OverviewPlotWindow(MultiPlotWindow):
     """Window for embedding multiple plots
 
     Set plots.component_grid with list of plots to add the plots
     Set plots.shape to tuple(rows, columns) to indicate the layout of the plots
 
     """
-    plots = Instance(Component)
-    title_text = Str("ConsumerCheck")
     show_labels = Bool(True)
-    hwin = Any()
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
@@ -287,7 +281,7 @@ class MultiPlotWindow(HasTraits):
             Item('show_labels', label="Show labels"),
             orientation = "vertical"),
         resizable=True,
-        handler=BasePW(),
+        handler=PWC(),
         # kind = 'nonmodal',
         width = .5,
         height = .7,
@@ -330,32 +324,11 @@ class FileEditor(HasTraits):
 
 if __name__ == '__main__':
     import numpy as np
-    import pandas as pd
-    from plot_pc_scatter import PCScatterPlot
-    from dataset import DataSet, VisualStyle
-
-    def clust1ds():
-        """Manual random pick from the Iris datast: setosa"""
-        ds = DataSet(
-            mat = pd.DataFrame(
-                [[5.1,3.5,1.4,0.2],
-                 [4.6,3.4,1.4,0.3],
-                 [5.4,3.7,1.5,0.2],
-                 [5.7,3.8,1.7,0.3],
-                 [5.4,3.4,1.7,0.2],
-                 [4.8,3.1,1.6,0.2],
-                 [4.6,3.6,1.0,0.2]],
-                index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
-                columns = ['V1', 'V2', 'V3', 'V4']),
-            display_name='Some values', kind='Sensory profiling',
-            # style=VisualStyle(fg_color=(0.8, 0.2, 0.1, 1.0)),
-            style=VisualStyle(fg_color='indigo'),
-            )
-        return ds
+    from tests.conftest import clust1ds
 
     mydata = clust1ds()
     plot = PCScatterPlot(mydata)
-    pw = SinglePlotWindow(plot=plot)
+    pw = PCPlotWindow(plot=plot)
 
     with np.errstate(invalid='ignore'):
         pw.configure_traits()

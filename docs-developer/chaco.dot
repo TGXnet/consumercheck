@@ -1,0 +1,39 @@
+/* courtesy Thomas Graff */
+
+/* Graph */
+digraph chaco {
+    size="6,6";
+    node [color=lightblue2, style=filled];
+
+    /* Nodes */
+    plot [label="Plot\nRepresents a correlated set of data, renderers,\nand axes in a single screen region"];
+    data_view [label="DataView\nMapping from 2D data space to 2D screen space\nmapper, axis, grid"];
+    overlay_container [label="OverlayPlotContainer\nStacks plot components\ndraw_order"];
+    base_container [label="BasePlotContainer\nBase class for plot containers"];
+    stacked_container [label="StackedPlotContainer"];
+    h_container [label="HPlotContainer"];
+    v_container [label="VPlotContainer"];
+    grid_container [label="GridPlotContainer"];
+    container [label="Container\nis a logical container that holds other\nComponents within it\ncomponents"];
+    component [label="Component\nbasic position and container and viewports"];
+    coordinate_box [label="CoordinateBox\nbox in screen space"];
+    interactor [label="Interactor\nreceives keyboard and mouse events"];
+    has_traits [label="HasTraits"];
+    abstract_overlay [label="AbstractOverlay\nThe base class for overlays and underlays of the plot area\ncomponent"];
+    plot_component [label="PlotComponent\nbase class for all plot-related visual components"];
+    base_xy_plot [label="BaseXYPlot\nBase class for simple X-vs-Y plots"];
+    abstract_plot_renderer [label="AbstractPlotRenderer\nthe minimal interface that all plot renderers must support"];
+    
+    /* Edges */
+    has_traits -> {coordinate_box; interactor}
+    coordinate_box -> component;
+    interactor -> component;
+    component -> {container; plot_component}
+    container -> base_container;
+    base_container -> {grid_container; stacked_container; overlay_container}
+    stacked_container -> {h_container; v_container}
+    overlay_container -> data_view;
+    data_view -> plot;
+    plot_component -> {abstract_overlay; abstract_plot_renderer}
+    abstract_plot_renderer -> base_xy_plot;
+}

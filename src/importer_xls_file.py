@@ -1,13 +1,13 @@
-# StdLib imports
-import os.path
-# from StringIO import StringIO
-import xlrd
-# import logging
-# Log everything, and send it to stderr.
-# http://docs.python.org/howto/logging-cookbook.html
-# logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.WARNING)
 
+# Std lib imports
+import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+import os.path
+
+# Scipy imports
+# import numpy as np
+import pandas as _pd
+import xlrd
 
 # Enthought imports
 from traits.api import implements, HasTraits, File, Bool, Str, Int, List
@@ -16,12 +16,9 @@ from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton, CancelButton
 
 # Local imports
-from importer_interfaces import IDataImporter
 from dataset import DS_TYPES, DataSet
-
-#Import NumPy
-import numpy as np
-import pandas as _pd
+from importer_interfaces import IDataImporter
+from importer_file_base import ImporterFileBase
 
 
 class RawLineAdapter(TabularAdapter):
@@ -56,7 +53,6 @@ class FilePreviewer(Handler):
     _parsed_data = List()
 
     def init(self, info):
-        info.object.make_ds_name()
         self._probe_read(info.object)
 
     def object_have_var_names_changed(self, info):
@@ -90,25 +86,9 @@ preview_handler = FilePreviewer()
 
 
 
-
-class ImporterXlsFile(HasTraits):
+class ImporterXlsFile(ImporterFileBase):
     implements(IDataImporter)
 
-    file_path = File()
-    transpose = Bool(False)
-    have_var_names = Bool(True)
-    have_obj_names = Bool(True)
-    ds_id = Str()
-    ds_name = Str()
-    kind = Str()
-    kind_list = List(DS_TYPES)
-
-    def make_ds_name(self):
-        # FIXME: Find a better more general solution
-        fn = os.path.basename(self.file_path)
-        fn = fn.partition('.')[0]
-        fn = fn.lower()
-        self.ds_id = self.ds_name = fn
 
     def import_data(self):
         self.ds = DataSet(
@@ -116,39 +96,17 @@ class ImporterXlsFile(HasTraits):
             display_name=self.ds_name
             )
 
-        raw_data = xlrd.open_workbook(self.file_path)
-        data_sheet = raw_data.sheet_by_index(0)
-        c_table = []
-        for x in range(data_sheet.nrows):
-            c_row = []
-            for y in range(data_sheet.ncols):
-                c_row.append((data_sheet.cell_value(x,y)))
-            c_table.append(c_row)
-
+        xls = _pd.ExcelFile(self.file_path)
+        sheet_name = xls.sheet_names[0]
         if self.have_obj_names:
-            objnamelist = data_sheet.col_values(0)
-            if self.have_var_names:
-                objnamelist.pop(0)
-
-            for i in range(1, len(c_table)):
-                c_table[i].pop(0)
-
-            obj_names = []
-            for sh in objnamelist:
-                obj_names.append(unicode(sh))
-
+            ic = 0
+        else:
+            ic = None
         if self.have_var_names:
-            varnamelist = data_sheet.row_values(0)
-            if self.have_obj_names:
-                varnamelist.pop(0)
-            c_table.pop(0)
-
-            var_names = []
-            for sh in varnamelist:
-                var_names.append(unicode(sh))
-
-        full_table = np.array(c_table)
-        matrix = _pd.DataFrame(full_table, index=obj_names, columns=var_names)
+            hd = 0
+        else:
+            hd = None
+        matrix = xls.parse(sheet_name, header=hd, index_col=ic)
         self.ds.mat = matrix
 
         return self.ds
@@ -161,7 +119,6 @@ class ImporterXlsFile(HasTraits):
                  id='table',
                  editor=preview_table),
             ## Item('transpose'),
-            Item('ds_id', style='readonly', label='File name'),
             Item('ds_name', label='Dataset name'),
             Item('kind', editor=EnumEditor(name='kind_list'), label='Dataset type'),
             Item('have_var_names', label='Existing variable names',

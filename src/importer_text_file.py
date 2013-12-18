@@ -1,26 +1,22 @@
 
 # StdLib imports
-import os.path
 import logging
-# Log everything, and send it to stderr.
-# http://docs.python.org/howto/logging-cookbook.html
-# logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 
 # SciPy imports
 import pandas as _pd
 
 # Enthought imports
-from traits.api import HasTraits, Event, Str, Unicode, Int, Bool, File, List, Enum
+from traits.api import Event, Str, Unicode, Int, List, Enum
 from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
 from traits.api import implements
 
 # Local imports
-from dataset import DS_TYPES, DataSet
+from dataset import DataSet
 from importer_interfaces import IDataImporter
-
+from importer_file_base import ImporterFileBase
 
 
 class RawLineAdapter(TabularAdapter):
@@ -119,16 +115,16 @@ class FilePreviewer(Handler):
         return preview_matrix
 
 
-    def _probe_read(self, obj, no_lines=100, length=200):
+    def _probe_read(self, obj, n_lines=100, length=200):
         lines = []
         with open(obj.file_path, 'rU') as fp:
-            for i in range(no_lines):
+            for i in range(n_lines):
                 line = fp.readline(length)
                 if not line:
                     break
                 if not ('\r' in line or '\n' in line):
                     fp.readline()
-                logging.debug("linje {}: {}".format(i, line.rstrip('\n')))
+                logger.debug("linje {}: {}".format(i, line.rstrip('\n')))
                 lines.append(line.rstrip('\n'))
         self._raw_lines = lines
 
@@ -137,21 +133,14 @@ preview_handler = FilePreviewer()
 
 
 
-class ImporterTextFile(HasTraits):
+class ImporterTextFile(ImporterFileBase):
     implements(IDataImporter)
 
-    file_path = File()
     delimiter = Enum('\t', ',', ' ')
     decimal_mark = Enum('period', 'comma')
     char_encoding = Enum(
         ('ascii', 'utf_8', 'latin_1')
         )
-    transpose = Bool(False)
-    have_var_names = Bool(True)
-    have_obj_names = Bool(True)
-    ds_name = Str('Unnamed dataset')
-    kind = Str('Design variable')
-    kind_list = List(DS_TYPES)
 
 
     def import_data(self):
@@ -177,25 +166,25 @@ class ImporterTextFile(HasTraits):
             )
 
         # FIXME: This is hackish
+        # I have to know the matrix shape to use converters
         if self.decimal_mark == 'comma':
 
-            def commatofloat(anum):
-                return float(anum.replace(',', '.'))
+            def c2f(a_num):
+                '''Alfanumeric with comma to float'''
+                return float(a_num.replace(',', '.'))
 
-            convs = {}
-            for i in range(dsdf.shape[1]):
-                convs[i] = commatofloat
+            convs = {k: c2f for k in dsdf.columns}
 
-                dsdf = _pd.read_csv(
-                    filepath_or_buffer=self.file_path,
-                    delimiter=self.delimiter,
-                    header=header,
-                    index_col=index_col,
-                    keep_default_na=True,
-                    na_values=['?'],
-                    encoding=self.char_encoding,
-                    converters=convs,
-                    )
+            dsdf = _pd.read_csv(
+                filepath_or_buffer=self.file_path,
+                delimiter=self.delimiter,
+                header=header,
+                index_col=index_col,
+                keep_default_na=True,
+                na_values=['?'],
+                encoding=self.char_encoding,
+                converters=convs,
+                )
 
 
         if not self.have_var_names:
@@ -210,14 +199,6 @@ class ImporterTextFile(HasTraits):
             kind=self.kind,
             )
         return ds
-
-
-    def _ds_name_default(self):
-        # FIXME: Find a better more general solution
-        fn = os.path.basename(self.file_path)
-        fn = fn.partition('.')[0]
-        fn = fn.lower()
-        return fn
 
 
     traits_view = View(

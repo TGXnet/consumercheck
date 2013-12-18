@@ -1,402 +1,449 @@
+
 # SciPy imports
 import numpy as np
+import pandas as _pd
 
 # Enthought library imports
-from enable.api import Component, ComponentEditor
-from traits.api import Instance, Bool, Str, Button, on_trait_change
-from traitsui.api import View, Group, Item, Label, Handler
-from chaco.api import (ArrayPlotData, LabelAxis, DataView, Legend, PlotLabel,
-                       ErrorBarPlot, ArrayDataSource, LinearMapper,DataRange1D,
-                       add_default_grids, ScatterPlot, LinePlot, PlotAxis,
-                       PlotGraphicsContext)
+# FIXME: Namespace import
+from traits.api import Bool, Dict, Instance, List, on_trait_change, Str
+from traitsui.api import Group, Item
+from chaco.api import (LabelAxis, Legend, PlotLabel,
+                       ErrorBarPlot, ArrayDataSource,
+                       add_default_grids, ScatterPlot, LinePlot)
 from chaco.tools.api import ZoomTool, PanTool, LegendTool
-from chaco.example_support import COLOR_PALETTE
+from utilities import COLOR_PALETTE
 
 
 #Local imports
-from plot_windows import PlotWindow, LinePlotWindow
-from ui_results import TableViewController
+# FIXME: Namespace import
+from dataset import DataSet
+from plot_base import BasePlot
+from plot_windows import SinglePlotWindow
 
 
-class MainEffectsPlot(DataView):
-    def __init__(self, conj_res, attr_name):
-        super(MainEffectsPlot, self).__init__()
-        self._adapt_conj_main_effect_data(conj_res, attr_name)
-        self._create_plot()
+
+class ConjointBasePlot(BasePlot):
+    """Base class for Conjoint plots
+    """
+    plot_data = Instance(DataSet)
+    """The data that is plot
+    
+    This is a DataSet
+    """
+
+    index_labels = List(Str)
 
 
-    def _adapt_conj_main_effect_data(self, conj_res, attr_name):
-        """FIXME: Can this bee extracted as an utility function
-        that will return an result object but only with the needed values?
-        """
-        ls_means = conj_res.lsmeansTable['data']
-        ls_means_labels = conj_res.lsmeansTable['rowNames']
-        cn = list(conj_res.lsmeansTable['colNames'])
-        nli = cn.index('Estimate')
-        cn = cn[:nli]
+    def _make_plot_frame(self):
+        # Adjust spacing
+        self.index_range.tight_bounds = False
+        self.index_range.margin = 0.05
+        self.value_range.tight_bounds = False
 
-        # The folowing logic is about selecting rows from the result sets.
-        # The picker i an boolean vector that selects the rows i will plot.
-
-        # First; select all rows where the given attribute have an index value
-        picker = ls_means[attr_name] != 'NA'
-
-        # Then; exclude all the interaction rows where the given attribute
-        # is a part of the interaction
-        exclude = [ls_means[col] != 'NA' for col in cn if col != attr_name]
-        for out in exclude:
-            picker = np.logical_and(picker, np.logical_not(out))
-
-        # Use the boolean selection vector to select the wanted rows from the result set
-        selected = ls_means[picker]
-        selected_labels = ls_means_labels[picker]
-
-        self.ls_label_names = []
-        self.ls_label_pos = []
-        for i, pl in enumerate(selected_labels):
-            self.ls_label_names.append(pl)
-            self.ls_label_pos.append(i + 1)
-
-        # Create a longer index line for average line
-        idx = [int(val) for val in selected[attr_name]]
-        span = idx[-1] - idx[0]
-        avg_idx = [idx[0] - span, idx[-1] + span]
-
-        self.apd = ArrayPlotData()
-        self.apd.set_data('index', idx)
-        self.apd.set_data('avg_index', avg_idx)
-        self.apd.set_data('values', [float(val) for val in selected[' Estimate ']])
-        self.apd.set_data('ylow', [float(val) for val in selected[' Lower CI ']])
-        self.apd.set_data('yhigh', [float(val) for val in selected[' Upper CI ']])
-        self.apd.set_data('average', [conj_res.meanLiking for
-                                      val in selected[attr_name]])
-        self.data = self.apd
-
-
-        # Get p value for attribute
-        # Before Conjoint update from 2013-03-18
-        ## anova_values = conj_res.anovaTable['data']
-        ## anova_names = conj_res.anovaTable['rowNames']
-        ## picker = anova_names == attr_name
-        ## p_value = anova_values[picker, 3][0]
-        ## self.p_value = p_value
-
-        anova_values = conj_res.anovaTable['data']
-        anova_names = conj_res.anovaTable['rowNames']
-        picker = anova_names == attr_name
-        # p_value = anova_values[picker, 3][0]
-        if isinstance(picker, bool):
-            picker = np.array([picker])
-        var_row = anova_values[picker]
-        p_str = var_row['Pr(>F)'][0]
-        try:
-            p_value = float(p_str)
-        except ValueError:
-            p_value = 0.0
-        self.p_value = p_value
-
-
-    def _create_plot(self):
-        #Prepare data for plots
-        x = ArrayDataSource(self.apd['index'])
-        xx = ArrayDataSource(self.apd['avg_index'])
-        y = ArrayDataSource(self.apd['values'])
-        ylow = ArrayDataSource(self.apd['ylow'])
-        yhigh = ArrayDataSource(self.apd['yhigh'])
-        yaverage = ArrayDataSource(self.apd['average'])
-        
-        index_mapper = LinearMapper(
-            range=DataRange1D(x, tight_bounds=False, margin=0.05))
-        value_mapper = LinearMapper(
-            range=DataRange1D(ylow, yhigh, tight_bounds=False))
-        
-        #Create vertical bars to indicate confidence interval
-        y_name='CIbars'
-        plot_err = ErrorBarPlot(
-            index=x, index_mapper=index_mapper,
-            value_low = ylow, value_high = yhigh,
-            value_mapper = value_mapper,
-            name=y_name,
-            border_visible = True)
-
-        #Append label and grid
-        x_axis = LabelAxis(
-            plot_err, name=y_name,
-            orientation="bottom",
-            tick_weight=1, tick_label_rotate_angle = 90,
-            labels=self.ls_label_names,
-            positions = self.ls_label_pos)
-
-        y_axis = PlotAxis(
-            orientation='left', title= '',
-            mapper=plot_err.value_mapper,
-            component=plot_err)
-
-        plot_err.underlays.append(x_axis)
-        plot_err.underlays.append(y_axis)
-        add_default_grids(plot_err)
-        
-        #Create averageplot
-        y_name='average'
-        plot_y_average = LinePlot(
-            index=xx, index_mapper=index_mapper,
-            value=yaverage, value_mapper=value_mapper,
-            name=y_name,
-            color='green')
-
-        #Create lineplot
-        y_name='line'
-        plot_line = LinePlot(
-            index=x, index_mapper=index_mapper,
-            value=y, value_mapper=value_mapper,
-            name=y_name)
-        
-        #Create ScatterPlot
-        y_name='scatter'
-        plot_scatter = ScatterPlot(
-            index=x, index_mapper=index_mapper,
-            value=y, value_mapper=value_mapper,
-            name=y_name,
-            color="blue", marker_size=5)
-
-        zoom = ZoomTool(plot_err, tool_mode="box", always_on=False)
-        plot_err.tools.append(PanTool(plot_err))
-        plot_err.overlays.append(zoom)
-        self.add(plot_y_average, plot_err ,plot_line, plot_scatter)
+        self.tools.append(PanTool(self))
+        self.tools.append(ZoomTool(self))
 
         # Set border color
         self.border_width = 10
 
         if self.p_value < 0.001:
+            # Red
             self.border_color = (1.0, 0.0, 0.0, 0.8)
         elif self.p_value < 0.01:
-            self.border_color = (0.0, 1.0, 0.0, 0.8)
+            # Orange
+            self.border_color = (1.0, 0.65, 0.0, 0.8)
         elif self.p_value < 0.05:
+            # Yellow
             self.border_color = (1.0, 1.0, 0.0, 0.8)
         else:
+            # Grey (british)
             self.border_color = (0.5, 0.5, 0.5, 0.8)
 
 
-    def export_image(self, fname, size=(800,600)):
-        """Save plot as png image."""
-        # self.outer_bounds = list(size)
-        # self.do_layout(force=True)
-        gc = PlotGraphicsContext(self.outer_bounds)
-        gc.render_component(self)
-        gc.save(fname, file_format=None)
+    def _label_axis(self):
+        idx = range(len(self.index_labels))
+
+        index_axis = LabelAxis(
+            component=self,
+            mapper=self.index_mapper,
+            orientation="bottom",
+            tick_weight=1,
+            tick_label_rotate_angle = 90,
+            labels=self.index_labels,
+            positions = idx,
+            )
+
+        self.x_axis = index_axis
+
+
+    def _add_avg_std_err(self, text):
+        info_label = PlotLabel(
+            text=text,
+            component=self,
+            overlay_position='outside bottom',
+            border_visible=False,
+            border_width=2,
+            margin=6,
+            fill_padding=False,
+            hjustify='center',
+        )
+        self.overlays.append(info_label)
+
+
+    def _add_frame_legend(self):
+
+        class DummyPlot(LinePlot):
+            line_width=10.0
+
+        dp = {"p < 0.001": DummyPlot(color=(1.0, 0.0, 0.0)),
+              "p < 0.01" : DummyPlot(color=(1.0, 0.65, 0.0)),
+              "p < 0.05" : DummyPlot(color=(1.0, 1.0, 0.0)),
+              "p >= 0.05": DummyPlot(color=(0.5, 0.5, 0.5))}
+
+        legend = Legend(
+            component=self,
+            padding=10,
+            border_padding=10,
+            align="lr",
+            bgcolor="white",
+            title="Frame legend",
+            plots=dp,
+        )
+        self.overlays.append(legend)
 
 
 
+class MainEffectsPlot(ConjointBasePlot):
+    
+    def __init__(self, conj_res, attr_name):
+        super(MainEffectsPlot, self).__init__()
+        res = slice_main_effect_ds(conj_res.lsmeansTable, attr_name)
+        self.plot_data = DataSet(mat=res, display_name='Main effects')
+        self.p_value = get_main_p_value(conj_res.anovaTable, attr_name)
+        self.average = conj_res.meanLiking
+        self.avg_std_err = main_avg_std_err(conj_res.lsmeansTable, attr_name)
 
-class InteractionPlot(DataView):
+        self._make_plot_frame()
+        self._add_frame_legend()
+        self._label_axis()
+        self._add_lines()
+        self._add_ci_bars()
+        self._add_avg_line()
+
+
+    def _make_plot_frame(self):
+        super(MainEffectsPlot, self)._make_plot_frame()
+        # Update plot ranges and mappers
+        self.index_labels = self.plot_data.obj_n
+        index = ArrayDataSource(range(len(self.index_labels)))
+        self.index_range.add(index)
+        for name in ['values', 'ylow', 'yhigh']:
+            value = self.mk_ads(name)
+            self.value_range.add(value)
+
+        # Add label with average standard error
+        avg_text = "Average standard error: {}".format(self.avg_std_err)
+        self._add_avg_std_err(avg_text)
+
+        add_default_grids(self)
+
+
+    def _add_lines(self):
+        # index = self.mk_ads('index')
+        index = ArrayDataSource(range(len(self.index_labels)))
+        value = self.mk_ads('values')
+
+        #Create lineplot
+        plot_line = LinePlot(
+            index=index, index_mapper=self.index_mapper,
+            value=value, value_mapper=self.value_mapper,
+            name='line')
+
+        #Add datapoint enhancement
+        plot_scatter = ScatterPlot(
+            index=index, index_mapper=self.index_mapper,
+            value=value, value_mapper=self.value_mapper,
+            color="blue", marker_size=5,
+            name='scatter',
+        )
+
+        self.add(plot_line, plot_scatter)
+
+
+    def _add_ci_bars(self):
+        #Create vertical bars to indicate confidence interval
+        # index = self.mk_ads('index')
+        index = ArrayDataSource(range(len(self.index_labels)))
+        value_lo = self.mk_ads('ylow')
+        value_hi = self.mk_ads('yhigh')
+
+        plot_ci = ErrorBarPlot(
+            index=index, index_mapper=self.index_mapper,
+            value_low = value_lo, value_high = value_hi,
+            value_mapper = self.value_mapper,
+            border_visible=True,
+            name='CIbars')
+
+        self.add(plot_ci)
+
+
+    def _add_avg_line(self):
+        #Create averageplot
+        # idx = self.plot_data.mat['index']
+        idx = range(len(self.index_labels))
+        span = idx[-1] - idx[0]
+        index = ArrayDataSource([idx[0] - span, idx[-1] + span])
+
+        avg = self.average
+        value = ArrayDataSource([avg, avg])
+        # value = self.mk_ads('average')
+
+        plot_average = LinePlot(
+            index=index, index_mapper=self.index_mapper,
+            value=value, value_mapper=self.value_mapper,
+            color='green',
+            name='average',
+        )
+
+        self.add(plot_average)
+
+
+    def mk_ads(self, name):
+        return ArrayDataSource(self.plot_data.mat[name].values)
+
+
+
+class InteractionPlot(ConjointBasePlot):
+
+    # LinPlot name to LinPlot mapper
+    # Used by Plot legend
+    plots = Dict(Str, LinePlot)
+
 
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
-        self.conj_res = conj_res
-        self.attr_one_name = attr_one_name
-        self.attr_two_name = attr_two_name
-        self._adapt_conj_interaction_data()
+        res = slice_interaction_ds(conj_res.lsmeansTable, attr_one_name, attr_two_name)
+        self.plot_data = DataSet(mat=res, display_name='Interaction')
+        self.p_value = get_interaction_p_value(conj_res.anovaTable, attr_one_name, attr_two_name)
+        self.avg_std_err = inter_avg_std_err(conj_res.lsmeansTable, attr_one_name, attr_two_name)
+        self.plot_interaction()
 
 
-    def _adapt_conj_interaction_data(self, flip=False):
-        """
-        attr_one_name: Default index axis
-        attr_two_name: Default lines
-        flip: Decide which attribute to be index and which to be lines
-        """
-        if not flip:
-            self.index_attr, self.line_attr = self.attr_one_name, self.attr_two_name
-        else:
-            self.index_attr, self.line_attr = self.attr_two_name, self.attr_one_name
-
-        ls_means = self.conj_res.lsmeansTable['data']
-
-        picker_one = ls_means[self.index_attr] != 'NA'
-        picker_two = ls_means[self.line_attr] != 'NA'
-        # Picker is an boolean selction vector
-        picker = np.logical_and(picker_one, picker_two)
-        selected = ls_means[picker][[self.index_attr, self.line_attr, ' Estimate ']]
-
-        lines = sorted(list(set(selected[self.line_attr])))
-        indexes = sorted(list(set(selected[self.index_attr])))
-        index_labels = ['{0} {1}'.format(self.index_attr, i) for i in indexes]
+    def plot_interaction(self, flip=False):
+        self._nullify_plot()
+        self._make_plot_frame()
+        self._add_lines(flip)
+        self._label_axis()
+        self._add_line_legend()
+        self._add_frame_legend()
 
 
-        # Get p value for attribute
-        anova_values = self.conj_res.anovaTable['data']
-        anova_names = self.conj_res.anovaTable['rowNames']
-        try:
-            attr_name = "{0}:{1}".format(self.attr_one_name, self.attr_two_name)
-            picker = anova_names == attr_name
-            var_row = anova_values[picker]
-            p_str = var_row['Pr(>F)'][0]
-            try:
-                p_value = float(p_str)
-            except ValueError:
-                p_value = 0.0
-        except IndexError:
-            attr_name = "{0}:{1}".format(self.attr_two_name, self.attr_one_name)
-            picker = anova_names == attr_name
-            var_row = anova_values[picker]
-            p_str = var_row['Pr(>F)'][0]
-            try:
-                p_value = float(p_str)
-            except ValueError:
-                p_value = 0.0
-        self.p_value = p_value
-
-        # Set border color
-        self.border_width = 10
-
-        if self.p_value < 0.001:
-            self.border_color = (1.0, 0.0, 0.0, 0.8)
-        elif self.p_value < 0.01:
-            self.border_color = (0.0, 1.0, 0.0, 0.8)
-        elif self.p_value < 0.05:
-            self.border_color = (1.0, 1.0, 0.0, 0.8)
-        else:
-            self.border_color = (0.5, 0.5, 0.5, 0.8)
-
-
+    def _nullify_plot(self):
         # Nullify all plot related list to make shure we can
         # make the ploting idempotent
         self.plot_components = []
+        self.plots = {}
         self.index_range.sources = []
         self.value_range.sources = []
         self.tools = []
         self.overlays = []
+        self.overlays.append(self._title)
+        # Add label with average standard error
+        avg_text = "Average standard error: {}".format(self.avg_std_err)
+        self._add_avg_std_err(avg_text)
 
-        self.index_range.tight_bounds = False
-        self.value_range.tight_bounds = False
 
-        idx = ArrayDataSource([int(val) for val in indexes])
-        self.index_range.sources.append(idx)
+    def _add_lines(self, flip=False):
+        # When non fliped is index objects
+        if flip:
+            self.index_labels = self.plot_data.var_n
+            pl_itr = self.plot_data.mat.iterrows()
+        else:
+            self.index_labels = self.plot_data.obj_n
+            pl_itr = self.plot_data.mat.iteritems()
+        idx = ArrayDataSource(range(len(self.index_labels)))
+        self.index_range.add(idx)
 
-        #Append label and grid
-        x_axis = LabelAxis(
-            self,
-            orientation="bottom",
-            tick_weight=1,
-            tick_label_rotate_angle = 90,
-            labels=index_labels,
-            positions = [int(val) for val in indexes],
+        line_styles = ['solid', 'dot dash', 'dash', 'dot', 'long dash']
+        i = 0
+        for name, vec in pl_itr:
+            i += 1
+            vals = ArrayDataSource(vec.values)
+            self.value_range.add(vals)
+            plot = LinePlot(index=idx, index_mapper=self.index_mapper,
+                            value=vals, value_mapper=self.value_mapper,
+                            color=COLOR_PALETTE[i%4], line_style=line_styles[i%4]
             )
+            self.add(plot)
+            self.plots[name] = plot
 
-        self.index_axis = x_axis
 
+    def _add_line_legend(self):
         # Add a legend in the upper right corner, and make it relocatable
-        plots = {}
-        legend = Legend(component=self, padding=10, align="ur")
+        legend = Legend(
+            component=self,
+            padding=10,
+            align="ur",
+            plots=self.plots,
+        )
         legend.tools.append(LegendTool(legend, drag_button="right"))
         self.overlays.append(legend)
 
-        # for hvert nytt plot trenger vi bare et nytt dataset
-
-        for i, line in enumerate(lines):
-            line_data_picker = selected[self.line_attr] == line
-            line_data = selected[line_data_picker]
-            vals = ArrayDataSource([float(val) for val in line_data[' Estimate ']])
-            self.value_range.sources.append(vals)
-            plot = LinePlot(index=idx, value=vals,
-                            index_mapper=LinearMapper(range=self.index_range),
-                            value_mapper=LinearMapper(range=self.value_range),
-                            color=COLOR_PALETTE[i],
-                            )
-            self.add(plot)
-            plots["{0} {1}".format(self.line_attr, line)] = plot
-
-        legend.plots = plots
-
-        self.tools.append(PanTool(self))
-        self.overlays.append(ZoomTool(self))
-        # Add the title at the top
-        self.overlays.append(PlotLabel("Conjoint interaction plot",
-                                       component=self,
-                                       font = "swiss 16",
-                                       overlay_position="top"))
-
-        # Add the traits inspector tool to the container
-        # self.tools.append(TraitsTool(self))
-
-    def export_image(self, fname, size=(800,600)):
-        """Save plot as png image."""
-        # self.outer_bounds = list(size)
-        # self.do_layout(force=True)
-        gc = PlotGraphicsContext(self.outer_bounds)
-        gc.render_component(self)
-        gc.save(fname, file_format=None)
 
 
-
-class BasePW(Handler):
-    """ Change the title on the UI.
-
-    """
-    def object_title_text_changed(self, info):
-        """ Called whenever the title_text attribute changes on the handled object.
-
-        """
-        info.ui.title = info.object.title_text
-
-
-
-class InteractionPlotWindow(PlotWindow):
+class InteractionPlotWindow(SinglePlotWindow):
     """Window for embedding line plot
 
     """
-    plot = Instance(Component)
-    eq_axis = Bool(False)
-    show_labels = Bool(True)
-    view_table = Button('View result table')
-    title_text = Str("ConsumerCheck")
     flip = Bool(False)
-
-    @on_trait_change('show_labels')
-    def switch_labels(self, obj, name, new):
-        # ds_id = name.partition('_')[2]
-        obj.plot.show_labels(show=new)
-
-    @on_trait_change('eq_axis')
-    def switch_axis(self, obj, name, new):
-        obj.plot.toggle_eq_axis(new)
-
-    @on_trait_change('view_table')
-    def show_table(self, obj, name, new):
-        tvc = TableViewController(model=obj.plot)
-        tvc.configure_traits()
 
     @on_trait_change('flip')
     def flip_interaction(self, obj, name, new):
-        obj.plot._adapt_conj_interaction_data(new)
+        obj.plot.plot_interaction(new)
+
+    extra_gr = Group(Item('flip'))
 
 
-    traits_view = View(
-        Group(
-            Group(
-                Item('plot',
-                     editor=ComponentEditor(
-                         size = (850, 650),
-                         bgcolor="white"),
-                     show_label=False),
-                orientation = "vertical"
-                ),
-            Label('Scroll to zoom and drag to pan in plot.'),
-            Group(
-                Item('view_table', show_label=False),
-                Item('previous_plot', show_label=False),
-                Item('next_plot', show_label=False),
-                Item('flip', show_label=True),
-                orientation="horizontal",
-                ),
-            layout="normal",
-            ),
-        resizable=True,
-        handler=BasePW(),
-        # kind = 'nonmodal',
-        width = .5,
-        height = .7,
-        buttons = ["OK"]
-        )
+
+def slice_main_effect_ds(ls_means_table, attr_name):
+    # FIXME: Use proper Pandas DataFrame indexing
+    ls_means = ls_means_table.mat
+    ls_means_labels = ls_means_table.mat.index
+    cn = list(ls_means_table.mat.columns)
+    nli = cn.index('Estimate')
+    cn = cn[:nli]
+
+    # The folowing logic is about selecting rows from the result sets.
+    # The picker i an boolean vector that selects the rows i will plot.
+
+    # First; select all rows where the given attribute have an index value
+    picker = ls_means[attr_name] != 'NA'
+    # Then; exclude all the interaction rows where the given attribute
+    # is a part of the interaction
+    exclude = [ls_means[col] != 'NA' for col in cn if col != attr_name]
+    for out in exclude:
+        picker = np.logical_and(picker, np.logical_not(out))
+
+    # Use the boolean selection vector to select the wanted rows from the result set
+    selected = ls_means[picker]
+    selected_labels = ls_means_labels[picker]
+
+    ls_label_names = []
+    for i, pl in enumerate(selected_labels):
+        ls_label_names.append(pl)
+
+    pd = _pd.DataFrame(index=ls_label_names)
+    # pd['index'] = [int(val) for val in selected[attr_name]]
+    pd['values'] = [float(val) for val in selected['Estimate']]
+    pd['ylow'] = [float(val) for val in selected['Lower CI']]
+    pd['yhigh'] = [float(val) for val in selected['Upper CI']]
+    # pd['average'] = [conj_res.meanLiking for val in selected[attr_name]]
+
+    return pd
+
+
+def slice_interaction_ds(ls_means_table, index_attr, line_attr):
+    # FIXME: Use proper Pandas DataFrame indexing
+    ls_means = ls_means_table.mat
+
+    picker_one = ls_means[index_attr] != 'NA'
+    picker_two = ls_means[line_attr] != 'NA'
+    # Picker is an boolean selction vector
+    picker = np.logical_and(picker_one, picker_two)
+    selected = ls_means[picker][[index_attr, line_attr, 'Estimate']]
+
+    lines = sorted(list(set(selected[line_attr])))
+    indexes = sorted(list(set(selected[index_attr])))
+    index_labels = ['{0} {1}'.format(index_attr, i) for i in indexes]
+
+    # for hvert nytt plot trenger vi bare et nytt dataset
+    vals = []
+    for i, line in enumerate(lines):
+        line_data_picker = selected[line_attr] == line
+        line_data = selected[line_data_picker]
+        vals.append([float(val) for val in line_data['Estimate']])
+    ln = ["{0} {1}".format(line_attr, line) for line in lines]
+    res = _pd.DataFrame(vals, index=ln, columns=index_labels)
+
+    return res
+
+
+def get_main_p_value(anova_table, attr_name):
+    # Get p value for attribute
+    anova_values = anova_table.mat
+    anova_names = anova_table.mat.index
+    picker = anova_names == attr_name
+    # Check if it is only one bool value
+    if isinstance(picker, bool):
+        picker = np.array([picker])
+    var_row = anova_values[picker]
+    p_str = var_row['Pr(>F)'][0]
+    try:
+        p_value = float(p_str)
+    except ValueError:
+        p_value = 0.0
+
+    return p_value
+
+
+def get_interaction_p_value(anova_table, index_attr, line_attr):
+    # Get p value for attribute
+    anova_values = anova_table.mat
+    anova_names = anova_table.mat.index
+    try:
+        attr_name = "{0}:{1}".format(index_attr, line_attr)
+        var_row = anova_values[anova_names == attr_name]
+        p_str = var_row['Pr(>F)'][0]
+    except IndexError:
+        attr_name = "{0}:{1}".format(line_attr, index_attr)
+        var_row = anova_values[anova_names == attr_name]
+        p_str = var_row['Pr(>F)'][0]
+    try:
+        p_value = float(p_str)
+    except ValueError:
+        p_value = 0.0
+    
+    return p_value
+
+
+def main_avg_std_err(ls_means_table, var_name):
+    picker = lsmeans_main_selector(ls_means_table.mat, var_name)
+    std_err_vec = ls_means_table.mat.loc[picker, 'Standard Error']
+    mean_std_err = std_err_vec.mean()
+    return mean_std_err
+
+
+def lsmeans_main_selector(df, var_name):
+    # All column labels
+    acl = df.columns
+    # Result column labels
+    rcl = _pd.Index([u'Estimate', u'Standard Error', u'DF', u't-value',
+                     u'Lower CI', u'Upper CI', u'p-value'])
+    # Selection column labels
+    # Set arithmetic
+    scl = acl - rcl - [var_name]
+
+    # Picker
+    p1 = df.loc[:,scl] == 'NA'
+    p2 = p1.all(axis=1)
+
+    return p2
+
+
+def inter_avg_std_err(ls_means_table, var1_name, var2_name):
+    picker = lsmeans_inter_selector(ls_means_table.mat, var1_name, var2_name)
+    std_err_vec = ls_means_table.mat.loc[picker, 'Standard Error']
+    mean_std_err = std_err_vec.mean()
+    return mean_std_err
+
+
+def lsmeans_inter_selector(df, var1_name, var2_name):
+    vcl = [var1_name, var2_name]
+    # Picker
+    p1 = df.loc[:,vcl] != 'NA'
+    p3 = p1.all(axis=1)
+
+    return p3
 
 
 
@@ -405,11 +452,12 @@ if __name__ == '__main__':
     from tests.conftest import conj_res
     res = conj_res()
 
-    mep = MainEffectsPlot(res, 'Flavour', None)
-    pw = LinePlotWindow(plot=mep)
-    pw.configure_traits()
-    # iap = InteractionPlot(res, 'Sex', 'Flavour')
-    ## iap = InteractionPlot(res, 'Flavour', 'Sex', None)
-    ## pw = InteractionPlotWindow(plot=iap)
-    ## pw.configure_traits()
+    mep = MainEffectsPlot(res, 'Flavour')
+    spw = SinglePlotWindow(plot=mep)
+    print(spw.plot.plot_data.mat)
+    spw.configure_traits()
+    iap = InteractionPlot(res, 'Sex', 'Flavour')
+    ipw = InteractionPlotWindow(plot=iap)
+    print(ipw.plot.plot_data.mat)
+    ipw.configure_traits()
     print("The end")

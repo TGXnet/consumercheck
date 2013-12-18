@@ -42,8 +42,7 @@ class Pca(Model):
             std_ds = True
         else:
             std_ds = False
-        self._check_std_dev()
-        if self.zero_variance and self.standardise:
+        if self.standardise and self._have_zero_std_var():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.zero_variance)
         pca = PCA(self.ds.values,
@@ -52,14 +51,16 @@ class Pca(Model):
         return self._pack_res(pca)
 
 
-    def _check_std_dev(self):
+    def _have_zero_std_var(self):
         sv = self.ds.values.std(axis=0)
         dm = sv < self.min_std
         if _np.any(dm):
             vv = _np.array(self.ds.var_n)
             self.zero_variance = list(vv[_np.nonzero(dm)])
+            return True
         else:
             self.zero_variance = []
+            return False
 
 
     def _get_max_pc(self):
@@ -71,7 +72,7 @@ class Pca(Model):
 
 
     def _pack_res(self, pca_obj):
-        res = Result('PCA')
+        res = Result('PCA {0}'.format(self.ds.display_name))
 
         # Scores
         mT = pca_obj.scores()
@@ -81,7 +82,7 @@ class Pca(Model):
                 index=self.ds.obj_n,
                 columns=["PC-{0}".format(i+1) for i in range(mT.shape[1])],
                 ),
-            display_name=self.ds.display_name)
+            display_name='Scores')
 
         # Loadings
         mP = pca_obj.loadings()
@@ -91,7 +92,7 @@ class Pca(Model):
                 index=self.ds.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
                 ),
-            display_name=self.ds.display_name)
+            display_name='Loadings')
 
         # Correlation loadings
         mCL = pca_obj.corrLoadings()
@@ -101,18 +102,20 @@ class Pca(Model):
                 index=self.ds.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mCL.shape[1])],
                 ),
-            display_name=self.ds.display_name)
+            display_name='Correlation loadings')
 
         # Explained variance
         cal = pca_obj.calExplVar()
+        cum_cal = pca_obj.cumCalExplVar()[1:]
         val = pca_obj.valExplVar()
+        cum_val = pca_obj.cumValExplVar()[1:]
         res.expl_var = DataSet(
             mat=_pd.DataFrame(
-                data=[cal, val],
-                index=['cal', 'val'],
+                data=[cal, cum_cal, val, cum_val],
+                index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
-            display_name=self.ds.display_name)
+            display_name='Explained variance')
 
         # Residuals E after each computed PC
         # Return a dictionary with arrays

@@ -1,9 +1,9 @@
 
-# stdlib imports
+# Std lib imports
 import logging
+logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import webbrowser
 from os import path, pardir
-logger = logging.getLogger(__name__)
 
 # Enthought imports
 from traits.api import HasTraits, Instance, Any, Event
@@ -11,6 +11,7 @@ from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
 # Local imports
+import cc_config as conf
 from dataset_container import DatasetContainer
 from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
@@ -22,6 +23,8 @@ from basic_stat_gui import BasicStatPluginController, bs_plugin_view
 from pca_gui import PcaPluginController, pca_plugin_view
 from prefmap_gui import PrefmapPluginController, prefmap_plugin_view
 from conjoint_gui import ConjointPluginController, conjoint_plugin_view
+
+state_file = conf.pkl_file_url()
 
 
 class MainViewHandler(Handler):
@@ -39,7 +42,7 @@ class MainViewHandler(Handler):
 
 
     def _close_ds(self, info):
-        info.object.dsc.dsl = []
+        info.object.dsc.empty()
 
 
     def view_about(self, info):
@@ -57,11 +60,23 @@ class MainViewHandler(Handler):
 
     def init(self, info):
         # Close splash window
+        logger.info('Init main ui')
         info.object.win_handle = info.ui.control
+
+        # Import workspace
+        try:
+            info.object.dsc.read_datasets(state_file)
+        except IOError:
+            pass
+ 
         try:
             info.object.splash.close()
         except AttributeError:
             pass
+
+
+    def closed(self, info, is_ok):
+        info.object.dsc.save_datasets(state_file)
 
 
 
@@ -122,7 +137,7 @@ class MainUi(HasTraits):
         Group(
             Item('dsc', editor=tree_editor, label="Datasets", show_label=False),
             Item('basic_stat', editor=InstanceEditor(view=bs_plugin_view),
-                 style='custom', label="Basic stat", show_label=False),
+                 style='custom', label="Basic stat liking", show_label=False),
             Item('pca', editor=InstanceEditor(view=pca_plugin_view),
                  style='custom', label="PCA", show_label=False),
             Item('prefmap', editor=InstanceEditor(view=prefmap_plugin_view),
@@ -147,13 +162,7 @@ class MainUi(HasTraits):
 if __name__ == '__main__':
     import numpy as np
     from tests.conftest import all_dsc
-    lfn = __file__.split('.')[0]+'.log'
-    logging.basicConfig(level=logging.INFO,
-                        # format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                        # datefmt='%m-%d %H:%M',
-                        filename=lfn,
-                        filemode='w')
-
+    logging.basicConfig(level=logging.DEBUG)
     logger.info('Start interactive')
 
     mother = MainUi(dsc=all_dsc())

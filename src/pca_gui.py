@@ -4,11 +4,13 @@ import traits.api as _traits
 import traitsui.api as _traitsui
 
 # Local imports
+from dataset import DataSet
 from pca_model import Pca, InComputeable
 from ui_results import TableViewController
+from dialogs import ErrorMessage
 from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot
-from plot_windows import MultiPlotWindow
+from plot_windows import OverviewPlotWindow
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController,
@@ -16,21 +18,13 @@ from plugin_base import (ModelController, CalcContainer, PluginController,
 
 
 
-class ErrorMessage(_traits.HasTraits):
-    err_msg = _traits.Str()
-    traits_view = _traitsui.View(_traitsui.Item('err_msg', style='readonly',
-                            label='Zero variance variables'),
-                       buttons=[_traitsui.OKButton], title='Warning')
-
-
-
 class PcaController(ModelController):
     '''Controller for one PCA object'''
-    window_launchers = _traits.List(_traits.Instance(WindowLauncher))    
-    win_handle = _traits.Any()
+    window_launchers = _traits.List(_traits.Instance(WindowLauncher))
 
 
     def init(self, info):
+        super(PcaController, self).init(info)
         self.win_handle = info.ui.control
         info.object.hwin = info.ui.control
 
@@ -75,8 +69,24 @@ class PcaController(ModelController):
 
     def _show_zero_var_warning(self):
         dlg = ErrorMessage()
-        dlg.err_msg = ', '.join(self.model.zero_variance)
+        dlg.err_msg = 'Removed zero variance variables'
+        dlg.err_val = ', '.join(self.model.zero_variance)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
+
+
+    def get_result(self):
+        try:
+            res = self.model.res
+        except InComputeable:
+            self._show_zero_var_warning()
+            df = self.model.ds.mat.drop(self.model.zero_variance, axis=1)
+            olds = self.model.ds
+            self.model.ds = DataSet(mat=df,
+                                    display_name=olds.display_name,
+                                    kind=olds.kind)
+            res = self.model.res
+
+        return res
 
 
     def open_overview(self):
@@ -85,16 +95,12 @@ class PcaController(ModelController):
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
         for each of the datasets.
         """
-        try:
-            res = self.model.res
-        except InComputeable:
-            self._show_zero_var_warning()
-            return
-
+        res = self.get_result()
+ 
         wl = self.window_launchers
         title = self._wind_title(res)
 
-        mpw = MultiPlotWindow(title_text=title)
+        mpw = OverviewPlotWindow(title_text=title)
 
         sp = multiplot_factory(scores_plot, res, wl, title, mpw)
         lp = multiplot_factory(loadings_plot, res, wl, title, mpw)
@@ -190,14 +196,16 @@ no_view = _traitsui.View()
 
 
 pca_view = _traitsui.View(
-    _traitsui.Item('controller.name', style='readonly'),
-    # _traitsui.Label('Standardise:'),
     _traitsui.Item('standardise', style='custom', show_label=True),
     _traitsui.Item('calc_n_pc',
-                   editor=_traitsui.RangeEditor(low_name='min_pc', high_name='max_pc', mode='auto'),
+                   editor=_traitsui.RangeEditor(
+                       low_name='min_pc',
+                       high_name='max_pc',
+                       mode='auto'),
                    style='simple',
                    label='PC to calc:'),
-    )
+    title='PCA settings',
+)
 
 
 pca_nodes = [
@@ -209,7 +217,10 @@ pca_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[PcaController],
-        label='=Overview',
+        label='=Overview plot',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
         children='window_launchers',
         view=pca_view,
         menu=[],
@@ -229,6 +240,13 @@ class PcaPluginController(PluginController):
 
     dummy_model_controller = _traits.Instance(PcaController, PcaController(Pca()))
 
+
+    def init(self, info):
+        super(PcaPluginController, self).init(info)
+        self.win_handle = info.ui.control
+        info.object.hwin = info.ui.control
+
+
     # FIXME: I dont know why the initial populating is not handled by
     # _update_selection_list()
     def _available_ds_default(self):
@@ -241,7 +259,7 @@ class PcaPluginController(PluginController):
 
 
     def _get_selectable(self):
-        return self.model.dsc.get_id_name_map()
+        return self.model.dsc.get_id_name_map(kind_exclude='Design variable')
 
 
     @_traits.on_trait_change('selected_ds')
@@ -259,9 +277,20 @@ class PcaPluginController(PluginController):
 
 
     def _make_calculation(self, ds_id):
-        calc_model = Pca(id=ds_id, ds=self.model.dsc[ds_id])
+        pcads = self.model.dsc[ds_id]
+        if pcads.missing_data:
+            self._show_missing_warning()
+            return
+        calc_model = Pca(id=ds_id, ds=pcads)
         calculation = PcaController(calc_model)
         self.model.add(calculation)
+
+
+    def _show_missing_warning(self):
+        dlg = ErrorMessage()
+        dlg.err_msg = 'This matrix has holes (missing data)'
+        dlg.err_val = 'PCA is by now not able to analyze data with holes'
+        dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
 
@@ -284,12 +313,12 @@ pca_plugin_view = make_plugin_view('Pca', pca_nodes, selection_view, pca_view)
 
 if __name__ == '__main__':
     print("PCA GUI test start")
-    from tests.conftest import iris_ds, synth_dsc
+    from tests.conftest import iris_ds, synth_dsc, zero_var_ds
     one_branch = False
 
     if one_branch:
-        iris = iris_ds()
-        pca = Pca(ds=iris)
+        tds = zero_var_ds()
+        pca = Pca(ds=tds)
         pc = PcaController(pca)
         test = TestOneNode(one_model=pc)
         test.configure_traits(view=dummy_view(pca_nodes))
