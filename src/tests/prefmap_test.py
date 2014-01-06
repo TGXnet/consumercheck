@@ -6,7 +6,7 @@ from tests.conftest import imp_ds
 from prefmap_model import Prefmap
 from prefmap_gui import (PrefmapController, PrefmapPluginController,
                          prefmap_nodes, prefmap_plugin_view)
-from plugin_tree_helper import (CalcContainer, TestOneNode, dummy_view)
+from plugin_base import (CalcContainer, TestOneNode, dummy_view)
 
 
 @pytest.mark.model
