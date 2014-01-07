@@ -299,7 +299,8 @@ class ConjointPluginController(PluginController):
 
 
     def _available_consumer_characteristics_sets_default(self):
-        return self.model.dsc.get_id_name_map('Consumer characteristics')
+        tom = ('', '')
+        return [tom] + self.model.dsc.get_id_name_map('Consumer characteristics')
 
 
     def _available_consumer_liking_sets_default(self):
@@ -321,7 +322,10 @@ class ConjointPluginController(PluginController):
 
     @_traits.on_trait_change('selected_consumer_characteristics_set')
     def _upd_cons_attr_list(self, obj, name, old_value, new_value):
-        d = self.model.dsc[self.selected_consumer_characteristics_set]
+        if self.selected_consumer_characteristics_set:
+            d = self.model.dsc[self.selected_consumer_characteristics_set]
+        else:
+            d = DataSet()
         nn = []
         for k, v in d.mat.iteritems():
             nn.append((k, len(_np.unique(v.values))))
