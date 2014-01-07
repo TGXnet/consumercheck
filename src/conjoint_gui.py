@@ -281,6 +281,7 @@ class ConjointPluginController(PluginController):
     model_struct = _traits.Enum('Struct 1', 'Struct 2', 'Struct 3')
 
     dummy_model_controller = _traits.Instance(ConjointController)
+    exported = _traits.Int(0)
 
 
     def _dummy_model_controller_default(self):
@@ -299,7 +300,8 @@ class ConjointPluginController(PluginController):
 
 
     def _available_consumer_characteristics_sets_default(self):
-        return self.model.dsc.get_id_name_map('Consumer characteristics')
+        tom = ('', '')
+        return [tom] + self.model.dsc.get_id_name_map('Consumer characteristics')
 
 
     def _available_consumer_liking_sets_default(self):
@@ -321,7 +323,10 @@ class ConjointPluginController(PluginController):
 
     @_traits.on_trait_change('selected_consumer_characteristics_set')
     def _upd_cons_attr_list(self, obj, name, old_value, new_value):
-        d = self.model.dsc[self.selected_consumer_characteristics_set]
+        if self.selected_consumer_characteristics_set:
+            d = self.model.dsc[self.selected_consumer_characteristics_set]
+        else:
+            d = DataSet()
         nn = []
         for k, v in d.mat.iteritems():
             nn.append((k, len(_np.unique(v.values))))
@@ -414,9 +419,12 @@ for variables with a large number of categories.
 
     def export_data(self, editor, obj):
         parent = editor.get_parent(obj)
-        ind_resid = parent.model.res.residIndTable
+        ind_resid = DataSet()
+        ind_resid.copy_traits(
+            parent.model.res.residIndTable, traits=['mat', 'style'])
         ind_resid.kind = 'Sensory profiling'
-        ind_resid.display_name = '_double centred residuals'
+        self.exported += 1
+        ind_resid.display_name = '_double centred residuals ' + str(self.exported)
         self.model.dsc.add(ind_resid)
 
 
