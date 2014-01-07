@@ -281,6 +281,7 @@ class ConjointPluginController(PluginController):
     model_struct = _traits.Enum('Struct 1', 'Struct 2', 'Struct 3')
 
     dummy_model_controller = _traits.Instance(ConjointController)
+    exported = _traits.Int(0)
 
 
     def _dummy_model_controller_default(self):
@@ -418,9 +419,12 @@ for variables with a large number of categories.
 
     def export_data(self, editor, obj):
         parent = editor.get_parent(obj)
-        ind_resid = parent.model.res.residIndTable
+        ind_resid = DataSet()
+        ind_resid.copy_traits(
+            parent.model.res.residIndTable, traits=['mat', 'style'])
         ind_resid.kind = 'Sensory profiling'
-        ind_resid.display_name = '_double centred residuals'
+        self.exported += 1
+        ind_resid.display_name = '_double centred residuals ' + str(self.exported)
         self.model.dsc.add(ind_resid)
 
 
