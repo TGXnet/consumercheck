@@ -43,10 +43,10 @@ class DSHandler(_traitsui.Handler):
         vals = rows * cols
         notnan = mtx.count().sum()
         nans = vals - notnan
-        vmax = mtx.max().max()
-        vmin = mtx.min().min()
-        vmean = mtx.mean().mean()
-        vstd = mtx.std().std()
+        vmax = mtx.values.max()
+        vmin = mtx.values.min()
+        vmean = mtx.values.mean()
+        vstd = mtx.values.std()
         self.summary += "{k1:6s}:{v1:4.3g}\t{k2:6s}:{v2:4.3g}\n".format(
             k1='Rows', v1=rows, k2='Cols', v2=cols)
         self.summary += "{k1:6s}:{v1:4.3g}\t{k2:6s}:{v2:4.3g}\n".format(
