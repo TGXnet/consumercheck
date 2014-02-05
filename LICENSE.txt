@@ -1,4 +1,0 @@
-Wich license?
-
-http://www.gnu.org/licenses/license-list.html
-http://www.opensource.org/licenses/category

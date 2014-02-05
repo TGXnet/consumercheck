@@ -1,3 +1,23 @@
+'''ConsumerCheck
+'''
+#-----------------------------------------------------------------------------
+#  Copyright (C) 2014 Thomas Graff <thomas.graff@tgxnet.no>
+#
+#  This file is part of ConsumerCheck.
+#
+#  ConsumerCheck is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  any later version.
+#
+#  ConsumerCheck is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
+#-----------------------------------------------------------------------------
 
 # Std lib imports
 import logging
@@ -281,6 +301,7 @@ class ConjointPluginController(PluginController):
     model_struct = _traits.Enum('Struct 1', 'Struct 2', 'Struct 3')
 
     dummy_model_controller = _traits.Instance(ConjointController)
+    exported = _traits.Int(0)
 
 
     def _dummy_model_controller_default(self):
@@ -299,7 +320,8 @@ class ConjointPluginController(PluginController):
 
 
     def _available_consumer_characteristics_sets_default(self):
-        return self.model.dsc.get_id_name_map('Consumer characteristics')
+        tom = ('', '')
+        return [tom] + self.model.dsc.get_id_name_map('Consumer characteristics')
 
 
     def _available_consumer_liking_sets_default(self):
@@ -321,7 +343,10 @@ class ConjointPluginController(PluginController):
 
     @_traits.on_trait_change('selected_consumer_characteristics_set')
     def _upd_cons_attr_list(self, obj, name, old_value, new_value):
-        d = self.model.dsc[self.selected_consumer_characteristics_set]
+        if self.selected_consumer_characteristics_set:
+            d = self.model.dsc[self.selected_consumer_characteristics_set]
+        else:
+            d = DataSet()
         nn = []
         for k, v in d.mat.iteritems():
             nn.append((k, len(_np.unique(v.values))))
@@ -414,9 +439,12 @@ for variables with a large number of categories.
 
     def export_data(self, editor, obj):
         parent = editor.get_parent(obj)
-        ind_resid = parent.model.res.residIndTable
+        ind_resid = DataSet()
+        ind_resid.copy_traits(
+            parent.model.res.residIndTable, traits=['mat', 'style'])
         ind_resid.kind = 'Sensory profiling'
-        ind_resid.display_name = '_double centred residuals'
+        self.exported += 1
+        ind_resid.display_name = '_double centred residuals ' + str(self.exported)
         self.model.dsc.add(ind_resid)
 
 

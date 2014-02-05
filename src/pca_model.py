@@ -1,3 +1,23 @@
+'''ConsumerCheck
+'''
+#-----------------------------------------------------------------------------
+#  Copyright (C) 2014 Thomas Graff <thomas.graff@tgxnet.no>
+#
+#  This file is part of ConsumerCheck.
+#
+#  ConsumerCheck is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  any later version.
+#
+#  ConsumerCheck is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
+#-----------------------------------------------------------------------------
 
 # Scipy libs imports
 import numpy as _np
@@ -75,7 +95,7 @@ class Pca(Model):
         res = Result('PCA {0}'.format(self.ds.display_name))
 
         # Scores
-        mT = pca_obj.scores()
+        mT = pca_obj.X_scores()
         res.scores = DataSet(
             mat=_pd.DataFrame(
                 data=mT,
@@ -85,7 +105,7 @@ class Pca(Model):
             display_name='Scores')
 
         # Loadings
-        mP = pca_obj.loadings()
+        mP = pca_obj.X_loadings()
         res.loadings = DataSet(
             mat=_pd.DataFrame(
                 data=mP,
@@ -95,7 +115,7 @@ class Pca(Model):
             display_name='Loadings')
 
         # Correlation loadings
-        mCL = pca_obj.corrLoadings()
+        mCL = pca_obj.X_corrLoadings()
         res.corr_loadings = DataSet(
             mat=_pd.DataFrame(
                 data=mCL,
@@ -105,10 +125,10 @@ class Pca(Model):
             display_name='Correlation loadings')
 
         # Explained variance
-        cal = pca_obj.calExplVar()
-        cum_cal = pca_obj.cumCalExplVar()[1:]
-        val = pca_obj.valExplVar()
-        cum_val = pca_obj.cumValExplVar()[1:]
+        cal = pca_obj.X_calExplVar()
+        cum_cal = pca_obj.X_cumCalExplVar()[1:]
+        val = pca_obj.X_valExplVar()
+        cum_val = pca_obj.X_cumValExplVar()[1:]
         res.expl_var = DataSet(
             mat=_pd.DataFrame(
                 data=[cal, cum_cal, val, cum_val],
@@ -120,24 +140,25 @@ class Pca(Model):
         # Residuals E after each computed PC
         # Return a dictionary with arrays
         # I can put this into a Pandas Panel 3D structure
-        resids = pca_obj.residuals()
+        resids = pca_obj.X_residuals()
 
         # predicted matrices Xhat from calibration after each computed PC.
-        cal_pred_x = pca_obj.calPredX()
+        # FIXME: Is this X_predCal()
+        # cal_pred_x = pca_obj.calPredX()
 
         #validated matrices Xhat from calibration after each computed PC.
-        val_pred_x = pca_obj.valPredX()
+        # val_pred_x = pca_obj.valPredX()
 
         # MSEE from cross validation after each computed PC.
-        msee = pca_obj.MSEE()
+        msee = pca_obj.X_MSEE()
 
         # MSEE from cross validation after each computed PC for each variable.
-        ind_var_msee = pca_obj.MSEE_indVar()
+        ind_var_msee = pca_obj.X_MSEE_indVar()
 
         # MSECV from cross validation after each computed PC.
-        msecv = pca_obj.MSECV()
+        msecv = pca_obj.X_MSECV()
 
         # MSECV from cross validation after each computed PC for each variable.
-        ind_var_msecv = pca_obj.MSECV_indVar()
+        ind_var_msecv = pca_obj.X_MSECV_indVar()
 
         return res

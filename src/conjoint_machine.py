@@ -1,3 +1,23 @@
+'''ConsumerCheck
+'''
+#-----------------------------------------------------------------------------
+#  Copyright (C) 2014 Thomas Graff <thomas.graff@tgxnet.no>
+#
+#  This file is part of ConsumerCheck.
+#
+#  ConsumerCheck is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  any later version.
+#
+#  ConsumerCheck is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
+#-----------------------------------------------------------------------------
 
 # Std lib imports
 import logging
@@ -369,7 +389,8 @@ class ConjointMachine(object):
         # Get size of liking data array. 
         n_rows, n_cols = np.shape(self.consLiking.values)
 
-        r_vec = self.r.get('res[[1]][6]$residuals_Indiv')
+        # r_vec = self.r.get('res[[1]][6]$residuals_Indiv')
+        r_vec = self.r.get('res[[1]][6]$residualsDoubleCentered')
         vals = np.reshape(r_vec, (n_rows, n_cols))
         val_df = _pd.DataFrame(vals, index=self.consLiking.obj_n, columns=self.consLiking.var_n)
         res_ds = DataSet(mat=val_df, display_name='Double centred residuals')
