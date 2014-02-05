@@ -58,7 +58,7 @@ createLMERmodel <- function(structure, data, response, fixed, random, corr)
   #construct formula for lmer model 
   #fma<-createFormula(structure, data, response, fixed, random)
   mf.final <- createFormulaAllFixRand(structure, data, response, fixed, random, corr) 
-  model <- eval(substitute(lmer( mf.final),list( mf.final= mf.final)))
+  model <- eval(substitute(lmer( mf.final, control=lmerControl(check.nobs.vs.rankZ = "ignore")),list( mf.final= mf.final)))
   #model <- as(model,"mer")
   #model <- update(model)
   
@@ -98,9 +98,9 @@ makeFormulaConsumer <- function(model, random)
   fmodel <- formula(model)
   terms.fm <- attr(terms.formula(fmodel),"term.labels")
   ind.rand.terms <- which(unlist(lapply(terms.fm,function(x) substring.location(x, "|")$first))!=0)
-  terms.fm[ind.rand.terms] <- unlist(lapply(terms.fm[ind.rand.terms],function(x) paste("(",x,")",sep="")))
+  terms.fm[ind.rand.terms] <- unlist(lapply(terms.fm[ind.rand.terms],function(x) paste("(",x,")",sep="")))  
   fm <- paste(fmodel)
-  fm[3] <- paste(c(terms.fm[-ind.rand.terms],random), collapse=" + ")
+  fm[3] <- paste(c(terms.fm[-ind.rand.terms], unlist(lapply(random,function(x) paste("(1|",x,")",sep="")))), collapse=" + ")
     if(fm[3]=="")
     fo <- as.formula(paste(fm[2],fm[1],1, sep=""))
   else
@@ -108,14 +108,15 @@ makeFormulaConsumer <- function(model, random)
   return(fo)
 }
 
-createLMmodel <- function(data, model, random)
+createModelSaturWithRandCons <- function(data, model, random)
 { 
   
   #construct the model with all conjoint factors plu Consumer as fixed factor
   mf.final <- makeFormulaConsumer(model, random)
   
 
-  modelIndiv <- eval(substitute(lm(mf.final, data=data),list( mf.final= mf.final)))
+  #modelIndiv <- eval(substitute(lm(mf.final, data=data),list( mf.final= mf.final)))
+  modelSaturWithRand <- eval(substitute(lmer(mf.final, data=data),list( mf.final= mf.final)))
   #model <- as(model,"mer")
   #model <- update(model)
   
@@ -123,6 +124,6 @@ createLMmodel <- function(data, model, random)
   #model <- eval(substitute(lmer(mf.final, data=data),list(mf.final=mf.final)))
   #model <- update(model, data=data ,REML=TRUE)
   
-  return(modelIndiv)
+  return(modelSaturWithRand)
 }
 

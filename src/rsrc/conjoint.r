@@ -30,8 +30,9 @@ for(ind.resp in 1:length(response))
 {
 
   print(paste("Calculating ", response[ind.resp],"...", sep=" "))
-  
-  model <- createLMERmodel(structure, data1, response[ind.resp], fixed, random, corr)
+
+  modelfull <- createLMERmodel(3,         data1, response[ind.resp], fixed, random, corr)
+  model <-     createLMERmodel(structure, data1, response[ind.resp], fixed, random, corr)
   
 #check if reduction of the fixed part is required
 if(structure==1 || structure==2)
@@ -60,7 +61,8 @@ if(checkCorr(model))
 t <- step(model, reduce.fixed=isFixReduce, reduce.random=isRandReduce, alpha.random=alpha.random, alpha.fixed=alpha.fixed)
 
 
-fillresult <- function(t)
+# fillresult <- function(t)
+fillresult <- function(t, modelfull)
 {
   result  <-  NULL
   result$rand.table <- t$rand.table
@@ -82,11 +84,15 @@ fillresult <- function(t)
   }
   result$diffs.lsmeans.table$"p-value.adjust" <- pv.adjust
   
-  res <- lm(t$model, data=data1)$residuals
+  # res <- lm(t$model, data=data1)$residuals
+  res <- residuals(t$model)
   result$residuals <- res
   
-  modelIndiv <- createLMmodel(data1, t$model, random)
-  result$residuals_Indiv <- modelIndiv$residuals
+  # modelIndiv <- createLMmodel(data1, t$model, random)
+  # result$residuals_Indiv <- modelIndiv$residuals
+
+  modelSaturRandomCons <- createModelSaturWithRandCons(data1, modelfull, random)
+  result$residualsDoubleCentered <- residuals(modelSaturRandomCons)
     
   #format p-values
   if(!is.null(result$rand.table))
@@ -100,7 +106,8 @@ fillresult <- function(t)
   return(result)
 }
 
-resultFULL[[ind.resp]] <- fillresult(t)
+# resultFULL[[ind.resp]] <- fillresult(t)
+resultFULL[[ind.resp]] <- fillresult(t, modelfull)
 
 }
 
