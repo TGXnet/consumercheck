@@ -39,7 +39,8 @@ def test_traits():
 def test_pyparsing():
     pyparsing_meta  = GD("pyparsing")
     # FIXME: SVG button stuff is failing with 2.0.1
-    assert pyparsing_meta.parsed_version == V('1.5.6')
+    # assert pyparsing_meta.parsed_version == V('2.0.1')
+    assert pyparsing_meta.parsed_version == V('1.5.7')
 
 
 def test_xlrd():
@@ -75,9 +76,16 @@ def test_wxpython():
     del(wx)
 
 
+@pytest.mark.xfail
 def test_pyside():
     # pyside_meta = GD("PySide")
     import PySide
     qt_ver = V(PySide.__version__)
     assert qt_ver >= V('1.1.2')
     del(PySide)
+
+
+@pytest.mark.skipif(sys.platform != 'win32', reason='Only on win dev')
+def test_bbfreeze():
+    freeze_meta = GD("bbfreeze")
+    assert freeze_meta.parsed_version == V('1.1.3')
