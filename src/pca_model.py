@@ -66,7 +66,7 @@ class Pca(Model):
             raise InComputeable('Matrix have variables with zero variance',
                                 self.zero_variance)
         pca = PCA(self.ds.values,
-                  numPC=self.calc_n_pc, stand=std_ds, cvType=["loo"])
+                  numPC=self.calc_n_pc, Xstand=std_ds, cvType=["loo"])
 
         return self._pack_res(pca)
 

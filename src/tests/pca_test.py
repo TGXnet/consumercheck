@@ -11,16 +11,22 @@ from tests.conftest import imp_ds
 
 # Local imports
 from pca_model import Pca, InComputeable
-from pca_gui import (PcaController, PcaPluginController, pca_nodes, pca_plugin_view)
+from pca_gui import (PcaController, PcaPluginController,
+                     pca_nodes, pca_plugin_view)
 from plugin_base import (CalcContainer, TestOneNode, dummy_view)
 
 
-@pytest.mark.model
-def test_pca_results():
+def get_wine():
     # Folder, File name, Display name, DS type
     ds_meta = ('Vine', 'A_labels.txt', 'Vine set A', 'Consumer liking')
     ds = imp_ds(ds_meta)
     print(ds.mat)
+    return ds
+
+
+@pytest.mark.model
+def test_pca_results():
+    ds = get_wine()
     pca = Pca(ds=ds)
     assert pca.calc_n_pc == pca.max_pc == 3
     res = pca.res
@@ -30,9 +36,20 @@ def test_pca_results():
     assert all([s in attrs for s in expected_sets])
     # Check row and column headings
     for dsn in expected_sets:
-        ds  = getattr(res, dsn)
+        ds = getattr(res, dsn)
         print(ds.display_name, 'var', ds.var_n)
         print(ds.display_name, 'obj', ds.obj_n)
+
+
+@pytest.mark.model
+def test_stand():
+    ds = get_wine()
+    pca = Pca(ds=ds, standardise=False)
+    ures = pca.res
+    pca.standardise = True
+    sres = pca.res
+    print(sres.loadings.values)
+    print(ures.loadings.values)
 
 
 @pytest.mark.model
