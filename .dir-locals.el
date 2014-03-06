@@ -5,5 +5,5 @@
   (ffip-project-file . ".hg")
   (ffip-project-root . "."))
  (python-mode
-  (elpy-project-root . "/home/thomas/.virtualenvs/cc_main/")))
-
+  (elpy-project-root . ".")
+  ))
