@@ -27,7 +27,7 @@ import traitsui.api as _traitsui
 from basic_stat_model import BasicStat
 from plot_histogram import BoxPlot, HistPlot, StackedHistPlot, StackedPlotWindow
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
-from plugin_base import (ModelController, CalcContainer, PluginController,
+from plugin_base import (ModelController, CalcContainer, PluginController, CalcContainer,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
@@ -157,6 +157,11 @@ bs_nodes = [
     ]
 
 
+class BasicStatCalcContainer(CalcContainer):
+    calculator = _traits.Instance(BasicStat, BasicStat())
+
+
+
 class BasicStatPluginController(PluginController):
 
     available_ds = _traits.List()
@@ -199,7 +204,7 @@ class BasicStatPluginController(PluginController):
 
 
     def _make_calculation(self, ds_id):
-        calc_model = BasicStat(id=ds_id, ds=self.model.dsc[ds_id])
+        calc_model = BasicStat(id=ds_id, ds=self.model.dsc[ds_id], settings=self.model.calculator)
         calculation = BasicStatController(calc_model)
         self.model.add(calculation)
 
@@ -232,7 +237,7 @@ if __name__ == '__main__':
         tods = TestOneNode(one_model=bsc)
         tods.configure_traits(view=dummy_view(bs_nodes))
     else:
-        bsp = CalcContainer(dsc=all_dsc())
+        bsp = BasicStatCalcContainer(dsc=all_dsc())
         bspc = BasicStatPluginController(bsp)
         bspc.configure_traits(
             view=bs_plugin_view)

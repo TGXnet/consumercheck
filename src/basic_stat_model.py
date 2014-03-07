@@ -50,6 +50,7 @@ class BasicStat(Model):
     row or column axis.
     '''
     ds = DataSet()
+    settings = _traits.WeakRef()
     summary_axis = _traits.Enum(('Row-wise', 'Column-wise'))
 
 
@@ -63,7 +64,7 @@ class BasicStat(Model):
 
     def _calc_summary(self):
         mat = self.ds.values
-        if self.summary_axis == 'Row-wise':
+        if self.settings.summary_axis == 'Row-wise':
             ax = 1
             idx = self.ds.obj_n
         else:
@@ -94,7 +95,7 @@ class BasicStat(Model):
 
         if self.ds.missing_data:
             hl = []
-            if self.summary_axis == 'Row-wise':
+            if self.settings.summary_axis == 'Row-wise':
                 idx = self.ds.obj_n
                 dr = 1
                 for i in range(mat.shape[0]):
@@ -109,7 +110,7 @@ class BasicStat(Model):
                     hr = list(_np.bincount(row, minlength=end))
                     hl.append(hr)
         else:
-            if self.summary_axis == 'Row-wise':
+            if self.settings.summary_axis == 'Row-wise':
                 idx = self.ds.obj_n
                 hl = _np.apply_along_axis(hist, 1, mat)
             else:
