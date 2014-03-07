@@ -61,6 +61,7 @@ class ConjointCalcState(_traits.HasTraits):
 class Conjoint(Model):
     # The imput data for calculation
     owner_ref = _traits.WeakRef()
+    settings = _traits.WeakRef()
     # design = DataSet()
     design = _traits.DelegatesTo('owner_ref')
     design_vars = _traits.List(_traits.Str())

@@ -39,7 +39,7 @@ from ds_table_view import DSTableViewer
 from plot_windows import SinglePlotWindow
 from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
-from plugin_base import (ModelController, CalcContainer, PluginController,
+from plugin_base import (ModelController, CalcContainer, PluginController, CalcContainer,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
@@ -283,6 +283,10 @@ conjoint_nodes = [
     ]
 
 
+class ConjointCalcContainer(CalcContainer):
+    calculator = _traits.Instance(Conjoint, Conjoint())
+
+
 class ConjointPluginController(PluginController):
     available_design_sets = _traits.List()
     available_consumer_characteristics_sets = _traits.List()
@@ -421,6 +425,7 @@ for variables with a large number of categories.
 
         calc_model = Conjoint(owner_ref=self, id=liking_id,
                               ## design=d,
+                              settings=self.model.calculator,
                               design_vars=self.sel_design_var,
                               ## consumers=c,
                               consumers_vars=self.sel_cons_char,
@@ -523,6 +528,7 @@ if __name__ == '__main__':
     print("Conjoint GUI test start")
     from tests.conftest import conjoint_dsc
     from dataset_container import get_ds_by_name
+    import ipdb
 
     one_branch = False
     dsc = conjoint_dsc()
@@ -537,6 +543,6 @@ if __name__ == '__main__':
         test = TestOneNode(one_model=cjc)
         test.configure_traits(view=dummy_view(conjoint_nodes))
     else:
-        conjoint = CalcContainer(dsc=conjoint_dsc())
+        conjoint = ConjointCalcContainer(dsc=conjoint_dsc())
         cpc = ConjointPluginController(conjoint)
         cpc.configure_traits(view=conjoint_plugin_view)
