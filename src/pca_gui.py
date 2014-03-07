@@ -33,7 +33,7 @@ from plot_pc_scatter import PCScatterPlot
 from plot_windows import OverviewPlotWindow
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
-from plugin_base import (ModelController, CalcContainer, PluginController,
+from plugin_base import (ModelController, CalcContainer, PluginController, CalcContainer,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
@@ -254,6 +254,11 @@ pca_nodes = [
     ]
 
 
+class PcaCalcContainer(CalcContainer):
+    calculator = _traits.Instance(Pca, Pca())
+
+
+
 class PcaPluginController(PluginController):
     available_ds = _traits.List()
     selected_ds = _traits.List()
@@ -301,7 +306,7 @@ class PcaPluginController(PluginController):
         if pcads.missing_data:
             self._show_missing_warning()
             return
-        calc_model = Pca(id=ds_id, ds=pcads)
+        calc_model = Pca(id=ds_id, ds=pcads, settings=self.model.calculator)
         calculation = PcaController(calc_model)
         self.model.add(calculation)
 
@@ -343,6 +348,6 @@ if __name__ == '__main__':
         test = TestOneNode(one_model=pc)
         test.configure_traits(view=dummy_view(pca_nodes))
     else:
-        pcap = CalcContainer(dsc=synth_dsc())
+        pcap = PcaCalcContainer(dsc=synth_dsc())
         ppc = PcaPluginController(pcap)
         ppc.configure_traits(view=pca_plugin_view)

@@ -40,6 +40,7 @@ class InComputeable(Exception):
 class Pca(Model):
     """Represent the PCA model of a dataset."""
     ds = DataSet()
+    settings = _traits.WeakRef()
     # List of variable names with zero variance in the data vector
     zero_variance = _traits.List()
 
@@ -47,7 +48,8 @@ class Pca(Model):
     standardise = _traits.Bool(False)
     calc_n_pc = _traits.Int()
     min_pc = 2
-    max_pc = _traits.Property()
+    # max_pc = _traits.Property()
+    max_pc = 10
     min_std = _traits.Float(0.001)
 
 
@@ -58,7 +60,7 @@ class Pca(Model):
         various result data. Each result set i an DataSet containing
         all metadata necessary for presenting the result.
         '''
-        if self.standardise:
+        if self.settings.standardise:
             std_ds = True
         else:
             std_ds = False
@@ -66,7 +68,7 @@ class Pca(Model):
             raise InComputeable('Matrix have variables with zero variance',
                                 self.zero_variance)
         pca = PCA(self.ds.values,
-                  numPC=self.calc_n_pc, Xstand=std_ds, cvType=["loo"])
+                  numPC=self.settings.calc_n_pc, Xstand=std_ds, cvType=["loo"])
 
         return self._pack_res(pca)
 
