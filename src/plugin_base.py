@@ -153,21 +153,22 @@ class CalcContainer(_traits.HasTraits):
 class PluginController(_traitsui.Controller):
     update_tree = _traits.Event()
     selected_object = _traits.Any()
-    edit_node = _traits.Instance(ModelController)
+    edit_node = _traits.Instance(Model)
     win_handle = _traits.Any()
 
     def init(self, info):
         super(PluginController, self).init(info)
         self.selected_object = self.model
+        self.edit_node = self.model.calculator
 
-    @_traits.on_trait_change('selected_object')
-    def _tree_selection_made(self, obj, name, new):
-        if isinstance(new, ModelController):
-            self.edit_node = new
-        elif isinstance(new, WindowLauncher):
-            self.edit_node = new.owner_ref
-        else:
-            self.edit_node = self.dummy_model_controller
+    # @_traits.on_trait_change('selected_object')
+    # def _tree_selection_made(self, obj, name, new):
+    #     if isinstance(new, ModelController):
+    #         self.edit_node = new
+    #     elif isinstance(new, WindowLauncher):
+    #         self.edit_node = new.owner_ref
+    #     else:
+    #         self.edit_node = self.dummy_model_controller
 
 
 # plugin_view
@@ -200,11 +201,15 @@ def make_plugin_view(model_name, model_nodes, selection_view, model_view):
 
     plugin_view = _traitsui.View(
         _traitsui.Group(
+            # Left side tree
             _traitsui.Item('controller.model',
                            editor=plugin_tree,
                            show_label=False),
+            # Right side
             _traitsui.Group(
+                # Upper right side dataset selection panel
                 selection_view,
+                # Lower right side calc settings panel
                 _traitsui.Group(
                     _traitsui.Item('controller.edit_node',
                                    editor=_traitsui.InstanceEditor(
