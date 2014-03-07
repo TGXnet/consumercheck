@@ -46,7 +46,7 @@ class Prefmap(Model):
     ds_S = DataSet()
     ds_X = _traits.Property()
     ds_Y = _traits.Property()
-
+    settings = _traits.WeakRef()
     #checkbox bool for standardised results
     standardise_x = _traits.Bool(False)
     standardise_y = _traits.Bool(False)
@@ -54,7 +54,8 @@ class Prefmap(Model):
     prefmap_method = _traits.Enum('PLSR', 'PCR')
     calc_n_pc = _traits.Int()
     min_pc = 2
-    max_pc = _traits.Property()
+    # max_pc = _traits.Property()
+    max_pc = 10
     min_std = _traits.Float(0.001)
     C_zero_std = _traits.List()
     S_zero_std = _traits.List()
@@ -64,15 +65,16 @@ class Prefmap(Model):
         if self._have_zero_std():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
-        if self.prefmap_method == 'PLSR':
+        n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
+        if self.settings.prefmap_method == 'PLSR':
             pls = PLSR(self.ds_X.values, self.ds_Y.values,
-                      numPC=self.calc_n_pc, cvType=["loo"],
-                      Xstand=self.standardise_x, Ystand=self.standardise_y)
+                      numPC=n_pc, cvType=["loo"],
+                      Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
             return self._pack_res(pls)
-        elif self.prefmap_method == 'PCR':
+        elif self.settings.prefmap_method == 'PCR':
             pcr = PCR(self.ds_X.values, self.ds_Y.values,
-                      numPC=self.calc_n_pc, cvType=["loo"],
-                      Xstand=self.standardise_x, Ystand=self.standardise_y)
+                      numPC=n_pc, cvType=["loo"],
+                      Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
             return self._pack_res(pcr)
 
 
@@ -90,17 +92,17 @@ class Prefmap(Model):
 
 
     def _std_C(self):
-        if self.int_ext_mapping == 'Internal':
-            return self.standardise_x
+        if self.settings.int_ext_mapping == 'Internal':
+            return self.settings.standardise_x
         else:
-            return self.standardise_y
+            return self.settings.standardise_y
 
 
     def _std_S(self):
-        if self.int_ext_mapping == 'Internal':
-            return self.standardise_y
+        if self.settings.int_ext_mapping == 'Internal':
+            return self.settings.standardise_y
         else:
-            return self.standardise_x
+            return self.settings.standardise_x
 
 
     def _C_have_zero_std_var(self):
@@ -124,21 +126,21 @@ class Prefmap(Model):
 
 
     def _get_ds_X(self):
-        if self.int_ext_mapping == 'Internal':
+        if self.settings.int_ext_mapping == 'Internal':
             return self.ds_C
         else:
             return self.ds_S
 
 
     def _get_ds_Y(self):
-        if self.int_ext_mapping == 'Internal':
+        if self.settings.int_ext_mapping == 'Internal':
             return self.ds_S
         else:
             return self.ds_C
 
 
     def _get_max_pc(self):
-        if self.int_ext_mapping == 'Internal':
+        if self.settings.int_ext_mapping == 'Internal':
             return max((min(self.ds_C.n_objs, self.ds_C.n_vars, 12) - 2), self.min_pc)
         else:
             return max((min(self.ds_S.n_objs, self.ds_S.n_vars, 12) - 2), self.min_pc)
