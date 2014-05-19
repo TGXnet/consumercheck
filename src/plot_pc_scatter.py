@@ -459,6 +459,18 @@ def calc_bounds(data_low, data_high, margin, tight_bounds):
 
 
 
+class CLPlot(PCScatterPlot):
+
+    def __init__(self, clx, evx, cly, evy, **kwargs):
+        super(CLPlot, self).__init__(**kwargs)
+        clx.style.fg_color = 'blue'
+        self.add_PC_set(clx, evx)
+        cly.style.fg_color = 'red'
+        self.add_PC_set(cly, evy)
+        self.plot_circle(True)
+
+
+
 class CorrLoadPlotWindow(PCPlotWindow):
     """Window for embedding principal component plots
 

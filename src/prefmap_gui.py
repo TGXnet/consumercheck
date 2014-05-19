@@ -27,7 +27,7 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import PCScatterPlot, CorrLoadPlotWindow
+from plot_pc_scatter import PCScatterPlot, CLPlot, CorrLoadPlotWindow
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
@@ -175,17 +175,6 @@ def loadings_x_plot(res):
 def loadings_y_plot(res):
     plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Loadings Y')
     return plot
-
-
-class CLPlot(PCScatterPlot):
-
-    def __init__(self, clx, evx, cly, evy, **kwargs):
-        super(CLPlot, self).__init__(**kwargs)
-        clx.style.fg_color = 'blue'
-        self.add_PC_set(clx, evx)
-        cly.style.fg_color = 'red'
-        self.add_PC_set(cly, evy)
-        self.plot_circle(True)
 
 
 def corr_loadings_plot(res):

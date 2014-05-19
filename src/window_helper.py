@@ -21,6 +21,7 @@
 
 # Local imports
 from plot_windows import SinglePlotWindow, PCPlotWindow
+from plot_pc_scatter import CorrLoadPlotWindow, CLPlot
 
 
 def multiplot_factory(plot_func, res, view_loop, title, parent_win=None):
@@ -35,12 +36,22 @@ def plot_win_creator_closure(plot_func, res, view_loop, title, parent_win):
 
     def plot_window_creator():
         plot = plot_func(res)
-        win = PCPlotWindow(
-            plot=plot,
-            res=res,
-            # title_text=title,
-            view_loop=view_loop
+
+        if isinstance(plot, CLPlot):
+            win = CorrLoadPlotWindow(
+                plot=plot,
+                res=res,
+                # title_text=title,
+                view_loop=view_loop
             )
+        else:
+            win = PCPlotWindow(
+                plot=plot,
+                res=res,
+                # title_text=title,
+                view_loop=view_loop
+            )
+
         if parent_win:
             win.edit_traits(parent=parent_win.hwin, kind='live')
         else:
