@@ -39,8 +39,8 @@ from ds_table_view import DSTableViewer
 from plot_windows import SinglePlotWindow
 from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
-from plugin_base import (ModelController, CalcContainer, PluginController,
-                         dummy_view, TestOneNode, make_plugin_view)
+from conjoint_base import (ModelController, CalcContainer, PluginController,
+                           dummy_view, TestOneNode, make_plugin_view)
 
 
 

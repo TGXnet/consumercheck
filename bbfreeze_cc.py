@@ -4,7 +4,7 @@ import shutil
 
 from bbfreeze import Freezer
 
-FREEZE_VERSION = '0.8.5'
+FREEZE_VERSION = '1.0.1'
 R_VER = '3.0.2'
 # freeze folder
 ff = "consumercheck-" + FREEZE_VERSION
@@ -25,12 +25,14 @@ gui_lib = ['Tkinter', 'vtk', 'tvtk']
 num_lib = ['numpy.f2py', 'numpy.distutils']
 sci_lib = ['IPython', 'matplotlib', 'scimath']
 std_lib = []
-div_lib = ['twisted', 'PIL', 'mercurial', 'nose',
+div_lib = ['twisted', 'mercurial', 'nose',
            'win32com', 'reportlab', 'setuptools', 'doctest', 'pygments',
            'pyreadline', 'email']
 new_out = []
 
-includes = tuple(['traitsui.wx.tabular_editor', 'traitsui.wx.table_editor', 'enable.savage.trait_defs.ui.wx.svg_button_editor'])
+includes = tuple(['traitsui.wx.tabular_editor',
+                  'traitsui.wx.table_editor',
+                  'enable.savage.trait_defs.ui.wx.svg_button_editor'])
 excludes = tuple(qt_lib + ets_lib + gui_lib + num_lib + sci_lib + std_lib + div_lib + new_out)
 
 freeze = Freezer(ff, includes=includes, excludes=excludes)

@@ -153,22 +153,22 @@ class CalcContainer(_traits.HasTraits):
 class PluginController(_traitsui.Controller):
     update_tree = _traits.Event()
     selected_object = _traits.Any()
-    edit_node = _traits.Instance(Model)
+    edit_node = _traits.Instance(ModelController)
     win_handle = _traits.Any()
 
     def init(self, info):
         super(PluginController, self).init(info)
         self.selected_object = self.model
-        self.edit_node = self.model.calculator
+        # self.edit_node = self.model.calculator
 
-    # @_traits.on_trait_change('selected_object')
-    # def _tree_selection_made(self, obj, name, new):
-    #     if isinstance(new, ModelController):
-    #         self.edit_node = new
-    #     elif isinstance(new, WindowLauncher):
-    #         self.edit_node = new.owner_ref
-    #     else:
-    #         self.edit_node = self.dummy_model_controller
+    @_traits.on_trait_change('selected_object')
+    def _tree_selection_made(self, obj, name, new):
+        if isinstance(new, ModelController):
+            self.edit_node = new
+        elif isinstance(new, WindowLauncher):
+            self.edit_node = new.owner_ref
+        else:
+            self.edit_node = self.dummy_model_controller
 
 
 # plugin_view

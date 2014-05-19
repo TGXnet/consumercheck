@@ -19,7 +19,7 @@ xlrd      0.8.0       For reading XL spredsheet
 openpyxl  1.5.8       For reading XL spredsheet
 pytest    2.3.0       Testing framework
 pandas    0.10.1      Matrix container
-bbfreeze  1.0.0       Extracting stand alone innstalation for Windows
+bbfreeze  1.1.3       Extracting stand alone innstalation for Windows
 
 
 To build and install some Python libraries some tools and development libraries

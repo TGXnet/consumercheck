@@ -35,7 +35,7 @@ from dataset_container import DatasetContainer
 from plot_windows import OverviewPlotWindow
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
-from plugin_base import (ModelController, CalcContainer, PluginController,
+from plugin_base import (ModelController, CalcContainer, PluginController, CalcContainer,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
@@ -258,6 +258,10 @@ prefmap_nodes = [
     ]
 
 
+class PrefmapCalcContainer(CalcContainer):
+    calculator = _traits.Instance(Prefmap, Prefmap())
+
+
 
 class PrefmapPluginController(PluginController):
 
@@ -309,7 +313,8 @@ class PrefmapPluginController(PluginController):
 
         calc_model = Prefmap(id=id_c+id_s,
                              ds_C=ds_c,
-                             ds_S=ds_s)
+                             ds_S=ds_s,
+                             settings=self.model.calculator)
         calculation = PrefmapController(calc_model)
         self.model.add(calculation)
 
@@ -368,7 +373,7 @@ if __name__ == '__main__':
         dsc = DatasetContainer()
         dsc.add(C)
         dsc.add(S)
-        prefmap = CalcContainer(dsc=dsc)
+        prefmap = PrefmapCalcContainer(dsc=dsc)
         ppc = PrefmapPluginController(prefmap)
         ppc.configure_traits(
             view=prefmap_plugin_view)

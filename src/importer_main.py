@@ -115,7 +115,7 @@ class ImporterMain(HasTraits):
     def _show_file_selector(self):
         dlg = FileDialog(
             action='open files',
-            default_directory=self._last_open_path,
+#            default_path=self._last_open_path,
             title='Import data')
         status = dlg.open()
         if status == OK:
