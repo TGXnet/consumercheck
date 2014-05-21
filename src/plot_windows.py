@@ -165,6 +165,7 @@ class SinglePlotWindow(PlotWindow):
 class BasePlotControl(HasTraits):
     plot = Instance(DataView)
     eq_axis = Bool(False)
+    vis_toggle = Button('Visibility')
     y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
                        width=32, height=32)
     y_up = SVGButton(filename=pjoin(os.getcwd(), 'y_up.svg'),
@@ -186,6 +187,10 @@ class BasePlotControl(HasTraits):
             orientation="horizontal",
         )
     )
+
+    @on_trait_change('vis_toggle')
+    def switch_visibility(self, obj, name, new):
+        obj.plot.show_points()
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
@@ -282,102 +287,7 @@ class PCPlotWindow(SinglePlotWindow):
     """Window for embedding principal component plots
 
     """
-    eq_axis = Bool(False)
-    show_labels = Bool(True)
-    # Prefmap correlation loading visibility togling
-    vis_toggle = Button('Visibility')
-    vistog = Bool(False)
-    show_extra = Bool(True)
-
     plot_control = Instance(BasePlotControl)
-
-    y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
-                       width=32, height=32)
-    y_up = SVGButton(filename=pjoin(os.getcwd(), 'y_up.svg'),
-                     width=32, height=32)
-    x_down = SVGButton(filename=pjoin(os.getcwd(), 'x_down.svg'),
-                       width=32, height=32)
-    x_up = SVGButton(filename=pjoin(os.getcwd(), 'x_up.svg'),
-                     width=32, height=32)
-    reset_xy = SVGButton(filename=pjoin(os.getcwd(), 'reset_xy.svg'),
-                         width=32, height=32)
-
-    # @on_trait_change('plot')
-    # def _update_controls(self, obj, name, new):
-    #     if isinstance(new, PCScatterPlot):
-    #         obj.show_extra = True
-    #     else:
-    #         obj.show_extra = False
-
-    # @on_trait_change('plot')
-    # def _set_pc_plot(self, obj, name, new):
-    #     obj.plot_control.plot = obj.plot
-
-    @on_trait_change('show_labels')
-    def switch_labels(self, obj, name, new):
-        obj.plot.show_labels(show=new, set_id=1)
-
-    @on_trait_change('eq_axis')
-    def switch_axis(self, obj, name, new):
-        obj.plot.toggle_eq_axis(new)
-
-    @on_trait_change('reset_xy')
-    def pc_axis_reset(self, obj, name, new):
-        obj.plot.set_x_y_pc(1, 2)
-
-    @on_trait_change('x_up')
-    def pc_axis_x_up(self, obj, name, new):
-        x, y, n = obj.plot.get_x_y_status()
-        if x < n:
-            x += 1
-        else:
-            x = 1
-        obj.plot.set_x_y_pc(x, y)
-
-    @on_trait_change('x_down')
-    def pc_axis_x_down(self, obj, name, new):
-        x, y, n = obj.plot.get_x_y_status()
-        if x > 1:
-            x -= 1
-        else:
-            x = n
-        obj.plot.set_x_y_pc(x, y)
-
-    @on_trait_change('y_up')
-    def pc_axis_y_up(self, obj, name, new):
-        x, y, n = obj.plot.get_x_y_status()
-        if y < n:
-            y += 1
-        else:
-            y = 1
-        obj.plot.set_x_y_pc(x, y)
-
-    @on_trait_change('y_down')
-    def pc_axis_y_down(self, obj, name, new):
-        x, y, n = obj.plot.get_x_y_status()
-        if y > 1:
-            y -= 1
-        else:
-            y = n
-        obj.plot.set_x_y_pc(x, y)
-
-    @on_trait_change('vis_toggle')
-    def switch_visibility(self, obj, name, new):
-        obj.plot.show_points()
-
-    extra_gr = Group(
-        Item('x_down', show_label=False),
-        Item('x_up', show_label=False),
-        Item('reset_xy', show_label=False),
-        Item('y_up', show_label=False),
-        Item('y_down', show_label=False),
-        Item('eq_axis', label="Equal scale axis"),
-        Item('show_labels', label="Show labels"),
-        Item('vis_toggle', show_label=False, defined_when='vistog'),
-        orientation="horizontal",
-        visible_when='show_extra',
-        )
-
     traits_view = View(
         Group(
             Include('plot_gr'),
@@ -474,7 +384,8 @@ if __name__ == '__main__':
 
     mydata = clust1ds()
     plot = PCScatterPlot(mydata)
-    plot_control = CLPlotControl(plot=plot)
+    # plot_control = CLPlotControl(plot=plot)
+    plot_control = PCPlotControl(plot=plot)
     pw = PCPlotWindow(plot=plot, plot_control=plot_control)
 
     with np.errstate(invalid='ignore'):

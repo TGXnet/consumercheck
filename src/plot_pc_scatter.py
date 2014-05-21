@@ -470,40 +470,6 @@ class CLPlot(PCScatterPlot):
         self.plot_circle(True)
 
 
-
-class CorrLoadPlotWindow(PCPlotWindow):
-    """Window for embedding principal component plots
-
-    """
-    show_x_labels = Bool(True)
-    show_y_labels = Bool(True)
-
-
-    @on_trait_change('show_x_labels')
-    def _switch_x_labels(self, obj, name, new):
-        obj.plot.show_labels(show=new, set_id=1)
-
-
-    @on_trait_change('show_y_labels')
-    def _switch_y_labels(self, obj, name, new):
-        obj.plot.show_labels(show=new, set_id=2)
-
-
-    extra_gr = Group(
-        Item('x_down', show_label=False),
-        Item('x_up', show_label=False),
-        Item('reset_xy', show_label=False),
-        Item('y_up', show_label=False),
-        Item('y_down', show_label=False),
-        Item('eq_axis', label="Equal scale axis"),
-        Item('show_x_labels', label="Show consumer labels"),
-        Item('show_y_labels', label="Show sensory labels"),
-        Item('vis_toggle', show_label=False, defined_when='vistog'),
-        orientation="horizontal",
-        visible_when='show_extra',
-        )
-
-
 if __name__ == '__main__':
     from tests.conftest import iris_ds
 

@@ -27,12 +27,12 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import PCScatterPlot, CLPlot, CorrLoadPlotWindow
+from plot_pc_scatter import PCScatterPlot, CLPlot
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
 from dataset_container import DatasetContainer
-from plot_windows import OverviewPlotWindow, CLPlotControl
+from plot_windows import OverviewPlotWindow, PCPlotWindow, CLPlotControl
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController, CalcContainer,
@@ -142,7 +142,7 @@ class PrefmapController(ModelController):
             res = self.get_result()
             plot_control = CLPlotControl(plot=viewable)
 
-            win = CorrLoadPlotWindow(
+            win = PCPlotWindow(
                 plot=viewable,
                 plot_control=plot_control,
                 res=res,
