@@ -24,8 +24,10 @@ from os.path import join as pjoin
 
 # Enthought library imports
 from enable.api import Component, ComponentEditor
-from traits.api import HasTraits, Any, Instance, Bool, Str, File, List, Button, on_trait_change
-from traitsui.api import View, Group, Item, Label, Handler, Include, InstanceEditor, ModelView
+from traits.api import (HasTraits, Any, Instance, Bool, Str,
+                        File, List, Button, on_trait_change)
+from traitsui.api import (View, Group, Item, Label, Handler,
+                          Include, InstanceEditor)
 # from traitsui.menu import OKButton
 from chaco.api import DataView, GridPlotContainer
 from pyface.api import FileDialog, OK
@@ -39,11 +41,11 @@ from ds_table_view import DSTableViewer
 from plugin_tree_helper import ViewNavigator, WindowLauncher
 
 
-#===============================================================================
+#==============================================================================
 # Attributes to use for the plot view.
 size = (850, 650)
-bg_color="white"
-#===============================================================================
+bg_color = "white"
+#==============================================================================
 
 
 class PWC(Handler):
@@ -53,13 +55,11 @@ class PWC(Handler):
     def init(self, info):
         info.object.hwin = info.ui.control
 
-
     def object_title_text_changed(self, info):
-        """ Called whenever the title_text attribute changes on the handled object.
+        """ Called when the title_text changes on the handled object.
 
         """
         info.ui.title = info.object.title_text
-
 
     def object_save_plot_changed(self, info):
         fe = FileEditor()
@@ -78,28 +78,24 @@ class PlotWindow(HasTraits):
                           width=32, height=32)
 
 
-
 class SinglePWC(PWC):
     """ Change the title on the UI.
 
     """
     def object_title_text_changed(self, info):
-        """ Called whenever the title_text attribute changes on the handled object.
+        """ Called when the title_text changes on the handled object.
 
         """
         # info.ui.title = info.object.title_text
         super(SinglePWC, self).object_title_text_changed(info)
         info.object.plot.title = info.object.title_text
 
-
     def object_view_table_changed(self, info):
         tv = DSTableViewer(info.object.plot.plot_data)
         tv.edit_traits(view=tv.get_view(), parent=info.object.hwin)
 
-
     def object_next_plot_changed(self, info):
         info.object.plot = info.object.plot_navigator.show_next()
-
 
     @on_trait_change('previous_plot')
     def object_previous_plot_changed(self, info):
@@ -116,7 +112,6 @@ class SinglePlotWindow(PlotWindow):
     previous_plot = Button('Previous plot')
     view_table = Button('View result table')
 
-
     def __init__(self, *args, **kwargs):
         super(SinglePlotWindow, self).__init__(*args, **kwargs)
         if not self.title_text:
@@ -127,7 +122,6 @@ class SinglePlotWindow(PlotWindow):
             pt = self.plot.get_plot_name()
             self.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
 
-
     def _plot_navigator_default(self):
         if self.res and self.view_loop:
             return ViewNavigator(res=self.res, view_loop=self.view_loop)
@@ -135,9 +129,9 @@ class SinglePlotWindow(PlotWindow):
             return None
 
     plot_gr = Group(
-        Item('plot', editor=ComponentEditor(size = size, bgcolor = bg_color),
+        Item('plot', editor=ComponentEditor(size=size, bgcolor=bg_color),
              show_label=False),
-        orientation = "vertical"
+        orientation="vertical"
         )
 
     main_gr = Group(
@@ -162,9 +156,9 @@ class SinglePlotWindow(PlotWindow):
         resizable=True,
         handler=SinglePWC(),
         # kind = 'nonmodal',
-        width = .5,
-        height = .7,
-        buttons = ["OK"]
+        width=.5,
+        height=.7,
+        buttons=["OK"]
         )
 
 
@@ -279,7 +273,6 @@ class CLPlotControl(BasePlotControl):
     def _switch_x_labels(self, obj, name, new):
         obj.plot.show_labels(show=new, set_id=1)
 
-
     @on_trait_change('show_y_labels')
     def _switch_y_labels(self, obj, name, new):
         obj.plot.show_labels(show=new, set_id=2)
@@ -309,7 +302,6 @@ class PCPlotWindow(SinglePlotWindow):
     reset_xy = SVGButton(filename=pjoin(os.getcwd(), 'reset_xy.svg'),
                          width=32, height=32)
 
-
     # @on_trait_change('plot')
     # def _update_controls(self, obj, name, new):
     #     if isinstance(new, PCScatterPlot):
@@ -336,7 +328,7 @@ class PCPlotWindow(SinglePlotWindow):
     @on_trait_change('x_up')
     def pc_axis_x_up(self, obj, name, new):
         x, y, n = obj.plot.get_x_y_status()
-        if x<n:
+        if x < n:
             x += 1
         else:
             x = 1
@@ -345,7 +337,7 @@ class PCPlotWindow(SinglePlotWindow):
     @on_trait_change('x_down')
     def pc_axis_x_down(self, obj, name, new):
         x, y, n = obj.plot.get_x_y_status()
-        if x>1:
+        if x > 1:
             x -= 1
         else:
             x = n
@@ -354,7 +346,7 @@ class PCPlotWindow(SinglePlotWindow):
     @on_trait_change('y_up')
     def pc_axis_y_up(self, obj, name, new):
         x, y, n = obj.plot.get_x_y_status()
-        if y<n:
+        if y < n:
             y += 1
         else:
             y = 1
@@ -363,7 +355,7 @@ class PCPlotWindow(SinglePlotWindow):
     @on_trait_change('y_down')
     def pc_axis_y_down(self, obj, name, new):
         x, y, n = obj.plot.get_x_y_status()
-        if y>1:
+        if y > 1:
             y -= 1
         else:
             y = n
@@ -391,18 +383,18 @@ class PCPlotWindow(SinglePlotWindow):
             Include('plot_gr'),
             Label('Scroll to zoom and drag to pan in plot.'),
             # Include('extra_gr'),
-            Item('plot_control', editor=InstanceEditor(), style='custom', show_label=False),
+            Item('plot_control', editor=InstanceEditor(), style='custom',
+                 show_label=False),
             Include('main_gr'),
             layout="normal",
             ),
         resizable=True,
         handler=SinglePWC(),
         # kind = 'nonmodal',
-        width = .5,
-        height = .7,
-        buttons = ["OK"]
+        width=.5,
+        height=.7,
+        buttons=["OK"]
         )
-
 
 
 class MultiPlotWindow(PlotWindow):
@@ -429,24 +421,23 @@ class OverviewPlotWindow(MultiPlotWindow):
     traits_view = View(
         Item('plots',
              editor=ComponentEditor(
-                 size = size,
-                 bgcolor = bg_color),
+                 size=size,
+                 bgcolor=bg_color),
              show_label=False),
         Group(
             Item('show_labels', label="Show labels"),
-            orientation = "vertical"),
+            orientation="vertical"),
         resizable=True,
         handler=PWC(),
         # kind = 'nonmodal',
-        width = .5,
-        height = .7,
-        buttons = ["OK"]
+        width=.5,
+        height=.7,
+        buttons=["OK"]
         )
 
     def _plots_default(self):
         container = GridPlotContainer(background=bg_color)
         return container
-
 
 
 class FileEditor(HasTraits):
@@ -463,12 +454,13 @@ class FileEditor(HasTraits):
             self.file_name = '{}.png'.format(self.file_name)
             obj.plot.export_image(self.file_name)
 
-
     def _save_as_img(self, obj):
-        """ Used to browse to a destination folder, and specify a filename for the image.
+        """ Specify a filename for the image, in destination folder.
         """
-        fd = FileDialog(action='save as', default_path=self.file_name, default_filename='test.png',
-                        wildcard = "PNG files (*.png)|*.png|")
+        fd = FileDialog(action='save as',
+                        default_path=self.file_name,
+                        default_filename='test.png',
+                        wildcard="PNG files (*.png)|*.png|")
         if fd.open() == OK:
             self.file_name = fd.path
             if self.file_name != '':
