@@ -20,7 +20,7 @@
 #-----------------------------------------------------------------------------
 
 # Local imports
-from plot_windows import SinglePlotWindow, PCPlotWindow
+from plot_windows import SinglePlotWindow, PCPlotWindow, PCPlotControl, CLPlotControl
 from plot_pc_scatter import CorrLoadPlotWindow, CLPlot
 
 
@@ -38,15 +38,19 @@ def plot_win_creator_closure(plot_func, res, view_loop, title, parent_win):
         plot = plot_func(res)
 
         if isinstance(plot, CLPlot):
-            win = CorrLoadPlotWindow(
+            plot_control = CLPlotControl(plot=plot)
+            win = PCPlotWindow(
                 plot=plot,
+                plot_control=plot_control,
                 res=res,
                 # title_text=title,
                 view_loop=view_loop
             )
         else:
+            plot_control = PCPlotControl(plot=plot)
             win = PCPlotWindow(
                 plot=plot,
+                plot_control=plot_control,
                 res=res,
                 # title_text=title,
                 view_loop=view_loop

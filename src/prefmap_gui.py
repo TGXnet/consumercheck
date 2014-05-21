@@ -32,7 +32,7 @@ from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
 from dataset_container import DatasetContainer
-from plot_windows import OverviewPlotWindow
+from plot_windows import OverviewPlotWindow, CLPlotControl
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
 from plugin_base import (ModelController, CalcContainer, PluginController, CalcContainer,
@@ -140,9 +140,11 @@ class PrefmapController(ModelController):
         if isinstance(viewable, CLPlot):
         # if viewable.title == 'Correlation loadings':
             res = self.get_result()
+            plot_control = CLPlotControl(plot=viewable)
 
             win = CorrLoadPlotWindow(
                 plot=viewable,
+                plot_control=plot_control,
                 res=res,
                 view_loop=view_loop,
                 # title_text=self._wind_title(res),

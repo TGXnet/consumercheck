@@ -31,7 +31,7 @@ import chaco.api as _chaco
 from dataset import DataSet
 from ds_table_view import DSTableViewer
 from plot_pc_scatter import PCScatterPlot
-from plot_windows import PCPlotWindow, SinglePlotWindow
+from plot_windows import PCPlotWindow, SinglePlotWindow, PCPlotControl
 from dataset_container import DatasetContainer
 from plugin_tree_helper import WindowLauncher
 
@@ -82,9 +82,11 @@ class ModelController(_traitsui.Controller):
         """
         if isinstance(viewable, PCScatterPlot):
             res = self.get_result()
+            plot_control = PCPlotControl(plot=viewable)
 
             win = PCPlotWindow(
                 plot=viewable,
+                plot_control=plot_control,
                 res=res,
                 view_loop=view_loop,
                 # title_text=self._wind_title(res),
