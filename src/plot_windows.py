@@ -26,7 +26,7 @@ from os.path import join as pjoin
 from enable.api import Component, ComponentEditor
 from traits.api import (HasTraits, Any, Instance, Bool, Str,
                         File, List, Button, on_trait_change)
-from traitsui.api import (View, Group, Item, Label, Handler,
+from traitsui.api import (View, Group, Item, Label, Handler, ModelView,
                           Include, InstanceEditor)
 # from traitsui.menu import OKButton
 from chaco.api import DataView, GridPlotContainer
@@ -162,10 +162,21 @@ class SinglePlotWindow(PlotWindow):
         )
 
 
-class BasePlotControl(HasTraits):
-    plot = Instance(DataView)
+class NoPlotControl(ModelView):
+    plot_controllers = Group()
+    traits_view = View(
+        Group(
+            Item('model', editor=ComponentEditor(size=size, bgcolor=bg_color),
+                 show_label=False),
+            Include('plot_controllers'),
+            orientation="vertical"
+        )
+    )
+
+
+class PCBaseControl(NoPlotControl):
     eq_axis = Bool(False)
-    vis_toggle = Button('Visibility')
+    # vis_toggle = Button('Visibility')
     y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
                        width=32, height=32)
     y_up = SVGButton(filename=pjoin(os.getcwd(), 'y_up.svg'),
@@ -178,116 +189,110 @@ class BasePlotControl(HasTraits):
                          width=32, height=32)
     traits_view = View(
         Group(
-            Item('x_down', show_label=False),
-            Item('x_up', show_label=False),
-            Item('reset_xy', show_label=False),
-            Item('y_up', show_label=False),
-            Item('y_down', show_label=False),
-            Item('eq_axis', label="Equal scale axis"),
-            orientation="horizontal",
+            Item('model', editor=ComponentEditor(size=size, bgcolor=bg_color),
+                 show_label=False),
+            Label('Scroll to zoom and drag to pan in plot.'),
+            Include('plot_controllers'),
+            orientation="vertical"
         )
     )
 
-    @on_trait_change('vis_toggle')
-    def switch_visibility(self, obj, name, new):
-        obj.plot.show_points()
+    # @on_trait_change('vis_toggle')
+    # def switch_visibility(self, obj, name, new):
+    #     obj.model.show_points()
 
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
-        obj.plot.toggle_eq_axis(new)
+        obj.model.toggle_eq_axis(new)
 
     @on_trait_change('reset_xy')
     def pc_axis_reset(self, obj, name, new):
-        obj.plot.set_x_y_pc(1, 2)
+        obj.model.set_x_y_pc(1, 2)
 
     @on_trait_change('x_up')
     def pc_axis_x_up(self, obj, name, new):
-        x, y, n = obj.plot.get_x_y_status()
+        x, y, n = obj.model.get_x_y_status()
         if x < n:
             x += 1
         else:
             x = 1
-        obj.plot.set_x_y_pc(x, y)
+        obj.model.set_x_y_pc(x, y)
 
     @on_trait_change('x_down')
     def pc_axis_x_down(self, obj, name, new):
-        x, y, n = obj.plot.get_x_y_status()
+        x, y, n = obj.model.get_x_y_status()
         if x > 1:
             x -= 1
         else:
             x = n
-        obj.plot.set_x_y_pc(x, y)
+        obj.model.set_x_y_pc(x, y)
 
     @on_trait_change('y_up')
     def pc_axis_y_up(self, obj, name, new):
-        x, y, n = obj.plot.get_x_y_status()
+        x, y, n = obj.model.get_x_y_status()
         if y < n:
             y += 1
         else:
             y = 1
-        obj.plot.set_x_y_pc(x, y)
+        obj.model.set_x_y_pc(x, y)
 
     @on_trait_change('y_down')
     def pc_axis_y_down(self, obj, name, new):
-        x, y, n = obj.plot.get_x_y_status()
+        x, y, n = obj.model.get_x_y_status()
         if y > 1:
             y -= 1
         else:
             y = n
-        obj.plot.set_x_y_pc(x, y)
+        obj.model.set_x_y_pc(x, y)
 
 
-class PCPlotControl(BasePlotControl):
+class PCPlotControl(PCBaseControl):
     show_labels = Bool(True)
-    traits_view = View(
-        Group(
-            Item('x_down', show_label=False),
-            Item('x_up', show_label=False),
-            Item('reset_xy', show_label=False),
-            Item('y_up', show_label=False),
-            Item('y_down', show_label=False),
-            Item('eq_axis', label="Equal scale axis"),
-            Item('show_labels', label="Show labels"),
-            orientation="horizontal",
-        )
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_labels', label="Show labels"),
+        orientation="horizontal",
     )
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
-        obj.plot.show_labels(show=new, set_id=1)
+        obj.model.show_labels(show=new, set_id=1)
 
 
-class CLPlotControl(BasePlotControl):
+class CLPlotControl(PCBaseControl):
     show_x_labels = Bool(True)
     show_y_labels = Bool(True)
-    traits_view = View(
-        Group(
-            Item('x_down', show_label=False),
-            Item('x_up', show_label=False),
-            Item('reset_xy', show_label=False),
-            Item('y_up', show_label=False),
-            Item('y_down', show_label=False),
-            Item('eq_axis', label="Equal scale axis"),
-            Item('show_x_labels', label="Show consumer labels"),
-            Item('show_y_labels', label="Show sensory labels"),
-            orientation="horizontal",
-        )
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_x_labels', label="Show consumer labels"),
+        Item('show_y_labels', label="Show sensory labels"),
+        orientation="horizontal",
     )
 
     @on_trait_change('show_x_labels')
     def _switch_x_labels(self, obj, name, new):
-        obj.plot.show_labels(show=new, set_id=1)
+        obj.model.show_labels(show=new, set_id=1)
 
     @on_trait_change('show_y_labels')
     def _switch_y_labels(self, obj, name, new):
-        obj.plot.show_labels(show=new, set_id=2)
+        obj.model.show_labels(show=new, set_id=2)
 
 
 class PCPlotWindow(SinglePlotWindow):
     """Window for embedding principal component plots
 
     """
-    plot_control = Instance(BasePlotControl)
+    plot_control = Instance(NoPlotControl)
     traits_view = View(
         Group(
             Include('plot_gr'),
@@ -384,8 +389,7 @@ if __name__ == '__main__':
 
     mydata = clust1ds()
     plot = PCScatterPlot(mydata)
-    # plot_control = CLPlotControl(plot=plot)
-    plot_control = PCPlotControl(plot=plot)
+    plot_control = CLPlotControl(model=plot)
     pw = PCPlotWindow(plot=plot, plot_control=plot_control)
 
     with np.errstate(invalid='ignore'):
