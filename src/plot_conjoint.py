@@ -35,9 +35,8 @@ from utilities import COLOR_PALETTE
 
 
 #Local imports
-# FIXME: Namespace import
 from dataset import DataSet
-from plot_base import BasePlot
+from plot_base import BasePlot, NoPlotControl
 from plot_windows import SinglePlotWindow
 
 
@@ -310,19 +309,13 @@ class InteractionPlot(ConjointBasePlot):
         self.overlays.append(legend)
 
 
-
-class InteractionPlotWindow(SinglePlotWindow):
-    """Window for embedding line plot
-
-    """
+class InteractionPlotControl(NoPlotControl):
     flip = Bool(False)
+    plot_controllers = Group(Item('flip'))
 
     @on_trait_change('flip')
     def flip_interaction(self, obj, name, new):
-        obj.plot.plot_interaction(new)
-
-    extra_gr = Group(Item('flip'))
-
+        obj.model.plot_interaction(new)
 
 
 def slice_main_effect_ds(ls_means_table, attr_name):

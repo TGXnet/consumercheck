@@ -35,9 +35,9 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from dialogs import ErrorMessage
 from conjoint_model import Conjoint
-from ds_table_view import DSTableViewer
 from plot_windows import SinglePlotWindow
-from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
+from plot_conjoint import (MainEffectsPlot, InteractionPlot,
+                           InteractionPlotControl)
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
 from conjoint_base import PluginController
 from plugin_base import (ModelController, CalcContainer,
@@ -139,35 +139,19 @@ class ConjointController(ModelController):
           + Plot subtype
           + DataSet type
         """
-        if isinstance(viewable, MainEffectsPlot):
+        if isinstance(viewable, InteractionPlot):
             res = self.get_result()
+            plot_control = InteractionPlotControl(viewable)
 
             win = SinglePlotWindow(
-                plot=viewable,
+                plot=plot_control,
                 res=res,
                 view_loop=view_loop,
-                # title_text=self._wind_title(res),
-                # vistog=False
                 )
 
             self._show_plot_window(win)
-        elif isinstance(viewable, InteractionPlot):
-            res = self.get_result()
-
-            win = InteractionPlotWindow(
-                plot=viewable,
-                res=res,
-                view_loop=view_loop,
-                # title_text=self._wind_title(res),
-                # vistog=False
-                )
-
-            self._show_plot_window(win)
-        elif isinstance(viewable, DataSet):
-            table = DSTableViewer(viewable)
-            table.edit_traits(view=table.get_view(), kind='live', parent=self.win_handle)
         else:
-            raise NotImplementedError("Do not know how to open this")
+            super(PrefmapController, self).open_window(viewable, view_loop)
 
     def _wind_title(self, res):
         ds_name = self.model.design.display_name
