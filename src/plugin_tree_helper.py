@@ -27,6 +27,13 @@ Created on Sep 11, 2012
 
 # ETS imports
 import traits.api as _traits
+import chaco.api as _chaco
+
+# Local imports
+from plot_base import NoPlotControl
+from plot_pc_scatter import PCScatterPlot, PCPlotControl, CLPlot, CLPlotControl
+from plot_histogram import StackedHistPlot, StackedPlotControl
+from plot_conjoint import InteractionPlot, InteractionPlotControl
 
 
 def dclk_activator(obj):
@@ -53,12 +60,10 @@ class WindowLauncher(_traits.HasTraits):
     func_parms = _traits.Tuple()
 
 
-
 class ViewNavigator(_traits.HasTraits):
     view_loop = _traits.List(WindowLauncher)
     current_idx = _traits.Int(0)
     res = _traits.WeakRef()
-
 
     def show_next(self):
         if self.current_idx < len(self.view_loop)-1:
@@ -68,10 +73,9 @@ class ViewNavigator(_traits.HasTraits):
         vc = self.view_loop[self.current_idx]
         # return vc.view_creator(self.res, vc.func_parms)
         if len(vc.func_parms) < 1:
-            return vc.view_creator(self.res)
+            return self._make_plot_controller(vc.view_creator(self.res))
         else:
-            return vc.view_creator(self.res, *vc.func_parms)
-
+            return self._make_plot_controller(vc.view_creator(self.res, *vc.func_parms))
 
     def show_previous(self):
         if self.current_idx > 0:
@@ -80,6 +84,19 @@ class ViewNavigator(_traits.HasTraits):
             self.current_idx = len(self.view_loop) - 1
         vc = self.view_loop[self.current_idx]
         if len(vc.func_parms) < 1:
-            return vc.view_creator(self.res)
+            return self._make_plot_controller(vc.view_creator(self.res))
         else:
-            return vc.view_creator(self.res, *vc.func_parms)
+            return self._make_plot_controller(vc.view_creator(self.res, *vc.func_parms))
+
+    def _make_plot_controller(self, viewable):
+        if isinstance(viewable, StackedHistPlot):
+            plot_control = StackedPlotControl(viewable)
+        elif isinstance(viewable, InteractionPlot):
+            plot_control = InteractionPlotControl(viewable)
+        elif isinstance(viewable, CLPlot):
+            plot_control = CLPlotControl(viewable)
+        elif isinstance(viewable, PCScatterPlot):
+            plot_control = PCPlotControl(viewable)
+        elif isinstance(viewable, _chaco.DataView):
+            plot_control = NoPlotControl(viewable)
+        return plot_control
