@@ -34,7 +34,7 @@ import chaco.api as _chaco
 from dataset import DataSet
 from utilities import hue_span
 from plot_base import BasePlot
-from plot_windows import SinglePlotWindow
+from plot_windows import SinglePlotWindow, NoPlotControl
 
 
 class DescStatBasePlot(BasePlot):
@@ -377,7 +377,6 @@ class PercentAxis(_chaco.LabelAxis):
         super(PercentAxis, self)._compute_tick_positions(gc, component)
 
 
-
 class StackedPlotWindow(SinglePlotWindow):
     """Window for embedding line plot
 
@@ -391,6 +390,15 @@ class StackedPlotWindow(SinglePlotWindow):
 
     extra_gr = _traitsui.Group(_traitsui.Item('percent'))
 
+
+class StackedPlotControl(NoPlotControl):
+    percent = _traits.Bool(False)
+    plot_controllers = _traitsui.Group(_traitsui.Item('percent'))
+
+    @_traits.on_trait_change('percent')
+    def flip_interaction(self, obj, name, new):
+        obj.model.plot_stacked(new)
+        obj.model.invalidate_and_redraw()
 
 
 if __name__ == '__main__':
