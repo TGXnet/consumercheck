@@ -46,8 +46,6 @@ def overview_activator(obj):
 
 class WindowLauncher(_traits.HasTraits):
     node_name = _traits.Str()
-    # FIXME: Deprecated by view_creator
-    # func_name = _traits.Str()
     view_creator = _traits.Callable()
     owner_ref = _traits.WeakRef()
     loop_name = _traits.Str()

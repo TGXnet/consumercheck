@@ -38,7 +38,6 @@ from enable.api import ColorTrait
 from dataset import DataSet
 from plot_base import PlotBase
 from plot_interface import IPCScatterPlot
-from plot_windows import PCPlotWindow
 
 
 class PCDataSet(HasTraits):
