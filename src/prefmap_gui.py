@@ -27,15 +27,15 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import PCScatterPlot, CorrLoadPlotWindow
+from plot_pc_scatter import PCScatterPlot, CLPlot, CLPlotControl
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
 from dataset_container import DatasetContainer
-from plot_windows import OverviewPlotWindow
+from plot_windows import OverviewPlotWindow, SinglePlotWindow
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
-from plugin_base import (ModelController, CalcContainer, PluginController, CalcContainer,
+from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
@@ -140,13 +140,12 @@ class PrefmapController(ModelController):
         if isinstance(viewable, CLPlot):
         # if viewable.title == 'Correlation loadings':
             res = self.get_result()
+            plot_control = CLPlotControl(viewable)
 
-            win = CorrLoadPlotWindow(
-                plot=viewable,
+            win = SinglePlotWindow(
+                plot=plot_control,
                 res=res,
                 view_loop=view_loop,
-                # title_text=self._wind_title(res),
-                # vistog=False
                 )
 
             self._show_plot_window(win)
@@ -175,17 +174,6 @@ def loadings_x_plot(res):
 def loadings_y_plot(res):
     plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Loadings Y')
     return plot
-
-
-class CLPlot(PCScatterPlot):
-
-    def __init__(self, clx, evx, cly, evy, **kwargs):
-        super(CLPlot, self).__init__(**kwargs)
-        clx.style.fg_color = 'blue'
-        self.add_PC_set(clx, evx)
-        cly.style.fg_color = 'red'
-        self.add_PC_set(cly, evy)
-        self.plot_circle(True)
 
 
 def corr_loadings_plot(res):
@@ -315,7 +303,7 @@ class PrefmapPluginController(PluginController):
                              ds_C=ds_c,
                              ds_S=ds_s,
                              settings=self.model.calculator)
-        calculation = PrefmapController(calc_model)
+        calculation = PrefmapController(calc_model, win_handle=self.win_handle)
         self.model.add(calculation)
 
 

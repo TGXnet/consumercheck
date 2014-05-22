@@ -43,12 +43,6 @@ class PcaController(ModelController):
     window_launchers = _traits.List(_traits.Instance(WindowLauncher))
 
 
-    def init(self, info):
-        super(PcaController, self).init(info)
-        self.win_handle = info.ui.control
-        info.object.hwin = info.ui.control
-
-
     def _name_default(self):
         return self.model.ds.display_name
 
@@ -266,12 +260,6 @@ class PcaPluginController(PluginController):
     dummy_model_controller = _traits.Instance(PcaController, PcaController(Pca()))
 
 
-    def init(self, info):
-        super(PcaPluginController, self).init(info)
-        self.win_handle = info.ui.control
-        info.object.hwin = info.ui.control
-
-
     # FIXME: I dont know why the initial populating is not handled by
     # _update_selection_list()
     def _available_ds_default(self):
@@ -307,7 +295,7 @@ class PcaPluginController(PluginController):
             self._show_missing_warning()
             return
         calc_model = Pca(id=ds_id, ds=pcads, settings=self.model.calculator)
-        calculation = PcaController(calc_model)
+        calculation = PcaController(calc_model, win_handle=self.win_handle)
         self.model.add(calculation)
 
 

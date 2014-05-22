@@ -30,10 +30,10 @@ import chaco.api as _chaco
 # Local imports
 from dataset import DataSet
 from ds_table_view import DSTableViewer
-from plot_pc_scatter import PCScatterPlot
-from plot_windows import PCPlotWindow, SinglePlotWindow
+from plot_base import NoPlotControl
+from plot_pc_scatter import PCScatterPlot, PCPlotControl
+from plot_windows import SinglePlotWindow
 from dataset_container import DatasetContainer
-from plugin_tree_helper import WindowLauncher
 
 
 class Result(_traits.HasTraits):
@@ -59,9 +59,9 @@ class ModelController(_traitsui.Controller):
     plot_uis = _traits.List()
     win_handle = _traits.Any()
 
-    def init(self, info):
-        super(ModelController, self).init(info)
-        self.win_handle = info.ui.control
+    # def init(self, info):
+    #     super(ModelController, self).init(info)
+    #     self.win_handle = info.ui.control
 
     def _name_default(self):
         raise NotImplementedError('_name_default')
@@ -82,25 +82,23 @@ class ModelController(_traitsui.Controller):
         """
         if isinstance(viewable, PCScatterPlot):
             res = self.get_result()
+            plot_control = PCPlotControl(viewable)
 
-            win = PCPlotWindow(
-                plot=viewable,
+            win = SinglePlotWindow(
+                plot=plot_control,
                 res=res,
                 view_loop=view_loop,
-                # title_text=self._wind_title(res),
-                # vistog=False
                 )
 
             self._show_plot_window(win)
         elif isinstance(viewable, _chaco.DataView):
             res = self.get_result()
+            plot_control = NoPlotControl(viewable)
 
             win = SinglePlotWindow(
-                plot=viewable,
+                plot=plot_control,
                 res=res,
                 view_loop=view_loop,
-                # title_text=self._wind_title(res),
-                # vistog=False
                 )
 
             self._show_plot_window(win)
@@ -157,9 +155,10 @@ class PluginController(_traitsui.Controller):
     win_handle = _traits.Any()
 
     def init(self, info):
-        super(PluginController, self).init(info)
         self.selected_object = self.model
         self.edit_node = self.model.calculator
+        self.win_handle = info.ui.control
+        return True
 
     # @_traits.on_trait_change('selected_object')
     # def _tree_selection_made(self, obj, name, new):

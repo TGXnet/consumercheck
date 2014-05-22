@@ -34,13 +34,12 @@ from dataset_container import DatasetContainer
 from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
 from about_consumercheck import ConsumerCheckAbout
-from conjoint_base import CalcContainer
 
 # Plugin imports
 from basic_stat_gui import BasicStatPluginController, BasicStatCalcContainer, bs_plugin_view
 from pca_gui import PcaPluginController, PcaCalcContainer, pca_plugin_view
 from prefmap_gui import PrefmapPluginController, PrefmapCalcContainer, prefmap_plugin_view
-from conjoint_gui import ConjointPluginController, conjoint_plugin_view
+from conjoint_gui import ConjointPluginController, ConjointCalcContainer, conjoint_plugin_view
 
 state_file = conf.pkl_file_url()
 
@@ -130,7 +129,7 @@ class MainUi(HasTraits):
         return PrefmapPluginController(prefmap)
 
     def _conjoint_default(self):
-        conjoint = CalcContainer(dsc=self.dsc)
+        conjoint = ConjointCalcContainer(dsc=self.dsc)
         return ConjointPluginController(conjoint)
 
     def _toggle_advanced(self):
