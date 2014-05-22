@@ -44,8 +44,6 @@ from plugin_base import (ModelController, CalcContainer,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
-
-
 class ConjointController(ModelController):
     '''Controller for one Conjoint calculation'''
     table_win_launchers = _traits.List(WindowLauncher)
@@ -69,30 +67,23 @@ class ConjointController(ModelController):
         </ul>
         ''')
 
-
     def _name_default(self):
         return self.model.liking.display_name
-
 
     def _design_name_default(self):
         return self.model.design.display_name
 
-
     def _cons_attr_name_default(self):
         return self.model.consumers.display_name
-
 
     def _available_design_vars_default(self):
         return self.model.design.var_n
 
-
     def _available_consumers_vars_default(self):
         return self.model.consumers.var_n
 
-
     def _table_win_launchers_default(self):
         return self._populate_table_win_launchers()
-
 
     def _populate_table_win_launchers(self):
         # Populate table windows launchers
@@ -109,12 +100,10 @@ class ConjointController(ModelController):
                                view_creator=fn, loop_name='table_win_launchers',)
                 for nn, fn in table_win_launchers]
 
-
     @_traits.on_trait_change('model:[design_vars,consumers_vars,model_struct]')
     def _update_plot_lists(self):
         self._populate_me_plot_launchers()
         self._populate_int_plot_launchers()
-
 
     def _populate_me_plot_launchers(self):
         vn = [n.encode('ascii') for n
@@ -126,7 +115,6 @@ class ConjointController(ModelController):
                 loop_name='me_plot_launchers',
                 view_creator=plot_main_effects, func_parms=tuple([name]))
             for name in vn]
-
 
     def _populate_int_plot_launchers(self):
         vn = [n.encode('ascii') for n
@@ -145,7 +133,6 @@ class ConjointController(ModelController):
                 loop_name='int_plot_launchers',
                 view_creator=plot_interaction, func_parms=tuple([p_one, p_two]))
             for nn, p_one, p_two in int_plot_launchers]
-
 
     def open_window(self, viewable, view_loop):
         """Expected viewable is by now:
@@ -182,12 +169,10 @@ class ConjointController(ModelController):
         else:
             raise NotImplementedError("Do not know how to open this")
 
-
     def _wind_title(self, res):
         ds_name = self.model.design.display_name
         # mn = res.method_name
         return "{0} | Conjoint - ConsumerCheck".format(ds_name)
-
 
 
 # View creators
@@ -227,8 +212,6 @@ def resid_ind_table(res):
 
 
 no_view = _traitsui.View()
-
-
 
 
 conjoint_view = _traitsui.View(
@@ -304,10 +287,8 @@ class ConjointPluginController(PluginController):
     dummy_model_controller = _traits.Instance(ConjointController)
     exported = _traits.Int(0)
 
-
     def _dummy_model_controller_default(self):
         return ConjointController(Conjoint(owner_ref=self))
-
 
     @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]', post_init=False)
     def _update_selection_list(self, obj, name, new):
@@ -315,19 +296,15 @@ class ConjointPluginController(PluginController):
         self.available_consumer_characteristics_sets = self._available_consumer_characteristics_sets_default()
         self.available_consumer_liking_sets = self._available_consumer_liking_sets_default()
 
-
     def _available_design_sets_default(self):
         return self.model.dsc.get_id_name_map('Design variable')
-
 
     def _available_consumer_characteristics_sets_default(self):
         tom = ('', '')
         return [tom] + self.model.dsc.get_id_name_map('Consumer characteristics')
 
-
     def _available_consumer_liking_sets_default(self):
         return self.model.dsc.get_id_name_map('Consumer liking')
-
 
     @_traits.on_trait_change('selected_design')
     def _upd_des_attr_list(self, obj, name, old_value, new_value):
@@ -340,7 +317,6 @@ class ConjointPluginController(PluginController):
             varn.append((k, "{0} ({1})".format(k, v)))
         self.design = d
         self.design_vars = varn
-
 
     @_traits.on_trait_change('selected_consumer_characteristics_set')
     def _upd_cons_attr_list(self, obj, name, old_value, new_value):
@@ -366,7 +342,6 @@ for variables with a large number of categories.
         self.consumers = d
         self.consumer_vars = varn
 
-
 #    @_traits.on_trait_change('sel_design_var')
 #    def _upd_design_var(self, obj, name, old_value, new_value):
 #        if isinstance(self.selected_object, ModelController):
@@ -382,7 +357,6 @@ for variables with a large number of categories.
 #        elif isinstance(self.selected_object, WindowLauncher):
 #            self.selected_object.owner_ref.model.consumers_vars = new_value
 
-
     @_traits.on_trait_change('selected_consumer_liking_sets')
     def _liking_set_selected(self, obj, name, old_value, new_value):
         last = set(old_value)
@@ -395,7 +369,6 @@ for variables with a large number of categories.
             self._make_calculation(list(added)[0])
 
         self.update_tree = True
-
 
     def _make_calculation(self, liking_id):
         # d = self.model.dsc[self.selected_design]
@@ -430,13 +403,11 @@ for variables with a large number of categories.
         calculation._update_plot_lists()
         self.model.add(calculation)
 
-
     def _show_alignment_warning(self, nds, nls, nlc, nca=0):
         dlg = ErrorMessage()
         dlg.err_msg = 'Alignment mismatch between the dataset'
         dlg.err_val = 'There is {0} variants in the design matrix and {1} variants in the liking matrix. There is {2} consumers in the liking matrix and {3} consumers in the consumer characteristics matrix'.format(nds, nls, nlc, nca)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
-
 
     def export_data(self, editor, obj):
         parent = editor.get_parent(obj)
@@ -460,7 +431,6 @@ class ConjointWarning(_traits.HasTraits):
         resizable=True,
         buttons=[_traitsui.OKButton],
         )
-
 
 
 selection_view = _traitsui.Group(
@@ -515,9 +485,7 @@ selection_view = _traitsui.Group(
     show_border=True,
 )
 
-
 conjoint_plugin_view = make_plugin_view('Conjoint', conjoint_nodes, selection_view, conjoint_view)
-
 
 
 if __name__ == '__main__':
