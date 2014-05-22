@@ -30,8 +30,9 @@ import chaco.api as _chaco
 # Local imports
 from dataset import DataSet
 from ds_table_view import DSTableViewer
-from plot_pc_scatter import PCScatterPlot
-from plot_windows import SinglePlotWindow, NoPlotControl, PCPlotControl
+from plot_base import NoPlotControl
+from plot_pc_scatter import PCScatterPlot, PCPlotControl
+from plot_windows import SinglePlotWindow
 from dataset_container import DatasetContainer
 
 

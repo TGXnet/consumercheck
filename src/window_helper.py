@@ -20,8 +20,9 @@
 #-----------------------------------------------------------------------------
 
 # Local imports
-from plot_windows import SinglePlotWindow, NoPlotControl, PCPlotControl, CLPlotControl
-from plot_pc_scatter import PCScatterPlot, CLPlot
+from plot_base import NoPlotControl
+from plot_windows import SinglePlotWindow
+from plot_pc_scatter import PCScatterPlot, CLPlot, PCPlotControl, CLPlotControl
 
 
 def multiplot_factory(plot_func, res, view_loop, title, parent_win=None):

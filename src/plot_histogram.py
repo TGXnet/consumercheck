@@ -33,8 +33,8 @@ import chaco.api as _chaco
 # Local imports
 from dataset import DataSet
 from utilities import hue_span
-from plot_base import BasePlot
-from plot_windows import SinglePlotWindow, NoPlotControl
+from plot_base import BasePlot, NoPlotControl
+from plot_windows import SinglePlotWindow
 
 
 class DescStatBasePlot(BasePlot):
