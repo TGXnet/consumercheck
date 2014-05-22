@@ -37,7 +37,6 @@ from utilities import COLOR_PALETTE
 #Local imports
 from dataset import DataSet
 from plot_base import BasePlot, NoPlotControl
-from plot_windows import SinglePlotWindow
 
 
 class ConjointBasePlot(BasePlot):
@@ -447,11 +446,11 @@ if __name__ == '__main__':
     res = conj_res()
 
     mep = MainEffectsPlot(res, 'Flavour')
-    spw = SinglePlotWindow(plot=mep)
+    # spw = SinglePlotWindow(plot=mep)
     print(spw.plot.plot_data.mat)
     spw.configure_traits()
     iap = InteractionPlot(res, 'Sex', 'Flavour')
-    ipw = SinglePlotWindow(plot=iap)
+    # ipw = SinglePlotWindow(plot=iap)
     print(ipw.plot.plot_data.mat)
     ipw.configure_traits()
     print("The end")

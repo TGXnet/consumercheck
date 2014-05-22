@@ -34,7 +34,6 @@ import chaco.api as _chaco
 from dataset import DataSet
 from utilities import hue_span
 from plot_base import BasePlot, NoPlotControl
-from plot_windows import SinglePlotWindow
 
 
 class DescStatBasePlot(BasePlot):
@@ -364,7 +363,6 @@ class BoxPlot(DescStatBasePlot):
         return self._plot_ui_info
 
 
-
 class PercentAxis(_chaco.LabelAxis):
 
     def _compute_tick_positions(self, gc, component=None):
@@ -375,20 +373,6 @@ class PercentAxis(_chaco.LabelAxis):
         self.labels = [str(i*100/n_labels) for i in range(n_labels+1)]
 
         super(PercentAxis, self)._compute_tick_positions(gc, component)
-
-
-class StackedPlotWindow(SinglePlotWindow):
-    """Window for embedding line plot
-
-    """
-    percent = _traits.Bool(False)
-
-    @_traits.on_trait_change('percent')
-    def flip_interaction(self, obj, name, new):
-        obj.plot.plot_stacked(new)
-        obj.plot.invalidate_and_redraw()
-
-    extra_gr = _traitsui.Group(_traitsui.Item('percent'))
 
 
 class StackedPlotControl(NoPlotControl):
@@ -412,9 +396,9 @@ if __name__ == '__main__':
     plot3 = HistPlot(hds, 'O3')
     # plot.new_window(True)
 
-    for plot in [plot1, plot2, plot3]:
-        plot_wind = StackedPlotWindow(
-            plot=plot,
-            title_text="Tull",
-        )
-        plot_wind.configure_traits()
+    # for plot in [plot1, plot2, plot3]:
+    #     plot_wind = StackedPlotWindow(
+    #         plot=plot,
+    #         title_text="Tull",
+    #     )
+    #     plot_wind.configure_traits()
