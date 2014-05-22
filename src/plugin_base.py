@@ -59,9 +59,9 @@ class ModelController(_traitsui.Controller):
     plot_uis = _traits.List()
     win_handle = _traits.Any()
 
-    def init(self, info):
-        super(ModelController, self).init(info)
-        self.win_handle = info.ui.control
+    # def init(self, info):
+    #     super(ModelController, self).init(info)
+    #     self.win_handle = info.ui.control
 
     def _name_default(self):
         raise NotImplementedError('_name_default')
@@ -155,9 +155,10 @@ class PluginController(_traitsui.Controller):
     win_handle = _traits.Any()
 
     def init(self, info):
-        super(PluginController, self).init(info)
         self.selected_object = self.model
         self.edit_node = self.model.calculator
+        self.win_handle = info.ui.control
+        return True
 
     # @_traits.on_trait_change('selected_object')
     # def _tree_selection_made(self, obj, name, new):

@@ -303,7 +303,7 @@ class PrefmapPluginController(PluginController):
                              ds_C=ds_c,
                              ds_S=ds_s,
                              settings=self.model.calculator)
-        calculation = PrefmapController(calc_model)
+        calculation = PrefmapController(calc_model, win_handle=self.win_handle)
         self.model.add(calculation)
 
 

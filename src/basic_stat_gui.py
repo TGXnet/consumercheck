@@ -193,7 +193,7 @@ class BasicStatPluginController(PluginController):
 
     def _make_calculation(self, ds_id):
         calc_model = BasicStat(id=ds_id, ds=self.model.dsc[ds_id], settings=self.model.calculator)
-        calculation = BasicStatController(calc_model)
+        calculation = BasicStatController(calc_model, win_handle=self.win_handle)
         self.model.add(calculation)
 
 

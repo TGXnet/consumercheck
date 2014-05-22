@@ -388,7 +388,7 @@ for variables with a large number of categories.
                               ## consumers=c,
                               consumers_vars=self.sel_cons_char,
                               liking=l)
-        calculation = ConjointController(calc_model)
+        calculation = ConjointController(calc_model, win_handle=self.win_handle)
         calculation._update_plot_lists()
         self.model.add(calculation)
 
