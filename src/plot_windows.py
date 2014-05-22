@@ -88,10 +88,10 @@ class SinglePWC(PWC):
         """
         # info.ui.title = info.object.title_text
         super(SinglePWC, self).object_title_text_changed(info)
-        info.object.plot.title = info.object.title_text
+        info.object.plot.model.title = info.object.title_text
 
     def object_view_table_changed(self, info):
-        tv = DSTableViewer(info.object.plot.plot_data)
+        tv = DSTableViewer(info.object.plot.model.plot_data)
         tv.edit_traits(view=tv.get_view(), parent=info.object.hwin)
 
     def object_next_plot_changed(self, info):
@@ -106,7 +106,7 @@ class SinglePlotWindow(PlotWindow):
     """Window for embedding line plot
 
     """
-    plot = Instance(DataView)
+    plot = Instance(Handler)
     plot_navigator = Instance(ViewNavigator)
     next_plot = Button('Next plot')
     previous_plot = Button('Previous plot')
@@ -119,7 +119,7 @@ class SinglePlotWindow(PlotWindow):
                 wt = self.res.method_name
             else:
                 wt = ""
-            pt = self.plot.get_plot_name()
+            pt = self.plot.model.get_plot_name()
             self.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
 
     def _plot_navigator_default(self):
@@ -129,9 +129,8 @@ class SinglePlotWindow(PlotWindow):
             return None
 
     plot_gr = Group(
-        Item('plot', editor=ComponentEditor(size=size, bgcolor=bg_color),
-             show_label=False),
-        orientation="vertical"
+        Item('plot', editor=InstanceEditor(),
+             style='custom', show_label=False),
         )
 
     main_gr = Group(
@@ -142,14 +141,10 @@ class SinglePlotWindow(PlotWindow):
         orientation="horizontal",
         )
 
-    extra_gr = Group()
-
     ## def default_traits_view(self):
     traits_view = View(
         Group(
             Include('plot_gr'),
-            Label('Scroll to zoom and drag to pan in plot.'),
-            Include('extra_gr'),
             Include('main_gr'),
             layout="normal",
             ),
@@ -163,6 +158,7 @@ class SinglePlotWindow(PlotWindow):
 
 
 class NoPlotControl(ModelView):
+    model = Instance(DataView)
     plot_controllers = Group()
     traits_view = View(
         Group(
@@ -288,30 +284,6 @@ class CLPlotControl(PCBaseControl):
         obj.model.show_labels(show=new, set_id=2)
 
 
-class PCPlotWindow(SinglePlotWindow):
-    """Window for embedding principal component plots
-
-    """
-    plot_control = Instance(NoPlotControl)
-    traits_view = View(
-        Group(
-            Include('plot_gr'),
-            Label('Scroll to zoom and drag to pan in plot.'),
-            # Include('extra_gr'),
-            Item('plot_control', editor=InstanceEditor(), style='custom',
-                 show_label=False),
-            Include('main_gr'),
-            layout="normal",
-            ),
-        resizable=True,
-        handler=SinglePWC(),
-        # kind = 'nonmodal',
-        width=.5,
-        height=.7,
-        buttons=["OK"]
-        )
-
-
 class MultiPlotWindow(PlotWindow):
     plots = Instance(Component)
 
@@ -364,10 +336,10 @@ class FileEditor(HasTraits):
         """
         a, b, c = self.file_name.rpartition('.')
         if c == 'png':
-            obj.plot.export_image(self.file_name)
+            obj.plot.model.export_image(self.file_name)
         else:
             self.file_name = '{}.png'.format(self.file_name)
-            obj.plot.export_image(self.file_name)
+            obj.plot.model.export_image(self.file_name)
 
     def _save_as_img(self, obj):
         """ Specify a filename for the image, in destination folder.
@@ -389,8 +361,8 @@ if __name__ == '__main__':
 
     mydata = clust1ds()
     plot = PCScatterPlot(mydata)
-    plot_control = CLPlotControl(model=plot)
-    pw = PCPlotWindow(plot=plot, plot_control=plot_control)
+    plot_control = NoPlotControl(model=plot)
+    pw = SinglePlotWindow(plot=plot_control)
 
     with np.errstate(invalid='ignore'):
         pw.configure_traits()

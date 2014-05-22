@@ -31,9 +31,8 @@ import chaco.api as _chaco
 from dataset import DataSet
 from ds_table_view import DSTableViewer
 from plot_pc_scatter import PCScatterPlot
-from plot_windows import PCPlotWindow, SinglePlotWindow, PCPlotControl
+from plot_windows import SinglePlotWindow, NoPlotControl, PCPlotControl
 from dataset_container import DatasetContainer
-from plugin_tree_helper import WindowLauncher
 
 
 class Result(_traits.HasTraits):
@@ -82,27 +81,23 @@ class ModelController(_traitsui.Controller):
         """
         if isinstance(viewable, PCScatterPlot):
             res = self.get_result()
-            plot_control = PCPlotControl(plot=viewable)
+            plot_control = PCPlotControl(viewable)
 
-            win = PCPlotWindow(
-                plot=viewable,
-                plot_control=plot_control,
+            win = SinglePlotWindow(
+                plot=plot_control,
                 res=res,
                 view_loop=view_loop,
-                # title_text=self._wind_title(res),
-                # vistog=False
                 )
 
             self._show_plot_window(win)
         elif isinstance(viewable, _chaco.DataView):
             res = self.get_result()
+            plot_control = NoPlotControl(viewable)
 
             win = SinglePlotWindow(
-                plot=viewable,
+                plot=plot_control,
                 res=res,
                 view_loop=view_loop,
-                # title_text=self._wind_title(res),
-                # vistog=False
                 )
 
             self._show_plot_window(win)
