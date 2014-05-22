@@ -39,8 +39,9 @@ from ds_table_view import DSTableViewer
 from plot_windows import SinglePlotWindow
 from plot_conjoint import MainEffectsPlot, InteractionPlot, InteractionPlotWindow
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
-from conjoint_base import (ModelController, CalcContainer, PluginController,
-                           dummy_view, TestOneNode, make_plugin_view)
+from conjoint_base import PluginController
+from plugin_base import (ModelController, CalcContainer,
+                         dummy_view, TestOneNode, make_plugin_view)
 
 
 
@@ -58,15 +59,15 @@ class ConjointController(ModelController):
     available_consumers_vars = _traits.List(_traits.Str())
 
     model_desc = _traits.Str(
-'''
-Consumer characteristics and design values can only be categorical values.<br /><br />
-Model structure descriptions:
-<ul>
-<li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
-<li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones).</li>
-<li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part).</li>
-</ul>
-''')
+        '''
+        Consumer characteristics and design values can only be categorical values.<br /><br />
+        Model structure descriptions:
+        <ul>
+        <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
+        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones).</li>
+        <li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part).</li>
+        </ul>
+        ''')
 
 
     def _name_default(self):
@@ -452,7 +453,7 @@ class ConjointWarning(_traits.HasTraits):
     messages = _traits.Str()
 
     traits_view = _traitsui.View(
-        _traitsui.Item('messages', show_label=False, springy=True, style='custom' ),
+        _traitsui.Item('messages', show_label=False, springy=True, style='custom'),
         title='Conjoint warning',
         height=300,
         width=600,
