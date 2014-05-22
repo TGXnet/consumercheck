@@ -25,9 +25,10 @@ import traitsui.api as _traitsui
 
 #Local imports
 from basic_stat_model import BasicStat
-from plot_histogram import BoxPlot, HistPlot, StackedHistPlot, StackedPlotWindow
+from plot_windows import SinglePlotWindow
+from plot_histogram import BoxPlot, HistPlot, StackedHistPlot, StackedPlotControl
 from plugin_tree_helper import (WindowLauncher, dclk_activator)
-from plugin_base import (ModelController, CalcContainer, PluginController, CalcContainer,
+from plugin_base import (ModelController, PluginController, CalcContainer,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
@@ -36,10 +37,8 @@ class BasicStatController(ModelController):
     base_win_launchers = _traits.List(_traits.Instance(WindowLauncher))
     idx_win_launchers = _traits.List(_traits.Instance(WindowLauncher))
 
-
     def _name_default(self):
         return self.model.ds.display_name
-
 
     def _base_win_launchers_default(self):
         return [WindowLauncher(node_name='Box plot',
@@ -51,15 +50,12 @@ class BasicStatController(ModelController):
                                owner_ref=self,
                                loop_name='base_win_launchers')]
 
-
     def _idx_win_launchers_default(self):
         return self._create_win_launchers()
-
 
     @_traits.on_trait_change('model:summary_axis')
     def _axis_altered(self, obj, name, new):
         self.idx_win_launchers = self._create_win_launchers()
-
 
     def _create_win_launchers(self):
         if self.model.summary_axis == 'Row-wise':
@@ -77,7 +73,6 @@ class BasicStatController(ModelController):
 
         return wll
 
-
     def open_window(self, viewable, view_loop):
         """Expected viewable is by now:
           + Plot subtype
@@ -85,19 +80,17 @@ class BasicStatController(ModelController):
         """
         if isinstance(viewable, StackedHistPlot):
             res = self.get_result()
+            plot_control = StackedPlotControl(viewable)
 
-            win = StackedPlotWindow(
-                plot=viewable,
+            win = SinglePlotWindow(
+                plot=plot_control,
                 res=res,
                 view_loop=view_loop,
-                # title_text=self._wind_title(res),
-                # vistog=False
                 )
 
             self._show_plot_window(win)
         else:
             super(BasicStatController, self).open_window(viewable, view_loop)
-
 
 
 # Plots creators
@@ -161,7 +154,6 @@ class BasicStatCalcContainer(CalcContainer):
     calculator = _traits.Instance(BasicStat, BasicStat())
 
 
-
 class BasicStatPluginController(PluginController):
 
     available_ds = _traits.List()
@@ -175,19 +167,16 @@ class BasicStatPluginController(PluginController):
     def _available_ds_default(self):
         return self._get_selectable()
 
-
     @_traits.on_trait_change('model:dsc:[dsl_changed,ds_changed]',
                              post_init=False)
     def _update_selection_list(self, obj, name, new):
         self.available_ds = self._get_selectable()
-
 
     def _get_selectable(self, not_all=True):
         if not_all:
             return self.model.dsc.get_id_name_map('Consumer liking')
         else:
             return self.model.dsc.get_id_name_map()
-
 
     @_traits.on_trait_change('selected_ds')
     def _selection_made(self, obj, name, old_value, new_value):
@@ -201,7 +190,6 @@ class BasicStatPluginController(PluginController):
             self._make_calculation(list(added)[0])
 
         self.update_tree = True
-
 
     def _make_calculation(self, ds_id):
         calc_model = BasicStat(id=ds_id, ds=self.model.dsc[ds_id], settings=self.model.calculator)
