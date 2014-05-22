@@ -23,21 +23,29 @@ PC plot module
 #  You should have received a copy of the GNU General Public License
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
-
+import os
+from os.path import join as pjoin
 import numpy as np
 
 # Enthought library imports
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import Bool, Int, List, HasTraits, implements, Property, on_trait_change
-from traitsui.api import Item, Group
-from enable.api import ColorTrait
-
+from traits.api import (Bool, Int, List, HasTraits, implements,
+                        Property, on_trait_change)
+from traitsui.api import Item, Group, View, Label, Include
+from enable.api import ColorTrait, ComponentEditor
+from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 # Local imports
 from dataset import DataSet
-from plot_base import PlotBase
+from plot_base import PlotBase, NoPlotControl
 from plot_interface import IPCScatterPlot
+
+#==============================================================================
+# Attributes to use for the plot view.
+size = (850, 650)
+bg_color = "white"
+#==============================================================================
 
 
 class PCDataSet(HasTraits):
@@ -172,7 +180,7 @@ class PCScatterPlot(PlotBase):
         if self.visible_datasets == 3:
             self.plots['plot_1'][0].visible = False
             self.visible_datasets = 2
-        elif self.visible_datasets == 2 :
+        elif self.visible_datasets == 2:
             self.plots['plot_1'][0].visible = True
             self.plots['plot_2'][0].visible = False
             self.visible_datasets = 1
@@ -467,6 +475,120 @@ class CLPlot(PCScatterPlot):
         cly.style.fg_color = 'red'
         self.add_PC_set(cly, evy)
         self.plot_circle(True)
+
+
+class PCBaseControl(NoPlotControl):
+    eq_axis = Bool(False)
+    # vis_toggle = Button('Visibility')
+    y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
+                       width=32, height=32)
+    y_up = SVGButton(filename=pjoin(os.getcwd(), 'y_up.svg'),
+                     width=32, height=32)
+    x_down = SVGButton(filename=pjoin(os.getcwd(), 'x_down.svg'),
+                       width=32, height=32)
+    x_up = SVGButton(filename=pjoin(os.getcwd(), 'x_up.svg'),
+                     width=32, height=32)
+    reset_xy = SVGButton(filename=pjoin(os.getcwd(), 'reset_xy.svg'),
+                         width=32, height=32)
+    traits_view = View(
+        Group(
+            Item('model', editor=ComponentEditor(size=size, bgcolor=bg_color),
+                 show_label=False),
+            Label('Scroll to zoom and drag to pan in plot.'),
+            Include('plot_controllers'),
+            orientation="vertical"
+        )
+    )
+
+    # @on_trait_change('vis_toggle')
+    # def switch_visibility(self, obj, name, new):
+    #     obj.model.show_points()
+
+    @on_trait_change('eq_axis')
+    def switch_axis(self, obj, name, new):
+        obj.model.toggle_eq_axis(new)
+
+    @on_trait_change('reset_xy')
+    def pc_axis_reset(self, obj, name, new):
+        obj.model.set_x_y_pc(1, 2)
+
+    @on_trait_change('x_up')
+    def pc_axis_x_up(self, obj, name, new):
+        x, y, n = obj.model.get_x_y_status()
+        if x < n:
+            x += 1
+        else:
+            x = 1
+        obj.model.set_x_y_pc(x, y)
+
+    @on_trait_change('x_down')
+    def pc_axis_x_down(self, obj, name, new):
+        x, y, n = obj.model.get_x_y_status()
+        if x > 1:
+            x -= 1
+        else:
+            x = n
+        obj.model.set_x_y_pc(x, y)
+
+    @on_trait_change('y_up')
+    def pc_axis_y_up(self, obj, name, new):
+        x, y, n = obj.model.get_x_y_status()
+        if y < n:
+            y += 1
+        else:
+            y = 1
+        obj.model.set_x_y_pc(x, y)
+
+    @on_trait_change('y_down')
+    def pc_axis_y_down(self, obj, name, new):
+        x, y, n = obj.model.get_x_y_status()
+        if y > 1:
+            y -= 1
+        else:
+            y = n
+        obj.model.set_x_y_pc(x, y)
+
+
+class PCPlotControl(PCBaseControl):
+    show_labels = Bool(True)
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_labels', label="Show labels"),
+        orientation="horizontal",
+    )
+
+    @on_trait_change('show_labels')
+    def switch_labels(self, obj, name, new):
+        obj.model.show_labels(show=new, set_id=1)
+
+
+class CLPlotControl(PCBaseControl):
+    show_x_labels = Bool(True)
+    show_y_labels = Bool(True)
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_x_labels', label="Show consumer labels"),
+        Item('show_y_labels', label="Show sensory labels"),
+        orientation="horizontal",
+    )
+
+    @on_trait_change('show_x_labels')
+    def _switch_x_labels(self, obj, name, new):
+        obj.model.show_labels(show=new, set_id=1)
+
+    @on_trait_change('show_y_labels')
+    def _switch_y_labels(self, obj, name, new):
+        obj.model.show_labels(show=new, set_id=2)
 
 
 if __name__ == '__main__':
