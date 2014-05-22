@@ -54,8 +54,8 @@ class PCDataSet(HasTraits):
     * A list of labels for each datapoint
     """
     labels = List()
-    # colors: chocolate, blue, brown, coral, darkblue, darkcyan, darkgoldenrod, darkgreen
-    # darkolivegreen, darkorange, darksalmon, darkseagreen
+    # colors: chocolate, blue, brown, coral, darkblue, darkcyan, darkgoldenrod,
+    # darkgreen, darkolivegreen, darkorange, darksalmon, darkseagreen
     # from: /usr/share/pyshared/enable/colors.py
     color = ColorTrait('darkviolet')
     expl_vars = List()
@@ -80,7 +80,6 @@ class PCPlotData(ArrayPlotData):
     x_no = Int()
     # The PC for the Y axis
     y_no = Int()
-
 
     def add_PC_set(self, values, labels, color, expl_vars, view_data):
         """Add a PC dataset with metadata"""
@@ -127,8 +126,9 @@ class PCScatterPlot(PlotBase):
     plot_data = Property()
     expl_y_vars = List()
 
-
-    def __init__(self, pc_matrix=None, expl_vars=None, expl_y_vars=None, **kwargs):
+    def __init__(self, pc_matrix=None,
+                 expl_vars=None, expl_y_vars=None,
+                 **kwargs):
         """Constructor signature.
 
         :param pc_matrix: Array with PC datapoints
@@ -138,7 +138,7 @@ class PCScatterPlot(PlotBase):
           1. pc_matrix: Array with PC datapoints
           2. lables: Labels for the PC datapoints
           3. color: Color used in plot for this PC set
-          4. expl_vars: Map with PC to explained variance contribution (%) for PC
+          4. expl_vars: Map PC to explained variance contribution (%) for PC
 
         Returns:
           A new created plot object
@@ -159,7 +159,6 @@ class PCScatterPlot(PlotBase):
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
 
-
     def add_PC_set(self, pc_matrix, expl_vars=None):
         """Add a PC dataset with metadata.
 
@@ -170,13 +169,13 @@ class PCScatterPlot(PlotBase):
         matrix_t = pc_matrix.values.transpose()
         labels = pc_matrix.obj_n
         color = pc_matrix.style.fg_color
-        set_id = self.data.add_PC_set(matrix_t, labels, color, expl_vars, pc_matrix)
+        set_id = self.data.add_PC_set(matrix_t, labels, color,
+                                      expl_vars, pc_matrix)
         self._plot_PC(set_id)
-
 
     def show_points(self):
         """Shows or hide datapoints for PC set."""
-        
+
         if self.visible_datasets == 3:
             self.plots['plot_1'][0].visible = False
             self.visible_datasets = 2
@@ -187,11 +186,9 @@ class PCScatterPlot(PlotBase):
         else:
             self.plots['plot_2'][0].visible = True
             self.visible_datasets = 3
-            
+
         self.plots['plot_1'][0].request_redraw()
         self.plots['plot_2'][0].request_redraw()
-
-
 
     def show_labels(self, set_id=None, show=True):
         """Shows or hide datapoint labels for selected PC set."""
@@ -202,14 +199,12 @@ class PCScatterPlot(PlotBase):
         else:
             self._show_set_labels(set_id, show)
 
-
     def _show_set_labels(self, set_id, show):
         pn = 'plot_{}'.format(set_id)
         plot = self.plots[pn][0]
         for lab in plot.overlays:
             lab.visible = show
         plot.request_redraw()
-
 
     def get_x_y_status(self):
         """Query which PC is ploted for X and Y axis.
@@ -223,14 +218,12 @@ class PCScatterPlot(PlotBase):
         """
         return (self.data.x_no, self.data.y_no, self.data.n_pc)
 
-
     def set_x_y_pc(self, x, y):
         """Set which PC to plot for X and Y axis.
 
         Args:
           1. PC index for X axis
           2. PC index for Y axis
-          
         """
         n_ds = len(self.data.pc_ds)
         plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
@@ -238,7 +231,6 @@ class PCScatterPlot(PlotBase):
         for i in range(n_ds):
             self._plot_PC(i+1, PCx=x, PCy=y)
         self.request_redraw()
-
 
     def _plot_PC(self, set_id, PCx=1, PCy=2):
         # Adds a PC plot rendrer to the plot object
@@ -251,7 +243,7 @@ class PCScatterPlot(PlotBase):
         #sending to metadata for get_x_y_status
         if PCx < 1 or PCx > self.data.n_pc or PCy < 1 or PCy > self.data.n_pc:
             raise Exception(
-                "Requested PC x:{}, y:{} for plot axis is out of range:{}".format(
+                "PC x:{}, y:{} for plot axis is out of range:{}".format(
                     PCx, PCy, self.data.n_pc))
         self.data.x_no, self.data.y_no = PCx, PCy
         # plot definition
@@ -259,18 +251,18 @@ class PCScatterPlot(PlotBase):
         # plot name
         pn = 'plot_{}'.format(set_id)
 
-        markers = ['dot', 'square', 'triangle', 'circle', 'inverted_triangle', 'cross']
+        markers = ['dot', 'square', 'triangle', 'circle',
+                   'inverted_triangle', 'cross']
 
         #plot
         rl = self.plot(pd, type='scatter', name=pn,
-                       marker=markers[set_id-1%5], marker_size=2,
+                       marker=markers[set_id-1 % 5], marker_size=2,
                        color=self.data.pc_ds[set_id-1].color,)
         # Set axis title
         self._set_plot_axis_title()
         #adding data labels
         self._add_plot_data_labels(rl[0], pd, set_id)
         return pn
-
 
     def _set_plot_axis_title(self):
         tx = ['PC{0}'.format(self.data.x_no)]
@@ -291,13 +283,12 @@ class PCScatterPlot(PlotBase):
                 ty.append('({0:.0f}%)'.format(ev_y))
             except IndexError:
                 pass
-        if len(tx)==3:
+        if len(tx) == 3:
             self.x_axis.title = tx[0]+' X'+tx[1]+', Y'+tx[2]
             self.y_axis.title = ty[0]+' X'+ty[1]+', Y'+ty[2]
         else:
             self.x_axis.title = ' '.join(tx)
             self.y_axis.title = ' '.join(ty)
-
 
     def _add_plot_data_labels(self, plot_render, point_data, set_id):
         xname, yname = point_data
@@ -307,22 +298,21 @@ class PCScatterPlot(PlotBase):
         color = self.data.pc_ds[set_id-1].color
         for i, label in enumerate(labels):
             label_obj = DataLabel(
-                component = plot_render,
-                data_point = (x[i], y[i]),
-                label_format = unicode(label),
-                visible = self.visible_new_labels,
+                component=plot_render,
+                data_point=(x[i], y[i]),
+                label_format=unicode(label),
+                visible=self.visible_new_labels,
                 ## marker_color = pt_color,
                 # text_color = 'black',
-                text_color = color,
-                border_visible = False,
-                marker_visible = False,
+                text_color=color,
+                border_visible=False,
+                marker_visible=False,
                 # bgcolor = color,
-                bgcolor = (0.5, 0.5, 0.5, 0.0),
+                bgcolor=(0.5, 0.5, 0.5, 0.0),
                 ## label_position = 'bottom left',
                 ## bgcolor = 'transparent',
                 )
             plot_render.overlays.append(label_obj)
-
 
     def plot_circle(self, show_half=False):
         """Add bounding circles to the plot."""
@@ -353,7 +343,6 @@ class PCScatterPlot(PlotBase):
 
         ## self._set_axis_margin()
 
-
     def toggle_eq_axis(self, set_equal):
         """Set orthonormal or normal plot range."""
         if set_equal:
@@ -363,15 +352,13 @@ class PCScatterPlot(PlotBase):
             self._reset_axis()
         ## self.request_redraw()
 
-
-    def export_image(self, fname, size=(800,600)):
+    def export_image(self, fname, size=(800, 600)):
         """Save plot as png image."""
         # self.outer_bounds = list(size)
         # self.do_layout(force=True)
         gc = PlotGraphicsContext(self.outer_bounds)
         gc.render_component(self)
         gc.save(fname, file_format=None)
-
 
     def _set_axis_equal(self, margin_factor=0.15):
         """For orthonormal ploting"""
@@ -389,21 +376,23 @@ class PCScatterPlot(PlotBase):
         ymax = ycenter + delta/2
         index_eq_bounds = xmin, xmax
         value_eq_bounds = ymin, ymax
-        index_bounds = self._calc_margin_bounds(*index_eq_bounds, margin_factor=margin_factor)
-        value_bounds = self._calc_margin_bounds(*value_eq_bounds, margin_factor=margin_factor)
+        index_bounds = self._calc_margin_bounds(*index_eq_bounds,
+                                                margin_factor=margin_factor)
+        value_bounds = self._calc_margin_bounds(*value_eq_bounds,
+                                                margin_factor=margin_factor)
         self.index_range.set_bounds(*index_bounds)
         self.value_range.set_bounds(*value_bounds)
-
 
     def _set_axis_margin(self, margin_factor=0.15):
         self._reset_axis()
         index_tight_bounds = self.index_range.low, self.index_range.high
         value_tight_bounds = self.value_range.low, self.index_range.high
-        index_bounds = self._calc_margin_bounds(*index_tight_bounds, margin_factor=margin_factor)
-        value_bounds = self._calc_margin_bounds(*value_tight_bounds, margin_factor=margin_factor)
+        index_bounds = self._calc_margin_bounds(*index_tight_bounds,
+                                                margin_factor=margin_factor)
+        value_bounds = self._calc_margin_bounds(*value_tight_bounds,
+                                                margin_factor=margin_factor)
         self.index_range.set_bounds(*index_bounds)
         self.value_range.set_bounds(*value_bounds)
-
 
     def _calc_margin_bounds(self, low, high, margin_factor=0.15):
         space = high - low
@@ -411,7 +400,6 @@ class PCScatterPlot(PlotBase):
         margin_low = low - space_margin / 2
         margin_high = high + space_margin / 2
         return margin_low, margin_high
-
 
     def _adjust_range(self):
         self.index_range.margin = 0.15
@@ -421,11 +409,9 @@ class PCScatterPlot(PlotBase):
         self.index_range.bounds_func = calc_bounds
         self.value_range.bounds_func = calc_bounds
 
-
     def _reset_axis(self):
         self.index_range.reset()
         self.value_range.reset()
-
 
     def _add_zero_axis(self):
         xgrid = PlotGrid(
@@ -453,17 +439,15 @@ class PCScatterPlot(PlotBase):
             )
         self.underlays.append(ygrid)
 
-
     def _get_plot_data(self):
         return self.data.pc_ds[0].view_data
 
 
 def calc_bounds(data_low, data_high, margin, tight_bounds):
     if tight_bounds:
-        return data_low , data_high
+        return data_low, data_high
     else:
-        return data_low * (1 + margin) , data_high * (1 + margin)
-
+        return data_low * (1 + margin), data_high * (1 + margin)
 
 
 class CLPlot(PCScatterPlot):
