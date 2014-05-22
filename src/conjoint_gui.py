@@ -151,7 +151,7 @@ class ConjointController(ModelController):
 
             self._show_plot_window(win)
         else:
-            super(PrefmapController, self).open_window(viewable, view_loop)
+            super(ConjointController, self).open_window(viewable, view_loop)
 
     def _wind_title(self, res):
         ds_name = self.model.design.display_name
