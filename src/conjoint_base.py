@@ -35,9 +35,10 @@ class PluginController(_traitsui.Controller):
     win_handle = _traits.Any()
 
     def init(self, info):
-        super(PluginController, self).init(info)
         self.selected_object = self.model
+        self.win_handle = info.ui.control
         # self.edit_node = self.model.calculator
+        return True
 
     @_traits.on_trait_change('selected_object')
     def _tree_selection_made(self, obj, name, new):
