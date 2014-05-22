@@ -40,18 +40,16 @@ from plot_base import BasePlot, NoPlotControl
 from plot_windows import SinglePlotWindow
 
 
-
 class ConjointBasePlot(BasePlot):
     """Base class for Conjoint plots
     """
     plot_data = Instance(DataSet)
     """The data that is plot
-    
+
     This is a DataSet
     """
 
     index_labels = List(Str)
-
 
     def _make_plot_frame(self):
         # Adjust spacing
@@ -78,7 +76,6 @@ class ConjointBasePlot(BasePlot):
             # Grey (british)
             self.border_color = (0.5, 0.5, 0.5, 0.8)
 
-
     def _label_axis(self):
         idx = range(len(self.index_labels))
 
@@ -87,13 +84,12 @@ class ConjointBasePlot(BasePlot):
             mapper=self.index_mapper,
             orientation="bottom",
             tick_weight=1,
-            tick_label_rotate_angle = 90,
+            tick_label_rotate_angle=90,
             labels=self.index_labels,
-            positions = idx,
+            positions=idx,
             )
 
         self.x_axis = index_axis
-
 
     def _add_avg_std_err(self, text):
         info_label = PlotLabel(
@@ -108,15 +104,14 @@ class ConjointBasePlot(BasePlot):
         )
         self.overlays.append(info_label)
 
-
     def _add_frame_legend(self):
 
         class DummyPlot(LinePlot):
-            line_width=10.0
+            line_width = 10.0
 
         dp = {"p < 0.001": DummyPlot(color=(1.0, 0.0, 0.0)),
-              "p < 0.01" : DummyPlot(color=(1.0, 0.65, 0.0)),
-              "p < 0.05" : DummyPlot(color=(1.0, 1.0, 0.0)),
+              "p < 0.01": DummyPlot(color=(1.0, 0.65, 0.0)),
+              "p < 0.05": DummyPlot(color=(1.0, 1.0, 0.0)),
               "p >= 0.05": DummyPlot(color=(0.5, 0.5, 0.5))}
 
         legend = Legend(
@@ -131,9 +126,8 @@ class ConjointBasePlot(BasePlot):
         self.overlays.append(legend)
 
 
-
 class MainEffectsPlot(ConjointBasePlot):
-    
+
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
         res = slice_main_effect_ds(conj_res.lsmeansTable, attr_name)
@@ -148,7 +142,6 @@ class MainEffectsPlot(ConjointBasePlot):
         self._add_lines()
         self._add_ci_bars()
         self._add_avg_line()
-
 
     def _make_plot_frame(self):
         super(MainEffectsPlot, self)._make_plot_frame()
@@ -165,7 +158,6 @@ class MainEffectsPlot(ConjointBasePlot):
         self._add_avg_std_err(avg_text)
 
         add_default_grids(self)
-
 
     def _add_lines(self):
         # index = self.mk_ads('index')
@@ -188,7 +180,6 @@ class MainEffectsPlot(ConjointBasePlot):
 
         self.add(plot_line, plot_scatter)
 
-
     def _add_ci_bars(self):
         #Create vertical bars to indicate confidence interval
         # index = self.mk_ads('index')
@@ -198,13 +189,12 @@ class MainEffectsPlot(ConjointBasePlot):
 
         plot_ci = ErrorBarPlot(
             index=index, index_mapper=self.index_mapper,
-            value_low = value_lo, value_high = value_hi,
-            value_mapper = self.value_mapper,
+            value_low=value_lo, value_high=value_hi,
+            value_mapper=self.value_mapper,
             border_visible=True,
             name='CIbars')
 
         self.add(plot_ci)
-
 
     def _add_avg_line(self):
         #Create averageplot
@@ -226,10 +216,8 @@ class MainEffectsPlot(ConjointBasePlot):
 
         self.add(plot_average)
 
-
     def mk_ads(self, name):
         return ArrayDataSource(self.plot_data.mat[name].values)
-
 
 
 class InteractionPlot(ConjointBasePlot):
@@ -237,7 +225,6 @@ class InteractionPlot(ConjointBasePlot):
     # LinPlot name to LinPlot mapper
     # Used by Plot legend
     plots = Dict(Str, LinePlot)
-
 
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
@@ -247,7 +234,6 @@ class InteractionPlot(ConjointBasePlot):
         self.avg_std_err = inter_avg_std_err(conj_res.lsmeansTable, attr_one_name, attr_two_name)
         self.plot_interaction()
 
-
     def plot_interaction(self, flip=False):
         self._nullify_plot()
         self._make_plot_frame()
@@ -255,7 +241,6 @@ class InteractionPlot(ConjointBasePlot):
         self._label_axis()
         self._add_line_legend()
         self._add_frame_legend()
-
 
     def _nullify_plot(self):
         # Nullify all plot related list to make shure we can
@@ -270,7 +255,6 @@ class InteractionPlot(ConjointBasePlot):
         # Add label with average standard error
         avg_text = "Average standard error: {}".format(self.avg_std_err)
         self._add_avg_std_err(avg_text)
-
 
     def _add_lines(self, flip=False):
         # When non fliped is index objects
@@ -291,11 +275,9 @@ class InteractionPlot(ConjointBasePlot):
             self.value_range.add(vals)
             plot = LinePlot(index=idx, index_mapper=self.index_mapper,
                             value=vals, value_mapper=self.value_mapper,
-                            color=COLOR_PALETTE[i%4], line_style=line_styles[i%4]
-            )
+                            color=COLOR_PALETTE[i % 4], line_style=line_styles[i % 4])
             self.add(plot)
             self.plots[name] = plot
-
 
     def _add_line_legend(self):
         # Add a legend in the upper right corner, and make it relocatable
@@ -415,7 +397,7 @@ def get_interaction_p_value(anova_table, index_attr, line_attr):
         p_value = float(p_str)
     except ValueError:
         p_value = 0.0
-    
+
     return p_value
 
 
@@ -437,7 +419,7 @@ def lsmeans_main_selector(df, var_name):
     scl = acl - rcl - [var_name]
 
     # Picker
-    p1 = df.loc[:,scl] == 'NA'
+    p1 = df.loc[:, scl] == 'NA'
     p2 = p1.all(axis=1)
 
     return p2
@@ -453,11 +435,10 @@ def inter_avg_std_err(ls_means_table, var1_name, var2_name):
 def lsmeans_inter_selector(df, var1_name, var2_name):
     vcl = [var1_name, var2_name]
     # Picker
-    p1 = df.loc[:,vcl] != 'NA'
+    p1 = df.loc[:, vcl] != 'NA'
     p3 = p1.all(axis=1)
 
     return p3
-
 
 
 if __name__ == '__main__':
@@ -470,7 +451,7 @@ if __name__ == '__main__':
     print(spw.plot.plot_data.mat)
     spw.configure_traits()
     iap = InteractionPlot(res, 'Sex', 'Flavour')
-    ipw = InteractionPlotWindow(plot=iap)
+    ipw = SinglePlotWindow(plot=iap)
     print(ipw.plot.plot_data.mat)
     ipw.configure_traits()
     print("The end")
