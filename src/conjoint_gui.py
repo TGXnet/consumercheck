@@ -251,6 +251,11 @@ conjoint_nodes = [
     ]
 
 
+class ConjointCalcContainer(CalcContainer):
+    # calculator = _traits.Instance(Conjoint, Conjoint())
+    pass
+
+
 class ConjointPluginController(PluginController):
     available_design_sets = _traits.List()
     available_consumer_characteristics_sets = _traits.List()
