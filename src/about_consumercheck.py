@@ -30,7 +30,7 @@ class ConsumerCheckAbout(HasTraits):
     <p align="center">ConsumerCheck is a program for statistical analysis and visualization.</p>
     <p align="center">ConsumerCheck development:<br />Thomas Graff, <a href="http://www.tgxnet.no">TGXnet</a></p>
     <p align="center">Python wrapping of R code and software development management:<br /><a href="http://www.nofima.no/en/person/oliver.tomic">Oliver Tomic</a>, <a href="http://www.nofima.no">Nofima</a></p>
-    <p align="center">Version: 1.0.2</p>
+    <p align="center">Version: 1.0.3</p>
     <p align="center">ConsumerCheck is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
