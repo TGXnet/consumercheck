@@ -80,8 +80,15 @@ class PlotWindow(HasTraits):
 
 class SinglePWC(PWC):
     """ Change the title on the UI.
-
     """
+    def object_plot_changed(self, info):
+        if info.object.res:
+            wt = info.object.res.method_name
+        else:
+            wt = ""
+        pt = info.object.plot.model.get_plot_name()
+        info.object.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
+
     def object_title_text_changed(self, info):
         """ Called when the title_text changes on the handled object.
 
@@ -111,16 +118,6 @@ class SinglePlotWindow(PlotWindow):
     next_plot = Button('Next plot')
     previous_plot = Button('Previous plot')
     view_table = Button('View result table')
-
-    def __init__(self, *args, **kwargs):
-        super(SinglePlotWindow, self).__init__(*args, **kwargs)
-        if not self.title_text:
-            if self.res:
-                wt = self.res.method_name
-            else:
-                wt = ""
-            pt = self.plot.model.get_plot_name()
-            self.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
 
     def _plot_navigator_default(self):
         if self.res and self.view_loop:

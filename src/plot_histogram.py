@@ -148,8 +148,8 @@ class HistPlot(DescStatBasePlot):
             self._plot_ui_info = PlotWindow(plot=self).edit_traits()
         return self._plot_ui_info
 
-
-
+    def get_plot_name(self):
+        return 'Histogram plot: consumer preference for samples'
 
 
 class StackedHistPlot(DescStatBasePlot):

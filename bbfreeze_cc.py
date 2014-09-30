@@ -4,7 +4,7 @@ import shutil
 
 from bbfreeze import Freezer
 
-FREEZE_VERSION = '1.0.1'
+FREEZE_VERSION = '1.0.4'
 R_VER = '3.0.2'
 # freeze folder
 ff = "consumercheck-" + FREEZE_VERSION
@@ -28,12 +28,13 @@ std_lib = []
 div_lib = ['twisted', 'mercurial', 'nose',
            'win32com', 'reportlab', 'setuptools', 'doctest', 'pygments',
            'pyreadline', 'email']
-new_out = []
+test_out = ['pyface']
 
 includes = tuple(['traitsui.wx.tabular_editor',
                   'traitsui.wx.table_editor',
                   'enable.savage.trait_defs.ui.wx.svg_button_editor'])
-excludes = tuple(qt_lib + ets_lib + gui_lib + num_lib + sci_lib + std_lib + div_lib + new_out)
+excludes = tuple(qt_lib + ets_lib + gui_lib + num_lib +
+                 sci_lib + std_lib + div_lib + test_out)
 
 freeze = Freezer(ff, includes=includes, excludes=excludes)
 freeze.addScript("src/consumercheck.py", gui_only=False)
@@ -47,7 +48,8 @@ freeze()    # starts the freezing process
 #shutil.copytree(ds_source, ds_dest)
 
 # Copy images
-cc_imgs = ['ConsumerCheckLogo.png', 'reset_xy.svg', 'save.svg', 'x_down.svg', 'x_up.svg', 'y_down.svg', 'y_up.svg']
+cc_imgs = ['ConsumerCheckLogo.png', 'reset_xy.svg', 'save.svg', 'x_down.svg',
+           'x_up.svg', 'y_down.svg', 'y_up.svg']
 for img in cc_imgs:
     ip = os.path.join('src', img)
     shutil.copy2(ip, ff)

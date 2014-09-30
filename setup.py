@@ -5,10 +5,46 @@ Created on Mon Sep 20 15:02:41 2010
 
 http://guide.python-distribute.org/creation.html
 http://packages.python.org/distribute/setuptools.html
+https://wiki.python.org/moin/Distutils/Tutorial
+https://docs.python.org/2/distutils/
+http://guide.python-distribute.org/
+https://python-packaging-user-guide.readthedocs.org/en/latest/
+http://docs.python-guide.org/en/latest/shipping/packaging/
+
+http://docs.python-guide.org/en/latest/
+http://mrtopf.de/blog/en/a-small-introduction-to-python-eggs/
+
+Setuptools
+http://pythonhosted.org/setuptools/
+
+wheel package?
+http://wheel.readthedocs.org/en/latest/
+
 
 run:
  + python setup.py sdist
    to create source distribution
+
+Elements to setup:
+ * update version information from version.txt
+ * Generate frozen installation folder
+ * Generate installation package
+ * Generate source distribution
+ * Run test, check?
+
+Distutils?
+
+python setup.py --help-commands
+python setup.py build
+python setup.py install
+python setup.py sdist
+
+setup.py
+setup.cfg
+Manifest.in
+
+
+
 """
 
 from distutils.core import setup
