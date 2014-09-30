@@ -28,13 +28,13 @@ std_lib = []
 div_lib = ['twisted', 'mercurial', 'nose',
            'win32com', 'reportlab', 'setuptools', 'doctest', 'pygments',
            'pyreadline', 'email']
-new_out = []
+test_out = ['pyface']
 
 includes = tuple(['traitsui.wx.tabular_editor',
                   'traitsui.wx.table_editor',
                   'enable.savage.trait_defs.ui.wx.svg_button_editor'])
 excludes = tuple(qt_lib + ets_lib + gui_lib + num_lib +
-                 sci_lib + std_lib + div_lib + new_out)
+                 sci_lib + std_lib + div_lib + test_out)
 
 freeze = Freezer(ff, includes=includes, excludes=excludes)
 freeze.addScript("src/consumercheck.py", gui_only=False)
