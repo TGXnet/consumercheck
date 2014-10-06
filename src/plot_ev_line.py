@@ -113,6 +113,7 @@ class EVLinePlot(PlotBase):
 
         self.x_axis.title = "# of principal components"
         self.y_axis.title = "Explained variance [%]"
+        self.x_axis.tick_interval = 1.0
         self.legend_alignment = 'ul'
         self.legend.visible = True
 
