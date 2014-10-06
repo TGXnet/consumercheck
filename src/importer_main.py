@@ -143,14 +143,15 @@ class ImporterMain(HasTraits):
 class ImportNotice(HasTraits):
     message = Str('''
 This program allows for importing four different types of data:
- * Qualitative descriptive analysis (QDA); rows: samples - columns: sensory attributes.
- * Consumer acceptance data; rows: samples - columns: consumers.
- * Consumer characteristics; rows: consumers - columns: characteristics.
- * Experimental design; rows: samples - columns: design variables.
+ 1. Qualitative descriptive analysis (QDA); rows: samples - columns: sensory attributes.
+ 2. Consumer acceptance data; rows: samples - columns: consumers.
+ 3. Consumer characteristics; rows: consumers - columns: characteristics.
+ 4. Experimental design; rows: samples - columns: design variables.
 
-Preference mapping: the two last one will not be used.
-Conjoint analysis: the first one will not be used.
+Preference mapping: 3 and 4 will not be used.
+Conjoint analysis: 1 will not be used.
 
+Only numerical values are allowed in the data sets.
 ConsumerCheck is not able to handle non-English characters in the row and column names.
 If you experience problems when reading data from an Excel sheet; mark, copy, paste and save the actual data set in sheet 1 of a new Excel window.
 '''
