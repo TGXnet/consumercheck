@@ -1,4 +1,4 @@
-'''A container for all Datasets in the application
+'''A container for all Data sets in the application
 
 '''
 #-----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ from dataset import DataSet, DS_TYPES
 
 
 class DatasetContainer(_traits.HasTraits):
-    """Application wide collection of datasets
+    """Application wide collection of data sets
 
     Reccomende API:
      * add(ds1, ds2, ...)
@@ -44,14 +44,14 @@ class DatasetContainer(_traits.HasTraits):
     """
 
     dsl = _traits.List(DataSet)
-    # Fires if datasets is added or removed
+    # Fires if data sets is added or removed
     dsl_changed = _traits.Event
-    # Fires if a dataset changes its display_name or kind
+    # Fires if a data set changes its display_name or kind
     ds_changed = _traits.Event
 
 
     def add(self, ds1, *dsn):
-        """Adds one or several datasets to the container
+        """Adds one or several data sets to the container
         """
         self.dsl.append(ds1)
         for ds in dsn:
@@ -63,18 +63,18 @@ class DatasetContainer(_traits.HasTraits):
 
 
     def get_id_name_map(self, kind_filter=None, kind_exclude=None):
-        """Get a lis of tuples with dataset id and names
+        """Get a lis of tuples with data set id and names
         """
         if kind_filter is not None:
             if kind_filter not in DS_TYPES:
-                raise ValueError("Not valid dataset type:", kind_filter, DS_TYPES)
+                raise ValueError("Not valid data set type:", kind_filter, DS_TYPES)
             else:
                 return [(ds.id, ds.display_name)
                         for ds in self.dsl
                         if ds.kind == kind_filter]
         if kind_exclude is not None:
             if kind_exclude not in DS_TYPES:
-                raise ValueError("Not valid dataset type:", kind_exclude, DS_TYPES)
+                raise ValueError("Not valid data set type:", kind_exclude, DS_TYPES)
             else:
                 return [(ds.id, ds.display_name)
                         for ds in self.dsl
@@ -89,7 +89,7 @@ class DatasetContainer(_traits.HasTraits):
 
 
     def __getitem__(self, key):
-        # Check if we have more than one dataset with same id
+        # Check if we have more than one data set with same id
         like_id = [ds.display_name for ds in self.dsl if ds.id == key]
         if len(like_id) > 1:
             raise IndexCollisionError(key, like_id)
@@ -133,16 +133,16 @@ class DatasetContainer(_traits.HasTraits):
 
 
 class IndexCollisionError(LookupError):
-    '''Exception to indicat that we have two or more dataset with the same id'''
+    '''Exception to indicat that we have two or more data set with the same id'''
     pass
 
 
 
 def get_ds_by_name(name, dsc):
-    '''Utility function if you realy want to get dataset by name.
+    '''Utility function if you realy want to get data set by name.
 
-    This is not encouraged because several datasets can have same name,
-    and be differentiated by other traits like dimensions, dataset type,
+    This is not encouraged because several data sets can have same name,
+    and be differentiated by other traits like dimensions, data set type,
     style metadata o.l.
     '''
     nid = dict([(m[1], m[0]) for m in dsc.get_id_name_map()])

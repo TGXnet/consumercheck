@@ -211,7 +211,7 @@ conjoint_view = _traitsui.View(
 
 
 ds_exp_action = _traitsui.Action(
-    name='Export dataset',
+    name='Export data set',
     action='handler.export_data(editor, object)',
     )
 
@@ -367,7 +367,7 @@ for variables with a large number of categories.
         ## else:
         ##     c = DataSet(display_name = '-')
 
-        # Check dataset alignment
+        # Check data set alignment
         nds = self.design.n_objs
         nls = l.n_objs
         nlc = l.n_vars
@@ -394,7 +394,7 @@ for variables with a large number of categories.
 
     def _show_alignment_warning(self, nds, nls, nlc, nca=0):
         dlg = ErrorMessage()
-        dlg.err_msg = 'Alignment mismatch between the dataset'
+        dlg.err_msg = 'Alignment mismatch between the data set'
         dlg.err_val = 'There is {0} variants in the design matrix and {1} variants in the liking matrix. There is {2} consumers in the liking matrix and {3} consumers in the consumer characteristics matrix'.format(nds, nls, nlc, nca)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
@@ -470,7 +470,7 @@ selection_view = _traitsui.Group(
         orientation='horizontal',
         ),
     # _traitsui.Item('controller.model_struct', style='simple', label='Model'),
-    label='Select dataset',
+    label='Select data set',
     show_border=True,
 )
 

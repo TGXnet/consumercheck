@@ -45,12 +45,12 @@ state_file = conf.pkl_file_url()
 
 
 class MainViewHandler(Handler):
-    """Handler for dataset view"""
+    """Handler for data set view"""
 
     importer = Instance(ImporterMain, ImporterMain())
 
     def import_data(self, info):
-        """Action called when activating importing of new dataset"""
+        """Action called when activating importing of new data set"""
         # importer = ImporterMain()
         imported = self.importer.dialog_multi_import()
         if imported:
@@ -107,12 +107,12 @@ class MainUi(HasTraits):
     conjoint = Instance(ConjointPluginController)
 
     # Create an action that open dialog for dataimport
-    import_action = Action(name='Add &Dataset', action='import_data')
+    import_action = Action(name='Add &Data set', action='import_data')
     # Create an action that exits the application.
     exit_action = Action(name='E&xit', action='_on_close')
     about_action = Action(name='&About', action='view_about')
     user_manual_action = Action(name='&User manual', action='view_user_manual')
-    close_action = Action(name='&Remove Datasets', action='_close_ds')
+    close_action = Action(name='&Remove Data sets', action='_close_ds')
     advanced_action = Action(name='&Advanced settings', checked_when='en_advanced',
                              style='toggle', action='_toggle_advanced')
 
@@ -140,7 +140,7 @@ class MainUi(HasTraits):
     # The main view
     traits_ui_view = View(
         Group(
-            Item('dsc', editor=tree_editor, label="Datasets", show_label=False),
+            Item('dsc', editor=tree_editor, label="Data sets", show_label=False),
             Item('basic_stat', editor=InstanceEditor(view=bs_plugin_view),
                  style='custom', label="Basic stat liking", show_label=False),
             Item('pca', editor=InstanceEditor(view=pca_plugin_view),

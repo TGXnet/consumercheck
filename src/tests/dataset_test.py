@@ -2,7 +2,7 @@
 
 What to test:
  * Unique datast id
- * Empty dataset
+ * Empty data set
  * Has missing data
 '''
 
@@ -76,7 +76,7 @@ def test_subset(a_df):
     assert True
 
 
-# Test dataset with missing data
+# Test data set with missing data
 # To read an matrix with discrete number shoud result
 # in dtype=int but nan is defined as an float
 # So columns with missing data is casted to float data

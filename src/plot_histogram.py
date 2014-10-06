@@ -39,7 +39,7 @@ from plot_base import BasePlot, NoPlotControl
 class DescStatBasePlot(BasePlot):
     ds = _traits.Instance(DataSet)
     plot_data = _traits.Property()
-    """The dataset that is to be shown i table view of the plot data"""
+    """The data set that is to be shown i table view of the plot data"""
 
     def _get_plot_data(self):
         nds = copy.deepcopy(self.ds)

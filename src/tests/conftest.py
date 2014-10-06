@@ -68,11 +68,11 @@ CHEESE = [
     ]
 
 
-# Create datasets
+# Create data sets
 
 @pytest.fixture
 def simple_ds():
-    '''Makes a simple syntetic dataset'''
+    '''Makes a simple syntetic data set'''
 
     ds = DataSet(display_name='Some values', kind='Sensory profiling')
     ds.mat = pd.DataFrame(
@@ -87,7 +87,7 @@ def simple_ds():
 
 @pytest.fixture
 def zero_var_ds():
-    '''Dataset with zero variance variable'''
+    '''Data set with zero variance variable'''
 
     ds = DataSet(display_name='Zero var variable', kind='Sensory profiling')
     ds.mat = pd.DataFrame(
@@ -110,7 +110,7 @@ discrete_nl = [
 
 @pytest.fixture
 def discrete_ds():
-    '''Make a dataset with discrete walues'''
+    '''Make a data set with discrete walues'''
 
     ds = DataSet(display_name='Discrete values', kind='Consumer characteristics')
     idxn = ['O'+str(i+1) for i in range(5)]
@@ -121,7 +121,7 @@ def discrete_ds():
 
 @pytest.fixture
 def discrete_nans_ds():
-    '''Make a dataset with discrete walues'''
+    '''Make a data set with discrete walues'''
 
     missing = copy.deepcopy(discrete_nl)
     missing[1][6:8] = [np.nan for i in range(2)]
@@ -146,7 +146,7 @@ def discrete_nans_ds():
 
 @pytest.fixture
 def hist_ds():
-    '''Make dataset for histograms'''
+    '''Make data set for histograms'''
     rows_cols = (12, 45)
     random = False
 
@@ -178,7 +178,7 @@ def hist_ds():
 
 @pytest.fixture
 def boxplot_ds():
-    '''Make dataset for testing box plot'''
+    '''Make data set for testing box plot'''
     rows_cols = (12, 45)
     random = True
     rown = ["O{}".format(i+1) for i in range(rows_cols[0])]
@@ -215,7 +215,7 @@ def boxplot_ds():
 
 @pytest.fixture
 def iris_ds():
-    '''Return the Iris dataset
+    '''Return the Iris data set
 
     http://archive.ics.uci.edu/ml/datasets/Iris
     '''
@@ -254,11 +254,11 @@ def synth_dsc():
     return dsc
 
 
-# Read datasets from files
+# Read data sets from files
 
 @pytest.fixture(scope="module")
 def conjoint_dsc():
-    '''Get Conjoint std. test datasets '''
+    '''Get Conjoint std. test data sets '''
     dsc = DatasetContainer()
 
     for mi in CONJOINT:
@@ -269,7 +269,7 @@ def conjoint_dsc():
 
 @pytest.fixture(scope="module")
 def prefmap_dsc():
-    '''Get liking and sensory std. test datasets '''
+    '''Get liking and sensory std. test data sets '''
     dsc = DatasetContainer()
 
     for mi in CHEESE:

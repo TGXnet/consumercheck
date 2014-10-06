@@ -1,6 +1,6 @@
-'''Reading and import of datasets.
+'''Reading and import of data sets.
 
-Read a file and make a dataset object.
+Read a file and make a data set object.
 
 '''
 #-----------------------------------------------------------------------------

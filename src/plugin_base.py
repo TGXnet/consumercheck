@@ -206,7 +206,7 @@ def make_plugin_view(model_name, model_nodes, selection_view, model_view):
                            show_label=False),
             # Right side
             _traitsui.Group(
-                # Upper right side dataset selection panel
+                # Upper right side data set selection panel
                 selection_view,
                 # Lower right side calc settings panel
                 _traitsui.Group(

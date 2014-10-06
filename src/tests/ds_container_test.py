@@ -88,7 +88,7 @@ def test_events(dsc3):
 Populate the container with real DataSets from file to verify that it can handle pandas data
 
 1. Create empty dsc, pickle it, read back and verify that it is empty
-2. Populate dsc with datasets, pickle it ,read back and verify that it is the same data
+2. Populate dsc with data sets, pickle it ,read back and verify that it is the same data
 
 Use py.test tempdir for filestorage.
 

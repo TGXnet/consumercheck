@@ -109,7 +109,7 @@ class PrefmapController(ModelController):
          * loadings
          * corr. load
          * expl. var
-        for each of the datasets.
+        for each of the data sets.
         """
         res = self.get_result()
         wl = self.window_launchers
@@ -292,7 +292,7 @@ class PrefmapPluginController(PluginController):
             self._show_missing_warning()
             return
 
-        # Check dataset alignment
+        # Check data set alignment
         ns_c = ds_c.n_objs
         ns_s = ds_s.n_objs
         if ns_c != ns_s:
@@ -330,7 +330,7 @@ selection_view = _traitsui.Group(
                    width=250,
                    height=150,
                    ),
-    label='Select dataset',
+    label='Select data set',
     show_border=True,
     )
 

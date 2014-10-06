@@ -38,7 +38,7 @@ class InComputeable(Exception):
 
 
 class Pca(Model):
-    """Represent the PCA model of a dataset."""
+    """Represent the PCA model of a data set."""
     ds = DataSet()
     settings = _traits.WeakRef()
     # List of variable names with zero variance in the data vector

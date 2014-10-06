@@ -54,7 +54,7 @@ class TitleHandler(Handler):
 
 
 class TableViewController(HasTraits):
-    """Separate table view for the dataset matrix."""
+    """Separate table view for the data set matrix."""
     # table = Array()
     table = Property()
     rows = List()

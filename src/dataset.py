@@ -39,14 +39,14 @@ DS_TYPES = ['Design variable',
 
 
 class DataSet(_traits.HasTraits):
-    '''Dataset for holding one matrix
+    '''Data set for holding one matrix
 
     and associated metadata
     The reccomended access methods as properties for the DataSet object:
      * id: An identity string that is unique for each object
      * display_name: An human friendly name that for the datataset
-     * kind: The dataset type
-     * missing_data: Boolean value indicatin if the dataset have "holes"
+     * kind: The data set type
+     * missing_data: Boolean value indicatin if the data set have "holes"
      * n_vars: Number of variables
      * n_objs: Number of objects
      * var_n: List containing variable names
@@ -60,7 +60,7 @@ class DataSet(_traits.HasTraits):
     id = _traits.Property()
     new_id = _itr.count(start=101).next
 
-    display_name = _traits.Str('Unnamed dataset')
+    display_name = _traits.Str('Unnamed data set')
 
     kind = _traits.Enum(DS_TYPES)
 
@@ -68,7 +68,7 @@ class DataSet(_traits.HasTraits):
 
     subs = _traits.List('SubSet')
 
-    # FIXME: This dataset has missing data
+    # FIXME: This data set has missing data
     # do you want to do somthing about it?
     # * throw rows/cols with missing data
     # * do imputation

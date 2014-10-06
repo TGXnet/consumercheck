@@ -64,16 +64,16 @@ class PCDataSet(HasTraits):
 
 
 class PCPlotData(ArrayPlotData):
-    """Container for Principal Component scatterplot type dataset.
+    """Container for Principal Component scatterplot type data set.
 
-    This container will be able to hold several sets of PC type datasets:
+    This container will be able to hold several sets of PC type data sets:
      * The actual matrix with PC1 to PCn
      * A list of PCDataSet objects that holds metadata for each PC matrix
     """
 
     # Metadata for each PC set
     pc_ds = List(PCDataSet)
-    # Number of PC in the datasets
+    # Number of PC in the data sets
     # Lowest number if we have severals sets
     n_pc = Int()
     # The PC for X the axis
@@ -82,7 +82,7 @@ class PCPlotData(ArrayPlotData):
     y_no = Int()
 
     def add_PC_set(self, values, labels, color, expl_vars, view_data):
-        """Add a PC dataset with metadata"""
+        """Add a PC data set with metadata"""
 
         set_n = len(self.pc_ds)
         rows, cols = values.shape
@@ -160,7 +160,7 @@ class PCScatterPlot(PlotBase):
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
 
     def add_PC_set(self, pc_matrix, expl_vars=None):
-        """Add a PC dataset with metadata.
+        """Add a PC data set with metadata.
 
         Args:
           1. pc_matrix: DataSet with PC datapoints

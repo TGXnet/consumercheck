@@ -350,7 +350,7 @@ def slice_interaction_ds(ls_means_table, index_attr, line_attr):
     indexes = sorted(list(set(selected[index_attr])))
     index_labels = ['{0} {1}'.format(index_attr, i) for i in indexes]
 
-    # for hvert nytt plot trenger vi bare et nytt dataset
+    # for hvert nytt plot trenger vi bare et nytt data set
     vals = []
     for i, line in enumerate(lines):
         line_data_picker = selected[line_attr] == line

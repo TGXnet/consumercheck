@@ -30,9 +30,9 @@ from ds_table_view import DSTableViewer
 win_handle = None
 
 class DSNode(_traitsui.TreeNode):
-    '''Cusom tree node for datasets.
+    '''Cusom tree node for data sets.
     
-    Sets tree node icon based on dataset type
+    Sets tree node icon based on data set type
     '''
     def get_icon(self, obj, is_expanded):
         """Return icon name based on ds type
@@ -82,14 +82,14 @@ ds_view = _traitsui.View(
     _traitsui.Group(
         _traitsui.Group(
             _traitsui.Item('id', style='readonly'),
-            _traitsui.Label('Dataset name:'),
+            _traitsui.Label('Data set name:'),
             _traitsui.Item('display_name', show_label=False),
-            _traitsui.Label('Dataset type:'),
+            _traitsui.Label('Data set type:'),
             _traitsui.Item('kind', show_label=False),
             ),
         _traitsui.Group(
             _traitsui.Item('handler.summary', style='readonly', show_label=False),
-            label='Dataset summary',
+            label='Data set summary',
             show_border=True,
             ),
         ),
@@ -99,7 +99,7 @@ ds_view = _traitsui.View(
 
 
 list_view = _traitsui.View(
-    _traitsui.Heading('List showing all imported datasets'),
+    _traitsui.Heading('List showing all imported data sets'),
     width=500,
     )
 
@@ -113,14 +113,14 @@ tree_editor = _traitsui.TreeEditor(
     nodes = [
         _traitsui.TreeNode(
             node_for=[DatasetContainer],
-            label='=Datasets',
+            label='=Data sets',
             children='',
             auto_open=True,
             view=list_view,
             ),
         _traitsui.TreeNode(
             node_for=[DatasetContainer],
-            label='=Datasets',
+            label='=Data sets',
             children='dsl',
             auto_open=True,
             view=list_view,

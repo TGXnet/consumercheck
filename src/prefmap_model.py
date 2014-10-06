@@ -38,7 +38,7 @@ class InComputeable(Exception):
 
 
 class Prefmap(Model):
-    """Represent the Prefmap model between one X and Y dataset."""
+    """Represent the Prefmap model between one X and Y data set."""
 
     # Consumer liking
     ds_C = DataSet()

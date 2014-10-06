@@ -206,7 +206,7 @@ selection_view = _traitsui.Group(
                    width=200,
                    height=200,
                    ),
-    label='Select dataset',
+    label='Select data set',
     show_border=True,
     )
 
