@@ -67,10 +67,10 @@ cc_logger.info('Starting ConsumerCheck')
 
 # Set exception handlers
 # sys.excepthook = excepthook
-push_exception_handler(tgx_exception_handler,
-                       reraise_exceptions=False,
-                       main=True,
-                       locked=True)
+# push_exception_handler(tgx_exception_handler,
+#                        reraise_exceptions=False,
+#                        main=True,
+#                        locked=True)
 # Do nothing and forward exception to excepthook handler
 #push_exception_handler(handler=lambda o,t,ov,nv: None,
 #                       reraise_exceptions=True)
