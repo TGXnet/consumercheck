@@ -230,7 +230,7 @@ class nipalsPCA:
         
         # ---------------------------------------------------------------------
         # Compute explained variance for each variable in X using the
-        # MSEP for each variable. Also collect PRESSE, MSEE, RMSEE in 
+        # MSEE for each variable. Also collect PRESSE, MSEE, RMSEE in 
         # their respective dictionaries for each variable. Keys represent 
         # now variables and NOT components as above with 
         # self.PRESSEdict_indVar_X
@@ -255,7 +255,7 @@ class nipalsPCA:
         
         # ---------------------------------------------------------------------
         # Collect total PRESSE across all variables in a dictionary. Also,
-        # compute total calibrated explained variance in Y.
+        # compute total calibrated explained variance in X.
         self.PRESSE_total_dict_X = {}
         self.PRESSE_total_list_X = np.sum(self.PRESSEarr_indVar_X, axis=1)
         
@@ -271,14 +271,18 @@ class nipalsPCA:
                 np.shape(self.arrX_input)[1]
         MSEE_0_X = self.MSEE_total_list_X[0]
 
-        # Compute total calibrated explained variance in X
+        # Compute total cumulated calibrated explained variance in X
         self.XcumCalExplVarList = []
-        for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
-            perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
-            self.MSEE_total_dict_X[ind] = MSEE_X
-            self.XcumCalExplVarList.append(perc)
+        if self.Xstand == False:
+            for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
+                perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
+                self.MSEE_total_dict_X[ind] = MSEE_X
+                self.XcumCalExplVarList.append(perc)
+        else:
+            self.XcumCalExplVarArr = np.average(self.cumCalExplVarXarr_indVar, axis=1)
+            self.XcumCalExplVarList = list(self.XcumCalExplVarArr)
         
-        # Construct list with total validated explained variance in X
+        # Construct list with total explained variance in X for each PC
         self.XcalExplVarList = []
         for ind, item in enumerate(self.XcumCalExplVarList):
             if ind == len(self.XcumCalExplVarList)-1: break
@@ -312,13 +316,13 @@ class nipalsPCA:
             numObj = np.shape(self.arrX)[0]
             
             if self.cvType[0] == "loo":
-                print "loo"
+                # print "loo"
                 cvComb = cv.LeaveOneOut(numObj)
             elif self.cvType[0] == "lpo":
-                print "lpo"
+                # print "lpo"
                 cvComb = cv.LeavePOut(numObj, self.cvType[1])
             elif self.cvType[0] == "lolo":
-                print "lolo"
+                # print "lolo"
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
                 print('Requested form of cross validation is not available')
@@ -544,10 +548,14 @@ class nipalsPCA:
 
             # Compute total validated explained variance in X
             self.XcumValExplVarList = []
-            for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
-                perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
-                self.MSECV_total_dict_X[ind] = MSECV_X
-                self.XcumValExplVarList.append(perc)
+            if self.Xstand == False:
+                for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
+                    perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
+                    self.MSECV_total_dict_X[ind] = MSECV_X
+                    self.XcumValExplVarList.append(perc)
+            else:
+                self.XcumValExplVarArr = np.average(self.cumValExplVarXarr_indVar, axis=1)
+                self.XcumValExplVarList = list(self.XcumValExplVarArr)
             
             # Construct list with total validated explained variance in X in 
             # each component
@@ -729,7 +737,7 @@ class nipalsPCA:
     
     def X_valExplVar(self):
         """
-        Returns list holding calibrated explained variance for each PC in Y.
+        Returns list holding calibrated explained variance for each PC in X.
         """
         return  self.XvalExplVarList
     
@@ -745,7 +753,7 @@ class nipalsPCA:
     
     def X_cumValExplVar(self):
         """
-        Returns list holding cumulative calibrated explained variance in Y.
+        Returns list holding cumulative calibrated explained variance in X.
         """
         return self.XcumValExplVarList
     
