@@ -43,8 +43,10 @@ class ConjointCalcState(_traits.HasTraits):
         height=300,
         width=600,
         resizable=True,
-        buttons=[_traitsui.OKButton],
-        )
+        buttons=[
+            _traitsui.Action(name='Cancel', action='_on_close', enabled_when='not is_done'),
+            _traitsui.Action(name='OK', action='_on_close', enabled_when='is_done')],
+    )
 
     def _messages_changed(self, new):
         self.messages = '\n'.join(
