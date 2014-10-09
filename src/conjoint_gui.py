@@ -465,6 +465,7 @@ selection_view = _traitsui.Group(
                            width=200,
                            height=100,
                            ),
+            enabled_when="controller.selected_design != ''",
             show_border=True,
             ),
         orientation='horizontal',
