@@ -39,7 +39,7 @@ class DSNode(_traitsui.TreeNode):
         """
         if obj.kind == 'Design variable':
             return 'design_variable.ico'
-        elif obj.kind == 'Sensory profiling':
+        elif obj.kind == 'Sensory profiling / descriptive data':
             return 'sensory_profiling.ico'
         elif obj.kind == 'Consumer liking':
             return 'customer_liking.ico'

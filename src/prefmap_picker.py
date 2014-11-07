@@ -5,7 +5,7 @@ from traitsui.api import View, Item, CheckListEditor, Group, Label
 class PrefmapPicker(HasTraits):
     # Consumer liking ds
     row_set = List(Tuple())
-    # Sensory profiling ds
+    # Sensory profiling / descriptive data ds
     col_set = List(Tuple())
     sel_row = List()
     sel_col = List()
@@ -36,7 +36,7 @@ class PrefmapPicker(HasTraits):
                 orientation='vertical',
                 ),
             Group(
-                Label('Sensory profiling'),
+                Label('Sensory profiling / descriptive data'),
                 Item('sel_col', editor=CheckListEditor(name='col_set'),
                      style='simple', show_label=False),
                 orientation='vertical',
