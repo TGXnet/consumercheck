@@ -403,7 +403,7 @@ for variables with a large number of categories.
         ind_resid = DataSet()
         ind_resid.copy_traits(
             parent.model.res.residIndTable, traits=['mat', 'style'])
-        ind_resid.kind = 'Sensory profiling'
+        ind_resid.kind = 'Sensory profiling / descriptive data'
         self.exported += 1
         ind_resid.display_name = '_double centred residuals ' + str(self.exported)
         self.model.dsc.add(ind_resid)
