@@ -62,7 +62,7 @@ class ConjointController(ModelController):
         Model structure descriptions:
         <ul>
         <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
-        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones).</li>
+        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones). (Automized reduction in random part, NO reduction in fixed part)</li>
         <li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part).</li>
         </ul>
         ''')
@@ -463,7 +463,7 @@ selection_view = _traitsui.Group(
                            style='custom',
                            show_label=False,
                            width=200,
-                           height=100,
+                           height=150,
                            ),
             enabled_when="controller.selected_design != ''",
             show_border=True,
