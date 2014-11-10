@@ -348,6 +348,12 @@ for variables with a large number of categories.
 
     @_traits.on_trait_change('selected_consumer_liking_sets')
     def _liking_set_selected(self, obj, name, old_value, new_value):
+        # if self.selected_design == '':
+        #     warn = """You must select design first."""
+        #     cw = ConjointWarning(messages=warn)
+        #     cw.edit_traits()
+        #     # del(self.selected_consumer_liking_sets[0])
+        #     return
         last = set(old_value)
         new = set(new_value)
         removed = last.difference(new)
@@ -461,6 +467,7 @@ selection_view = _traitsui.Group(
             _traitsui.Item('controller.selected_consumer_liking_sets',
                            editor=_traitsui.CheckListEditor(name='controller.available_consumer_liking_sets'),
                            style='custom',
+                           tooltip='You must select design first',
                            show_label=False,
                            width=200,
                            height=150,
