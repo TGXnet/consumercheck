@@ -64,7 +64,7 @@ VINE = [
 CHEESE = [
     ('Cheese', 'ConsumerLiking.txt', 'Cheese liking', 'Consumer liking'),
     ('Cheese', 'ConsumerValues.txt', 'Consumer info', 'Consumer characteristics'),
-    ('Cheese', 'SensoryData.txt', 'Sensory profiling', 'Sensory profiling'),
+    ('Cheese', 'SensoryData.txt', 'Sensory profiling', 'Sensory profiling / descriptive data'),
     ]
 
 
@@ -74,7 +74,7 @@ CHEESE = [
 def simple_ds():
     '''Makes a simple syntetic data set'''
 
-    ds = DataSet(display_name='Some values', kind='Sensory profiling')
+    ds = DataSet(display_name='Some values', kind='Sensory profiling / descriptive data')
     ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 2.2, 2.3],
@@ -89,7 +89,7 @@ def simple_ds():
 def zero_var_ds():
     '''Data set with zero variance variable'''
 
-    ds = DataSet(display_name='Zero var variable', kind='Sensory profiling')
+    ds = DataSet(display_name='Zero var variable', kind='Sensory profiling / descriptive data')
     ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 1.2, 2.3],
@@ -240,7 +240,7 @@ def clust1ds():
              [4.6,3.6,1.0,0.2]],
             index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
             columns = ['V1', 'V2', 'V3', 'V4']),
-        display_name='Some values', kind='Sensory profiling',
+        display_name='Some values', kind='Sensory profiling / descriptive data',
         # style=VisualStyle(fg_color=(0.8, 0.2, 0.1, 1.0)),
         style=VisualStyle(fg_color='indigo'),
         )
