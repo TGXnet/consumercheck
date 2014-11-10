@@ -452,13 +452,14 @@ def calc_bounds(data_low, data_high, margin, tight_bounds):
 
 class CLPlot(PCScatterPlot):
 
-    def __init__(self, clx, evx, cly, evy, **kwargs):
+    def __init__(self, clx, evx, cly, evy, em, **kwargs):
         super(CLPlot, self).__init__(**kwargs)
         clx.style.fg_color = 'blue'
         self.add_PC_set(clx, evx)
         cly.style.fg_color = 'red'
         self.add_PC_set(cly, evy)
         self.plot_circle(True)
+        self.external_mapping = em
 
 
 class PCBaseControl(NoPlotControl):
@@ -568,11 +569,17 @@ class CLPlotControl(PCBaseControl):
 
     @on_trait_change('show_x_labels')
     def _switch_x_labels(self, obj, name, new):
-        obj.model.show_labels(show=new, set_id=1)
+        if obj.model.external_mapping:
+            obj.model.show_labels(show=new, set_id=2)
+        else:
+            obj.model.show_labels(show=new, set_id=1)
 
     @on_trait_change('show_y_labels')
     def _switch_y_labels(self, obj, name, new):
-        obj.model.show_labels(show=new, set_id=2)
+        if obj.model.external_mapping:
+            obj.model.show_labels(show=new, set_id=1)
+        else:
+            obj.model.show_labels(show=new, set_id=2)
 
 
 if __name__ == '__main__':

@@ -187,6 +187,7 @@ def corr_loadings_plot(res):
     # plot.plot_circle(True)
     plot = CLPlot(clx, res.expl_var_x,
                   cly, res.expl_var_y,
+                  res.external_mapping,
                   title='Correlation loadings')
     return plot
 

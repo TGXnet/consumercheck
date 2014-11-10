@@ -153,6 +153,11 @@ class Prefmap(Model):
     def _pack_res(self, pls_obj):
         res = Result('Prefmap')
 
+        if self.settings.int_ext_mapping == 'External':
+            res.external_mapping = True
+        else:
+            res.external_mapping = False
+
         # Scores X
         mT = pls_obj.X_scores()
         res.scores_x = DataSet(
