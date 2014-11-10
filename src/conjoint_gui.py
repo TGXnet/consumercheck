@@ -275,6 +275,7 @@ class ConjointPluginController(PluginController):
 
     dummy_model_controller = _traits.Instance(ConjointController)
     exported = _traits.Int(0)
+    liking_msg = _traits.Str('(You must select design first!)')
 
     def _dummy_model_controller_default(self):
         return ConjointController(Conjoint(owner_ref=self))
@@ -459,20 +460,20 @@ selection_view = _traitsui.Group(
                                name='controller.consumer_vars'),
                            style='custom',
                            show_label=False,
+                           height=150,
                            ),
             show_border=True,
         ),
         _traitsui.Group(
             _traitsui.Label('Liking set:'),
+            _traitsui.UItem('controller.liking_msg', style='readonly', visible_when="controller.selected_design == ''"),
             _traitsui.Item('controller.selected_consumer_liking_sets',
                            editor=_traitsui.CheckListEditor(name='controller.available_consumer_liking_sets'),
                            style='custom',
-                           tooltip='You must select design first',
                            show_label=False,
-                           width=200,
-                           height=150,
+                           width=400,
+                           enabled_when="controller.selected_design != ''",
                            ),
-            enabled_when="controller.selected_design != ''",
             show_border=True,
             ),
         orientation='horizontal',
