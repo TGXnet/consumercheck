@@ -24,7 +24,7 @@ import webbrowser
 from os import path, pardir
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Any
+from traits.api import HasTraits, Instance, Any, TraitError
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
@@ -78,8 +78,8 @@ class MainViewHandler(Handler):
         # Import workspace
         try:
             info.object.dsc.read_datasets(state_file)
-        except IOError:
-            pass
+        except (IOError, TraitError):
+            logger.warning('Could not read state_file')
 
         try:
             info.object.splash.close()
