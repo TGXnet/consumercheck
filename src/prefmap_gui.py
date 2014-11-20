@@ -318,7 +318,7 @@ class PrefmapPluginController(PluginController):
     def _show_alignment_warning(self, ns_c, ns_s):
         dlg = ErrorMessage()
         dlg.err_msg = 'Consumer liking and sensory profiling data does not align'
-        dlg.err_val = 'There is {0} samples in the liking set and {1} samples in the sensory set'.format(ns_c, ns_s)
+        dlg.err_val = 'There is {0} products in the liking set and {1} products in the sensory set'.format(ns_c, ns_s)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 

@@ -143,10 +143,10 @@ class ImporterMain(HasTraits):
 class ImportNotice(HasTraits):
     message = Str('''
 This program allows for importing four different types of data:
- 1. Quantitative descriptive analysis (QDA); rows: samples - columns: sensory attributes.
- 2. Consumer acceptance data; rows: samples - columns: consumers.
+ 1. Quantitative descriptive analysis (QDA); rows: products - columns: sensory attributes.
+ 2. Consumer acceptance data; rows: products - columns: consumers.
  3. Consumer characteristics; rows: consumers - columns: characteristics.
- 4. Experimental design; rows: samples - columns: design variables.
+ 4. Experimental design; rows: products - columns: design variables.
 
 Preference mapping: 3 and 4 will not be used.
 Conjoint analysis: 1 will not be used.

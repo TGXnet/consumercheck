@@ -77,7 +77,7 @@ class BasicStat(Model):
         sy['perc75'] = _np.percentile(mat, 75, axis=ax)
         sy['max'] = _np.percentile(mat, 100, axis=ax)
 
-        return DataSet(mat=sy, display_name="Box plot: consumer preference for samples")
+        return DataSet(mat=sy, display_name="Box plot: consumer preference for products")
 
 
     def _calc_histogram(self):
@@ -121,4 +121,4 @@ class BasicStat(Model):
         if self.ds.missing_data:
             ht['missing'] = _np.ma.count_masked(mat, axis=dr)
 
-        return DataSet(mat=ht, display_name="Stacked histogram plot: consumer preference for samples")
+        return DataSet(mat=ht, display_name="Stacked histogram plot: consumer preference for products")

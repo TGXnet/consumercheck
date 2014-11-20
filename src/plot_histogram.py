@@ -149,7 +149,7 @@ class HistPlot(DescStatBasePlot):
         return self._plot_ui_info
 
     def get_plot_name(self):
-        return "Histogram plot: consumer preference for sample: {}".format(self.row_id)
+        return "Histogram plot: consumer preference for product: {}".format(self.row_id)
 
 
 class StackedHistPlot(DescStatBasePlot):
@@ -259,7 +259,7 @@ class StackedHistPlot(DescStatBasePlot):
                                     title='% of consumers')
 
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Consumer preference for samples',
+                                       title='Consumer preference for products',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
                                        tick_interval=1.0,
@@ -334,7 +334,7 @@ class BoxPlot(DescStatBasePlot):
         left_axis = _chaco.PlotAxis(renderer, orientation='left',
                                     title='Liking')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Samples',
+                                       title='products',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
                                        tick_interval=1.0,
