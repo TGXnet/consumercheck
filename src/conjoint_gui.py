@@ -153,11 +153,6 @@ class ConjointController(ModelController):
         else:
             super(ConjointController, self).open_window(viewable, view_loop)
 
-    def _wind_title(self, res):
-        ds_name = self.model.design.display_name
-        # mn = res.method_name
-        return "{0} | Conjoint - ConsumerCheck".format(ds_name)
-
 
 # View creators
 
