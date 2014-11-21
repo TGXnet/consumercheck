@@ -82,10 +82,15 @@ class SinglePWC(PWC):
     """ Change the title on the UI.
     """
     def object_plot_changed(self, info):
-        if info.object.res:
-            wt = info.object.res.method_name
-        else:
-            wt = ""
+        # if info.object.res:
+        #     wt = info.object.res.method_name
+        # else:
+        #     wt = ""
+        wt = info.object.res.method_name
+        # if len(info.object.res.input_ds_names) == 1:
+        #     dsn = info.object.res.input_ds_names.values()[0]
+        # else:
+        #     dsn = ''
         pt = info.object.plot.model.get_plot_name()
         info.object.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
 
@@ -95,7 +100,8 @@ class SinglePWC(PWC):
         """
         # info.ui.title = info.object.title_text
         super(SinglePWC, self).object_title_text_changed(info)
-        info.object.plot.model.title = info.object.title_text
+        # info.object.plot.model.title = info.object.title_text
+        info.object.plot.model.title = info.object.plot.model.get_plot_name()
 
     def object_view_table_changed(self, info):
         tv = DSTableViewer(info.object.plot.model.plot_data)
