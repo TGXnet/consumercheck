@@ -36,7 +36,7 @@ class PrefmapPicker(HasTraits):
                 orientation='vertical',
                 ),
             Group(
-                Label('Sensory profiling / descriptive data'),
+                Label('Sensory profiling'),
                 Item('sel_col', editor=CheckListEditor(name='col_set'),
                      style='simple', show_label=False),
                 orientation='vertical',
