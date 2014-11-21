@@ -206,7 +206,7 @@ conjoint_view = _traitsui.View(
 
 
 ds_exp_action = _traitsui.Action(
-    name='Export data set',
+    name='Copy to Data set',
     action='handler.export_data(editor, object)',
     )
 
