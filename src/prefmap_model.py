@@ -151,7 +151,7 @@ class Prefmap(Model):
 
 
     def _pack_res(self, pls_obj):
-        res = Result('Prefmap')
+        res = Result('Prefmap {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
 
         if self.settings.int_ext_mapping == 'External':
             res.external_mapping = True
@@ -166,7 +166,7 @@ class Prefmap(Model):
                 index=self.ds_X.obj_n,
                 columns=["PC-{0}".format(i+1) for i in range(mT.shape[1])],
                 ),
-            display_name=self.ds_X.display_name)
+            display_name='X scores')
 
         # loadings_x
         mP = pls_obj.X_loadings()
@@ -176,7 +176,7 @@ class Prefmap(Model):
                 index=self.ds_X.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
                 ),
-            display_name=self.ds_X.display_name)
+            display_name='X loadings')
 
         # loadings_y
         # Same as loading_x in external mapping?
@@ -187,7 +187,7 @@ class Prefmap(Model):
                 index=self.ds_Y.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mQ.shape[1])],
                 ),
-            display_name=self.ds_Y.display_name)
+            display_name='Y loadings')
 
         # expl_var_x
         cal = pls_obj.X_calExplVar()
@@ -200,7 +200,7 @@ class Prefmap(Model):
                 index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
-            display_name=self.ds_X.display_name)
+            display_name='Explainded variance in X')
 
         # expl_var_y
         cal = pls_obj.Y_calExplVar()
@@ -213,7 +213,7 @@ class Prefmap(Model):
                 index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
-            display_name=self.ds_Y.display_name)
+            display_name='Explained variance in Y')
 
         # X_corrLoadings()
         # corr_loadings_x
@@ -224,7 +224,7 @@ class Prefmap(Model):
                 index=self.ds_X.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mXcl.shape[1])],
                 ),
-            display_name=self.ds_X.display_name)
+            display_name='X & Y correlation loadings')
 
         # Y_corrLoadings()
         # corr_loadings_y

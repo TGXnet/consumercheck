@@ -57,12 +57,12 @@ class PrefmapController(ModelController):
 
         std_launchers = [
             # ("Overview", plot_overview),
-            ("Scores", scores_plot),
-            ("X ~ Y correlation loadings", corr_loadings_plot),
+            ("X Scores", scores_plot),
+            ("X&Y correlation loadings", corr_loadings_plot),
             ("X loadings", loadings_x_plot),
             ("Y loadings", loadings_y_plot),
-            ("Explained var X", expl_var_x_plot),
-            ("Explained var Y", expl_var_y_plot),
+            ("Explained var in X", expl_var_x_plot),
+            ("Explained var in Y", expl_var_y_plot),
             ]
 
         return [WindowLauncher(node_name=nn, view_creator=fn,
@@ -153,26 +153,19 @@ class PrefmapController(ModelController):
             super(PrefmapController, self).open_window(viewable, view_loop)
 
 
-    def _wind_title(self, res):
-        dsx_name = self.model.ds_C.display_name
-        dsy_name = self.model.ds_S.display_name
-        mn = res.method_name
-        return "({0}) X ~ Y ({1}) | {2} - ConsumerCheck".format(dsx_name, dsy_name, mn)
-
-
 # Plot creators
 def scores_plot(res):
-    plot = PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='Scores')
+    plot = PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
     return plot
 
 
 def loadings_x_plot(res):
-    plot = PCScatterPlot(res.loadings_x, res.expl_var_x, title='Loadings X')
+    plot = PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
     return plot
 
 
 def loadings_y_plot(res):
-    plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Loadings Y')
+    plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
     return plot
 
 
@@ -188,17 +181,17 @@ def corr_loadings_plot(res):
     plot = CLPlot(clx, res.expl_var_x,
                   cly, res.expl_var_y,
                   res.external_mapping,
-                  title='Correlation loadings')
+                  title='X&Y correlation loadings')
     return plot
 
 
 def expl_var_x_plot(res):
-    plot = EVLinePlot(res.expl_var_x, title='Explained variance X')
+    plot = EVLinePlot(res.expl_var_x, title='Explained variance in X')
     return plot
 
 
 def expl_var_y_plot(res):
-    plot = EVLinePlot(res.expl_var_y, title='Explained variance Y')
+    plot = EVLinePlot(res.expl_var_y, title='Explained variance in Y')
     return plot
 
 
