@@ -149,7 +149,8 @@ class HistPlot(DescStatBasePlot):
         return self._plot_ui_info
 
     def get_plot_name(self):
-        return "Histogram plot: consumer preference for product: {}".format(self.row_id)
+        dsn = self.ds.display_name[19:]
+        return "Histogram plot: {0} - {1}".format(dsn, self.row_id)
 
 
 class StackedHistPlot(DescStatBasePlot):
