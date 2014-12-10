@@ -99,6 +99,7 @@ class ConjointMachine(object):
         self.r('source("conjoint.r")')
         # Diagnostic to loggin system
         r_env = 'R environment\n'
+        r_env += self.r('sessionInfo()')
         r_env += self.r('getwd()')
         r_env += self.r('.libPaths()')
         r_env += self.r('search()')
