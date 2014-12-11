@@ -200,7 +200,7 @@ class Prefmap(Model):
                 index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
                 ),
-            display_name='Explainded variance in X')
+            display_name='Explained variance in X')
 
         # expl_var_y
         cal = pls_obj.Y_calExplVar()
