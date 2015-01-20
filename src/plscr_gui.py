@@ -30,7 +30,7 @@ from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot, CLPlot, CLPlotControl
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
-from prefmap_picker import PrefmapPicker
+from plscr_picker import PlscrPicker
 from dataset_container import DatasetContainer
 from plot_windows import OverviewPlotWindow, SinglePlotWindow
 from window_helper import multiplot_factory
@@ -247,7 +247,7 @@ class PlsrPcrCalcContainer(CalcContainer):
 
 class PlsrPcrPluginController(PluginController):
 
-    comb = _traits.Instance(PrefmapPicker, PrefmapPicker())
+    comb = _traits.Instance(PlscrPicker, PlscrPicker())
     last_selection = _traits.Set()
 
     dummy_model_controller = _traits.Instance(PlsrPcrController, PlsrPcrController(PlsrPcr()))
