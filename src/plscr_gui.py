@@ -198,9 +198,9 @@ def expl_var_y_plot(res):
 no_view = _traitsui.View()
 
 
-prefmap_view = _traitsui.View(
+plscr_view = _traitsui.View(
     _traitsui.Item('int_ext_mapping', style='custom', label='Mapping'),
-    _traitsui.Item('prefmap_method', style='custom', label='Method'),
+    _traitsui.Item('plscr_method', style='custom', label='Method'),
     _traitsui.Item('standardise_x', label='Standardise X',
                    style='custom', show_label=True),
     _traitsui.Item('standardise_y', label='Standardise Y',
@@ -214,12 +214,12 @@ prefmap_view = _traitsui.View(
 )
 
 
-prefmap_nodes = [
+plscr_nodes = [
     _traitsui.TreeNode(
         node_for=[PlsrPcrController],
         label='name',
         children='',
-        view=prefmap_view,
+        view=plscr_view,
         menu=[]),
     _traitsui.TreeNode(
         node_for=[PlsrPcrController],
@@ -228,7 +228,7 @@ prefmap_nodes = [
         icon_group='overview.ico',
         icon_open='overview.ico',
         children='window_launchers',
-        view=prefmap_view,
+        view=plscr_view,
         menu=[],
         on_dclick=overview_activator),
     _traitsui.TreeNode(
@@ -329,8 +329,8 @@ selection_view = _traitsui.Group(
     )
 
 
-prefmap_plugin_view =  make_plugin_view(
-    'PlsrPcr', prefmap_nodes, selection_view, prefmap_view)
+plscr_plugin_view =  make_plugin_view(
+    'PlsrPcr', plscr_nodes, selection_view, plscr_view)
 
 
 if __name__ == '__main__':
@@ -347,15 +347,15 @@ if __name__ == '__main__':
     S = imp_ds(ds_S_meta)
 
     if one_branch:
-        prefmap = PlsrPcr(ds_C=C, ds_S=S)
-        pc = PlsrPcrController(prefmap)
+        plscr = PlsrPcr(ds_C=C, ds_S=S)
+        pc = PlsrPcrController(plscr)
         test = TestOneNode(one_model=pc)
-        test.configure_traits(view=dummy_view(prefmap_nodes))
+        test.configure_traits(view=dummy_view(plscr_nodes))
     else:
         dsc = DatasetContainer()
         dsc.add(C)
         dsc.add(S)
-        prefmap = PlsrPcrCalcContainer(dsc=dsc)
-        ppc = PlsrPcrPluginController(prefmap)
+        plscr = PlsrPcrCalcContainer(dsc=dsc)
+        ppc = PlsrPcrPluginController(plscr)
         ppc.configure_traits(
-            view=prefmap_plugin_view)
+            view=plscr_plugin_view)

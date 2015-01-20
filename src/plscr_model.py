@@ -51,7 +51,7 @@ class PlsrPcr(Model):
     standardise_x = _traits.Bool(False)
     standardise_y = _traits.Bool(False)
     int_ext_mapping = _traits.Enum('Internal', 'External')
-    prefmap_method = _traits.Enum('PLSR', 'PCR')
+    plscr_method = _traits.Enum('PLSR', 'PCR')
     calc_n_pc = _traits.Int()
     min_pc = 2
     # max_pc = _traits.Property()
@@ -66,12 +66,12 @@ class PlsrPcr(Model):
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
         n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
-        if self.settings.prefmap_method == 'PLSR':
+        if self.settings.plscr_method == 'PLSR':
             pls = PLSR(self.ds_X.values, self.ds_Y.values,
                       numPC=n_pc, cvType=["loo"],
                       Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
             return self._pack_res(pls)
-        elif self.settings.prefmap_method == 'PCR':
+        elif self.settings.plscr_method == 'PCR':
             pcr = PCR(self.ds_X.values, self.ds_Y.values,
                       numPC=n_pc, cvType=["loo"],
                       Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
