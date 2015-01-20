@@ -36,7 +36,7 @@ from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton, CancelButton
 
 # Local imports
-from dataset import DS_TYPES, DataSet
+from dataset import DataSet
 from importer_interfaces import IDataImporter
 from importer_file_base import ImporterFileBase
 
