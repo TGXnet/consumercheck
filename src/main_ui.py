@@ -154,7 +154,7 @@ class MainUi(HasTraits):
         resizable=True,
         width=1000,
         height=600,
-        title='Consumer Check',
+        title='ConsumerCheck',
         menubar=MenuBar(
             Menu(import_action, close_action, exit_action, name='&File'),
             ## Menu(advanced_action, name='&Settings'),
