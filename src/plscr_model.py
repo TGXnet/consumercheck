@@ -37,8 +37,8 @@ class InComputeable(Exception):
     pass
 
 
-class Prefmap(Model):
-    """Represent the Prefmap model between one X and Y data set."""
+class PlsrPcr(Model):
+    """Represent the PlsrPcr model between one X and Y data set."""
 
     # Consumer liking
     ds_C = DataSet()
@@ -151,7 +151,7 @@ class Prefmap(Model):
 
 
     def _pack_res(self, pls_obj):
-        res = Result('Prefmap {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
+        res = Result('PlsrPcr {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
 
         if self.settings.int_ext_mapping == 'External':
             res.external_mapping = True

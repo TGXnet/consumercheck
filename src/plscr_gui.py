@@ -25,7 +25,7 @@ import traitsui.api as _traitsui
 
 # Local imports
 from dataset import DataSet
-from prefmap_model import Prefmap, InComputeable
+from plscr_model import PlsrPcr, InComputeable
 from plot_ev_line import EVLinePlot
 from plot_pc_scatter import PCScatterPlot, CLPlot, CLPlotControl
 from dialogs import ErrorMessage
@@ -39,7 +39,7 @@ from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
-class PrefmapController(ModelController):
+class PlsrPcrController(ModelController):
 
     window_launchers = _traits.List(_traits.Instance(WindowLauncher))
 
@@ -102,7 +102,7 @@ class PrefmapController(ModelController):
 
 
     def open_overview(self):
-        """Make Prefmap overview plot.
+        """Make PLSR/PCR overview plot.
 
         Plot an array of plots where we plot:
          * scores
@@ -150,7 +150,7 @@ class PrefmapController(ModelController):
 
             self._show_plot_window(win)
         else:
-            super(PrefmapController, self).open_window(viewable, view_loop)
+            super(PlsrPcrController, self).open_window(viewable, view_loop)
 
 
 # Plot creators
@@ -210,19 +210,19 @@ prefmap_view = _traitsui.View(
                        low_name='min_pc', high_name='max_pc', mode='auto'),
                    style='simple',
                    label='PC to calc:'),
-    title='Prefmap settings',
+    title='PLSR/PCR settings',
 )
 
 
 prefmap_nodes = [
     _traitsui.TreeNode(
-        node_for=[PrefmapController],
+        node_for=[PlsrPcrController],
         label='name',
         children='',
         view=prefmap_view,
         menu=[]),
     _traitsui.TreeNode(
-        node_for=[PrefmapController],
+        node_for=[PlsrPcrController],
         label='=Overview plot',
         icon_path='graphics',
         icon_group='overview.ico',
@@ -240,20 +240,20 @@ prefmap_nodes = [
     ]
 
 
-class PrefmapCalcContainer(CalcContainer):
-    calculator = _traits.Instance(Prefmap, Prefmap())
+class PlsrPcrCalcContainer(CalcContainer):
+    calculator = _traits.Instance(PlsrPcr, PlsrPcr())
 
 
 
-class PrefmapPluginController(PluginController):
+class PlsrPcrPluginController(PluginController):
 
     comb = _traits.Instance(PrefmapPicker, PrefmapPicker())
     last_selection = _traits.Set()
 
-    dummy_model_controller = _traits.Instance(PrefmapController, PrefmapController(Prefmap()))
+    dummy_model_controller = _traits.Instance(PlsrPcrController, PlsrPcrController(PlsrPcr()))
 
     def init(self, info):
-        super(PrefmapPluginController, self).init(info)
+        super(PlsrPcrPluginController, self).init(info)
         self._update_comb()
 
 
@@ -293,18 +293,18 @@ class PrefmapPluginController(PluginController):
             self._show_alignment_warning(ns_c, ns_s)
             return
 
-        calc_model = Prefmap(id=id_c+id_s,
+        calc_model = PlsrPcr(id=id_c+id_s,
                              ds_C=ds_c,
                              ds_S=ds_s,
                              settings=self.model.calculator)
-        calculation = PrefmapController(calc_model, win_handle=self.win_handle)
+        calculation = PlsrPcrController(calc_model, win_handle=self.win_handle)
         self.model.add(calculation)
 
 
     def _show_missing_warning(self):
         dlg = ErrorMessage()
         dlg.err_msg = 'Liking og sensory matrix has holes (missing data)'
-        dlg.err_val = 'Prefmap is by now not able to analyze data with holes'
+        dlg.err_val = 'PLSR/PCR is by now not able to analyze data with holes'
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
@@ -330,11 +330,11 @@ selection_view = _traitsui.Group(
 
 
 prefmap_plugin_view =  make_plugin_view(
-    'Prefmap', prefmap_nodes, selection_view, prefmap_view)
+    'PlsrPcr', prefmap_nodes, selection_view, prefmap_view)
 
 
 if __name__ == '__main__':
-    print("Prefmap GUI test start")
+    print("PLSR/PCR GUI test start")
     from tests.conftest import imp_ds
     one_branch = False
 
@@ -347,15 +347,15 @@ if __name__ == '__main__':
     S = imp_ds(ds_S_meta)
 
     if one_branch:
-        prefmap = Prefmap(ds_C=C, ds_S=S)
-        pc = PrefmapController(prefmap)
+        prefmap = PlsrPcr(ds_C=C, ds_S=S)
+        pc = PlsrPcrController(prefmap)
         test = TestOneNode(one_model=pc)
         test.configure_traits(view=dummy_view(prefmap_nodes))
     else:
         dsc = DatasetContainer()
         dsc.add(C)
         dsc.add(S)
-        prefmap = PrefmapCalcContainer(dsc=dsc)
-        ppc = PrefmapPluginController(prefmap)
+        prefmap = PlsrPcrCalcContainer(dsc=dsc)
+        ppc = PlsrPcrPluginController(prefmap)
         ppc.configure_traits(
             view=prefmap_plugin_view)
