@@ -217,7 +217,7 @@ plscr_view = _traitsui.View(
 plscr_nodes = [
     _traitsui.TreeNode(
         node_for=[PlsrPcrController],
-        label='name',
+        label='=PLSR/PCR',
         children='',
         view=plscr_view,
         menu=[]),
@@ -330,7 +330,7 @@ selection_view = _traitsui.Group(
 
 
 plscr_plugin_view =  make_plugin_view(
-    'PlsrPcr', plscr_nodes, selection_view, plscr_view)
+    'PLSR/PCR', plscr_nodes, selection_view, plscr_view)
 
 
 if __name__ == '__main__':
