@@ -35,7 +35,8 @@ from enable.api import ColorTrait
 DS_TYPES = ['Design variable',
             'Sensory profiling / descriptive data',
             'Consumer liking',
-            'Consumer characteristics']
+            'Consumer characteristics',
+            'Other']
 
 
 class DataSet(_traits.HasTraits):
