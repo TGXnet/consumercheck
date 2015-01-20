@@ -39,6 +39,7 @@ from about_consumercheck import ConsumerCheckAbout
 from basic_stat_gui import BasicStatPluginController, BasicStatCalcContainer, bs_plugin_view
 from pca_gui import PcaPluginController, PcaCalcContainer, pca_plugin_view
 from prefmap_gui import PrefmapPluginController, PrefmapCalcContainer, prefmap_plugin_view
+from plscr_gui import PlsrPcrPluginController, PlsrPcrCalcContainer, plscr_plugin_view
 from conjoint_gui import ConjointPluginController, ConjointCalcContainer, conjoint_plugin_view
 
 state_file = conf.pkl_file_url()
@@ -103,6 +104,8 @@ class MainUi(HasTraits):
     pca = Instance(PcaPluginController)
     # Object representing the Prefmap and the GUI tab
     prefmap = Instance(PrefmapPluginController)
+    # Object representing the PlsrPcr and the GUI tab
+    plscr = Instance(PlsrPcrPluginController)
     # Object representing the Conjoint and the GUI tab
     conjoint = Instance(ConjointPluginController)
 
@@ -128,6 +131,10 @@ class MainUi(HasTraits):
         prefmap = PrefmapCalcContainer(dsc=self.dsc)
         return PrefmapPluginController(prefmap)
 
+    def _plscr_default(self):
+        plscr = PlsrPcrCalcContainer(dsc=self.dsc)
+        return PlsrPcrPluginController(plscr)
+
     def _conjoint_default(self):
         conjoint = ConjointCalcContainer(dsc=self.dsc)
         return ConjointPluginController(conjoint)
@@ -147,6 +154,8 @@ class MainUi(HasTraits):
                  style='custom', label="PCA", show_label=False),
             Item('prefmap', editor=InstanceEditor(view=prefmap_plugin_view),
                  style='custom', label="Prefmap", show_label=False),
+            Item('plscr', editor=InstanceEditor(view=plscr_plugin_view),
+                 style='custom', label="PLSR/PCR", show_label=False),
             Item('conjoint', editor=InstanceEditor(view=conjoint_plugin_view),
                  style='custom', label="Conjoint", show_label=False),
             layout='tabbed'
