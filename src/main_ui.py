@@ -30,6 +30,7 @@ from traitsui.menu import Action, Menu, MenuBar
 
 # Local imports
 import cc_config as conf
+from dataset import DataSet
 from dataset_container import DatasetContainer
 from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
@@ -89,6 +90,14 @@ class MainViewHandler(Handler):
 
     def closed(self, info, is_ok):
         info.object.dsc.save_datasets(state_file)
+
+    def transpose_ds(self, editor, obj):
+        dsc = editor.get_parent(obj)
+        dst = DataSet()
+        dst.mat = obj.mat.T
+        dst.kind = obj.kind
+        dst.display_name = obj.display_name + '_T'
+        dsc.add(dst)
 
 
 class MainUi(HasTraits):

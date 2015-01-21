@@ -21,6 +21,7 @@
 
 import traits.api as _traits
 import traitsui.api as _traitsui
+import traitsui.wx.tree_editor as _wxte
 
 from dataset import DataSet
 from dataset_container import DatasetContainer
@@ -29,9 +30,10 @@ from ds_table_view import DSTableViewer
 
 win_handle = None
 
+
 class DSNode(_traitsui.TreeNode):
     '''Cusom tree node for data sets.
-    
+
     Sets tree node icon based on data set type
     '''
     def get_icon(self, obj, is_expanded):
@@ -75,6 +77,16 @@ class DSHandler(_traitsui.Handler):
             k1='Min', v1=vmin, k2='Max', v2=vmax)
         self.summary += "{k1:6s}:{v1:4.3g}\t{k2:6s}:{v2:4.3g}\n".format(
             k1='Mean', v1=vmean, k2='STD', v2=vstd)
+
+
+transpose_action = _traitsui.Action(
+    name='Create transposed copy',
+    action='handler.transpose_ds(editor, object)')
+
+
+tr_menu = _traitsui.Menu(
+    transpose_action,
+    _wxte.DeleteAction)
 
 
 ds_view = _traitsui.View(
@@ -129,8 +141,9 @@ tree_editor = _traitsui.TreeEditor(
             node_for=[DataSet],
             label='display_name',
             tooltip='kind',
-            icon_path = 'graphics',
+            icon_path='graphics',
             on_dclick=dclk_activator,
+            menu=tr_menu,
             view=ds_view,
             ),
         ],
