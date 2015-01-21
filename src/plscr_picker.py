@@ -7,13 +7,13 @@ class PlscrPicker(PrefmapPicker):
     traits_view = View(
         Group(
             Group(
-                Label('Matrice X'),
+                Label('Matrix X'),
                 Item('sel_row', editor=CheckListEditor(name='row_set'),
                      style='simple', show_label=False),
                 orientation='vertical',
                 ),
             Group(
-                Label('Matrice Y'),
+                Label('Matrix Y'),
                 Item('sel_col', editor=CheckListEditor(name='col_set'),
                      style='simple', show_label=False),
                 orientation='vertical',
