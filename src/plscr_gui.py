@@ -265,8 +265,8 @@ class PlsrPcrPluginController(PluginController):
 
     def _update_comb(self):
         dsc = self.model.dsc
-        self.comb.col_set = dsc.get_id_name_map('Sensory profiling / descriptive data')
-        self.comb.row_set = dsc.get_id_name_map('Consumer liking')
+        self.comb.col_set = dsc.get_id_name_map('Other')
+        self.comb.row_set = dsc.get_id_name_map('Other')
         # self.comb._generate_combinations()
 
 
