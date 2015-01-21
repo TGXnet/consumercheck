@@ -164,7 +164,7 @@ class ImporterTextFile(ImporterFileBase):
 
 
     def import_data(self):
-        """Do the importing of a dataset"""
+        """Do the importing of a data set"""
 
         if self.have_var_names:
             header = 'infer'
@@ -241,8 +241,8 @@ class ImporterTextFile(ImporterFileBase):
                  ),
             Item('decimal_mark'),
             ## Item('transpose'),
-            Item('ds_name', label='Dataset name'),
-            Item('kind', editor=EnumEditor(name='kind_list'), label='Dataset type'),
+            Item('ds_name', label='Data set name'),
+            Item('kind', editor=EnumEditor(name='kind_list'), label='Data set type'),
             Item('have_var_names', label='Existing variable names',
                  tooltip='Is first row variable names?'),
             Item('have_obj_names', label='Existing object names',

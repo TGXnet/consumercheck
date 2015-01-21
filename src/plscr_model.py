@@ -37,8 +37,8 @@ class InComputeable(Exception):
     pass
 
 
-class Prefmap(Model):
-    """Represent the Prefmap model between one X and Y data set."""
+class PlsrPcr(Model):
+    """Represent the PlsrPcr model between one X and Y data set."""
 
     # Consumer liking
     ds_C = DataSet()
@@ -51,7 +51,7 @@ class Prefmap(Model):
     standardise_x = _traits.Bool(False)
     standardise_y = _traits.Bool(False)
     int_ext_mapping = _traits.Enum('Internal', 'External')
-    prefmap_method = _traits.Enum('PLSR', 'PCR')
+    plscr_method = _traits.Enum('PLSR', 'PCR')
     calc_n_pc = _traits.Int()
     min_pc = 2
     # max_pc = _traits.Property()
@@ -66,12 +66,12 @@ class Prefmap(Model):
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
         n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
-        if self.settings.prefmap_method == 'PLSR':
+        if self.settings.plscr_method == 'PLSR':
             pls = PLSR(self.ds_X.values, self.ds_Y.values,
                       numPC=n_pc, cvType=["loo"],
                       Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
             return self._pack_res(pls)
-        elif self.settings.prefmap_method == 'PCR':
+        elif self.settings.plscr_method == 'PCR':
             pcr = PCR(self.ds_X.values, self.ds_Y.values,
                       numPC=n_pc, cvType=["loo"],
                       Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
@@ -151,7 +151,7 @@ class Prefmap(Model):
 
 
     def _pack_res(self, pls_obj):
-        res = Result('Prefmap {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
+        res = Result('PLSR/PCR {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
 
         if self.settings.int_ext_mapping == 'External':
             res.external_mapping = True

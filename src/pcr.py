@@ -25,15 +25,15 @@ class nipalsPCR:
     
     EXAMPLE USE:
     ----
-    import pca    
+    import pcr    
     
-    model = pcr.nipalsPCR(array, numPC=5)
-    model = pcr.nipalsPCR(array)
-    model = pcr.nipalsPCR(array, numPC=3, Ystand=True)
-    model = pcr.nipalsPCR(array, Xstand=False, Ystand=True)
-    model = pcr.nipalsPCR(array, cvType=["loo"])
-    model = pcr.nipalsPCR(array, cvType=["lpo", 4])
-    model = pcr.nipalsPCR(array, cvType=["lolo", [1,2,3,2,3,1]])
+    model = pcr.nipalsPCR(arrX, arrY, numPC=5)
+    model = pcr.nipalsPCR(arrX, arrY)
+    model = pcr.nipalsPCR(arrX, arrY, numPC=3, Ystand=True)
+    model = pcr.nipalsPCR(arrX, arrY, Xstand=False, Ystand=True)
+    model = pcr.nipalsPCR(arrX, arrY, cvType=["loo"])
+    model = pcr.nipalsPCR(arrX, arrY, cvType=["lpo", 4])
+    model = pcr.nipalsPCR(arrX, arrY, cvType=["lolo", [1,2,3,2,3,1]])
         
     
     TYPES:
@@ -313,10 +313,14 @@ class nipalsPCR:
 
         # Compute total calibrated explained variance in X
         self.XcumCalExplVarList = []
-        for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
-            perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
-            self.MSEE_total_dict_X[ind] = MSEE_X
-            self.XcumCalExplVarList.append(perc)
+        if self.Xstand == False:
+            for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
+                perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
+                self.MSEE_total_dict_X[ind] = MSEE_X
+                self.XcumCalExplVarList.append(perc)
+        else:
+            self.XcumCalExplVarArr = np.average(self.cumCalExplVarXarr_indVar, axis=1)
+            self.XcumCalExplVarList = list(self.XcumCalExplVarArr)
         
         # Construct list with total validated explained variance in X
         self.XcalExplVarList = []
@@ -435,10 +439,14 @@ class nipalsPCR:
 
         # Compute total calibrated explained variance in Y
         self.YcumCalExplVarList = []
-        for ind, MSEE in enumerate(self.MSEE_total_list):
-            perc = (MSEE_0 - MSEE) / MSEE_0 * 100
-            self.MSEE_total_dict[ind] = MSEE
-            self.YcumCalExplVarList.append(perc)
+        if self.Ystand == False:
+            for ind, MSEE in enumerate(self.MSEE_total_list):
+                perc = (MSEE_0 - MSEE) / MSEE_0 * 100
+                self.MSEE_total_dict[ind] = MSEE
+                self.YcumCalExplVarList.append(perc)
+        else:
+            self.YcumCalExplVarArr = np.average(self.cumCalExplVarYarr_indVar, axis=1)
+            self.YcumCalExplVarList = list(self.YcumCalExplVarArr)
         
         # Construct list with total validated explained variance in Y
         self.YcalExplVarList = []
@@ -550,7 +558,7 @@ class nipalsPCR:
                 self.X_train_means_list.append(X_train_mean)
                 
                 # -------------------------------------------------------------                    
-                # Center or standardise X according to users choice 
+                # Center or standardise Y according to users choice 
                 if self.Ystand == True:
                     Y_train_mean = np.average(Y_train, axis=0)
                     Y_train_std = np.std(Y_train, axis=0, ddof=1)
@@ -611,7 +619,7 @@ class nipalsPCR:
                 
                 # Compute Y loadings
                 term_1 = npla.inv(np.dot(np.transpose(valT),valT))
-                term_2 = np.dot(np.transpose(valT),Y_train)
+                term_2 = np.dot(np.transpose(valT),Y_train_proc)
                 valQ = np.transpose(np.dot(term_1,term_2))
                 self.val_arrQlist.append(valQ)
                 
@@ -755,10 +763,14 @@ class nipalsPCR:
 
             # Compute total validated explained variance in X
             self.XcumValExplVarList = []
-            for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
-                perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
-                self.MSECV_total_dict_X[ind] = MSECV_X
-                self.XcumValExplVarList.append(perc)
+            if self.Xstand == False:
+                for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
+                    perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
+                    self.MSECV_total_dict_X[ind] = MSECV_X
+                    self.XcumValExplVarList.append(perc)
+            else:
+                self.XcumValExplVarArr = np.average(self.cumValExplVarXarr_indVar, axis=1)
+                self.XcumValExplVarList = list(self.XcumValExplVarArr)
             
             # Construct list with total validated explained variance in X in 
             # each component
@@ -857,10 +869,14 @@ class nipalsPCR:
 
             # Compute total validated explained variance in Y
             self.YcumValExplVarList = []
-            for ind, MSECV in enumerate(self.MSECV_total_list):
-                perc = (MSECV_0 - MSECV) / MSECV_0 * 100
-                self.MSECV_total_dict[ind] = MSECV
-                self.YcumValExplVarList.append(perc)
+            if self.Ystand == False:
+                for ind, MSECV in enumerate(self.MSECV_total_list):
+                    perc = (MSECV_0 - MSECV) / MSECV_0 * 100
+                    self.MSECV_total_dict[ind] = MSECV
+                    self.YcumValExplVarList.append(perc)
+            else:
+                self.YcumValExplVarArr = np.average(self.cumValExplVarYarr_indVar, axis=1)
+                self.YcumValExplVarList = list(self.YcumValExplVarArr)
             
             # Construct list with total validated explained variance in Y in
             # each component

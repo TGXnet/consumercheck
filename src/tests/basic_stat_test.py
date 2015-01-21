@@ -85,16 +85,16 @@ def test_update_propagation(discrete_ds):
     # Verify that empty dsc gives empty selection list
     print("Available", bspc.available_ds)
     assert len(bspc.available_ds) == 0
-    # Simulate dataset added
+    # Simulate data set added
     dsc.add(discrete_ds)
-    # Verify that the added dataset i available in the selection list
+    # Verify that the added data set i available in the selection list
     print("Available", bspc.available_ds)
     assert len(bspc.available_ds) == 1
-    # Simulat that dataset i selected for computation
+    # Simulat that data set i selected for computation
     bspc.selected_ds.append(bspc.available_ds[0][0])
     print("Selected", bspc.selected_ds)
     print("Calculations", bspc.model.calculations)
-    # Simulat removal of dataset
+    # Simulat removal of data set
     del dsc[bspc.available_ds[0][0]]
     # Verify that it is also removed from selection list
     assert len(bspc.available_ds) == 0

@@ -38,21 +38,21 @@ class IDataImporter(Interface):
     """Does the data have object names?"""
 
     ds_id = Str()
-    """An internal (not shown to the user) name for the dataset."""
+    """An internal (not shown to the user) name for the data set."""
 
     ds_name = Str()
-    """An userfriendly name for the dataset."""
+    """An userfriendly name for the data set."""
 
     kind = Enum(
         ('Design variable',
-         'Sensory profiling',
+         'Sensory profiling / descriptive data',
          'Consumer liking',
          'Consumer characteristics',)
         )
-    """The dataset type for this dataset."""
+    """The data set type for this data set."""
 
     def import_data(self):
-        """Takes an data import settings object and returns a imported dataset"""
+        """Takes an data import settings object and returns a imported data set"""
 
     ## def configure_traits(self):
     ##     """Show dialog for configuring data import"""

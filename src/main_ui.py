@@ -24,12 +24,13 @@ import webbrowser
 from os import path, pardir
 
 # Enthought imports
-from traits.api import HasTraits, Instance, Any
+from traits.api import HasTraits, Instance, Any, TraitError
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
 # Local imports
 import cc_config as conf
+from dataset import DataSet
 from dataset_container import DatasetContainer
 from ui_tab_container_tree import tree_editor
 from importer_main import ImporterMain
@@ -39,18 +40,19 @@ from about_consumercheck import ConsumerCheckAbout
 from basic_stat_gui import BasicStatPluginController, BasicStatCalcContainer, bs_plugin_view
 from pca_gui import PcaPluginController, PcaCalcContainer, pca_plugin_view
 from prefmap_gui import PrefmapPluginController, PrefmapCalcContainer, prefmap_plugin_view
+from plscr_gui import PlsrPcrPluginController, PlsrPcrCalcContainer, plscr_plugin_view
 from conjoint_gui import ConjointPluginController, ConjointCalcContainer, conjoint_plugin_view
 
 state_file = conf.pkl_file_url()
 
 
 class MainViewHandler(Handler):
-    """Handler for dataset view"""
+    """Handler for data set view"""
 
     importer = Instance(ImporterMain, ImporterMain())
 
     def import_data(self, info):
-        """Action called when activating importing of new dataset"""
+        """Action called when activating importing of new data set"""
         # importer = ImporterMain()
         imported = self.importer.dialog_multi_import()
         if imported:
@@ -78,8 +80,8 @@ class MainViewHandler(Handler):
         # Import workspace
         try:
             info.object.dsc.read_datasets(state_file)
-        except IOError:
-            pass
+        except (IOError, TraitError):
+            logger.warning('Could not read state_file')
 
         try:
             info.object.splash.close()
@@ -88,6 +90,14 @@ class MainViewHandler(Handler):
 
     def closed(self, info, is_ok):
         info.object.dsc.save_datasets(state_file)
+
+    def transpose_ds(self, editor, obj):
+        dsc = editor.get_parent(obj)
+        dst = DataSet()
+        dst.mat = obj.mat.T
+        dst.kind = obj.kind
+        dst.display_name = obj.display_name + '_T'
+        dsc.add(dst)
 
 
 class MainUi(HasTraits):
@@ -103,16 +113,18 @@ class MainUi(HasTraits):
     pca = Instance(PcaPluginController)
     # Object representing the Prefmap and the GUI tab
     prefmap = Instance(PrefmapPluginController)
+    # Object representing the PlsrPcr and the GUI tab
+    plscr = Instance(PlsrPcrPluginController)
     # Object representing the Conjoint and the GUI tab
     conjoint = Instance(ConjointPluginController)
 
     # Create an action that open dialog for dataimport
-    import_action = Action(name='Add &Dataset', action='import_data')
+    import_action = Action(name='Add &Data set', action='import_data')
     # Create an action that exits the application.
     exit_action = Action(name='E&xit', action='_on_close')
     about_action = Action(name='&About', action='view_about')
     user_manual_action = Action(name='&User manual', action='view_user_manual')
-    close_action = Action(name='&Remove Datasets', action='_close_ds')
+    close_action = Action(name='&Remove Data sets', action='_close_ds')
     advanced_action = Action(name='&Advanced settings', checked_when='en_advanced',
                              style='toggle', action='_toggle_advanced')
 
@@ -128,6 +140,10 @@ class MainUi(HasTraits):
         prefmap = PrefmapCalcContainer(dsc=self.dsc)
         return PrefmapPluginController(prefmap)
 
+    def _plscr_default(self):
+        plscr = PlsrPcrCalcContainer(dsc=self.dsc)
+        return PlsrPcrPluginController(plscr)
+
     def _conjoint_default(self):
         conjoint = ConjointCalcContainer(dsc=self.dsc)
         return ConjointPluginController(conjoint)
@@ -140,13 +156,15 @@ class MainUi(HasTraits):
     # The main view
     traits_ui_view = View(
         Group(
-            Item('dsc', editor=tree_editor, label="Datasets", show_label=False),
+            Item('dsc', editor=tree_editor, label="Data sets", show_label=False),
             Item('basic_stat', editor=InstanceEditor(view=bs_plugin_view),
                  style='custom', label="Basic stat liking", show_label=False),
             Item('pca', editor=InstanceEditor(view=pca_plugin_view),
                  style='custom', label="PCA", show_label=False),
             Item('prefmap', editor=InstanceEditor(view=prefmap_plugin_view),
                  style='custom', label="Prefmap", show_label=False),
+            Item('plscr', editor=InstanceEditor(view=plscr_plugin_view),
+                 style='custom', label="PLSR/PCR", show_label=False),
             Item('conjoint', editor=InstanceEditor(view=conjoint_plugin_view),
                  style='custom', label="Conjoint", show_label=False),
             layout='tabbed'
@@ -154,7 +172,7 @@ class MainUi(HasTraits):
         resizable=True,
         width=1000,
         height=600,
-        title='Consumer Check',
+        title='ConsumerCheck',
         menubar=MenuBar(
             Menu(import_action, close_action, exit_action, name='&File'),
             ## Menu(advanced_action, name='&Settings'),

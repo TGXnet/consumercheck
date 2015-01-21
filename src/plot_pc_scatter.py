@@ -64,16 +64,16 @@ class PCDataSet(HasTraits):
 
 
 class PCPlotData(ArrayPlotData):
-    """Container for Principal Component scatterplot type dataset.
+    """Container for Principal Component scatterplot type data set.
 
-    This container will be able to hold several sets of PC type datasets:
+    This container will be able to hold several sets of PC type data sets:
      * The actual matrix with PC1 to PCn
      * A list of PCDataSet objects that holds metadata for each PC matrix
     """
 
     # Metadata for each PC set
     pc_ds = List(PCDataSet)
-    # Number of PC in the datasets
+    # Number of PC in the data sets
     # Lowest number if we have severals sets
     n_pc = Int()
     # The PC for X the axis
@@ -82,7 +82,7 @@ class PCPlotData(ArrayPlotData):
     y_no = Int()
 
     def add_PC_set(self, values, labels, color, expl_vars, view_data):
-        """Add a PC dataset with metadata"""
+        """Add a PC data set with metadata"""
 
         set_n = len(self.pc_ds)
         rows, cols = values.shape
@@ -160,7 +160,7 @@ class PCScatterPlot(PlotBase):
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
 
     def add_PC_set(self, pc_matrix, expl_vars=None):
-        """Add a PC dataset with metadata.
+        """Add a PC data set with metadata.
 
         Args:
           1. pc_matrix: DataSet with PC datapoints
@@ -452,13 +452,14 @@ def calc_bounds(data_low, data_high, margin, tight_bounds):
 
 class CLPlot(PCScatterPlot):
 
-    def __init__(self, clx, evx, cly, evy, **kwargs):
+    def __init__(self, clx, evx, cly, evy, em, **kwargs):
         super(CLPlot, self).__init__(**kwargs)
         clx.style.fg_color = 'blue'
         self.add_PC_set(clx, evx)
         cly.style.fg_color = 'red'
         self.add_PC_set(cly, evy)
         self.plot_circle(True)
+        self.external_mapping = em
 
 
 class PCBaseControl(NoPlotControl):
@@ -568,11 +569,17 @@ class CLPlotControl(PCBaseControl):
 
     @on_trait_change('show_x_labels')
     def _switch_x_labels(self, obj, name, new):
-        obj.model.show_labels(show=new, set_id=1)
+        if obj.model.external_mapping:
+            obj.model.show_labels(show=new, set_id=2)
+        else:
+            obj.model.show_labels(show=new, set_id=1)
 
     @on_trait_change('show_y_labels')
     def _switch_y_labels(self, obj, name, new):
-        obj.model.show_labels(show=new, set_id=2)
+        if obj.model.external_mapping:
+            obj.model.show_labels(show=new, set_id=1)
+        else:
+            obj.model.show_labels(show=new, set_id=2)
 
 
 if __name__ == '__main__':

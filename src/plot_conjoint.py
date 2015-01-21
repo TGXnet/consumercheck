@@ -129,6 +129,7 @@ class MainEffectsPlot(ConjointBasePlot):
 
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
+        self.attr_name = attr_name
         res = slice_main_effect_ds(conj_res.lsmeansTable, attr_name)
         self.plot_data = DataSet(mat=res, display_name='Main effects')
         self.p_value = get_main_p_value(conj_res.anovaTable, attr_name)
@@ -218,6 +219,9 @@ class MainEffectsPlot(ConjointBasePlot):
     def mk_ads(self, name):
         return ArrayDataSource(self.plot_data.mat[name].values)
 
+    def get_plot_name(self):
+        return "Main effect: {0}".format(self.attr_name)
+
 
 class InteractionPlot(ConjointBasePlot):
 
@@ -227,6 +231,8 @@ class InteractionPlot(ConjointBasePlot):
 
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
+        self.attr_one_name = attr_one_name
+        self.attr_two_name = attr_two_name
         res = slice_interaction_ds(conj_res.lsmeansTable, attr_one_name, attr_two_name)
         self.plot_data = DataSet(mat=res, display_name='Interaction')
         self.p_value = get_interaction_p_value(conj_res.anovaTable, attr_one_name, attr_two_name)
@@ -289,6 +295,9 @@ class InteractionPlot(ConjointBasePlot):
         legend.tools.append(LegendTool(legend, drag_button="right"))
         self.overlays.append(legend)
 
+    def get_plot_name(self):
+        return "Interaction: {0} * {1}".format(self.attr_one_name, self.attr_two_name)
+
 
 class InteractionPlotControl(NoPlotControl):
     flip = Bool(False)
@@ -350,7 +359,7 @@ def slice_interaction_ds(ls_means_table, index_attr, line_attr):
     indexes = sorted(list(set(selected[index_attr])))
     index_labels = ['{0} {1}'.format(index_attr, i) for i in indexes]
 
-    # for hvert nytt plot trenger vi bare et nytt dataset
+    # for hvert nytt plot trenger vi bare et nytt data set
     vals = []
     for i, line in enumerate(lines):
         line_data_picker = selected[line_attr] == line

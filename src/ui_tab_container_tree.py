@@ -21,6 +21,7 @@
 
 import traits.api as _traits
 import traitsui.api as _traitsui
+import traitsui.wx.tree_editor as _wxte
 
 from dataset import DataSet
 from dataset_container import DatasetContainer
@@ -29,17 +30,18 @@ from ds_table_view import DSTableViewer
 
 win_handle = None
 
+
 class DSNode(_traitsui.TreeNode):
-    '''Cusom tree node for datasets.
-    
-    Sets tree node icon based on dataset type
+    '''Cusom tree node for data sets.
+
+    Sets tree node icon based on data set type
     '''
     def get_icon(self, obj, is_expanded):
         """Return icon name based on ds type
         """
         if obj.kind == 'Design variable':
             return 'design_variable.ico'
-        elif obj.kind == 'Sensory profiling':
+        elif obj.kind == 'Sensory profiling / descriptive data':
             return 'sensory_profiling.ico'
         elif obj.kind == 'Consumer liking':
             return 'customer_liking.ico'
@@ -77,19 +79,29 @@ class DSHandler(_traitsui.Handler):
             k1='Mean', v1=vmean, k2='STD', v2=vstd)
 
 
+transpose_action = _traitsui.Action(
+    name='Create transposed copy',
+    action='handler.transpose_ds(editor, object)')
+
+
+tr_menu = _traitsui.Menu(
+    transpose_action,
+    _wxte.DeleteAction)
+
+
 ds_view = _traitsui.View(
 
     _traitsui.Group(
         _traitsui.Group(
             _traitsui.Item('id', style='readonly'),
-            _traitsui.Label('Dataset name:'),
+            _traitsui.Label('Data set name:'),
             _traitsui.Item('display_name', show_label=False),
-            _traitsui.Label('Dataset type:'),
+            _traitsui.Label('Data set type:'),
             _traitsui.Item('kind', show_label=False),
             ),
         _traitsui.Group(
             _traitsui.Item('handler.summary', style='readonly', show_label=False),
-            label='Dataset summary',
+            label='Data set summary',
             show_border=True,
             ),
         ),
@@ -99,7 +111,7 @@ ds_view = _traitsui.View(
 
 
 list_view = _traitsui.View(
-    _traitsui.Heading('List showing all imported datasets'),
+    _traitsui.Heading('List showing all imported data sets'),
     width=500,
     )
 
@@ -113,14 +125,14 @@ tree_editor = _traitsui.TreeEditor(
     nodes = [
         _traitsui.TreeNode(
             node_for=[DatasetContainer],
-            label='=Datasets',
+            label='=Data sets',
             children='',
             auto_open=True,
             view=list_view,
             ),
         _traitsui.TreeNode(
             node_for=[DatasetContainer],
-            label='=Datasets',
+            label='=Data sets',
             children='dsl',
             auto_open=True,
             view=list_view,
@@ -129,8 +141,9 @@ tree_editor = _traitsui.TreeEditor(
             node_for=[DataSet],
             label='display_name',
             tooltip='kind',
-            icon_path = 'graphics',
+            icon_path='graphics',
             on_dclick=dclk_activator,
+            menu=tr_menu,
             view=ds_view,
             ),
         ],

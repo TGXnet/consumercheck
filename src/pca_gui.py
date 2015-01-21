@@ -107,7 +107,7 @@ class PcaController(ModelController):
         """Make PCA overview plot.
 
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
-        for each of the datasets.
+        for each of the data sets.
         """
         res = self.get_result()
  
@@ -315,7 +315,7 @@ selection_view = _traitsui.Group(
                    width=200,
                    height=200,
                    ),
-    label='Select dataset',
+    label='Select data set',
     show_border=True,
     )
 

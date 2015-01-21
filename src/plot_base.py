@@ -33,7 +33,7 @@ bg_color = "white"
 
 
 class PlotBase(_chaco.Plot):
-    # The dataset to return when plot window asks for the data to
+    # The data set to return when plot window asks for the data to
     # show in table form
     # I have to override this property as well when i override the getter
     plot_data = _traits.Property()

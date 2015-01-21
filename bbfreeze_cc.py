@@ -4,7 +4,7 @@ import shutil
 
 from bbfreeze import Freezer
 
-FREEZE_VERSION = '1.0.4'
+FREEZE_VERSION = '1.0.5'
 R_VER = '3.0.2'
 # freeze folder
 ff = "consumercheck-" + FREEZE_VERSION
@@ -28,7 +28,7 @@ std_lib = []
 div_lib = ['twisted', 'mercurial', 'nose',
            'win32com', 'reportlab', 'setuptools', 'doctest', 'pygments',
            'pyreadline', 'email']
-test_out = ['pyface']
+test_out = []
 
 includes = tuple(['traitsui.wx.tabular_editor',
                   'traitsui.wx.table_editor',

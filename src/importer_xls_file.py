@@ -36,7 +36,7 @@ from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton, CancelButton
 
 # Local imports
-from dataset import DS_TYPES, DataSet
+from dataset import DataSet
 from importer_interfaces import IDataImporter
 from importer_file_base import ImporterFileBase
 
@@ -139,8 +139,8 @@ class ImporterXlsFile(ImporterFileBase):
                  id='table',
                  editor=preview_table),
             ## Item('transpose'),
-            Item('ds_name', label='Dataset name'),
-            Item('kind', editor=EnumEditor(name='kind_list'), label='Dataset type'),
+            Item('ds_name', label='Data set name'),
+            Item('kind', editor=EnumEditor(name='kind_list'), label='Data set type'),
             Item('have_var_names', label='Existing variable names',
                  tooltip='Is first row variables names?'),
             Item('have_obj_names', label='Existing object names',

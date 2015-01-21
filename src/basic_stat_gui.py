@@ -131,13 +131,13 @@ bs_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[BasicStatController],
-        label='=Plots for all samples',
+        label='=Plots for all products',
         children='base_win_launchers',
         view=bs_view,
         menu=[]),
     _traitsui.TreeNode(
         node_for=[BasicStatController],
-        label='=Single Sample histograms',
+        label='=Single product histograms',
         children='idx_win_launchers',
         view=bs_view,
         menu=[]),
@@ -206,7 +206,7 @@ selection_view = _traitsui.Group(
                    width=200,
                    height=200,
                    ),
-    label='Select dataset',
+    label='Select data set',
     show_border=True,
     )
 

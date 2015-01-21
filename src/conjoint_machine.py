@@ -99,6 +99,7 @@ class ConjointMachine(object):
         self.r('source("conjoint.r")')
         # Diagnostic to loggin system
         r_env = 'R environment\n'
+        r_env += self.r('sessionInfo()')
         r_env += self.r('getwd()')
         r_env += self.r('.libPaths()')
         r_env += self.r('search()')
@@ -422,7 +423,7 @@ def only_letters(name):
     # Make list of character to trow away
     throw_chrs = string.maketrans(
         string.ascii_letters, ' '*len(string.ascii_letters))
-    # Filter dataset name
+    # Filter data set name
     ascii_name = name.encode('ascii', 'ignore')
     return ascii_name.translate(None, throw_chrs)
 

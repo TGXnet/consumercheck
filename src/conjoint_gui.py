@@ -62,7 +62,7 @@ class ConjointController(ModelController):
         Model structure descriptions:
         <ul>
         <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
-        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones).</li>
+        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones). (Automized reduction in random part, NO reduction in fixed part)</li>
         <li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part).</li>
         </ul>
         ''')
@@ -153,11 +153,6 @@ class ConjointController(ModelController):
         else:
             super(ConjointController, self).open_window(viewable, view_loop)
 
-    def _wind_title(self, res):
-        ds_name = self.model.design.display_name
-        # mn = res.method_name
-        return "{0} | Conjoint - ConsumerCheck".format(ds_name)
-
 
 # View creators
 
@@ -211,7 +206,7 @@ conjoint_view = _traitsui.View(
 
 
 ds_exp_action = _traitsui.Action(
-    name='Export dataset',
+    name='Copy to Data set',
     action='handler.export_data(editor, object)',
     )
 
@@ -275,6 +270,7 @@ class ConjointPluginController(PluginController):
 
     dummy_model_controller = _traits.Instance(ConjointController)
     exported = _traits.Int(0)
+    liking_msg = _traits.Str('(You must select design first!)')
 
     def _dummy_model_controller_default(self):
         return ConjointController(Conjoint(owner_ref=self))
@@ -348,6 +344,12 @@ for variables with a large number of categories.
 
     @_traits.on_trait_change('selected_consumer_liking_sets')
     def _liking_set_selected(self, obj, name, old_value, new_value):
+        # if self.selected_design == '':
+        #     warn = """You must select design first."""
+        #     cw = ConjointWarning(messages=warn)
+        #     cw.edit_traits()
+        #     # del(self.selected_consumer_liking_sets[0])
+        #     return
         last = set(old_value)
         new = set(new_value)
         removed = last.difference(new)
@@ -367,7 +369,7 @@ for variables with a large number of categories.
         ## else:
         ##     c = DataSet(display_name = '-')
 
-        # Check dataset alignment
+        # Check data set alignment
         nds = self.design.n_objs
         nls = l.n_objs
         nlc = l.n_vars
@@ -394,7 +396,7 @@ for variables with a large number of categories.
 
     def _show_alignment_warning(self, nds, nls, nlc, nca=0):
         dlg = ErrorMessage()
-        dlg.err_msg = 'Alignment mismatch between the dataset'
+        dlg.err_msg = 'Alignment mismatch between the data set'
         dlg.err_val = 'There is {0} variants in the design matrix and {1} variants in the liking matrix. There is {2} consumers in the liking matrix and {3} consumers in the consumer characteristics matrix'.format(nds, nls, nlc, nca)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
@@ -403,7 +405,7 @@ for variables with a large number of categories.
         ind_resid = DataSet()
         ind_resid.copy_traits(
             parent.model.res.residIndTable, traits=['mat', 'style'])
-        ind_resid.kind = 'Sensory profiling'
+        ind_resid.kind = 'Sensory profiling / descriptive data'
         self.exported += 1
         ind_resid.display_name = '_double centred residuals ' + str(self.exported)
         self.model.dsc.add(ind_resid)
@@ -453,24 +455,26 @@ selection_view = _traitsui.Group(
                                name='controller.consumer_vars'),
                            style='custom',
                            show_label=False,
+                           height=150,
                            ),
             show_border=True,
         ),
         _traitsui.Group(
             _traitsui.Label('Liking set:'),
+            _traitsui.UItem('controller.liking_msg', style='readonly', visible_when="controller.selected_design == ''"),
             _traitsui.Item('controller.selected_consumer_liking_sets',
                            editor=_traitsui.CheckListEditor(name='controller.available_consumer_liking_sets'),
                            style='custom',
                            show_label=False,
-                           width=200,
-                           height=100,
+                           width=400,
+                           enabled_when="controller.selected_design != ''",
                            ),
             show_border=True,
             ),
         orientation='horizontal',
         ),
     # _traitsui.Item('controller.model_struct', style='simple', label='Model'),
-    label='Select dataset',
+    label='Select data set',
     show_border=True,
 )
 

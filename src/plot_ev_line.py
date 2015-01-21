@@ -47,14 +47,14 @@ class EVDataSet(HasTraits):
 
 
 class EVPlotData(ArrayPlotData):
-    """Container for an Explained Variance line plot type dataset.
+    """Container for an Explained Variance line plot type data set.
 
-    This container will be able to hold several sets of PC type datasets:
-     * The actual data for each line/dataset
+    This container will be able to hold several sets of PC type data sets:
+     * The actual data for each line/data set
      * The name of each plot
     """
 
-    #List with datasets
+    #List with data sets
     pc_ds = List(EVDataSet())
     
     #Plot name
@@ -62,7 +62,7 @@ class EVPlotData(ArrayPlotData):
 
 
     def add_line_ds(self, values, color, view_data=None):
-        """Add dataset for a EV line plot"""
+        """Add data set for a EV line plot"""
         
         set_n = len(self.pc_ds)
         
@@ -107,12 +107,13 @@ class EVLinePlot(PlotBase):
         super(EVLinePlot, self).__init__(data, **kwargs)
 
         if expl_var is not None:
-            # FIXME: Do more inteligente coloring based on the dataset.style
+            # FIXME: Do more inteligente coloring based on the data set.style
             self.add_EV_set(expl_var.mat.xs('calibrated'), 'darkviolet', 'Calibrated', expl_var)
             self.add_EV_set(expl_var.mat.xs('validated'), 'darkgoldenrod', 'Validated', expl_var)
 
         self.x_axis.title = "# of principal components"
         self.y_axis.title = "Explained variance [%]"
+        self.x_axis.tick_interval = 1.0
         self.legend_alignment = 'ul'
         self.legend.visible = True
 
@@ -121,7 +122,7 @@ class EVLinePlot(PlotBase):
 
 
     def add_EV_set(self, expl_var, color=None, legend=None, ev_data=None):
-        """Add a PC dataset with metadata.
+        """Add a PC data set with metadata.
 
         Args:
           1. expl_var: List() with datapoints for a explained variance line

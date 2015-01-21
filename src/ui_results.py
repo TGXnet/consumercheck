@@ -50,7 +50,7 @@ class ArrayAdapter(TabularAdapter):
 
 
 class TableViewController(ModelView):
-    """Separate table view for the dataset matrix."""
+    """Separate table view for the data set matrix."""
     table = Array()
     cp_clip = Button('Copy to clipboard')
     ad = ArrayAdapter()
@@ -75,7 +75,7 @@ class TableViewController(ModelView):
                 ),
             layout="normal",
             ),
-        title='Dataset matrix',
+        title='Data set matrix',
         width=0.3,
         height=0.3,
         resizable=True,

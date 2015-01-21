@@ -39,7 +39,7 @@ from plot_base import BasePlot, NoPlotControl
 class DescStatBasePlot(BasePlot):
     ds = _traits.Instance(DataSet)
     plot_data = _traits.Property()
-    """The dataset that is to be shown i table view of the plot data"""
+    """The data set that is to be shown i table view of the plot data"""
 
     def _get_plot_data(self):
         nds = copy.deepcopy(self.ds)
@@ -149,7 +149,8 @@ class HistPlot(DescStatBasePlot):
         return self._plot_ui_info
 
     def get_plot_name(self):
-        return 'Histogram plot: consumer preference for samples'
+        dsn = self.ds.display_name[19:]
+        return "Histogram plot: {0} - {1}".format(dsn, self.row_id)
 
 
 class StackedHistPlot(DescStatBasePlot):
@@ -259,7 +260,7 @@ class StackedHistPlot(DescStatBasePlot):
                                     title='% of consumers')
 
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Consumer preference for samples',
+                                       title='Consumer preference for products',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
                                        tick_interval=1.0,
@@ -334,7 +335,7 @@ class BoxPlot(DescStatBasePlot):
         left_axis = _chaco.PlotAxis(renderer, orientation='left',
                                     title='Liking')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
-                                       title='Samples',
+                                       title='Products',
                                        positions = range(self.ds.n_objs),
                                        labels = [str(vn) for vn in self.ds.obj_n],
                                        tick_interval=1.0,

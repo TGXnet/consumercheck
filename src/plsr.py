@@ -417,10 +417,14 @@ class nipalsPLS1:
 
         # Compute total calibrated explained variance in X
         self.XcumCalExplVarList = []
-        for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
-            perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
-            self.MSEE_total_dict_X[ind] = MSEE_X
-            self.XcumCalExplVarList.append(perc)
+        if self.Xstand == False:
+            for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
+                perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
+                self.MSEE_total_dict_X[ind] = MSEE_X
+                self.XcumCalExplVarList.append(perc)
+        else:
+            self.XcumCalExplVarArr = np.average(self.cumCalExplVarXarr_indVar, axis=1)
+            self.XcumCalExplVarList = list(self.XcumCalExplVarArr)
         
         # Construct list with total validated explained variance in X
         self.XcalExplVarList = []
@@ -545,15 +549,18 @@ class nipalsPLS1:
             numObj = np.shape(self.vecy)[0]
             
             if self.cvType[0] == "loo":
+                # print "loo"
                 cvComb = cv.LeaveOneOut(numObj)
             elif self.cvType[0] == "lpo":
+                # print "lpo"
                 cvComb = cv.LeavePOut(numObj, self.cvType[1])
             elif self.cvType[0] == "lolo":
+                # print "lolo"
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
-                raise Exception('Available cross validations is: loo, lpo, lolo')
+                print('Requested form of cross validation is not available')
 
-
+            
             # Collect predicted y (i.e. yhat) for each CV segment in a  
             # dictionary according to numer of PC
             self.valYpredDict = {}
@@ -877,10 +884,14 @@ class nipalsPLS1:
 
             # Compute total validated explained variance in X
             self.XcumValExplVarList = []
-            for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
-                perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
-                self.MSECV_total_dict_X[ind] = MSECV_X
-                self.XcumValExplVarList.append(perc)
+            if self.Xstand == False:
+                for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
+                    perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
+                    self.MSECV_total_dict_X[ind] = MSECV_X
+                    self.XcumValExplVarList.append(perc)
+            else:
+                self.XcumValExplVarArr = np.average(self.cumValExplVarXarr_indVar, axis=1)
+                self.XcumValExplVarList = list(self.XcumValExplVarArr)
             
             # Construct list with total validated explained variance in X in 
             # each component
@@ -993,7 +1004,6 @@ class nipalsPLS1:
         Returns list holding calibrated explained variance for each PC in X.
         """
         return self.XcalExplVarList
-        return self.Xcal
     
     
     def X_cumCalExplVar_indVar(self):
@@ -1623,10 +1633,14 @@ class nipalsPLS2:
 
         # Compute total calibrated explained variance in Y
         self.YcumCalExplVarList = []
-        for ind, MSEE in enumerate(self.MSEE_total_list):
-            perc = (MSEE_0 - MSEE) / MSEE_0 * 100
-            self.MSEE_total_dict[ind] = MSEE
-            self.YcumCalExplVarList.append(perc)
+        if self.Ystand == False:
+            for ind, MSEE in enumerate(self.MSEE_total_list):
+                perc = (MSEE_0 - MSEE) / MSEE_0 * 100
+                self.MSEE_total_dict[ind] = MSEE
+                self.YcumCalExplVarList.append(perc)
+        else:
+            self.YcumCalExplVarArr = np.average(self.cumCalExplVarYarr_indVar, axis=1)
+            self.YcumCalExplVarList = list(self.YcumCalExplVarArr)
         
         # Construct list with total validated explained variance in Y
         self.YcalExplVarList = []
@@ -1744,10 +1758,14 @@ class nipalsPLS2:
 
         # Compute total calibrated explained variance in X
         self.XcumCalExplVarList = []
-        for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
-            perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
-            self.MSEE_total_dict_X[ind] = MSEE_X
-            self.XcumCalExplVarList.append(perc)
+        if self.Xstand == False:
+            for ind, MSEE_X in enumerate(self.MSEE_total_list_X):
+                perc = (MSEE_0_X - MSEE_X) / MSEE_0_X * 100
+                self.MSEE_total_dict_X[ind] = MSEE_X
+                self.XcumCalExplVarList.append(perc)
+        else:
+            self.XcumCalExplVarArr = np.average(self.cumCalExplVarXarr_indVar, axis=1)
+            self.XcumCalExplVarList = list(self.XcumCalExplVarArr)
         
         # Construct list with total validated explained variance in X
         self.XcalExplVarList = []
@@ -1786,13 +1804,16 @@ class nipalsPLS2:
             numObj = np.shape(self.arrY)[0]
             
             if self.cvType[0] == "loo":
+                # print "loo"
                 cvComb = cv.LeaveOneOut(numObj)
             elif self.cvType[0] == "lpo":
+                # print "lpo"
                 cvComb = cv.LeavePOut(numObj, self.cvType[1])
             elif self.cvType[0] == "lolo":
+                # print "lolo"
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
-                raise Exception('Available cross validations is: loo, lpo, lolo')
+                print('Requested form of cross validation is not available')
             
                         
             # Collect predicted y (i.e. yhat) for each CV segment in a  
@@ -2097,10 +2118,14 @@ class nipalsPLS2:
 
             # Compute total validated explained variance in Y
             self.YcumValExplVarList = []
-            for ind, MSECV in enumerate(self.MSECV_total_list):
-                perc = (MSECV_0 - MSECV) / MSECV_0 * 100
-                self.MSECV_total_dict[ind] = MSECV
-                self.YcumValExplVarList.append(perc)
+            if self.Ystand == False:
+                for ind, MSECV in enumerate(self.MSECV_total_list):
+                    perc = (MSECV_0 - MSECV) / MSECV_0 * 100
+                    self.MSECV_total_dict[ind] = MSECV
+                    self.YcumValExplVarList.append(perc)
+            else:
+                self.YcumValExplVarArr = np.average(self.cumValExplVarYarr_indVar, axis=1)
+                self.YcumValExplVarList = list(self.YcumValExplVarArr)
             
             # Construct list with total validated explained variance in Y in
             # each component
@@ -2199,10 +2224,14 @@ class nipalsPLS2:
 
             # Compute total validated explained variance in X
             self.XcumValExplVarList = []
-            for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
-                perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
-                self.MSECV_total_dict_X[ind] = MSECV_X
-                self.XcumValExplVarList.append(perc)
+            if self.Xstand == False:
+                for ind, MSECV_X in enumerate(self.MSECV_total_list_X):
+                    perc = (MSECV_0_X - MSECV_X) / MSECV_0_X * 100
+                    self.MSECV_total_dict_X[ind] = MSECV_X
+                    self.XcumValExplVarList.append(perc)
+            else:
+                self.XcumValExplVarArr = np.average(self.cumValExplVarXarr_indVar, axis=1)
+                self.XcumValExplVarList = list(self.XcumValExplVarArr)
             
             # Construct list with total validated explained variance in X in 
             # each component
@@ -2237,7 +2266,7 @@ class nipalsPLS2:
         settingsDict['Ystand'] = self.Ystand
         settingsDict['analysed X'] = self.arrX
         settingsDict['analysed Y'] = self.arrY
-        print self.cvType
+        # print self.cvType
         settingsDict['cv type'] = self.cvType
         
         return settingsDict
@@ -2247,7 +2276,7 @@ class nipalsPLS2:
         """
         Returns a vector holding the column means of X. 
         """
-        return np.average(self.arrX_input, axis=0).reshape(1,-1)
+        return np.average(self.arrX_input, axis=0).reshape(1,-1)    
     
     def X_scores(self):
         """
@@ -2756,7 +2785,7 @@ def plotPLS(model, objNames, XvarNames, YvarNames):
     from PLSR
     """
 #==============================================================================
-# Plot PCP scores T
+# Plot PCA scores T
 #==============================================================================
     
     Xscores = model.X_scores()
@@ -3008,78 +3037,78 @@ def plotPLS(model, objNames, XvarNames, YvarNames):
 
 
 
+##==============================================================================
+## Plot cumulative explained variance for each variable in Y (CALIBRATED)
+##==============================================================================
+#
+#    YcalExplVar_indVar = model.Y_cumCalExplVar_indVar()
+#    
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111)
+#    
+#    # Construct positions for ticks along x-axis.
+#    xPos = range(np.shape(YcalExplVar_indVar)[0])
+#    
+#    plot_colours = ['b', 'r', 'k', 'g', 'm', 'b', 'r', 'k', 'g', 'm']
+#    plot_linestyles = ['solid', 'solid', 'solid', 'solid', 'solid', \
+#            'dashed', 'dashed', 'dashed', 'dashed', 'dashed']
+#    
+#    for varInd in range(np.shape(YcalExplVar_indVar)[1]):
+#        ax.plot(xPos, YcalExplVar_indVar[:,varInd], \
+#                color=plot_colours[varInd], \
+#                linestyle=plot_linestyles[varInd], linewidth=1, \
+#                label=YvarNames[varInd]+' CAL')
+#    
+#    ax.set_xticks(xPos)
+#
+#    ax.set_ylabel('Explained variance [%]')
+#    ax.set_title('CALIBRATED Explained variance of individual variables in Y')
+#    
+#    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
+#    ltext = plt.gca().get_legend().get_texts()
+#    plt.setp(ltext[0], fontsize = 10, color = 'k')
+#    
+#    plt.show()  
+#
+#
+##==============================================================================
+## Plot cumulative explained variance for each variable in Y (VALIDATED)
+##==============================================================================
+#
+#    YvalExplVar_indVar = model.Y_cumValExplVar_indVar()
+#    
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111)
+#    
+#    # Construct positions for ticks along x-axis.
+#    xPos = range(np.shape(YcalExplVar_indVar)[0])
+#    
+#    plot_colours = ['b', 'r', 'k', 'g', 'm', 'b', 'r', 'k', 'g', 'm']
+#    plot_linestyles = ['solid', 'solid', 'solid', 'solid', 'solid', \
+#            'dashed', 'dashed', 'dashed', 'dashed', 'dashed']
+#    
+##    print 'len xpos', len(xPos)
+##    print 'len Yvar', len()
+#    for varInd in range(np.shape(YcalExplVar_indVar)[1]):
+#        ax.plot(xPos, YvalExplVar_indVar[:,varInd], \
+#                color=plot_colours[varInd], \
+#                linestyle=plot_linestyles[varInd], linewidth=1, \
+#                label=YvarNames[varInd]+' VAL')
+#    
+#    ax.set_xticks(xPos)
+#
+#    ax.set_ylabel('Explained variance [%]')
+#    ax.set_title('VALIDATED Explained variance of individual variables in Y')
+#    
+#    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
+#    ltext = plt.gca().get_legend().get_texts()
+#    plt.setp(ltext[0], fontsize = 10, color = 'k')
+#    
+#    plt.show() 
+
+
 #==============================================================================
-# Plot cumulative explained variance for each variable in Y (CALIBRATED)
-#==============================================================================
-
-    YcalExplVar_indVar = model.Y_cumCalExplVar_indVar()
-    
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    
-    # Construct positions for ticks along x-axis.
-    xPos = range(np.shape(YcalExplVar_indVar)[0])
-    
-    plot_colours = ['b', 'r', 'k', 'g', 'm', 'b', 'r', 'k', 'g', 'm']
-    plot_linestyles = ['solid', 'solid', 'solid', 'solid', 'solid', \
-            'dashed', 'dashed', 'dashed', 'dashed', 'dashed']
-    
-    for varInd in range(np.shape(YcalExplVar_indVar)[1]):
-        ax.plot(xPos, YcalExplVar_indVar[:,varInd], \
-                color=plot_colours[varInd], \
-                linestyle=plot_linestyles[varInd], linewidth=1, \
-                label=YvarNames[varInd]+' CAL')
-    
-    ax.set_xticks(xPos)
-
-    ax.set_ylabel('Explained variance [%]')
-    ax.set_title('CALIBRATED Explained variance of individual variables in Y')
-    
-    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
-    ltext = plt.gca().get_legend().get_texts()
-    plt.setp(ltext[0], fontsize = 10, color = 'k')
-    
-    plt.show()  
-
-
-#==============================================================================
-# Plot cumulative explained variance for each variable in Y (VALIDATED)
-#==============================================================================
-
-    YvalExplVar_indVar = model.Y_cumValExplVar_indVar()
-    
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    
-    # Construct positions for ticks along x-axis.
-    xPos = range(np.shape(YcalExplVar_indVar)[0])
-    
-    plot_colours = ['b', 'r', 'k', 'g', 'm', 'b', 'r', 'k', 'g', 'm']
-    plot_linestyles = ['solid', 'solid', 'solid', 'solid', 'solid', \
-            'dashed', 'dashed', 'dashed', 'dashed', 'dashed']
-    
-#    print 'len xpos', len(xPos)
-#    print 'len Yvar', len()
-    for varInd in range(np.shape(YcalExplVar_indVar)[1]):
-        ax.plot(xPos, YvalExplVar_indVar[:,varInd], \
-                color=plot_colours[varInd], \
-                linestyle=plot_linestyles[varInd], linewidth=1, \
-                label=YvarNames[varInd]+' VAL')
-    
-    ax.set_xticks(xPos)
-
-    ax.set_ylabel('Explained variance [%]')
-    ax.set_title('VALIDATED Explained variance of individual variables in Y')
-    
-    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
-    ltext = plt.gca().get_legend().get_texts()
-    plt.setp(ltext[0], fontsize = 10, color = 'k')
-    
-    plt.show() 
-
-
-#==============================================================================
-# Plot Y loadings
+# Plot X loadings
 #==============================================================================
     
     Xloadings = model.X_loadings()

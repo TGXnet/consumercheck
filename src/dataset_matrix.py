@@ -75,10 +75,10 @@ if __name__ == '__main__':
         matrix = np.array([[1, 2],[3, 4]]),
         row_names = ['one', 'two'],
         col_names = ['tit', 'tat'])
-    ds1.configure_traits(view=ds1.get_view('Dataset 1'))
+    ds1.configure_traits(view=ds1.get_view('Data set 1'))
 
     ds2 = DatasetMatrix(
         matrix = np.array([[10, 20],[30, 40]]),
         row_names = ['ten', 'twenty'],
         col_names = ['check', 'mate'])
-    ds2.configure_traits(view=ds2.get_view('Dataset 2'))
+    ds2.configure_traits(view=ds2.get_view('Data set 2'))

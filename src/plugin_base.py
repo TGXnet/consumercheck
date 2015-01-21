@@ -37,7 +37,8 @@ from dataset_container import DatasetContainer
 
 
 class Result(_traits.HasTraits):
-    method_name = _traits.Str('Basic stat')
+    method_name = _traits.Str()
+    input_ds_names = _traits.DictStrAny()
 
     def __init__(self, method_name):
         super(Result, self).__init__(method_name=method_name)
@@ -129,9 +130,8 @@ class ModelController(_traitsui.Controller):
                 "Not implemented for this platform: {0}".format(sys.platform))
 
     def _wind_title(self, res):
-        ds_name = self.model.ds.display_name
         mn = res.method_name
-        return "{0} | {1} - ConsumerCheck".format(ds_name, mn)
+        return "{0} | Overview - ConsumerCheck".format(mn)
 
 
 class CalcContainer(_traits.HasTraits):
@@ -206,7 +206,7 @@ def make_plugin_view(model_name, model_nodes, selection_view, model_view):
                            show_label=False),
             # Right side
             _traitsui.Group(
-                # Upper right side dataset selection panel
+                # Upper right side data set selection panel
                 selection_view,
                 # Lower right side calc settings panel
                 _traitsui.Group(
