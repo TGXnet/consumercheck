@@ -151,7 +151,7 @@ class PlsrPcr(Model):
 
 
     def _pack_res(self, pls_obj):
-        res = Result('PlsrPcr {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
+        res = Result('PLSR/PCR {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
 
         if self.settings.int_ext_mapping == 'External':
             res.external_mapping = True
