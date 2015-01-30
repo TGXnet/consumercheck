@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-   <Product Id='B113C266-2746-4704-830C-869A32AEBEDE' Name='ConsumerCheck 1.0.5' Language='1033' 
-            Version='1.0.3' Manufacturer='Nofima' UpgradeCode='830D2987-E3B3-45D5-94B5-DAE73D95746B' >
+   <Product Id='B113C266-2746-4704-830C-869A32AEBEDE' Name='ConsumerCheck 1.1.0' Language='1033' 
+            Version='1.1.0' Manufacturer='Nofima' UpgradeCode='830D2987-E3B3-45D5-94B5-DAE73D95746B' >
       <Package Description='ConsumerCheck base installer'
                Comments='Simple ConsumerCheck installer'
                Manufacturer='TGXnet' InstallerVersion='200' Compressed='yes' />
