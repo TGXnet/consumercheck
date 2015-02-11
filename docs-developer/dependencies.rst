@@ -23,6 +23,8 @@ CONTENT
 (B3)		- Installation of R
 (B4)		- Installation of R package 'lmerTest'
 
+(C) 	* DEVELOMENT TOOLS
+
 
 ===========================================
 (A) LIST OF REQUIRED SOFTWARE INSTALLATIONS
@@ -40,21 +42,19 @@ CC depends on a number of scientific Python packages. Unfortunately CC does not 
 ======== =========== ==============
  Name     Tested ver  Function
 ======== =========== ==============
-chaco     4.2.0       Plotting library
+chaco     4.4.1       Plotting library
 pandas    0.12.0      Matrix container
 numpy     1.8.2       Baisis for statistics and datatype
-traits    4.2.0       Event and type automation for Traitsui and Chaco
-traitsui  4.2.0       Abstract GUI toolkit
-pyface    4.2.0       Traitsui nees this
-enable    4.2.0       Support for Chaco
+traits    4.5.0       Event and type automation for Traitsui and Chaco
+traitsui  4.4.0       Abstract GUI toolkit
+pyface    4.4.0       Traitsui nees this
+enable    4.4.1       Support for Chaco
 pyparsing 1.5.6       Needed by Enable, not installed automatic by pip
 xlrd      0.9.2       For reading XL spredsheet
 openpyxl  1.7.0       For reading XL spredsheet
-pytest    2.6.3       Testing framework
-???bbfreeze  1.1.3       Extracting stand alone innstalation for Windows (NOT included in Anaconda, Canopy Express nor PythonXY)
 colormath 1.0.8       Latest version 2.1.0
-pyper     1.1.2       Python <-> R communication
-wxPython  2.8.x       GUI backend
+pyper     1.1.1       Python <-> R communication
+wxPython  2.8.12.1    GUI backend
 
 Dependencies:
 chaco: enable
@@ -168,3 +168,16 @@ lmerTest:
 Depends: R (>= 3.0.0), Matrix, stats, methods, lme4 (>= 1.0)
 Imports: numDeriv, MASS, Hmisc, gplots, pbkrtest
 
+
+=====================
+(C) Development tools
+=====================
+
+========= =========== ==============
+ Name      Tested ver  Function
+========= =========== ==============
+pytest     2.6.3       Testing framework
+bbfreeze   1.1.3       Extracting stand alone innstalation for Windows
+mercurial  3.3         Distributed revision control
+
+Windows Installer XML (WiX) toolset v3.6 (beta) is used to generate windows installer.
