@@ -34,7 +34,7 @@ class SectorMixin(HasTraits):
         return sect_angle
 
     def _sector_sort_points(self, points, sector_angles):
-        pts_angle = np.arctan2(points[:, 0], points[:, 1])
+        pts_angle = np.arctan2(points[:, 1], points[:, 0])
         pts_angle[pts_angle < 0] += 2 * np.pi
         hist, _ = np.histogram(pts_angle, sector_angles)
         return hist
