@@ -40,6 +40,8 @@ from enable.savage.trait_defs.ui.svg_button import SVGButton
 from dataset import DataSet
 from plot_base import PlotBase, NoPlotControl
 from plot_interface import IPCScatterPlot
+from plot_sector import SectorMixin
+
 
 #==============================================================================
 # Attributes to use for the plot view.
@@ -462,6 +464,10 @@ class CLPlot(PCScatterPlot):
         self.external_mapping = em
 
 
+class ScatterSectorPlot(PCScatterPlot, SectorMixin):
+    pass
+
+
 class PCBaseControl(NoPlotControl):
     eq_axis = Bool(False)
     # vis_toggle = Button('Visibility')
@@ -584,11 +590,14 @@ class CLPlotControl(PCBaseControl):
 
 if __name__ == '__main__':
     from tests.conftest import iris_ds
-
-    iris = iris_ds()
-    plot = PCScatterPlot(iris)
+    import pandas as pd
+    gobli = (np.random.random((30, 4)) - 0.5) * 2
+    pda = pd.DataFrame(gobli)
+    irds = DataSet(mat=pda)
+    plot = ScatterSectorPlot(irds)
+    plot.draw_sectors(7)
     # PCScatterPlot(res.loadings, res.expl_var, title='Loadings')
-    # plot.add_PC_set(iris2)
+    # plot.add_PC_set(iris)
     # plot.plot_circle(True)
 
     with np.errstate(invalid='ignore'):
