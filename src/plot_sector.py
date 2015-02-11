@@ -18,9 +18,12 @@ class SectorMixin(HasTraits):
     '''
 
     def draw_sectors(self, n_sectors):
-        numpts = 30
-        x = np.sort(np.random.random(numpts)) - 0.5
-        y = np.random.random(numpts) - 0.5
+        set_id = 1
+        # Typical id: ('s1pc1', 's1pc2')
+        x_id = 's{}pc{}'.format(set_id, self.data.x_no)
+        y_id = 's{}pc{}'.format(set_id, self.data.y_no)
+        x = self.data.get_data(x_id)
+        y = self.data.get_data(y_id)
         points = np.column_stack((x, y))
         sector_angles = self._calculate_sector_angles(n_sectors)
         sector_points_dist = self._sector_sort_points(points, sector_angles)
