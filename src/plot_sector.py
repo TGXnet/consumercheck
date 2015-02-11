@@ -47,16 +47,11 @@ class SectorMixin(HasTraits):
         return csa[i]
 
     def _add_plot_sectors(self, sector_angles, sector_colors):
-        print("\nHere we go again")
-        print(sector_colors)
-        print(sector_angles)
-
         nseg = len(sector_colors)
         radii = 2
         ptx = np.cos(sector_angles) * radii
         pty = np.sin(sector_angles) * radii
         pos = np.column_stack((ptx, pty))
-        print(pos)
 
         for i in range(nseg):
             ptx1 = pos[i, 0]
@@ -73,7 +68,6 @@ class SectorMixin(HasTraits):
         for i in range(nseg):
             xname = "sectorx{}".format(i)
             yname = "sectory{}".format(i)
-            print(sector_colors[i])
             self.plot((xname, yname),
                       type='polygon',
                       face_color=sector_colors[i],
