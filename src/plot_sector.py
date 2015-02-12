@@ -2,7 +2,7 @@
 import numpy as np
 
 # Enthought library imports
-from traits.api import HasTraits, List, Str
+from traits.api import HasTraits, Bool, Int, List, Str
 from chaco.api import DataRange1D, LinearMapper, PolygonPlot
 from chaco.plot_factory import _create_data_sources
 
@@ -19,6 +19,15 @@ class SectorMixin(HasTraits):
 
     '''
     sector_plot_names = List(Str)
+    draw_sect = Bool(False)
+    n_sectors = Int(7)
+
+    def switch_sectors(self, onoff):
+        self.draw_sect = onoff
+        if onoff:
+            self.draw_sectors(self.n_sectors)
+        else:
+            self.remove_sectors()
 
     def draw_sectors(self, n_sectors):
         # from pudb import set_trace; set_trace()
