@@ -3,6 +3,8 @@ import numpy as np
 
 # Enthought library imports
 from traits.api import HasTraits
+from chaco.api import DataRange1D, LinearMapper, PolygonPlot
+from chaco.plot_factory import _create_data_sources
 
 # Local imports
 from utilities import hue_span
@@ -18,10 +20,15 @@ class SectorMixin(HasTraits):
     '''
 
     def draw_sectors(self, n_sectors):
+        # from pudb import set_trace; set_trace()
         set_id = 1
         # Typical id: ('s1pc1', 's1pc2')
-        x_id = 's{}pc{}'.format(set_id, self.data.x_no)
-        y_id = 's{}pc{}'.format(set_id, self.data.y_no)
+        # FIXME: self.data.x_no is set in _plotPC().
+        # _plotPC() is called after this
+        # x_id = 's{}pc{}'.format(set_id, self.data.x_no)
+        # y_id = 's{}pc{}'.format(set_id, self.data.y_no)
+        x_id = 's{}pc{}'.format(set_id, 1)
+        y_id = 's{}pc{}'.format(set_id, 2)
         x = self.data.get_data(x_id)
         y = self.data.get_data(y_id)
         points = np.column_stack((x, y))
@@ -57,6 +64,10 @@ class SectorMixin(HasTraits):
         pos = np.column_stack((ptx, pty))
 
         for i in range(nseg):
+            # c1 = pos[i]
+            # c2 = pos[i+1]
+            # render = create_plot_sector((c1, c2), sector_colors[i])
+            # self.add(render)
             ptx1 = pos[i, 0]
             pty1 = pos[i, 1]
             ptx2 = pos[i+1, 0]
@@ -75,4 +86,73 @@ class SectorMixin(HasTraits):
                       type='polygon',
                       face_color=sector_colors[i],
                       edge_color=(0, 0, 0),
-                      alpha=0.3)
+                      alpha=0.5)
+
+
+def create_plot_sector(corners, face_color="green"):
+    index_bounds = None
+    value_bounds = None
+    # orientation = "h"
+    # edge_color = "black"
+    # edge_width = 1.0
+    # edge_style =
+    # face_color = "green"
+    # color = "green"
+    # marker = "square"
+    # marker_size = 4
+    # bgcolor = "transparent"
+    # outline_color = "black"
+    border_visible = True
+    # add_grid = False
+    # add_axis = False
+    # index_sort = "none"
+
+    """
+    Creates a ScatterPlot from a single Nx2 data array or a tuple of
+    two length-N 1-D arrays.  The data must be sorted on the index if any
+    reverse-mapping tools are to be used.
+
+    Pre-existing "index" and "value" datasources can be passed in.
+    """
+    c1, c2 = corners
+    sect = _create_sect_corners(c1, c2)
+    index, value = _create_data_sources(sect)
+
+    if index_bounds is not None:
+        index_range = DataRange1D(low=index_bounds[0], high=index_bounds[1])
+    else:
+        index_range = DataRange1D()
+    index_range.add(index)
+    index_mapper = LinearMapper(range=index_range)
+
+    if value_bounds is not None:
+        value_range = DataRange1D(low=value_bounds[0], high=value_bounds[1])
+    else:
+        value_range = DataRange1D()
+    value_range.add(value)
+    value_mapper = LinearMapper(range=value_range)
+
+    plot = PolygonPlot(index=index, value=value,
+                       index_mapper=index_mapper,
+                       value_mapper=value_mapper,
+                       # orientation=orientation,
+                       # marker=marker,
+                       # marker_size=marker_size,
+                       # color=color,
+                       # bgcolor=bgcolor,
+                       # outline_color=outline_color,
+                       face_color=face_color,
+                       border_visible=border_visible,)
+
+    # if add_grid:
+    #     add_default_grids(plot, orientation)
+    # if add_axis:
+    #     add_default_axes(plot, orientation)
+    return plot
+
+
+def _create_sect_corners(c1, c2):
+    px = np.array([0.0, c1[0], c2[0]])
+    py = np.array([0.0, c1[1], c1[1]])
+    p = np.vstack((px, py))
+    return p

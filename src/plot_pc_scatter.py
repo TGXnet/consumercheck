@@ -465,7 +465,24 @@ class CLPlot(PCScatterPlot):
 
 
 class ScatterSectorPlot(PCScatterPlot, SectorMixin):
-    pass
+    draw_sect = Bool(True)
+    n_sectors = Int(7)
+
+    def add_PC_set(self, pc_matrix, expl_vars=None):
+        """Add a PC data set with metadata.
+
+        Args:
+          1. pc_matrix: DataSet with PC datapoints
+          2. expl_vars: DataSet with explained variance
+        """
+        matrix_t = pc_matrix.values.transpose()
+        labels = pc_matrix.obj_n
+        color = pc_matrix.style.fg_color
+        set_id = self.data.add_PC_set(matrix_t, labels, color,
+                                      expl_vars, pc_matrix)
+        if self.draw_sect:
+            self.draw_sectors(7)
+        self._plot_PC(set_id)
 
 
 class PCBaseControl(NoPlotControl):
@@ -595,7 +612,6 @@ if __name__ == '__main__':
     pda = pd.DataFrame(gobli)
     irds = DataSet(mat=pda)
     plot = ScatterSectorPlot(irds)
-    plot.draw_sectors(7)
     # PCScatterPlot(res.loadings, res.expl_var, title='Loadings')
     # plot.add_PC_set(iris)
     # plot.plot_circle(True)
