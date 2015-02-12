@@ -31,7 +31,7 @@ import numpy as np
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
 from traits.api import (Bool, Int, List, HasTraits, implements,
-                        Property, on_trait_change)
+                        Property, Range, on_trait_change)
 from traitsui.api import Item, Group, View, Label, Include
 from enable.api import ColorTrait, ComponentEditor
 from enable.savage.trait_defs.ui.svg_button import SVGButton
@@ -570,6 +570,9 @@ class PCSectorPlotControl(PCBaseControl):
         Item('eq_axis', label="Equal scale axis"),
         Item('show_labels', label="Show labels"),
         Item('draw_sectors', label="Draw sectors"),
+        Item('model.n_sectors',
+             label="Number of sectors",
+             enabled_when='draw_sectors'),
         orientation="horizontal",
     )
 
@@ -580,6 +583,13 @@ class PCSectorPlotControl(PCBaseControl):
     @on_trait_change('draw_sectors')
     def switch_sectors(self, obj, name, new):
         obj.model.switch_sectors(new)
+
+    @on_trait_change('model.n_sectors', post_init=True)
+    def change_sectors(self, obj, name, new):
+        # FIXME: During initialization new is of type ScatterSectorPlot
+        if isinstance(new, int):
+            obj.remove_sectors()
+            obj.draw_sectors(new)
 
 
 class CLPlotControl(PCBaseControl):
@@ -596,6 +606,9 @@ class CLPlotControl(PCBaseControl):
         Item('show_x_labels', label="Show consumer labels"),
         Item('show_y_labels', label="Show sensory labels"),
         Item('draw_sectors', label="Draw sectors"),
+        Item('model.n_sectors',
+             label="Number of sectors",
+             enabled_when='draw_sectors'),
         orientation="horizontal",
     )
 
@@ -616,6 +629,13 @@ class CLPlotControl(PCBaseControl):
     @on_trait_change('draw_sectors')
     def switch_sectors(self, obj, name, new):
         obj.model.switch_sectors(new)
+
+    @on_trait_change('model.n_sectors', post_init=True)
+    def change_sectors(self, obj, name, new):
+        # FIXME: During initialization new is of type ScatterSectorPlot
+        if isinstance(new, int):
+            obj.remove_sectors()
+            obj.draw_sectors(new)
 
 
 if __name__ == '__main__':
