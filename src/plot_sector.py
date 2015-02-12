@@ -25,6 +25,8 @@ class SectorMixin(HasTraits):
     def switch_sectors(self, onoff):
         self.draw_sect = onoff
         if onoff:
+            self.range2d.high_setting = (1.0, 1.0)
+            self.range2d.low_setting = (-1.0, -1.0)
             self.draw_sectors(self.n_sectors)
         else:
             self.remove_sectors()
@@ -74,7 +76,7 @@ class SectorMixin(HasTraits):
 
     def _add_plot_sectors(self, sector_angles, sector_colors):
         nseg = len(sector_colors)
-        radii = 2
+        radii = 10
         ptx = np.cos(sector_angles) * radii
         pty = np.sin(sector_angles) * radii
         pos = np.column_stack((ptx, pty))
@@ -106,8 +108,6 @@ class SectorMixin(HasTraits):
                       face_color=sector_colors[i],
                       edge_color=(0, 0, 0),
                       alpha=0.5)
-        self.range2d.high_setting = (1.0, 1.0)
-        self.range2d.low_setting = (-1.0, -1.0)
 
 
 def create_plot_sector(corners, face_color="green"):
