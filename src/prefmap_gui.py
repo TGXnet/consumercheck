@@ -27,7 +27,8 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import PCScatterPlot, CLPlot, CLPlotControl
+from plot_pc_scatter import (PCScatterPlot, ScatterSectorPlot, CLPlot,
+                             CLPlotControl, PCSectorPlotControl)
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
@@ -124,30 +125,31 @@ class PrefmapController(ModelController):
 
         ds_plots = [
             [sp, clp],
-            [evc, evs]
-            ]
+            [evc, evs]]
 
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)
-
 
     def open_window(self, viewable, view_loop):
         """Expected viewable is by now:
           + Plot subtype
           + DataSet type
         """
+        res = self.get_result()
         if isinstance(viewable, CLPlot):
-        # if viewable.title == 'Correlation loadings':
-            res = self.get_result()
             plot_control = CLPlotControl(viewable)
-
             win = SinglePlotWindow(
                 plot=plot_control,
                 res=res,
-                view_loop=view_loop,
-                )
-
+                view_loop=view_loop)
+            self._show_plot_window(win)
+        elif isinstance(viewable, ScatterSectorPlot):
+            plot_control = PCSectorPlotControl(viewable)
+            win = SinglePlotWindow(
+                plot=plot_control,
+                res=res,
+                view_loop=view_loop)
             self._show_plot_window(win)
         else:
             super(PrefmapController, self).open_window(viewable, view_loop)
@@ -160,7 +162,7 @@ def scores_plot(res):
 
 
 def loadings_x_plot(res):
-    plot = PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    plot = ScatterSectorPlot(res.loadings_x, res.expl_var_x, title='X loadings')
     return plot
 
 
