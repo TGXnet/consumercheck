@@ -452,7 +452,11 @@ def calc_bounds(data_low, data_high, margin, tight_bounds):
         return data_low * (1 + margin), data_high * (1 + margin)
 
 
-class CLPlot(PCScatterPlot):
+class ScatterSectorPlot(PCScatterPlot, SectorMixin):
+    pass
+
+
+class CLPlot(ScatterSectorPlot):
 
     def __init__(self, clx, evx, cly, evy, em, **kwargs):
         super(CLPlot, self).__init__(**kwargs)
@@ -462,34 +466,6 @@ class CLPlot(PCScatterPlot):
         self.add_PC_set(cly, evy)
         self.plot_circle(True)
         self.external_mapping = em
-
-
-class ScatterSectorPlot(PCScatterPlot, SectorMixin):
-    draw_sect = Bool(False)
-    n_sectors = Int(7)
-
-    def add_PC_set(self, pc_matrix, expl_vars=None):
-        """Add a PC data set with metadata.
-
-        Args:
-          1. pc_matrix: DataSet with PC datapoints
-          2. expl_vars: DataSet with explained variance
-        """
-        matrix_t = pc_matrix.values.transpose()
-        labels = pc_matrix.obj_n
-        color = pc_matrix.style.fg_color
-        set_id = self.data.add_PC_set(matrix_t, labels, color,
-                                      expl_vars, pc_matrix)
-        if self.draw_sect:
-            self.draw_sectors(7)
-        self._plot_PC(set_id)
-
-    def switch_sectors(self, onoff):
-        self.draw_sect = onoff
-        if onoff:
-            self.draw_sectors(self.n_sectors)
-        else:
-            self.remove_sectors()
 
 
 class PCBaseControl(NoPlotControl):
@@ -609,6 +585,7 @@ class PCSectorPlotControl(PCBaseControl):
 class CLPlotControl(PCBaseControl):
     show_x_labels = Bool(True)
     show_y_labels = Bool(True)
+    draw_sectors = Bool(False)
     plot_controllers = Group(
         Item('x_down', show_label=False),
         Item('x_up', show_label=False),
@@ -618,6 +595,7 @@ class CLPlotControl(PCBaseControl):
         Item('eq_axis', label="Equal scale axis"),
         Item('show_x_labels', label="Show consumer labels"),
         Item('show_y_labels', label="Show sensory labels"),
+        Item('draw_sectors', label="Draw sectors"),
         orientation="horizontal",
     )
 
@@ -634,6 +612,10 @@ class CLPlotControl(PCBaseControl):
             obj.model.show_labels(show=new, set_id=1)
         else:
             obj.model.show_labels(show=new, set_id=2)
+
+    @on_trait_change('draw_sectors')
+    def switch_sectors(self, obj, name, new):
+        obj.model.switch_sectors(new)
 
 
 if __name__ == '__main__':
