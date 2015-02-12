@@ -2,7 +2,7 @@
 import numpy as np
 
 # Enthought library imports
-from traits.api import HasTraits
+from traits.api import HasTraits, List, Str
 from chaco.api import DataRange1D, LinearMapper, PolygonPlot
 from chaco.plot_factory import _create_data_sources
 
@@ -18,6 +18,7 @@ class SectorMixin(HasTraits):
     values, variables,
 
     '''
+    sector_plot_names = List(Str)
 
     def draw_sectors(self, n_sectors):
         # from pudb import set_trace; set_trace()
@@ -36,6 +37,12 @@ class SectorMixin(HasTraits):
         sector_points_dist = self._sector_sort_points(points, sector_angles)
         sector_colors = self._make_sector_color_palette(sector_points_dist)
         self._add_plot_sectors(sector_angles, sector_colors)
+        self.request_redraw()
+
+    def remove_sectors(self):
+        self.delplot(*self.sector_plot_names)
+        self.sector_plot_names = []
+        self.request_redraw()
 
     def _calculate_sector_angles(self, n_sectors):
         sect_angle = np.linspace(0, 2*np.pi, n_sectors+1)
@@ -82,8 +89,11 @@ class SectorMixin(HasTraits):
         for i in range(nseg):
             xname = "sectorx{}".format(i)
             yname = "sectory{}".format(i)
+            spn = "sect{}".format(i)
+            self.sector_plot_names.append(spn)
             self.plot((xname, yname),
                       type='polygon',
+                      name=spn,
                       face_color=sector_colors[i],
                       edge_color=(0, 0, 0),
                       alpha=0.5)

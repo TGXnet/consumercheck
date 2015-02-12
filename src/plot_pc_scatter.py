@@ -465,7 +465,7 @@ class CLPlot(PCScatterPlot):
 
 
 class ScatterSectorPlot(PCScatterPlot, SectorMixin):
-    draw_sect = Bool(True)
+    draw_sect = Bool(False)
     n_sectors = Int(7)
 
     def add_PC_set(self, pc_matrix, expl_vars=None):
@@ -483,6 +483,13 @@ class ScatterSectorPlot(PCScatterPlot, SectorMixin):
         if self.draw_sect:
             self.draw_sectors(7)
         self._plot_PC(set_id)
+
+    def switch_sectors(self, onoff):
+        self.draw_sect = onoff
+        if onoff:
+            self.draw_sectors(self.n_sectors)
+        else:
+            self.remove_sectors()
 
 
 class PCBaseControl(NoPlotControl):
@@ -573,6 +580,30 @@ class PCPlotControl(PCBaseControl):
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
         obj.model.show_labels(show=new, set_id=1)
+
+
+class PCSectorPlotControl(PCBaseControl):
+    show_labels = Bool(True)
+    draw_sectors = Bool(False)
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_labels', label="Show labels"),
+        Item('draw_sectors', label="Draw sectors"),
+        orientation="horizontal",
+    )
+
+    @on_trait_change('show_labels')
+    def switch_labels(self, obj, name, new):
+        obj.model.show_labels(show=new, set_id=1)
+
+    @on_trait_change('draw_sectors')
+    def switch_sectors(self, obj, name, new):
+        obj.model.switch_sectors(new)
 
 
 class CLPlotControl(PCBaseControl):
