@@ -106,6 +106,8 @@ class SectorMixin(HasTraits):
                       face_color=sector_colors[i],
                       edge_color=(0, 0, 0),
                       alpha=0.5)
+        self.range2d.high_setting = (1.0, 1.0)
+        self.range2d.low_setting = (-1.0, -1.0)
 
 
 def create_plot_sector(corners, face_color="green"):
