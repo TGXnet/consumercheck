@@ -19,6 +19,7 @@ class SectorMixin(HasTraits):
 
     '''
     sector_plot_names = List(Str)
+    sector_points_dist = List(Int)
     draw_sect = Bool(False)
     n_sectors = Range(low=4, high=12)
 
@@ -52,6 +53,7 @@ class SectorMixin(HasTraits):
 
     def remove_sectors(self):
         self.delplot(*self.sector_plot_names)
+        self.legend.visible = False
         self.sector_plot_names = []
         self.request_redraw()
 
@@ -65,6 +67,7 @@ class SectorMixin(HasTraits):
         pts_angle = np.arctan2(points[:, 1], points[:, 0])
         pts_angle[pts_angle < 0] += 2 * np.pi
         hist, _ = np.histogram(pts_angle, sector_angles)
+        self.sector_points_dist = list(hist)
         return hist
 
     def _make_sector_color_palette(self, sector_points_dist):
@@ -97,17 +100,25 @@ class SectorMixin(HasTraits):
             self.data.set_data(xname, px)
             self.data.set_data(yname, py)
 
+        pnmap = dict()
         for i in range(nseg):
             xname = "sectorx{}".format(i)
             yname = "sectory{}".format(i)
             spn = "sect{}".format(i)
             self.sector_plot_names.append(spn)
-            self.plot((xname, yname),
-                      type='polygon',
-                      name=spn,
-                      face_color=sector_colors[i],
-                      edge_color=(0, 0, 0),
-                      alpha=0.5)
+            sp = self.plot((xname, yname),
+                           type='polygon',
+                           name=spn,
+                           face_color=sector_colors[i],
+                           edge_color=(0, 0, 0),
+                           alpha=0.5)
+            pnmap[str(self.sector_points_dist[i])] = sp
+        order = sorted(pnmap.keys(), key=int, reverse=True)
+        self.legend.plots = pnmap
+        self.legend.labels = order
+        self.legend.line_spacing = 20
+        # self.legend.icon_spacing = 20
+        self.legend.visible = True
 
 
 def create_plot_sector(corners, face_color="green"):
