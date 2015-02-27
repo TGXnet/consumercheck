@@ -207,7 +207,7 @@ conjoint_view = _traitsui.View(
 
 ds_exp_action = _traitsui.Action(
     name='Copy to Data set',
-    visible_when='object.node_name == "Double centred residuals"',
+    visible_when='object.node_name in ("Double centred residuals", "Full model residuals")',
     action='handler.export_data(editor, object)',
     )
 
@@ -405,12 +405,18 @@ for variables with a large number of categories.
 
     def export_data(self, editor, obj):
         parent = editor.get_parent(obj)
+        res_name = obj.node_name
         ind_resid = DataSet()
-        ind_resid.copy_traits(
-            parent.model.res.residIndTable, traits=['mat', 'style'])
+        if res_name == 'Double centred residuals':
+            ind_resid.copy_traits(
+                parent.model.res.residIndTable, traits=['mat', 'style'])
+            ind_resid.display_name = '_double centred residuals ' + str(self.exported)
+        elif res_name == 'Full model residuals':
+            ind_resid.copy_traits(
+                parent.model.res.residualsTable, traits=['mat', 'style'])
+            ind_resid.display_name = '_full model residuals ' + str(self.exported)
         ind_resid.kind = 'Sensory profiling / descriptive data'
         self.exported += 1
-        ind_resid.display_name = '_double centred residuals ' + str(self.exported)
         self.model.dsc.add(ind_resid)
 
 
