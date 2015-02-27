@@ -293,6 +293,8 @@ class ConjointPluginController(PluginController):
 
     @_traits.on_trait_change('selected_design')
     def _upd_des_attr_list(self, obj, name, old_value, new_value):
+        self.selected_consumer_characteristics_set = ''
+        self.selected_consumer_liking_sets = []
         d = self.model.dsc[self.selected_design]
         nn = []
         for k, v in d.mat.iteritems():
