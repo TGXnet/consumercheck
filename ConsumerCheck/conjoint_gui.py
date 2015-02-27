@@ -207,6 +207,7 @@ conjoint_view = _traitsui.View(
 
 ds_exp_action = _traitsui.Action(
     name='Copy to Data set',
+    visible_when='object.node_name == "Double centred residuals"',
     action='handler.export_data(editor, object)',
     )
 
