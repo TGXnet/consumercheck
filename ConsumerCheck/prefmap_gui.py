@@ -19,6 +19,9 @@
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
+# SciPy libs import
+import pandas as _pd
+
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
@@ -43,6 +46,7 @@ from plugin_base import (ModelController, CalcContainer, PluginController,
 class PrefmapController(ModelController):
 
     window_launchers = _traits.List(_traits.Instance(WindowLauncher))
+    pred_y_launchers = _traits.List(_traits.Instance(WindowLauncher))
 
 
     def _name_default(self):
@@ -71,6 +75,19 @@ class PrefmapController(ModelController):
                                loop_name='window_launchers',
                                )
                 for nn, fn in std_launchers]
+
+
+    def _pred_y_launchers_default(self):
+        res = self.get_result()
+        pyc = res.pred_cal_y
+
+        return [WindowLauncher(node_name="PC{}".format(i),
+                               view_creator=pred_y_table,
+                               func_parms=tuple([i]),
+                               owner_ref=self,
+                               loop_name='pred_y_launchers',
+                               )
+                for i, v in enumerate(pyc, 1)]
 
 
     def _show_zero_var_warning(self):
@@ -155,6 +172,13 @@ class PrefmapController(ModelController):
             super(PrefmapController, self).open_window(viewable, view_loop)
 
 
+def pred_y_table(res, pcid):
+    mat = res.pred_cal_y[pcid-1]
+    df = _pd.DataFrame(mat)
+    ds = DataSet(mat=df)
+    return ds
+
+
 # Plot creators
 def scores_plot(res):
     plot = PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
@@ -233,6 +257,17 @@ prefmap_nodes = [
         view=prefmap_view,
         menu=[],
         on_dclick=overview_activator),
+    _traitsui.TreeNode(
+        node_for=[PrefmapController],
+        label='=Predicted Y',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
+        children='pred_y_launchers',
+        view=prefmap_view,
+        menu=[],
+        # on_dclick=overview_activator,
+    ),
     _traitsui.TreeNode(
         node_for=[WindowLauncher],
         label='node_name',
