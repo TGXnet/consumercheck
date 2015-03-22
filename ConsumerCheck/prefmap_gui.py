@@ -46,7 +46,8 @@ from plugin_base import (ModelController, CalcContainer, PluginController,
 class PrefmapController(ModelController):
 
     window_launchers = _traits.List(_traits.Instance(WindowLauncher))
-    pred_y_launchers = _traits.List(_traits.Instance(WindowLauncher))
+    pred_y_cal_launch = _traits.List(_traits.Instance(WindowLauncher))
+    pred_y_val_launch = _traits.List(_traits.Instance(WindowLauncher))
 
 
     def _name_default(self):
@@ -77,17 +78,30 @@ class PrefmapController(ModelController):
                 for nn, fn in std_launchers]
 
 
-    def _pred_y_launchers_default(self):
+    def _pred_y_cal_launch_default(self):
         res = self.get_result()
         pyc = res.pred_cal_y
 
         return [WindowLauncher(node_name="After PC{}".format(i),
-                               view_creator=pred_y_table,
+                               view_creator=pred_y_cal_table,
                                func_parms=tuple([i]),
                                owner_ref=self,
-                               loop_name='pred_y_launchers',
+                               loop_name='pred_y_cal_launch',
                                )
                 for i, v in enumerate(pyc, 1)]
+
+
+    def _pred_y_val_launch_default(self):
+        res = self.get_result()
+        pyv = res.pred_val_y
+
+        return [WindowLauncher(node_name="After PC{}".format(i),
+                               view_creator=pred_y_val_table,
+                               func_parms=tuple([i]),
+                               owner_ref=self,
+                               loop_name='pred_y_val_launch',
+                               )
+                for i, v in enumerate(pyv, 1)]
 
 
     def _show_zero_var_warning(self):
@@ -172,8 +186,15 @@ class PrefmapController(ModelController):
             super(PrefmapController, self).open_window(viewable, view_loop)
 
 
-def pred_y_table(res, pcid):
+def pred_y_cal_table(res, pcid):
     mat = res.pred_cal_y[pcid-1]
+    df = _pd.DataFrame(mat)
+    ds = DataSet(mat=df)
+    return ds
+
+
+def pred_y_val_table(res, pcid):
+    mat = res.pred_val_y[pcid-1]
     df = _pd.DataFrame(mat)
     ds = DataSet(mat=df)
     return ds
@@ -263,7 +284,18 @@ prefmap_nodes = [
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
-        children='pred_y_launchers',
+        children='pred_y_cal_launch',
+        view=prefmap_view,
+        menu=[],
+        # on_dclick=overview_activator,
+    ),
+    _traitsui.TreeNode(
+        node_for=[PrefmapController],
+        label='=Y predicted (validation)',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
+        children='pred_y_val_launch',
         view=prefmap_view,
         menu=[],
         # on_dclick=overview_activator,

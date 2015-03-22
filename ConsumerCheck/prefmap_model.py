@@ -244,4 +244,11 @@ class Prefmap(Model):
         pYcs = [pYc[k] for k in ks]
         res.pred_cal_y = pYcs
 
+        # Y_predVal()
+        # Return a dict with Y pred for each PC
+        pYv = pls_obj.Y_predVal()
+        ks = pYv.keys()
+        pYvs = [pYv[k] for k in ks]
+        res.pred_val_y = pYvs
+
         return res
