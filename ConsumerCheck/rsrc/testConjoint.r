@@ -34,6 +34,14 @@ facs<-c("Consumer", "Barley", "Salt", "Sex", "Age")
 
 res <- conjoint(structure=3, bb.N, response, fixed, random, facs)
 
+##check with the ham
+# response <- c("Informed.liking")
+# fixed <- list(Product=c("Product", "Information"), Consumer="Gender")
+# random <- c("Consumer")
+# facs <- c("Consumer", "Product", "Information", "Gender")
+#
+# res.ham <- conjoint(structure=2, ham, response, fixed, random, facs)
+
 randTab <- res[[1]][1]
 anovaTab <- res[[1]][2]
 lsmeansTab <- res[[1]][3]
