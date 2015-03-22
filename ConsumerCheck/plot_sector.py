@@ -79,7 +79,7 @@ class SectorMixin(HasTraits):
 
     def _add_plot_sectors(self, sector_angles, sector_colors):
         nseg = len(sector_colors)
-        radii = 10
+        radii = 2
         ptx = np.cos(sector_angles) * radii
         pty = np.sin(sector_angles) * radii
         pos = np.column_stack((ptx, pty))
