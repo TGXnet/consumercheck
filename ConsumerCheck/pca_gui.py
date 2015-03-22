@@ -19,6 +19,9 @@
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
+# SciPy libs import
+import pandas as _pd
+
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
@@ -41,6 +44,8 @@ from plugin_base import (ModelController, CalcContainer, PluginController, CalcC
 class PcaController(ModelController):
     '''Controller for one PCA object'''
     window_launchers = _traits.List(_traits.Instance(WindowLauncher))
+    pred_x_cal_launch = _traits.List(_traits.Instance(WindowLauncher))
+    pred_x_val_launch = _traits.List(_traits.Instance(WindowLauncher))
 
 
     def _name_default(self):
@@ -79,6 +84,32 @@ class PcaController(ModelController):
                                loop_name='window_launchers',
                                )
                 for nn, fn in std_launchers]
+
+
+    def _pred_x_cal_launch_default(self):
+        res = self.get_result()
+        pyc = res.pred_cal_x
+
+        return [WindowLauncher(node_name="After PC{}".format(i),
+                               view_creator=pred_x_cal_table,
+                               func_parms=tuple([i]),
+                               owner_ref=self,
+                               loop_name='pred_x_cal_launch',
+                               )
+                for i, v in enumerate(pyc, 1)]
+
+
+    def _pred_x_val_launch_default(self):
+        res = self.get_result()
+        pyv = res.pred_val_x
+
+        return [WindowLauncher(node_name="After PC{}".format(i),
+                               view_creator=pred_x_val_table,
+                               func_parms=tuple([i]),
+                               owner_ref=self,
+                               loop_name='pred_x_val_launch',
+                               )
+                for i, v in enumerate(pyv, 1)]
 
 
     def _show_zero_var_warning(self):
@@ -182,6 +213,20 @@ class PcaController(ModelController):
         tv.edit_traits()
 
 
+def pred_x_cal_table(res, pcid):
+    mat = res.pred_cal_x[pcid-1]
+    df = _pd.DataFrame(mat)
+    ds = DataSet(mat=df)
+    return ds
+
+
+def pred_x_val_table(res, pcid):
+    mat = res.pred_val_x[pcid-1]
+    df = _pd.DataFrame(mat)
+    ds = DataSet(mat=df)
+    return ds
+
+
 # Plots creators
 
 def scores_plot(res):
@@ -239,6 +284,28 @@ pca_nodes = [
         view=pca_view,
         menu=[],
         on_dclick=overview_activator),
+    _traitsui.TreeNode(
+        node_for=[PcaController],
+        label='=Y predicted (calibration)',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
+        children='pred_x_cal_launch',
+        view=pca_view,
+        menu=[],
+        # on_dclick=overview_activator,
+    ),
+    _traitsui.TreeNode(
+        node_for=[PcaController],
+        label='=Y predicted (validation)',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
+        children='pred_x_val_launch',
+        view=pca_view,
+        menu=[],
+        # on_dclick=overview_activator,
+    ),
     _traitsui.TreeNode(
         node_for=[WindowLauncher],
         label='node_name',

@@ -144,13 +144,6 @@ class Pca(Model):
         # I can put this into a Pandas Panel 3D structure
         resids = pca_obj.X_residuals()
 
-        # predicted matrices Xhat from calibration after each computed PC.
-        # FIXME: Is this X_predCal()
-        # cal_pred_x = pca_obj.calPredX()
-
-        #validated matrices Xhat from calibration after each computed PC.
-        # val_pred_x = pca_obj.valPredX()
-
         # MSEE from cross validation after each computed PC.
         msee = pca_obj.X_MSEE()
 
@@ -162,5 +155,17 @@ class Pca(Model):
 
         # MSECV from cross validation after each computed PC for each variable.
         ind_var_msecv = pca_obj.X_MSECV_indVar()
+
+        # predicted matrices Xhat from calibration after each computed PC.
+        pXc = pca_obj.X_predCal()
+        ks = pXc.keys()
+        pXcs = [pXc[k] for k in ks]
+        res.pred_cal_x = pXcs
+
+        # validated matrices Xhat from calibration after each computed PC.
+        pXv = pca_obj.X_predVal()
+        ks = pXv.keys()
+        pXvs = [pXv[k] for k in ks]
+        res.pred_val_x = pXvs
 
         return res
