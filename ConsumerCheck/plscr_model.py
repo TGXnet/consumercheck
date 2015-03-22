@@ -237,4 +237,18 @@ class PlsrPcr(Model):
                 ),
             display_name=self.ds_Y.display_name)
 
+        # Y_predCal()
+        # Return a dict with Y pred for each PC
+        pYc = pls_obj.Y_predCal()
+        ks = pYc.keys()
+        pYcs = [pYc[k] for k in ks]
+        res.pred_cal_y = pYcs
+
+        # Y_predVal()
+        # Return a dict with Y pred for each PC
+        pYv = pls_obj.Y_predVal()
+        ks = pYv.keys()
+        pYvs = [pYv[k] for k in ks]
+        res.pred_val_y = pYvs
+
         return res
