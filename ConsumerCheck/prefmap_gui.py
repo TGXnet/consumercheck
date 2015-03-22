@@ -81,7 +81,7 @@ class PrefmapController(ModelController):
         res = self.get_result()
         pyc = res.pred_cal_y
 
-        return [WindowLauncher(node_name="PC{}".format(i),
+        return [WindowLauncher(node_name="After PC{}".format(i),
                                view_creator=pred_y_table,
                                func_parms=tuple([i]),
                                owner_ref=self,
@@ -259,7 +259,7 @@ prefmap_nodes = [
         on_dclick=overview_activator),
     _traitsui.TreeNode(
         node_for=[PrefmapController],
-        label='=Predicted Y',
+        label='=Y predicted (calibration)',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
