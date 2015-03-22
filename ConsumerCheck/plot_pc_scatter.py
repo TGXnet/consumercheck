@@ -456,7 +456,7 @@ class ScatterSectorPlot(PCScatterPlot, SectorMixin):
     pass
 
 
-class CLPlot(ScatterSectorPlot):
+class CLPlot(PCScatterPlot):
 
     def __init__(self, clx, evx, cly, evy, em, **kwargs):
         super(CLPlot, self).__init__(**kwargs)
@@ -466,6 +466,10 @@ class CLPlot(ScatterSectorPlot):
         self.add_PC_set(cly, evy)
         self.plot_circle(True)
         self.external_mapping = em
+
+
+class CLSectorPlot(CLPlot, SectorMixin):
+    pass
 
 
 class PCBaseControl(NoPlotControl):
@@ -593,6 +597,36 @@ class PCSectorPlotControl(PCBaseControl):
 
 
 class CLPlotControl(PCBaseControl):
+    show_x_labels = Bool(True)
+    show_y_labels = Bool(True)
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_x_labels', label="Show consumer labels"),
+        Item('show_y_labels', label="Show sensory labels"),
+        orientation="horizontal",
+    )
+
+    @on_trait_change('show_x_labels')
+    def _switch_x_labels(self, obj, name, new):
+        if obj.model.external_mapping:
+            obj.model.show_labels(show=new, set_id=2)
+        else:
+            obj.model.show_labels(show=new, set_id=1)
+
+    @on_trait_change('show_y_labels')
+    def _switch_y_labels(self, obj, name, new):
+        if obj.model.external_mapping:
+            obj.model.show_labels(show=new, set_id=1)
+        else:
+            obj.model.show_labels(show=new, set_id=2)
+
+
+class CLSectorPlotControl(PCBaseControl):
     show_x_labels = Bool(True)
     show_y_labels = Bool(True)
     draw_sectors = Bool(False)

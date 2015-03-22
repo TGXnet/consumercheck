@@ -30,8 +30,8 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import (PCScatterPlot, ScatterSectorPlot, CLPlot,
-                             CLPlotControl, PCSectorPlotControl)
+from plot_pc_scatter import (PCScatterPlot, ScatterSectorPlot, CLSectorPlot,
+                             CLSectorPlotControl, PCSectorPlotControl)
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
@@ -168,8 +168,8 @@ class PrefmapController(ModelController):
           + DataSet type
         """
         res = self.get_result()
-        if isinstance(viewable, CLPlot):
-            plot_control = CLPlotControl(viewable)
+        if isinstance(viewable, CLSectorPlot):
+            plot_control = CLSectorPlotControl(viewable)
             win = SinglePlotWindow(
                 plot=plot_control,
                 res=res,
@@ -225,10 +225,10 @@ def corr_loadings_plot(res):
     # plot.add_PC_set(clx, res.expl_var_x)
     # plot.add_PC_set(cly, res.expl_var_y)
     # plot.plot_circle(True)
-    plot = CLPlot(clx, res.expl_var_x,
-                  cly, res.expl_var_y,
-                  res.external_mapping,
-                  title='X&Y correlation loadings')
+    plot = CLSectorPlot(clx, res.expl_var_x,
+                        cly, res.expl_var_y,
+                        res.external_mapping,
+                        title='X&Y correlation loadings')
     return plot
 
 
