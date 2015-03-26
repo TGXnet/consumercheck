@@ -19,9 +19,15 @@
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
+
+from traits.etsconfig.api import ETSConfig
 import traits.api as _traits
 import traitsui.api as _traitsui
-import traitsui.wx.tree_editor as _wxte
+
+if ETSConfig.toolkit == 'wx':
+    import traitsui.wx.tree_editor as _te
+elif ETSConfig.toolkit == 'qt4':
+    import traitsui.qt4.tree_editor as _te
 
 from dataset import DataSet
 from dataset_container import DatasetContainer
@@ -86,7 +92,7 @@ transpose_action = _traitsui.Action(
 
 tr_menu = _traitsui.Menu(
     transpose_action,
-    _wxte.DeleteAction)
+    _te.DeleteAction)
 
 
 ds_view = _traitsui.View(
