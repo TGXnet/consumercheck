@@ -80,8 +80,8 @@ class MainViewHandler(Handler):
         # Import workspace
         try:
             info.object.dsc.read_datasets(state_file)
-        except (IOError, TraitError):
-            logger.warning('Could not read state_file')
+        except (IOError, TypeError, TraitError):
+            logger.warning('Could not read workspace file')
 
         try:
             info.object.splash.close()
