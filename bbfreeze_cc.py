@@ -37,7 +37,7 @@ excludes = tuple(qt_lib + ets_lib + gui_lib + num_lib +
                  sci_lib + std_lib + div_lib + test_out)
 
 freeze = Freezer(ff, includes=includes, excludes=excludes)
-freeze.addScript("src/consumercheck.py", gui_only=False)
+freeze.addScript("ConsumerCheck/cc_start.py", gui_only=False)
 freeze.use_compression = False
 freeze.include_py = True
 freeze()    # starts the freezing process
@@ -51,10 +51,10 @@ freeze()    # starts the freezing process
 cc_imgs = ['ConsumerCheckLogo.png', 'reset_xy.svg', 'save.svg', 'x_down.svg',
            'x_up.svg', 'y_down.svg', 'y_up.svg']
 for img in cc_imgs:
-    ip = os.path.join('src', img)
+    ip = os.path.join('ConsumerCheck', img)
     shutil.copy2(ip, ff)
 
-gsource = os.path.join(hf, 'src', 'graphics')
+gsource = os.path.join(hf, 'ConsumerCheck', 'graphics')
 gdst = os.path.join(ff, 'graphics')
 shutil.copytree(gsource, gdst)
 
@@ -62,17 +62,17 @@ shutil.copytree(gsource, gdst)
 # Renember to delete these from library.zip
 ets_pack = ['pyface', 'enable', 'traitsui']
 for pack in ets_pack:
-    pp = os.path.join(hf, 'src', 'ETSpackages', pack)
+    pp = os.path.join(hf, 'ETSpackages', pack)
     dst = os.path.join(ff, pack)
     shutil.copytree(pp, dst)
 
 # R dist
-rsource = os.path.join(hf, 'src', 'Rdist', rf)
+rsource = os.path.join(hf, 'Rdist', rf)
 rdst = os.path.join(ff, rf)
 shutil.copytree(rsource, rdst)
 
 # Conjoint R scripts
-rss = os.path.join(hf, 'src', 'rsrc')
+rss = os.path.join(hf, 'ConsumerCheck', 'rsrc')
 rsdst = os.path.join(ff, 'rsrc')
 shutil.copytree(rss, rsdst)
 

@@ -28,7 +28,7 @@
 			<Shortcut Id="CcStartMenuShortcut" 
 					   Name="ConsumerCheck"
                        Description="Starts ConsumerCheck"
-                       Target="[CCROOTDIR]consumercheck.exe"
+                       Target="[CCROOTDIR]cc_start.exe"
                        WorkingDirectory="CCROOTDIR"/>
 			<RemoveFolder Id="CcProgramFolder" On="uninstall"/>
 			<RegistryValue Root="HKCU" Key="Software\Microsoft\ConsumerCheck" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
@@ -48,7 +48,7 @@
     <UIRef Id="WixUI_ErrorProgressText" />
 	<WixVariable Id="WixUILicenseRtf" Value="dummy_license.rtf" />
 
-    <Icon Id="cc.exe" SourceFile="consumercheck.exe" />
+    <Icon Id="cc.exe" SourceFile="cc_start.exe" />
 
    </Product>
 </Wix>
