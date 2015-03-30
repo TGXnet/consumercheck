@@ -575,7 +575,7 @@ class PCSectorPlotControl(PCBaseControl):
         Item('show_labels', label="Show labels"),
         Item('draw_sectors', label="Draw segments"),
         Item('model.n_sectors',
-             label="Number of sectors",
+             label="Number of segments",
              enabled_when='draw_sectors'),
         orientation="horizontal",
     )
@@ -641,7 +641,7 @@ class CLSectorPlotControl(PCBaseControl):
         Item('show_y_labels', label="Show sensory labels"),
         Item('draw_sectors', label="Draw segments"),
         Item('model.n_sectors',
-             label="Number of sectors",
+             label="Number of segments",
              enabled_when='draw_sectors'),
         orientation="horizontal",
     )
