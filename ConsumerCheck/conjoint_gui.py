@@ -61,8 +61,8 @@ class ConjointController(ModelController):
         Consumer characteristics and design values can only be categorical values.<br /><br />
         Model structure descriptions:
         <ul>
-        <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
-        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones). (Automized reduction in random part, NO reduction in fixed part)</li>
+        <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects.</li>
+        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones).</li>
         <li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part). The p-values may be inflated and should be interpreted with care when using this approach.</li>
         </ul>
         ''')
