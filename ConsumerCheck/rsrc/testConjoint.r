@@ -27,6 +27,7 @@ source("conjoint.r")
 
 bb.N <- read.csv(file=file.path(BDD, "BB_N_noMissing.csv"), sep=";")
 
+
 response <- c("Liking")
 fixed <- list(Product=c("Barley", "Salt"), Consumer="Sex")
 random <- c("Consumer")
@@ -39,8 +40,8 @@ res <- conjoint(structure=3, bb.N, response, fixed, random, facs)
 # fixed <- list(Product=c("Product", "Information"), Consumer="Gender")
 # random <- c("Consumer")
 # facs <- c("Consumer", "Product", "Information", "Gender")
-#
-# res.ham <- conjoint(structure=2, ham, response, fixed, random, facs)
+# 
+# res.ham <- conjoint(structure=3, ham, response, fixed, random, facs)
 
 randTab <- res[[1]][1]
 anovaTab <- res[[1]][2]

@@ -35,15 +35,13 @@ for(ind.resp in 1:length(response))
   model <-     createLMERmodel(structure, data1, response[ind.resp], fixed, random, corr)
   
 isRandReduce <- TRUE
+isFixReduce <- TRUE
 isLsmeans <- TRUE
 #check if reduction of the fixed/random part is required
 if(structure == 1 || structure == 2){
  isFixReduce <- FALSE
- if(structure == 2)
-   isRandReduce <- FALSE
+ isRandReduce <- FALSE
 }
-else
- isFixReduce <- TRUE
   
   #check if there are correlations between intercepts and slopes
   checkCorr <- function(model)
