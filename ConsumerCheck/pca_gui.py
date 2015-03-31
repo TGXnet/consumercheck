@@ -286,7 +286,7 @@ pca_nodes = [
         on_dclick=overview_activator),
     _traitsui.TreeNode(
         node_for=[PcaController],
-        label='=Y predicted (calibration)',
+        label='=X predicted (calibration)',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
@@ -297,7 +297,7 @@ pca_nodes = [
     ),
     _traitsui.TreeNode(
         node_for=[PcaController],
-        label='=Y predicted (validation)',
+        label='=X predicted (validation)',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
