@@ -1,0 +1,10 @@
+# include *.txt
+include CHANGES.txt
+include DESCRIPTION.rst
+include LICENSE.txt
+# recursive-include examples *.txt *.py
+# recursive-include ConsumerCheck *.png *.svg
+# recursive-include ConsumerCheck/graphics *.ico
+# recursive-include ConsumerCheck/rsrc *.r
+# recursive-include ConsumerCheck/tests *.py
+# prune examples/sample?/build

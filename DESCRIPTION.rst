@@ -1,9 +1,4 @@
-ConsumerCheck: a software for analysis of sensory and consumer data
-===================================================================
-
 Copyright © 2009-2015 Thomas Graff.
-Licensed under the terms of the GNU GPLv3.
-(see `LICENSE.txt` for details)
 
 
 Overview
@@ -13,6 +8,13 @@ ConsumerCheck is a software for statistical analysis of data from sensory and co
 programming skills.
 
 
-Installation
-============
+Latest changes
+==============
 
+The end
+
+
+Roadmap
+=======
+
+Is here

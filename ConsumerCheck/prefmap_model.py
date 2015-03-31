@@ -37,8 +37,8 @@ class InComputeable(Exception):
     pass
 
 
-class PlsrPcr(Model):
-    """Represent the PlsrPcr model between one X and Y data set."""
+class Prefmap(Model):
+    """Represent the Prefmap model between one X and Y data set."""
 
     # Consumer liking
     ds_C = DataSet()
@@ -51,7 +51,7 @@ class PlsrPcr(Model):
     standardise_x = _traits.Bool(False)
     standardise_y = _traits.Bool(False)
     int_ext_mapping = _traits.Enum('Internal', 'External')
-    plscr_method = _traits.Enum('PLSR', 'PCR')
+    prefmap_method = _traits.Enum('PLSR', 'PCR')
     calc_n_pc = _traits.Int()
     min_pc = 2
     # max_pc = _traits.Property()
@@ -66,12 +66,12 @@ class PlsrPcr(Model):
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
         n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
-        if self.settings.plscr_method == 'PLSR':
+        if self.settings.prefmap_method == 'PLSR':
             pls = PLSR(self.ds_X.values, self.ds_Y.values,
                       numPC=n_pc, cvType=["loo"],
                       Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
             return self._pack_res(pls)
-        elif self.settings.plscr_method == 'PCR':
+        elif self.settings.prefmap_method == 'PCR':
             pcr = PCR(self.ds_X.values, self.ds_Y.values,
                       numPC=n_pc, cvType=["loo"],
                       Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
@@ -151,7 +151,7 @@ class PlsrPcr(Model):
 
 
     def _pack_res(self, pls_obj):
-        res = Result('PLSR/PCR {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
+        res = Result('Prefmap {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
 
         if self.settings.int_ext_mapping == 'External':
             res.external_mapping = True
@@ -236,5 +236,19 @@ class PlsrPcr(Model):
                 columns=["PC-{0}".format(i+1) for i in range(mXcl.shape[1])],
                 ),
             display_name=self.ds_Y.display_name)
+
+        # Y_predCal()
+        # Return a dict with Y pred for each PC
+        pYc = pls_obj.Y_predCal()
+        ks = pYc.keys()
+        pYcs = [pYc[k] for k in ks]
+        res.pred_cal_y = pYcs
+
+        # Y_predVal()
+        # Return a dict with Y pred for each PC
+        pYv = pls_obj.Y_predVal()
+        ks = pYv.keys()
+        pYvs = [pYv[k] for k in ks]
+        res.pred_val_y = pYvs
 
         return res

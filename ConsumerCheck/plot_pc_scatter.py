@@ -31,7 +31,7 @@ import numpy as np
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
 from traits.api import (Bool, Int, List, HasTraits, implements,
-                        Property, on_trait_change)
+                        Property, Range, on_trait_change)
 from traitsui.api import Item, Group, View, Label, Include
 from enable.api import ColorTrait, ComponentEditor
 from enable.savage.trait_defs.ui.svg_button import SVGButton
@@ -40,6 +40,8 @@ from enable.savage.trait_defs.ui.svg_button import SVGButton
 from dataset import DataSet
 from plot_base import PlotBase, NoPlotControl
 from plot_interface import IPCScatterPlot
+from plot_sector import SectorMixin
+
 
 #==============================================================================
 # Attributes to use for the plot view.
@@ -450,6 +452,10 @@ def calc_bounds(data_low, data_high, margin, tight_bounds):
         return data_low * (1 + margin), data_high * (1 + margin)
 
 
+class ScatterSectorPlot(PCScatterPlot, SectorMixin):
+    pass
+
+
 class CLPlot(PCScatterPlot):
 
     def __init__(self, clx, evx, cly, evy, em, **kwargs):
@@ -460,6 +466,10 @@ class CLPlot(PCScatterPlot):
         self.add_PC_set(cly, evy)
         self.plot_circle(True)
         self.external_mapping = em
+
+
+class CLSectorPlot(CLPlot, SectorMixin):
+    pass
 
 
 class PCBaseControl(NoPlotControl):
@@ -552,6 +562,40 @@ class PCPlotControl(PCBaseControl):
         obj.model.show_labels(show=new, set_id=1)
 
 
+class PCSectorPlotControl(PCBaseControl):
+    show_labels = Bool(True)
+    draw_sectors = Bool(False)
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_labels', label="Show labels"),
+        Item('draw_sectors', label="Draw segments"),
+        Item('model.n_sectors',
+             label="Number of segments",
+             enabled_when='draw_sectors'),
+        orientation="horizontal",
+    )
+
+    @on_trait_change('show_labels')
+    def switch_labels(self, obj, name, new):
+        obj.model.show_labels(show=new, set_id=1)
+
+    @on_trait_change('draw_sectors')
+    def switch_sectors(self, obj, name, new):
+        obj.model.switch_sectors(new)
+
+    @on_trait_change('model.n_sectors', post_init=True)
+    def change_sectors(self, obj, name, new):
+        # FIXME: During initialization new is of type ScatterSectorPlot
+        if isinstance(new, int):
+            obj.remove_sectors()
+            obj.draw_sectors(new)
+
+
 class CLPlotControl(PCBaseControl):
     show_x_labels = Bool(True)
     show_y_labels = Bool(True)
@@ -582,13 +626,61 @@ class CLPlotControl(PCBaseControl):
             obj.model.show_labels(show=new, set_id=2)
 
 
+class CLSectorPlotControl(PCBaseControl):
+    show_x_labels = Bool(True)
+    show_y_labels = Bool(True)
+    draw_sectors = Bool(False)
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_x_labels', label="Show consumer labels"),
+        Item('show_y_labels', label="Show sensory labels"),
+        Item('draw_sectors', label="Draw segments"),
+        Item('model.n_sectors',
+             label="Number of segments",
+             enabled_when='draw_sectors'),
+        orientation="horizontal",
+    )
+
+    @on_trait_change('show_x_labels')
+    def _switch_x_labels(self, obj, name, new):
+        if obj.model.external_mapping:
+            obj.model.show_labels(show=new, set_id=2)
+        else:
+            obj.model.show_labels(show=new, set_id=1)
+
+    @on_trait_change('show_y_labels')
+    def _switch_y_labels(self, obj, name, new):
+        if obj.model.external_mapping:
+            obj.model.show_labels(show=new, set_id=1)
+        else:
+            obj.model.show_labels(show=new, set_id=2)
+
+    @on_trait_change('draw_sectors')
+    def switch_sectors(self, obj, name, new):
+        obj.model.switch_sectors(new)
+
+    @on_trait_change('model.n_sectors', post_init=True)
+    def change_sectors(self, obj, name, new):
+        # FIXME: During initialization new is of type ScatterSectorPlot
+        if isinstance(new, int):
+            obj.remove_sectors()
+            obj.draw_sectors(new)
+
+
 if __name__ == '__main__':
     from tests.conftest import iris_ds
-
-    iris = iris_ds()
-    plot = PCScatterPlot(iris)
+    import pandas as pd
+    gobli = (np.random.random((30, 4)) - 0.5) * 2
+    pda = pd.DataFrame(gobli)
+    irds = DataSet(mat=pda)
+    plot = ScatterSectorPlot(irds)
     # PCScatterPlot(res.loadings, res.expl_var, title='Loadings')
-    # plot.add_PC_set(iris2)
+    # plot.add_PC_set(iris)
     # plot.plot_circle(True)
 
     with np.errstate(invalid='ignore'):

@@ -61,9 +61,9 @@ class ConjointController(ModelController):
         Consumer characteristics and design values can only be categorical values.<br /><br />
         Model structure descriptions:
         <ul>
-        <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects. (Automized reduction in random part, no reduction in fixed part).</li>
-        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones). (Automized reduction in random part, NO reduction in fixed part)</li>
-        <li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part).</li>
+        <li>1. Analysis of main effects, Random consumer effect AND interaction between consumer and the main effects.</li>
+        <li>2. Main effects AND all 2-factor interactions. Random consumer effect AND interaction between consumer and all fixed effects (both main and interaction ones).</li>
+        <li>3. Full factorial model with ALL possible fixed and random effects. (Automized reduction in random part, AND automized reduction in fixed part). The p-values may be inflated and should be interpreted with care when using this approach.</li>
         </ul>
         ''')
 
@@ -207,6 +207,7 @@ conjoint_view = _traitsui.View(
 
 ds_exp_action = _traitsui.Action(
     name='Copy to Data set',
+    visible_when='object.node_name in ("Double centred residuals", "Full model residuals")',
     action='handler.export_data(editor, object)',
     )
 
@@ -293,6 +294,8 @@ class ConjointPluginController(PluginController):
 
     @_traits.on_trait_change('selected_design')
     def _upd_des_attr_list(self, obj, name, old_value, new_value):
+        self.selected_consumer_characteristics_set = ''
+        self.selected_consumer_liking_sets = []
         d = self.model.dsc[self.selected_design]
         nn = []
         for k, v in d.mat.iteritems():
@@ -402,12 +405,18 @@ for variables with a large number of categories.
 
     def export_data(self, editor, obj):
         parent = editor.get_parent(obj)
+        res_name = obj.node_name
         ind_resid = DataSet()
-        ind_resid.copy_traits(
-            parent.model.res.residIndTable, traits=['mat', 'style'])
+        if res_name == 'Double centred residuals':
+            ind_resid.copy_traits(
+                parent.model.res.residIndTable, traits=['mat', 'style'])
+            ind_resid.display_name = '_double centred residuals ' + str(self.exported)
+        elif res_name == 'Full model residuals':
+            ind_resid.copy_traits(
+                parent.model.res.residualsTable, traits=['mat', 'style'])
+            ind_resid.display_name = '_full model residuals ' + str(self.exported)
         ind_resid.kind = 'Sensory profiling / descriptive data'
         self.exported += 1
-        ind_resid.display_name = '_double centred residuals ' + str(self.exported)
         self.model.dsc.add(ind_resid)
 
 

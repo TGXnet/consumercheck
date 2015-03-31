@@ -82,17 +82,10 @@ class SinglePWC(PWC):
     """ Change the title on the UI.
     """
     def object_plot_changed(self, info):
-        # if info.object.res:
-        #     wt = info.object.res.method_name
-        # else:
-        #     wt = ""
-        wt = info.object.res.method_name
-        # if len(info.object.res.input_ds_names) == 1:
-        #     dsn = info.object.res.input_ds_names.values()[0]
-        # else:
-        #     dsn = ''
-        pt = info.object.plot.model.get_plot_name()
-        info.object.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
+        if info.object.res:
+            wt = info.object.res.method_name
+            pt = info.object.plot.model.get_plot_name()
+            info.object.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
 
     def object_title_text_changed(self, info):
         """ Called when the title_text changes on the handled object.
@@ -233,13 +226,13 @@ class FileEditor(HasTraits):
 if __name__ == '__main__':
     import numpy as np
     from tests.conftest import clust1ds
-    from plot_pc_scatter import PCScatterPlot, PCPlotControl
-    from plot_base import NoPlotControl
+    from plot_pc_scatter import PCScatterPlot, PCPlotControl, ScatterSectorPlot, PCSectorPlotControl
+    # from plot_base import NoPlotControl
 
     mydata = clust1ds()
-    plot = PCScatterPlot(mydata)
+    plot = ScatterSectorPlot(mydata)
     # plot_control = NoPlotControl(model=plot)
-    plot_control = PCPlotControl(model=plot)
+    plot_control = PCSectorPlotControl(model=plot)
     pw = SinglePlotWindow(plot=plot_control)
 
     with np.errstate(invalid='ignore'):

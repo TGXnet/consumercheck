@@ -30,8 +30,8 @@ from importer_main import ImporterMain
 def tdd():
     '''Test data dir (tdd)'''
     here = osp.dirname(__file__)
-    basedir = osp.dirname(here)
-    return osp.join(basedir, 'datasets')
+    basedir = osp.dirname(osp.dirname(here))
+    return osp.join(basedir, 'TestData')
 
 
 # Available test data

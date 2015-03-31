@@ -19,6 +19,9 @@
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
+# SciPy libs import
+import pandas as _pd
+
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
@@ -27,7 +30,8 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import PCScatterPlot, CLPlot, CLPlotControl
+from plot_pc_scatter import (PCScatterPlot, ScatterSectorPlot, CLSectorPlot,
+                             CLSectorPlotControl, PCSectorPlotControl)
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker
@@ -42,6 +46,8 @@ from plugin_base import (ModelController, CalcContainer, PluginController,
 class PrefmapController(ModelController):
 
     window_launchers = _traits.List(_traits.Instance(WindowLauncher))
+    pred_y_cal_launch = _traits.List(_traits.Instance(WindowLauncher))
+    pred_y_val_launch = _traits.List(_traits.Instance(WindowLauncher))
 
 
     def _name_default(self):
@@ -70,6 +76,32 @@ class PrefmapController(ModelController):
                                loop_name='window_launchers',
                                )
                 for nn, fn in std_launchers]
+
+
+    def _pred_y_cal_launch_default(self):
+        res = self.get_result()
+        pyc = res.pred_cal_y
+
+        return [WindowLauncher(node_name="After PC{}".format(i),
+                               view_creator=pred_y_cal_table,
+                               func_parms=tuple([i]),
+                               owner_ref=self,
+                               loop_name='pred_y_cal_launch',
+                               )
+                for i, v in enumerate(pyc, 1)]
+
+
+    def _pred_y_val_launch_default(self):
+        res = self.get_result()
+        pyv = res.pred_val_y
+
+        return [WindowLauncher(node_name="After PC{}".format(i),
+                               view_creator=pred_y_val_table,
+                               func_parms=tuple([i]),
+                               owner_ref=self,
+                               loop_name='pred_y_val_launch',
+                               )
+                for i, v in enumerate(pyv, 1)]
 
 
     def _show_zero_var_warning(self):
@@ -124,33 +156,48 @@ class PrefmapController(ModelController):
 
         ds_plots = [
             [sp, clp],
-            [evc, evs]
-            ]
+            [evc, evs]]
 
         mpw.plots.component_grid = ds_plots
         mpw.plots.shape = (2, 2)
         self._show_plot_window(mpw)
-
 
     def open_window(self, viewable, view_loop):
         """Expected viewable is by now:
           + Plot subtype
           + DataSet type
         """
-        if isinstance(viewable, CLPlot):
-        # if viewable.title == 'Correlation loadings':
-            res = self.get_result()
-            plot_control = CLPlotControl(viewable)
-
+        res = self.get_result()
+        if isinstance(viewable, CLSectorPlot):
+            plot_control = CLSectorPlotControl(viewable)
             win = SinglePlotWindow(
                 plot=plot_control,
                 res=res,
-                view_loop=view_loop,
-                )
-
+                view_loop=view_loop)
+            self._show_plot_window(win)
+        elif isinstance(viewable, ScatterSectorPlot):
+            plot_control = PCSectorPlotControl(viewable)
+            win = SinglePlotWindow(
+                plot=plot_control,
+                res=res,
+                view_loop=view_loop)
             self._show_plot_window(win)
         else:
             super(PrefmapController, self).open_window(viewable, view_loop)
+
+
+def pred_y_cal_table(res, pcid):
+    mat = res.pred_cal_y[pcid-1]
+    df = _pd.DataFrame(mat)
+    ds = DataSet(mat=df)
+    return ds
+
+
+def pred_y_val_table(res, pcid):
+    mat = res.pred_val_y[pcid-1]
+    df = _pd.DataFrame(mat)
+    ds = DataSet(mat=df)
+    return ds
 
 
 # Plot creators
@@ -160,7 +207,7 @@ def scores_plot(res):
 
 
 def loadings_x_plot(res):
-    plot = PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    plot = ScatterSectorPlot(res.loadings_x, res.expl_var_x, title='X loadings')
     return plot
 
 
@@ -178,10 +225,10 @@ def corr_loadings_plot(res):
     # plot.add_PC_set(clx, res.expl_var_x)
     # plot.add_PC_set(cly, res.expl_var_y)
     # plot.plot_circle(True)
-    plot = CLPlot(clx, res.expl_var_x,
-                  cly, res.expl_var_y,
-                  res.external_mapping,
-                  title='X&Y correlation loadings')
+    plot = CLSectorPlot(clx, res.expl_var_x,
+                        cly, res.expl_var_y,
+                        res.external_mapping,
+                        title='X&Y correlation loadings')
     return plot
 
 
@@ -231,6 +278,28 @@ prefmap_nodes = [
         view=prefmap_view,
         menu=[],
         on_dclick=overview_activator),
+    _traitsui.TreeNode(
+        node_for=[PrefmapController],
+        label='=Y predicted (calibration)',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
+        children='pred_y_cal_launch',
+        view=prefmap_view,
+        menu=[],
+        # on_dclick=overview_activator,
+    ),
+    _traitsui.TreeNode(
+        node_for=[PrefmapController],
+        label='=Y predicted (validation)',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
+        children='pred_y_val_launch',
+        view=prefmap_view,
+        menu=[],
+        # on_dclick=overview_activator,
+    ),
     _traitsui.TreeNode(
         node_for=[WindowLauncher],
         label='node_name',

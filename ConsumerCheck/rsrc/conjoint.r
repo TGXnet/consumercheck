@@ -34,13 +34,14 @@ for(ind.resp in 1:length(response))
   modelfull <- createLMERmodel(3,         data1, response[ind.resp], fixed, random, corr)
   model <-     createLMERmodel(structure, data1, response[ind.resp], fixed, random, corr)
   
-#check if reduction of the fixed part is required
-if(structure==1 || structure==2)
- isFixReduce <- FALSE
-else
- isFixReduce <- TRUE
 isRandReduce <- TRUE
+isFixReduce <- TRUE
 isLsmeans <- TRUE
+#check if reduction of the fixed/random part is required
+if(structure == 1 || structure == 2){
+ isFixReduce <- FALSE
+ isRandReduce <- FALSE
+}
   
   #check if there are correlations between intercepts and slopes
   checkCorr <- function(model)
@@ -71,7 +72,7 @@ fillresult <- function(t, modelfull)
   result$diffs.lsmeans.table <- t$diffs.lsmeans.table
   ### calculate p adjusted  
   if("elim.num" %in% colnames(t$anova.table))
-    final.facs <- rownames(t$anova.table)[t$anova.table[,"elim.num"]=="keep"]
+    final.facs <- rownames(t$anova.table)[t$anova.table[,"elim.num"]=="kept"]
   else
     final.facs <- rownames(t$anova.table)
   rnames <- rownames(t$diffs.lsmeans.table)
@@ -97,7 +98,7 @@ fillresult <- function(t, modelfull)
   #format p-values
   if(!is.null(result$rand.table))
   {
-    rownames(result$rand.table) <- unlist(lapply(rownames(result$rand.table), function(x) substring2(x, 2, nchar(x)-1)))
+    #rownames(result$rand.table) <- unlist(lapply(rownames(result$rand.table), function(x) substring2(x, 2, nchar(x)-1)))
     result$rand.table[,which(colnames(result$rand.table)=="p.value")] <- format.pval(result$rand.table[,which(colnames(result$rand.table)=="p.value")], digits=3, eps=1e-3)
   }
   if(class(t$model)!="lm")
