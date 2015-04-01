@@ -27,7 +27,7 @@ import enable.api as _enable
 
 #==============================================================================
 # Attributes to use for the plot view.
-size = (850, 650)
+sz_plot_img = (850, 650)
 bg_color = "white"
 #==============================================================================
 
@@ -92,7 +92,7 @@ class BasePlot(_chaco.DataView):
     def get_plot_name(self):
         return self.plot_data.display_name
 
-    def export_image(self, fname, size=(800, 600)):
+    def export_image(self, fname, size=sz_plot_img):
         """Save plot as png image."""
         # self.outer_bounds = list(size)
         # self.do_layout(force=True)
@@ -107,8 +107,7 @@ class NoPlotControl(_traitsui.ModelView):
     traits_view = _traitsui.View(
         _traitsui.Group(
             _traitsui.Item('model',
-                           editor=_enable.ComponentEditor(size=size,
-                                                          bgcolor=bg_color),
+                           editor=_enable.ComponentEditor(bgcolor=bg_color),
                            show_label=False),
             _traitsui.Include('plot_controllers'),
             orientation="vertical"

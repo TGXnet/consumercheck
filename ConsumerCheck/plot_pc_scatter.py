@@ -45,7 +45,6 @@ from plot_sector import SectorMixin
 
 #==============================================================================
 # Attributes to use for the plot view.
-size = (850, 650)
 bg_color = "white"
 #==============================================================================
 
@@ -487,7 +486,7 @@ class PCBaseControl(NoPlotControl):
                          width=32, height=32)
     traits_view = View(
         Group(
-            Item('model', editor=ComponentEditor(size=size, bgcolor=bg_color),
+            Item('model', editor=ComponentEditor(bgcolor=bg_color),
                  show_label=False),
             Label('Scroll to zoom and drag to pan in plot.'),
             Include('plot_controllers'),
