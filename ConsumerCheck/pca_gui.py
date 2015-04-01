@@ -214,16 +214,12 @@ class PcaController(ModelController):
 
 
 def pred_x_cal_table(res, pcid):
-    mat = res.pred_cal_x[pcid-1]
-    df = _pd.DataFrame(mat)
-    ds = DataSet(mat=df)
+    ds = res.pred_cal_x[pcid-1]
     return ds
 
 
 def pred_x_val_table(res, pcid):
-    mat = res.pred_val_x[pcid-1]
-    df = _pd.DataFrame(mat)
-    ds = DataSet(mat=df)
+    ds = res.pred_val_x[pcid-1]
     return ds
 
 
