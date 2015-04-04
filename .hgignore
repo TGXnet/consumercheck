@@ -1,18 +1,7 @@
 syntax: glob
 *.pyc
 docs*/*build
-*.log
 consumercheck-*
-bin
-build
-include
-lib
-local
-share
-explore
-.*project
-.settings
-*.wixobj
-*.wxs
+.spyderproject
 Rdist
 ETSpackages
