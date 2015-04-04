@@ -43,7 +43,9 @@ from plugin_tree_helper import ViewNavigator, WindowLauncher
 
 #==============================================================================
 # Attributes to use for the plot view.
-size = (850, 650)
+# width, height
+sz_abs = (950, 850)
+sz_rel = (0.5, 0.7)
 bg_color = "white"
 #==============================================================================
 
@@ -126,7 +128,8 @@ class SinglePlotWindow(PlotWindow):
 
     plot_gr = Group(
         Item('plot', editor=InstanceEditor(),
-             style='custom', show_label=False),
+             style='custom', show_label=False,
+             width=sz_abs[0], height=sz_abs[1]),
         )
 
     main_gr = Group(
@@ -147,8 +150,8 @@ class SinglePlotWindow(PlotWindow):
         resizable=True,
         handler=SinglePWC(),
         # kind = 'nonmodal',
-        width=.5,
-        height=.7,
+#        width=sz_rel[0],
+#        height=sz_rel[1],
         buttons=["OK"]
         )
 
@@ -176,18 +179,17 @@ class OverviewPlotWindow(MultiPlotWindow):
 
     traits_view = View(
         Item('plots',
-             editor=ComponentEditor(
-                 size=size,
-                 bgcolor=bg_color),
-             show_label=False),
+             editor=ComponentEditor(bgcolor=bg_color),
+             show_label=False,
+             width=sz_abs[0], height=sz_abs[1]),
         Group(
             Item('show_labels', label="Show labels"),
             orientation="vertical"),
         resizable=True,
         handler=PWC(),
         # kind = 'nonmodal',
-        width=.5,
-        height=.7,
+#        width=sz_rel[0],
+#        height=sz_rel[1],
         buttons=["OK"]
         )
 

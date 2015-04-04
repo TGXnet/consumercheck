@@ -214,16 +214,12 @@ class PcaController(ModelController):
 
 
 def pred_x_cal_table(res, pcid):
-    mat = res.pred_cal_x[pcid-1]
-    df = _pd.DataFrame(mat)
-    ds = DataSet(mat=df)
+    ds = res.pred_cal_x[pcid-1]
     return ds
 
 
 def pred_x_val_table(res, pcid):
-    mat = res.pred_val_x[pcid-1]
-    df = _pd.DataFrame(mat)
-    ds = DataSet(mat=df)
+    ds = res.pred_val_x[pcid-1]
     return ds
 
 
@@ -286,7 +282,7 @@ pca_nodes = [
         on_dclick=overview_activator),
     _traitsui.TreeNode(
         node_for=[PcaController],
-        label='=Y predicted (calibration)',
+        label='=X predicted (calibration)',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
@@ -297,7 +293,7 @@ pca_nodes = [
     ),
     _traitsui.TreeNode(
         node_for=[PcaController],
-        label='=Y predicted (validation)',
+        label='=X predicted (validation)',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',

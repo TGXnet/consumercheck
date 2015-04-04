@@ -29,7 +29,7 @@ from importer_main import ImporterMain
 @pytest.fixture
 def tdd():
     '''Test data dir (tdd)'''
-    here = osp.dirname(__file__)
+    here = osp.realpath(osp.dirname(__file__))
     basedir = osp.dirname(osp.dirname(here))
     return osp.join(basedir, 'TestData')
 

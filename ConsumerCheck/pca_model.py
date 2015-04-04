@@ -93,6 +93,17 @@ class Pca(Model):
         return self.max_pc
 
 
+    def _mk_pred_ds(self, pred_mat):
+        pred_ds = DataSet(
+            mat=_pd.DataFrame(
+                data=pred_mat,
+                index=self.ds.obj_n,
+                columns=self.ds.var_n,
+                ),
+            display_name='Predicated')
+        return pred_ds
+
+
     def _pack_res(self, pca_obj):
         res = Result('PCA {0}'.format(self.ds.display_name))
 
@@ -159,13 +170,13 @@ class Pca(Model):
         # predicted matrices Xhat from calibration after each computed PC.
         pXc = pca_obj.X_predCal()
         ks = pXc.keys()
-        pXcs = [pXc[k] for k in ks]
+        pXcs = [self._mk_pred_ds(pXc[k]) for k in ks]
         res.pred_cal_x = pXcs
 
         # validated matrices Xhat from calibration after each computed PC.
         pXv = pca_obj.X_predVal()
         ks = pXv.keys()
-        pXvs = [pXv[k] for k in ks]
+        pXvs = [self._mk_pred_ds(pXv[k]) for k in ks]
         res.pred_val_x = pXvs
 
         return res
