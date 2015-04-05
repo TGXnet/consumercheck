@@ -36,12 +36,13 @@ imgs += Tree(os.path.join('ConsumerCheck', 'graphics'), prefix='graphics', exclu
 # R stuff
 renv = Tree(os.path.join('Rdist', 'R-3.0.2'), prefix='R-3.0.2')
 
+rt_hooks = ['pyi-rthook_pyqt4.py']
 
 a = Analysis([os.path.join('ConsumerCheck', 'cc_start.py')],
              pathex=['ConsumerCheck'],
              hiddenimports=[],
              hookspath=['pyi-hooks'],
-             runtime_hooks=['pyi-rthook_pyqt4.py'],
+             runtime_hooks=rt_hooks,
              excludes=None,
              cipher=block_cipher)
 
