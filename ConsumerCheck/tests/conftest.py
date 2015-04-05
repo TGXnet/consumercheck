@@ -3,6 +3,7 @@
 # Std lib imports
 import logging
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+import sys
 import os.path as osp
 import copy
 
@@ -11,6 +12,13 @@ import numpy as np
 import pandas as pd
 
 import pytest
+
+# FIXME: Hack
+# Make sure that the application source directory (this directory's parent) is
+# on sys.path.
+
+here = osp.dirname(osp.dirname(osp.abspath(__file__)))
+sys.path.insert(0, here)
 
 
 @pytest.fixture
