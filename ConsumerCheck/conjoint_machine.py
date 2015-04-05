@@ -364,7 +364,7 @@ class ConjointMachine(object):
 
     def _lsMeansTable(self):
         ls1 = self.r.get('res[[1]][3]$lsmeans.table')
-        ls2 = ls1.drop(['p-value'], axis=1)
+        ls2 = ls1.drop([' p-value '], axis=1)
         return DataSet(mat=ls2, display_name='LS means (main effect and interaction)')
 
 
