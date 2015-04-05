@@ -3,9 +3,9 @@ import pytest
 
 # Tools for version checking
 # http://pythonhosted.org/distribute/pkg_resources.html
-# 
+#
 # Check for API differences
-# 
+#
 # http://aima.cs.berkeley.edu/python/utils.html
 #
 # Module version format
@@ -28,48 +28,46 @@ def test_python_ver():
 
 def test_numpy():
     numpy_meta = GD("numpy")
-    assert numpy_meta.parsed_version >= V('1.6.2')
+    assert numpy_meta.parsed_version >= V('1.9.1')
 
 
 def test_traits():
     traits_meta  = GD("traits")
-    assert traits_meta.parsed_version >= V('4.2.0')
+    assert traits_meta.parsed_version >= V('4.5.0')
 
 
 def test_pyparsing():
     pyparsing_meta  = GD("pyparsing")
-    # FIXME: SVG button stuff is failing with 2.0.1
-    # assert pyparsing_meta.parsed_version == V('2.0.1')
-    assert pyparsing_meta.parsed_version == V('1.5.7')
+    assert pyparsing_meta.parsed_version == V('2.0.3')
 
 
 def test_xlrd():
     xlrd_meta = GD("xlrd")
-    assert xlrd_meta.parsed_version >= V('0.8.0')
+    assert xlrd_meta.parsed_version >= V('0.9.2')
 
 
 def test_openpyxl():
     openpyxl_meta = GD("openpyxl")
-    assert openpyxl_meta.parsed_version >= V('1.5.8')
+    assert openpyxl_meta.parsed_version >= V('1.8.5')
 
 
 def test_pandas():
     pandas_meta = GD("pandas")
-    assert pandas_meta.parsed_version >= V('0.10.0')
+    assert pandas_meta.parsed_version >= V('0.15.0')
 
 
 def test_pyper():
     pyper_meta = GD("pyper")
-    assert pyper_meta.parsed_version >= V('1.1.1')
+    assert pyper_meta.parsed_version >= V('1.1.2')
 
 
 def test_colormath():
     color_meta = GD("colormath")
-    assert color_meta.parsed_version == V('1.0.8')
+    assert color_meta.parsed_version == V('2.1.0')
 
 
 def test_wxpython():
-    ## wx_meta = GD("wx")
+    # wx_meta = GD("wx")
     import wx
     wx_ver = V(wx.__version__)
     assert wx_ver >= V('2.8.12.1')
