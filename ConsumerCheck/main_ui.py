@@ -174,7 +174,10 @@ class MainUi(HasTraits):
         height=600,
         title='ConsumerCheck',
         menubar=MenuBar(
-            Menu(import_action, close_action, exit_action, name='&File'),
+            Menu(import_action,
+                 close_action,
+#                 exit_action,
+                 name='&File'),
             ## Menu(advanced_action, name='&Settings'),
             Menu(about_action, user_manual_action, name='&Help'),
             ),
