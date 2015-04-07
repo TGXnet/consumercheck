@@ -424,7 +424,8 @@ def lsmeans_main_selector(df, var_name):
                      u'Lower CI', u'Upper CI', u'p-value'])
     # Selection column labels
     # Set arithmetic
-    scl = acl - rcl - [var_name]
+    scl = acl.difference(rcl)
+    scl = scl.difference([var_name])
 
     # Picker
     p1 = df.loc[:, scl] == 'NA'
@@ -455,11 +456,12 @@ if __name__ == '__main__':
     res = conj_res()
 
     mep = MainEffectsPlot(res, 'Flavour')
-    # spw = SinglePlotWindow(plot=mep)
-    print(spw.plot.plot_data.mat)
-    spw.configure_traits()
-    iap = InteractionPlot(res, 'Sex', 'Flavour')
+    # mepc = InteractionPlotControl(mep)
+    # spw = SinglePlotWindow(plot=mepc)
+    # print(spw.plot.plot_data.mat)
+    # spw.configure_traits()
+    # iap = InteractionPlot(res, 'Sex', 'Flavour')
     # ipw = SinglePlotWindow(plot=iap)
-    print(ipw.plot.plot_data.mat)
-    ipw.configure_traits()
+    # print(ipw.plot.plot_data.mat)
+    # ipw.configure_traits()
     print("The end")
