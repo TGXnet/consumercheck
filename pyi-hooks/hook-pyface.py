@@ -7,12 +7,12 @@ Created on Fri Apr 03 20:33:21 2015
 
 from hookutils import collect_submodules, collect_data_files
 
-wx = collect_submodules('pyface.wx')
+# wx = collect_submodules('pyface.wx')
 qt = collect_submodules('pyface.qt')
-ui_wx = collect_submodules('pyface.ui.wx')
+# ui_wx = collect_submodules('pyface.ui.wx')
 ui_qt = collect_submodules('pyface.ui.qt4')
 
-hiddenimports = wx + qt + ui_wx + ui_qt
+hiddenimports = qt + ui_qt
 
 img = collect_data_files('pyface')
 datas = img 
