@@ -30,7 +30,7 @@ import numpy as np
 # Enthought library imports
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import (Bool, Int, List, HasTraits, implements,
+from traits.api import (Bool, Int, List, Long, HasTraits, implements,
                         Property, Range, on_trait_change)
 from traitsui.api import Item, Group, View, Label, Include
 from enable.api import ColorTrait, ComponentEditor
@@ -76,7 +76,7 @@ class PCPlotData(ArrayPlotData):
     pc_ds = List(PCDataSet)
     # Number of PC in the data sets
     # Lowest number if we have severals sets
-    n_pc = Int()
+    n_pc = Long()
     # The PC for X the axis
     x_no = Int()
     # The PC for the Y axis
