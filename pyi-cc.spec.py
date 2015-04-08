@@ -35,6 +35,7 @@ imgs += Tree(os.path.join('ConsumerCheck', 'graphics'), prefix='graphics', exclu
 
 # R stuff
 renv = Tree(os.path.join('Rdist', 'R-3.0.2'), prefix='R-3.0.2')
+renv += Tree(os.path.join('ConsumerCheck', 'rsrc'), prefix='rsrc', excludes=[])
 
 rt_hooks = ['pyi-rthook_pyqt4.py']
 
