@@ -54,7 +54,7 @@ class ImporterFileBase(HasTraits):
 
     def _kind_default(self):
         '''Available types:
-         * Design variable
+         * Product design
          * Sensory profiling / descriptive data
          * Consumer liking
          * Consumer characteristics
@@ -62,7 +62,7 @@ class ImporterFileBase(HasTraits):
         '''
         file_n = self.file_path.lower()
         if 'design' in file_n:
-            return 'Design variable'
+            return 'Product design'
         elif 'liking' in file_n:
             return 'Consumer liking'
         elif 'pref' in file_n:

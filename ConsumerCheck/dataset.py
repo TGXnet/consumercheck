@@ -32,7 +32,7 @@ import traits.api as _traits
 from enable.api import ColorTrait
 
 
-DS_TYPES = ['Design variable',
+DS_TYPES = ['Product design',
             'Sensory profiling / descriptive data',
             'Consumer liking',
             'Consumer characteristics',

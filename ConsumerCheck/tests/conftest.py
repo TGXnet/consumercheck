@@ -46,17 +46,17 @@ def tdd():
 # Format: folder, file_name, ds_name, kind
 
 CONJOINT = [
-    ('Conjoint', 'design.txt', 'Tine yogurt design', 'Design variable'),
+    ('Conjoint', 'design.txt', 'Tine yogurt design', 'Product design'),
     ('Conjoint', 'consumerAttributes.txt', 'Consumers', 'Consumer characteristics'),
     ('Conjoint', 'overall_liking.txt', 'Overall', 'Consumer liking'),
     ('Conjoint', 'odour-flavour_liking.txt', 'Odour-flavor', 'Consumer liking'),
     ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),
-    ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Design variable'),
+    ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Product design'),
     ('BarleyBread', 'BB_E_consAttr.txt', 'Estland consumers', 'Consumer characteristics'),
     ('BarleyBread', 'BB_E_liking.txt', 'Estland liking data', 'Consumer liking'),
     ('HamData', 'Ham_consumer_attributes.txt', 'Ham-cons char.', 'Consumer characteristics'),
     ('HamData', 'Ham_consumer_liking.txt', 'Ham-liking', 'Consumer liking'),
-    ('HamData', 'Ham_design.txt', 'Ham-design', 'Design variable'),
+    ('HamData', 'Ham_design.txt', 'Ham-design', 'Product design'),
     ]
 
 

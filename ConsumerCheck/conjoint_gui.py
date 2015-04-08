@@ -283,7 +283,7 @@ class ConjointPluginController(PluginController):
         self.available_consumer_liking_sets = self._available_consumer_liking_sets_default()
 
     def _available_design_sets_default(self):
-        return self.model.dsc.get_id_name_map('Design variable')
+        return self.model.dsc.get_id_name_map('Product design')
 
     def _available_consumer_characteristics_sets_default(self):
         tom = ('', '')

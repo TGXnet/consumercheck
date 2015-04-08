@@ -44,7 +44,7 @@ class IDataImporter(Interface):
     """An userfriendly name for the data set."""
 
     kind = Enum(
-        ('Design variable',
+        ('Product design',
          'Sensory profiling / descriptive data',
          'Consumer liking',
          'Consumer characteristics',)

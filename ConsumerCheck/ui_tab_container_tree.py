@@ -45,7 +45,7 @@ class DSNode(_traitsui.TreeNode):
     def get_icon(self, obj, is_expanded):
         """Return icon name based on ds type
         """
-        if obj.kind == 'Design variable':
+        if obj.kind == 'Product design':
             return 'design_variable.ico'
         elif obj.kind == 'Sensory profiling / descriptive data':
             return 'sensory_profiling.ico'

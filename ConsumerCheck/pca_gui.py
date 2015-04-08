@@ -335,7 +335,7 @@ class PcaPluginController(PluginController):
 
 
     def _get_selectable(self):
-        return self.model.dsc.get_id_name_map(kind_exclude='Design variable')
+        return self.model.dsc.get_id_name_map(kind_exclude='Product design')
 
 
     @_traits.on_trait_change('selected_ds')
