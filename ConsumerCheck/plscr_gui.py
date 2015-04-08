@@ -185,16 +185,12 @@ class PlsrPcrController(ModelController):
 
 
 def pred_y_cal_table(res, pcid):
-    mat = res.pred_cal_y[pcid-1]
-    df = _pd.DataFrame(mat)
-    ds = DataSet(mat=df)
+    ds = res.pred_cal_y[pcid-1]
     return ds
 
 
 def pred_y_val_table(res, pcid):
-    mat = res.pred_val_y[pcid-1]
-    df = _pd.DataFrame(mat)
-    ds = DataSet(mat=df)
+    ds = res.pred_val_y[pcid-1]
     return ds
 
 
