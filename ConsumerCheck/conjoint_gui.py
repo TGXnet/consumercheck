@@ -415,7 +415,7 @@ for variables with a large number of categories.
             ind_resid.copy_traits(
                 parent.model.res.residualsTable, traits=['mat', 'style'])
             ind_resid.display_name = '_full model residuals ' + str(self.exported)
-        ind_resid.kind = 'Sensory profiling / descriptive data'
+        ind_resid.kind = 'Descriptive analysis / sensory profiling'
         self.exported += 1
         self.model.dsc.add(ind_resid)
 

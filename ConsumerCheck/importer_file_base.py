@@ -55,7 +55,7 @@ class ImporterFileBase(HasTraits):
     def _kind_default(self):
         '''Available types:
          * Product design
-         * Sensory profiling / descriptive data
+         * Descriptive analysis / sensory profiling
          * Consumer liking
          * Consumer characteristics
         Defined in dataset.py
@@ -72,8 +72,8 @@ class ImporterFileBase(HasTraits):
         elif 'char' in file_n:
             return 'Consumer characteristics'
         elif 'sensory' in file_n:
-            return 'Sensory profiling / descriptive data'
+            return 'Descriptive analysis / sensory profiling'
         elif 'qda' in file_n:
-            return 'Sensory profiling / descriptive data'
+            return 'Descriptive analysis / sensory profiling'
         else:
-            return 'Sensory profiling / descriptive data'
+            return 'Descriptive analysis / sensory profiling'

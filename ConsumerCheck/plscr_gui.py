@@ -405,7 +405,7 @@ if __name__ == '__main__':
     ds_C_meta = ('Cheese', 'ConsumerLiking.txt',
                  'Cheese liking', 'Consumer liking')
     ds_S_meta = ('Cheese', 'SensoryData.txt',
-                 'Cheese profiling', 'Sensory profiling / descriptive data')
+                 'Cheese profiling', 'Descriptive analysis / sensory profiling')
     C = imp_ds(ds_C_meta)
     S = imp_ds(ds_S_meta)
 

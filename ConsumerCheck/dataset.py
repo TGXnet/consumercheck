@@ -33,7 +33,7 @@ from enable.api import ColorTrait
 
 
 DS_TYPES = ['Product design',
-            'Sensory profiling / descriptive data',
+            'Descriptive analysis / sensory profiling',
             'Consumer liking',
             'Consumer characteristics',
             'Other']

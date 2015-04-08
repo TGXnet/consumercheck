@@ -330,7 +330,7 @@ class PrefmapPluginController(PluginController):
 
     def _update_comb(self):
         dsc = self.model.dsc
-        self.comb.col_set = dsc.get_id_name_map('Sensory profiling / descriptive data')
+        self.comb.col_set = dsc.get_id_name_map('Descriptive analysis / sensory profiling')
         self.comb.row_set = dsc.get_id_name_map('Consumer liking')
         # self.comb._generate_combinations()
 
@@ -407,7 +407,7 @@ if __name__ == '__main__':
     ds_C_meta = ('Cheese', 'ConsumerLiking.txt',
                  'Cheese liking', 'Consumer liking')
     ds_S_meta = ('Cheese', 'SensoryData.txt',
-                 'Cheese profiling', 'Sensory profiling / descriptive data')
+                 'Cheese profiling', 'Descriptive analysis / sensory profiling')
     C = imp_ds(ds_C_meta)
     S = imp_ds(ds_S_meta)
 

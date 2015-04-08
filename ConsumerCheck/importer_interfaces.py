@@ -45,7 +45,7 @@ class IDataImporter(Interface):
 
     kind = Enum(
         ('Product design',
-         'Sensory profiling / descriptive data',
+         'Descriptive analysis / sensory profiling',
          'Consumer liking',
          'Consumer characteristics',)
         )
