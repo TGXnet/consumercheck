@@ -97,7 +97,11 @@ class CCConf(_CP.SafeConfigParser):
 
 
     def _get_app_data_dir(self):
-        if _sys.platform == 'darwin':
+        '''Find path for storing configuration file on the different platforms
+
+        OS X: I was not able to install the AppKit package
+        '''
+        if _sys.platform == 'darwin_FIXME':
             from AppKit import NSSearchPathForDirectoriesInDomains
             # http://developer.apple.com
             # /DOCUMENTATION/Cocoa/Reference/Foundation/Miscellaneous
