@@ -34,7 +34,10 @@ class SectorMixin(HasTraits):
 
     def draw_sectors(self, n_sectors):
         # from pudb import set_trace; set_trace()
-        set_id = 1
+        if self.external_mapping:
+            set_id = 2
+        else:
+            set_id = 1
         # Typical id: ('s1pc1', 's1pc2')
         # FIXME: self.data.x_no is set in _plotPC().
         # _plotPC() is called after this
