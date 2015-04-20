@@ -203,12 +203,18 @@ def scores_plot(res):
 
 
 def loadings_x_plot(res):
-    plot = ScatterSectorPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    if res.external_mapping:
+        plot = PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    else:
+        plot = ScatterSectorPlot(res.loadings_x, res.expl_var_x, title='X loadings')
     return plot
 
 
 def loadings_y_plot(res):
-    plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
+    if res.external_mapping:
+        plot = ScatterSectorPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
+    else:
+        plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
     return plot
 
 
