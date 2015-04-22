@@ -81,8 +81,8 @@ class MainViewHandler(Handler):
         try:
             info.object.dsc.read_datasets(state_file)
         except (IOError, TypeError, TraitError):
+            # FIXME: Open infor dialog
             logger.warning('Could not read workspace file')
-
         try:
             info.object.splash.close()
         except AttributeError:
