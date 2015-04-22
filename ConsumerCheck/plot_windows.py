@@ -44,7 +44,7 @@ from plugin_tree_helper import ViewNavigator, WindowLauncher
 #==============================================================================
 # Attributes to use for the plot view.
 # width, height
-sz_abs = (950, 850)
+sz_abs = (900, 800)
 sz_rel = (0.5, 0.7)
 bg_color = "white"
 #==============================================================================
