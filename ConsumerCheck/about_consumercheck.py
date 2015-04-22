@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''ConsumerCheck
 '''
 #-----------------------------------------------------------------------------
@@ -24,13 +25,14 @@ from traitsui.api import View, Item
 
 
 class ConsumerCheckAbout(HasTraits):
-    about_html = '''
+    about_html = u'''
     <body text="#404040" bgcolor="#f0f0f0">
     <div align="center"><font size="7">About ConsumerCheck</font></div>
+    <p align="center">Version: 1.1.2</p>
     <p align="center">ConsumerCheck is a program for statistical analysis and visualization.</p>
     <p align="center">ConsumerCheck development:<br />Thomas Graff, <a href="http://www.tgxnet.no">TGXnet</a></p>
-    <p align="center">Python wrapping of R code and software development management:<br /><a href="http://www.nofima.no/en/person/oliver.tomic">Oliver Tomic</a>, <a href="http://www.nofima.no">Nofima</a></p>
-    <p align="center">Version: 1.1.2</p>
+    <p align="center">Coding of statistical methods in Python, Python wrapping of R conjoint function and software development management. Oliver Tomic, <a href="http://www.kunnskapssenteret.no/en/frontpage">Norwegian Knowledge Centre for the Health Services</a></p>
+    <p align="center">Project Leader:<br /><a href="http://nofima.no/person/tormod-naes/">Tormod Næs</a>, <a href="http://nofima.no/en/">Nofima</a></p>
     <p align="center">ConsumerCheck is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
