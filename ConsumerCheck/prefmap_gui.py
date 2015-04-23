@@ -336,8 +336,8 @@ class PrefmapPluginController(PluginController):
 
     def _update_comb(self):
         dsc = self.model.dsc
-        self.comb.col_set = dsc.get_id_name_map('Descriptive analysis / sensory profiling')
-        self.comb.row_set = dsc.get_id_name_map('Consumer liking')
+        self.comb.col_set = [('', '')] + dsc.get_id_name_map('Descriptive analysis / sensory profiling')
+        self.comb.row_set = [('', '')] + dsc.get_id_name_map('Consumer liking')
         # self.comb._generate_combinations()
 
 

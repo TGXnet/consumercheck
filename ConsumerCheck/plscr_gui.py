@@ -328,8 +328,8 @@ class PlsrPcrPluginController(PluginController):
 
     def _update_comb(self):
         dsc = self.model.dsc
-        self.comb.col_set = dsc.get_id_name_map()
-        self.comb.row_set = dsc.get_id_name_map()
+        self.comb.col_set = [('', '')] + dsc.get_id_name_map()
+        self.comb.row_set = [('', '')] + dsc.get_id_name_map()
         # self.comb._generate_combinations()
 
 
