@@ -353,7 +353,7 @@ class PlsrPcrPluginController(PluginController):
         ns_c = ds_c.n_objs
         ns_s = ds_s.n_objs
         if ns_c != ns_s:
-            self._show_alignment_warning(ns_c, ns_s)
+            self._show_alignment_warning(ds_c, ds_s)
             return
 
         calc_model = PlsrPcr(id=id_c+id_s,
@@ -371,10 +371,10 @@ class PlsrPcrPluginController(PluginController):
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
-    def _show_alignment_warning(self, ns_c, ns_s):
+    def _show_alignment_warning(self, ds_c, ds_s):
         dlg = ErrorMessage()
         dlg.err_msg = 'Consumer liking and sensory profiling data does not align'
-        dlg.err_val = 'There is {0} products in the liking set and {1} products in the sensory set'.format(ns_c, ns_s)
+        dlg.err_val = 'The Consumer liking data and descriptive analysis/sensory profiling data do not align. There are {0} rows in {1} and {2} rows in the {3}. Please select other data.'.format(ds_c.n_objs, ds_c.display_name, ds_s.n_objs, ds_s.display_name)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
