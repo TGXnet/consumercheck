@@ -366,8 +366,11 @@ class PlsrPcrPluginController(PluginController):
 
     def _show_missing_warning(self):
         dlg = ErrorMessage()
-        dlg.err_msg = 'Liking og sensory matrix has holes (missing data)'
-        dlg.err_val = 'PLSR/PCR is by now not able to analyze data with holes'
+        dlg.err_msg = 'This matrix has missing values'
+        dlg.err_val = ("At the current version of ConsumerCheck PLS does not handle missing values. There are three options to work around this problem:\n"
+                       "  1. Impute the missing values with the imputation method of your choice outside ConsumerCheck and re-import the data\n"
+                       "  2. Remove the column with the missing values and re-import the data\n"
+                       "  3. Remove the row with the missing values and re-import the data")
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
