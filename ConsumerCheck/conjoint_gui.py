@@ -418,6 +418,10 @@ for variables with a large number of categories.
         self.exported += 1
         self.model.dsc.add(ind_resid)
 
+    @_traits.on_trait_change('model_struct')
+    def _struct_changed(self, info):
+        self.update_tree = True
+
 
 class ConjointWarning(_traits.HasTraits):
     messages = _traits.Str()
