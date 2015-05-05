@@ -64,7 +64,7 @@ class Pca(Model):
             std_ds = True
         else:
             std_ds = False
-        if self.standardise and self._have_zero_std_var():
+        if std_ds and self._have_zero_std_var():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.zero_variance)
         pca = PCA(self.ds.values,
