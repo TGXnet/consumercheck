@@ -32,6 +32,8 @@ imgs = Datafiles('ConsumerCheckLogo.png',
 
 imgs += Tree(os.path.join('ConsumerCheck', 'graphics'), prefix='graphics', excludes=[])
 
+# User documentation
+docs = Tree(os.path.join('docs-user', 'build', 'html'), prefix='help-docs')
 
 # R stuff
 renv = Tree(os.path.join('Rdist', 'R-3.0.2'), prefix='R-3.0.2')
@@ -69,6 +71,8 @@ exe = EXE(pyz,
 
 a.datas += imgs
 a.datas += renv
+a.datas += docs
+
 
 coll = COLLECT(exe,
                a.binaries,
