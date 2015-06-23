@@ -3,5 +3,5 @@ pyi-build.exe ^
     --log-level=INFO ^
     --clean ^
     --noconfirm ^
-    --distpath=pyi-build-cc-1.2.0 ^
+    --distpath=pyi-build-cc-1.2.1 ^
     pyi-cc.spec.py
