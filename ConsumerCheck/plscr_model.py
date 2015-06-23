@@ -42,7 +42,7 @@ class PlsrPcr(Model):
 
     # Consumer liking
     ds_C = DataSet()
-    # Sensory profiling / descriptive data
+    # Descriptive analysis / sensory profiling
     ds_S = DataSet()
     ds_X = _traits.Property()
     ds_Y = _traits.Property()
@@ -150,6 +150,17 @@ class PlsrPcr(Model):
         return self.max_pc
 
 
+    def _mk_pred_ds(self, pred_mat):
+        pred_ds = DataSet(
+            mat=_pd.DataFrame(
+                data=pred_mat,
+                index=self.ds_Y.obj_n,
+                columns=self.ds_Y.var_n,
+            ),
+            display_name='Predicated')
+        return pred_ds
+
+
     def _pack_res(self, pls_obj):
         res = Result('PLSR/PCR {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
 
@@ -241,14 +252,14 @@ class PlsrPcr(Model):
         # Return a dict with Y pred for each PC
         pYc = pls_obj.Y_predCal()
         ks = pYc.keys()
-        pYcs = [pYc[k] for k in ks]
+        pYcs = [self._mk_pred_ds(pYc[k]) for k in ks]
         res.pred_cal_y = pYcs
 
         # Y_predVal()
         # Return a dict with Y pred for each PC
         pYv = pls_obj.Y_predVal()
         ks = pYv.keys()
-        pYvs = [pYv[k] for k in ks]
+        pYvs = [self._mk_pred_ds(pYv[k]) for k in ks]
         res.pred_val_y = pYvs
 
         return res

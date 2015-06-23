@@ -156,7 +156,7 @@ preview_handler = FilePreviewer()
 class ImporterTextFile(ImporterFileBase):
     implements(IDataImporter)
 
-    delimiter = Enum('\t', ',', ' ')
+    delimiter = Enum('\t', ',', ' ', ';')
     decimal_mark = Enum('period', 'comma')
     char_encoding = Enum(
         ('ascii', 'utf_8', 'latin_1')
@@ -234,8 +234,9 @@ class ImporterTextFile(ImporterFileBase):
                  editor=EnumEditor(
                      values={
                          '\t': '1:Tab',
-                         ',' : '2:Comma',
-                         ' ' : '3:Space',
+                         ',': '2:Comma (,)',
+                         ' ': '3:Space',
+                         ';': '4:Semicolon (;)',
                          }),
                  style='custom',
                  ),

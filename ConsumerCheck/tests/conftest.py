@@ -3,6 +3,7 @@
 # Std lib imports
 import logging
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+import sys
 import os.path as osp
 import copy
 
@@ -11,6 +12,13 @@ import numpy as np
 import pandas as pd
 
 import pytest
+
+# FIXME: Hack
+# Make sure that the application source directory (this directory's parent) is
+# on sys.path.
+
+here = osp.dirname(osp.dirname(osp.abspath(__file__)))
+sys.path.insert(0, here)
 
 
 @pytest.fixture
@@ -38,17 +46,17 @@ def tdd():
 # Format: folder, file_name, ds_name, kind
 
 CONJOINT = [
-    ('Conjoint', 'design.txt', 'Tine yogurt design', 'Design variable'),
+    ('Conjoint', 'design.txt', 'Tine yogurt design', 'Product design'),
     ('Conjoint', 'consumerAttributes.txt', 'Consumers', 'Consumer characteristics'),
     ('Conjoint', 'overall_liking.txt', 'Overall', 'Consumer liking'),
     ('Conjoint', 'odour-flavour_liking.txt', 'Odour-flavor', 'Consumer liking'),
     ('Conjoint', 'consistency_liking.txt', 'Consistency', 'Consumer liking'),
-    ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Design variable'),
+    ('BarleyBread', 'BB_design.txt', 'Barley bread design', 'Product design'),
     ('BarleyBread', 'BB_E_consAttr.txt', 'Estland consumers', 'Consumer characteristics'),
     ('BarleyBread', 'BB_E_liking.txt', 'Estland liking data', 'Consumer liking'),
     ('HamData', 'Ham_consumer_attributes.txt', 'Ham-cons char.', 'Consumer characteristics'),
     ('HamData', 'Ham_consumer_liking.txt', 'Ham-liking', 'Consumer liking'),
-    ('HamData', 'Ham_design.txt', 'Ham-design', 'Design variable'),
+    ('HamData', 'Ham_design.txt', 'Ham-design', 'Product design'),
     ]
 
 
@@ -64,7 +72,7 @@ VINE = [
 CHEESE = [
     ('Cheese', 'ConsumerLiking.txt', 'Cheese liking', 'Consumer liking'),
     ('Cheese', 'ConsumerValues.txt', 'Consumer info', 'Consumer characteristics'),
-    ('Cheese', 'SensoryData.txt', 'Sensory profiling', 'Sensory profiling / descriptive data'),
+    ('Cheese', 'SensoryData.txt', 'Sensory profiling', 'Descriptive analysis / sensory profiling'),
     ]
 
 
@@ -74,7 +82,7 @@ CHEESE = [
 def simple_ds():
     '''Makes a simple syntetic data set'''
 
-    ds = DataSet(display_name='Some values', kind='Sensory profiling / descriptive data')
+    ds = DataSet(display_name='Some values', kind='Descriptive analysis / sensory profiling')
     ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 2.2, 2.3],
@@ -89,7 +97,7 @@ def simple_ds():
 def zero_var_ds():
     '''Data set with zero variance variable'''
 
-    ds = DataSet(display_name='Zero var variable', kind='Sensory profiling / descriptive data')
+    ds = DataSet(display_name='Zero var variable', kind='Descriptive analysis / sensory profiling')
     ds.mat = pd.DataFrame(
         [[1.1, 1.2, 1.3],
          [2.1, 1.2, 2.3],
@@ -240,7 +248,7 @@ def clust1ds():
              [4.6,3.6,1.0,0.2]],
             index = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7'],
             columns = ['V1', 'V2', 'V3', 'V4']),
-        display_name='Some values', kind='Sensory profiling / descriptive data',
+        display_name='Some values', kind='Descriptive analysis / sensory profiling',
         # style=VisualStyle(fg_color=(0.8, 0.2, 0.1, 1.0)),
         style=VisualStyle(fg_color='indigo'),
         )

@@ -64,7 +64,7 @@ class Pca(Model):
             std_ds = True
         else:
             std_ds = False
-        if self.standardise and self._have_zero_std_var():
+        if std_ds and self._have_zero_std_var():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.zero_variance)
         pca = PCA(self.ds.values,
@@ -91,17 +91,6 @@ class Pca(Model):
 
     def _calc_n_pc_default(self):
         return self.max_pc
-
-
-    def _mk_pred_ds(self, pred_mat):
-        pred_ds = DataSet(
-            mat=_pd.DataFrame(
-                data=pred_mat,
-                index=self.ds.obj_n,
-                columns=self.ds.var_n,
-                ),
-            display_name='Predicated')
-        return pred_ds
 
 
     def _pack_res(self, pca_obj):
@@ -155,6 +144,13 @@ class Pca(Model):
         # I can put this into a Pandas Panel 3D structure
         resids = pca_obj.X_residuals()
 
+        # predicted matrices Xhat from calibration after each computed PC.
+        # FIXME: Is this X_predCal()
+        # cal_pred_x = pca_obj.calPredX()
+
+        #validated matrices Xhat from calibration after each computed PC.
+        # val_pred_x = pca_obj.valPredX()
+
         # MSEE from cross validation after each computed PC.
         msee = pca_obj.X_MSEE()
 
@@ -166,17 +162,5 @@ class Pca(Model):
 
         # MSECV from cross validation after each computed PC for each variable.
         ind_var_msecv = pca_obj.X_MSECV_indVar()
-
-        # predicted matrices Xhat from calibration after each computed PC.
-        pXc = pca_obj.X_predCal()
-        ks = pXc.keys()
-        pXcs = [self._mk_pred_ds(pXc[k]) for k in ks]
-        res.pred_cal_x = pXcs
-
-        # validated matrices Xhat from calibration after each computed PC.
-        pXv = pca_obj.X_predVal()
-        ks = pXv.keys()
-        pXvs = [self._mk_pred_ds(pXv[k]) for k in ks]
-        res.pred_val_x = pXvs
 
         return res

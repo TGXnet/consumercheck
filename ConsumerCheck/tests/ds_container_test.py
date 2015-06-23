@@ -43,7 +43,7 @@ def test_del_ds(dsc3):
 
 
 def test_kind(dsc3):
-    assert len(dsc3.get_id_name_map('Design variable')) == 2
+    assert len(dsc3.get_id_name_map('Product design')) == 2
     assert len(dsc3.get_id_name_map('Sensory profiling')) == 1
     assert len(dsc3.get_id_name_map('Consumer liking')) == 0
     with pytest.raises(ValueError):

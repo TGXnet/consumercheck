@@ -42,7 +42,7 @@ class Prefmap(Model):
 
     # Consumer liking
     ds_C = DataSet()
-    # Sensory profiling / descriptive data
+    # Descriptive analysis / sensory profiling
     ds_S = DataSet()
     ds_X = _traits.Property()
     ds_Y = _traits.Property()

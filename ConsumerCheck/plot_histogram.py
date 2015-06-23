@@ -303,7 +303,7 @@ class BoxPlot(DescStatBasePlot):
         # Create our data sources
         bmin = _chaco.ArrayDataSource(self.ds.mat['perc25'].values)
         bmax = _chaco.ArrayDataSource(self.ds.mat['perc75'].values)
-        med = _chaco.ArrayDataSource(self.ds.mat['med'].values)
+        med = _chaco.ArrayDataSource(self.ds.mat['median'].values)
         minv = _chaco.ArrayDataSource(self.ds.mat['min'].values)
         maxv = _chaco.ArrayDataSource(self.ds.mat['max'].values)
         idx = _chaco.ArrayDataSource(_np.arange(self.ds.n_objs))
@@ -347,7 +347,7 @@ class BoxPlot(DescStatBasePlot):
     def _get_plot_data(self):
         nds = copy.deepcopy(self.ds)
         df = self.ds.mat.transpose()
-        nds.mat = df.reindex(index=['max', 'perc75', 'med', 'perc25', 'min'])
+        nds.mat = df.reindex(index=['max', 'perc75', 'median', 'perc25', 'min'])
         return nds
 
 

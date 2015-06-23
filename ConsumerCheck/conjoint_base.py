@@ -48,3 +48,7 @@ class PluginController(_traitsui.Controller):
             self.edit_node = new.owner_ref
         else:
             self.edit_node = self.dummy_model_controller
+
+    @_traits.on_trait_change('update_tree')
+    def _tree_update(self, info):
+        print("Tree update")

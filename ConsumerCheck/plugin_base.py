@@ -119,15 +119,13 @@ class ModelController(_traitsui.Controller):
                 # plot_window.edit_traits(parent=self.win_handle, kind='live')
                 plot_window.edit_traits(kind='live')
                 )
-        elif sys.platform == 'win32':
+        # elif sys.platform == 'win32':
+        else:
             # FIXME: Investigate more here
             self.plot_uis.append(
                 plot_window.edit_traits(parent=self.win_handle, kind='live')
                 # plot_window.edit_traits(kind='live')
                 )
-        else:
-            raise NotImplementedError(
-                "Not implemented for this platform: {0}".format(sys.platform))
 
     def _wind_title(self, res):
         mn = res.method_name

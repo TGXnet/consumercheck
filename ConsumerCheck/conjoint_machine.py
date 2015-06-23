@@ -357,13 +357,24 @@ class ConjointMachine(object):
         return result
 
 
+    def _cn_strip(self, r_expr):
+        '''R conjoint returns some arrays with spaces around variable names
+        
+        This function strips this spaces out.
+        This is required if i use PypeR 1.1.2
+        '''
+        df = self.r.get(r_expr)
+        df.columns = [cn.strip() for cn in df.columns]
+        return df
+
+
     def _r_res_to_ds(self, r_ref, ds_name):
-        df = self.r.get(r_ref)
+        df = self._cn_strip(r_ref)
         return DataSet(mat=df, display_name=ds_name)
 
 
     def _lsMeansTable(self):
-        ls1 = self.r.get('res[[1]][3]$lsmeans.table')
+        ls1 = self._cn_strip('res[[1]][3]$lsmeans.table')
         ls2 = ls1.drop(['p-value'], axis=1)
         return DataSet(mat=ls2, display_name='LS means (main effect and interaction)')
 

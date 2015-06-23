@@ -203,12 +203,18 @@ def scores_plot(res):
 
 
 def loadings_x_plot(res):
-    plot = ScatterSectorPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    if res.external_mapping:
+        plot = PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    else:
+        plot = ScatterSectorPlot(res.loadings_x, res.expl_var_x, title='X loadings')
     return plot
 
 
 def loadings_y_plot(res):
-    plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
+    if res.external_mapping:
+        plot = ScatterSectorPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
+    else:
+        plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
     return plot
 
 
@@ -330,8 +336,8 @@ class PrefmapPluginController(PluginController):
 
     def _update_comb(self):
         dsc = self.model.dsc
-        self.comb.col_set = dsc.get_id_name_map('Sensory profiling / descriptive data')
-        self.comb.row_set = dsc.get_id_name_map('Consumer liking')
+        self.comb.col_set = [('', '')] + dsc.get_id_name_map('Descriptive analysis / sensory profiling')
+        self.comb.row_set = [('', '')] + dsc.get_id_name_map('Consumer liking')
         # self.comb._generate_combinations()
 
 
@@ -355,7 +361,7 @@ class PrefmapPluginController(PluginController):
         ns_c = ds_c.n_objs
         ns_s = ds_s.n_objs
         if ns_c != ns_s:
-            self._show_alignment_warning(ns_c, ns_s)
+            self._show_alignment_warning(ds_c, ds_s)
             return
 
         calc_model = Prefmap(id=id_c+id_s,
@@ -368,15 +374,18 @@ class PrefmapPluginController(PluginController):
 
     def _show_missing_warning(self):
         dlg = ErrorMessage()
-        dlg.err_msg = 'Liking og sensory matrix has holes (missing data)'
-        dlg.err_val = 'Prefmap is by now not able to analyze data with holes'
+        dlg.err_msg = 'This matrix has missing values'
+        dlg.err_val = ("At the current version of ConsumerCheck Prefmap does not handle missing values. There are three options to work around this problem:\n"
+                       "  1. Impute the missing values with the imputation method of your choice outside ConsumerCheck and re-import the data\n"
+                       "  2. Remove the column with the missing values and re-import the data\n"
+                       "  3. Remove the row with the missing values and re-import the data")
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
-    def _show_alignment_warning(self, ns_c, ns_s):
+    def _show_alignment_warning(self, ds_c, ds_s):
         dlg = ErrorMessage()
         dlg.err_msg = 'Consumer liking and sensory profiling data does not align'
-        dlg.err_val = 'There is {0} products in the liking set and {1} products in the sensory set'.format(ns_c, ns_s)
+        dlg.err_val = 'The Consumer liking data and descriptive analysis/sensory profiling data do not align. There are {0} rows in {1} and {2} rows in the {3}. Please select other data.'.format(ds_c.n_objs, ds_c.display_name, ds_s.n_objs, ds_s.display_name)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
@@ -407,7 +416,7 @@ if __name__ == '__main__':
     ds_C_meta = ('Cheese', 'ConsumerLiking.txt',
                  'Cheese liking', 'Consumer liking')
     ds_S_meta = ('Cheese', 'SensoryData.txt',
-                 'Cheese profiling', 'Sensory profiling / descriptive data')
+                 'Cheese profiling', 'Descriptive analysis / sensory profiling')
     C = imp_ds(ds_C_meta)
     S = imp_ds(ds_S_meta)
 

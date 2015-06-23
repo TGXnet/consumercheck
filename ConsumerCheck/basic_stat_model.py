@@ -73,7 +73,7 @@ class BasicStat(Model):
         sy = _pd.DataFrame(index=idx)
         sy['min'] = _np.percentile(mat, 0, axis=ax)
         sy['perc25'] = _np.percentile(mat, 25, axis=ax)
-        sy['med'] = _np.percentile(mat, 50, axis=ax)
+        sy['median'] = _np.percentile(mat, 50, axis=ax)
         sy['perc75'] = _np.percentile(mat, 75, axis=ax)
         sy['max'] = _np.percentile(mat, 100, axis=ax)
 

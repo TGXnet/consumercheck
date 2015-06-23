@@ -81,8 +81,8 @@ class MainViewHandler(Handler):
         try:
             info.object.dsc.read_datasets(state_file)
         except (IOError, TypeError, TraitError):
+            # FIXME: Open infor dialog
             logger.warning('Could not read workspace file')
-
         try:
             info.object.splash.close()
         except AttributeError:
@@ -174,7 +174,10 @@ class MainUi(HasTraits):
         height=600,
         title='ConsumerCheck',
         menubar=MenuBar(
-            Menu(import_action, close_action, exit_action, name='&File'),
+            Menu(import_action,
+                 close_action,
+#                 exit_action,
+                 name='&File'),
             ## Menu(advanced_action, name='&Settings'),
             Menu(about_action, user_manual_action, name='&Help'),
             ),

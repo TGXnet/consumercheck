@@ -197,9 +197,9 @@ conjoint_view = _traitsui.View(
     _traitsui.Item('controller.model.owner_ref.model_struct', style='simple', show_label=False),
     _traitsui.Item('controller.model_desc',
                    editor=_traitsui.HTMLEditor(),
-                   height=300,
-                   width=460,
-                   resizable=False,
+                   # height=250,
+                   # width=400,
+                   resizable=True,
                    show_label=False),
     title='Conjoint settings',
 )
@@ -283,11 +283,10 @@ class ConjointPluginController(PluginController):
         self.available_consumer_liking_sets = self._available_consumer_liking_sets_default()
 
     def _available_design_sets_default(self):
-        return self.model.dsc.get_id_name_map('Design variable')
+        return [('', '')] + self.model.dsc.get_id_name_map('Product design')
 
     def _available_consumer_characteristics_sets_default(self):
-        tom = ('', '')
-        return [tom] + self.model.dsc.get_id_name_map('Consumer characteristics')
+        return [('', '')] + self.model.dsc.get_id_name_map('Consumer characteristics')
 
     def _available_consumer_liking_sets_default(self):
         return self.model.dsc.get_id_name_map('Consumer liking')
@@ -415,9 +414,13 @@ for variables with a large number of categories.
             ind_resid.copy_traits(
                 parent.model.res.residualsTable, traits=['mat', 'style'])
             ind_resid.display_name = '_full model residuals ' + str(self.exported)
-        ind_resid.kind = 'Sensory profiling / descriptive data'
+        ind_resid.kind = 'Descriptive analysis / sensory profiling'
         self.exported += 1
         self.model.dsc.add(ind_resid)
+
+    @_traits.on_trait_change('model_struct')
+    def _struct_changed(self, info):
+        self.update_tree = True
 
 
 class ConjointWarning(_traits.HasTraits):
@@ -464,7 +467,7 @@ selection_view = _traitsui.Group(
                                name='controller.consumer_vars'),
                            style='custom',
                            show_label=False,
-                           height=150,
+                           # height=100,
                            ),
             show_border=True,
         ),
@@ -475,7 +478,7 @@ selection_view = _traitsui.Group(
                            editor=_traitsui.CheckListEditor(name='controller.available_consumer_liking_sets'),
                            style='custom',
                            show_label=False,
-                           width=400,
+                           # width=400,
                            enabled_when="controller.selected_design != ''",
                            ),
             show_border=True,
