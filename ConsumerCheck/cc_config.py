@@ -19,10 +19,12 @@
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
+import codecs
 import sys as _sys
 import os.path as _op
 from os import environ as _environ
-import ConfigParser as _CP
+import configparser as _CP
+
 
 # __all__ = []
 
@@ -34,26 +36,17 @@ options_map = {
     'plot_width': ('UI', '800', ''),
     'adv_options': ('UI', 'false', 'boolean'),
     'work_dir': ('RuntimeSettings', '.', ''),
-    }
+}
 
 
-class UnknownOptionError(_CP.Error):
-    """Raised when no section matches a requested option."""
-
-    def __init__(self, option):
-        _CP.Error.__init__(self, 'No option: %r' % (option,))
-        self.option = option
-        self.args = (option, )
-
-
-class CCConf(_CP.SafeConfigParser):
+class CCConf(_CP.ConfigParser):
 
     def __init__(self, defaults):
-        _CP.RawConfigParser.__init__(self, defaults)
+        super(CCConf, self).__init__(defaults)
         self.cfg_file_name = self._get_conf_file_name()
         try:
-            fp = open(self.cfg_file_name, 'r')
-            self.readfp(fp)
+            fp = codecs.open(self.cfg_file_name, 'r', 'utf-8')
+            self.read_file(fp)
             fp.close()
         except (IOError, _CP.ParsingError):
             self._init_conf_file()
@@ -61,23 +54,23 @@ class CCConf(_CP.SafeConfigParser):
 
     def get(self, section, option):
         try:
-            return _CP.RawConfigParser.get(self, section, option)
+            return super(CCConf, self).get(section, option)
         except _CP.NoSectionError:
-            return _CP.RawConfigParser.get(self, 'DEFAULT', option)
+            return super(CCConf, self).get('DEFAULT', option)
 
 
     def set_and_write(self, section, option, value):
         try:
-            _CP.RawConfigParser.set(self, section, option, value)
+            super(CCConf, self).set(section, option, value)
         except _CP.NoSectionError:
             self.add_section(section)
-            _CP.RawConfigParser.set(self, section, option, value)
-        with open(self.cfg_file_name, 'w') as fp:
+            super(CCConf, self).set(section, option, value)
+        with codecs.open(self.cfg_file_name, 'w', 'utf-8') as fp:
             self.write(fp)
 
 
     def _init_conf_file(self):
-        with open(self.cfg_file_name, 'w+') as fp:
+        with codecs.open(self.cfg_file_name, 'w', 'utf-8') as fp:
             self.write(fp)
 
 
@@ -129,7 +122,7 @@ def get_option(option):
         section  = options_map[option][0]
         return _conf.get(section, option)
     except KeyError:
-        raise UnknownOptionError(option)
+        raise _CP.NoOptionError(option, section)
 
 
 def set_option(option, value):
