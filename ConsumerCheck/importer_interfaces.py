@@ -48,7 +48,7 @@ class IDataImporter(Interface):
          'Descriptive analysis / sensory profiling',
          'Consumer liking',
          'Consumer characteristics',)
-        )
+    )
     """The data set type for this data set."""
 
     def import_data(self):
