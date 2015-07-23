@@ -33,7 +33,6 @@ class SectorMixin(HasTraits):
             self.remove_sectors()
 
     def draw_sectors(self, n_sectors):
-        # from pudb import set_trace; set_trace()
         if self.external_mapping:
             set_id = 2
         else:
