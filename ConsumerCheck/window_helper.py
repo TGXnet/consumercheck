@@ -22,7 +22,10 @@
 # Local imports
 from plot_base import NoPlotControl
 from plot_windows import SinglePlotWindow
-from plot_pc_scatter import PCScatterPlot, CLPlot, PCPlotControl, CLPlotControl
+from plot_pc_scatter import (PCScatterPlot, PCPlotControl,
+                             ScatterSectorPlot, PCSectorPlotControl,
+                             CLPlot, CLPlotControl,
+                             CLSectorPlot, CLSectorPlotControl)
 
 
 def multiplot_factory(plot_func, res, view_loop, title, parent_win=None):
@@ -38,8 +41,22 @@ def plot_win_creator_closure(plot_func, res, view_loop, title, parent_win):
     def plot_window_creator():
         plot = plot_func(res)
 
-        if isinstance(plot, CLPlot):
+        if isinstance(plot, CLSectorPlot):
+            plot_control = CLSectorPlotControl(plot)
+            win = SinglePlotWindow(
+                plot=plot_control,
+                res=res,
+                view_loop=view_loop
+            )
+        elif isinstance(plot, CLPlot):
             plot_control = CLPlotControl(plot)
+            win = SinglePlotWindow(
+                plot=plot_control,
+                res=res,
+                view_loop=view_loop
+            )
+        elif isinstance(plot, ScatterSectorPlot):
+            plot_control = PCSectorPlotControl(plot)
             win = SinglePlotWindow(
                 plot=plot_control,
                 res=res,
