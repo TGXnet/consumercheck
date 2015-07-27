@@ -141,9 +141,9 @@ class Prefmap(Model):
 
     def _get_max_pc(self):
         if self.settings.int_ext_mapping == 'Internal':
-            return max((min(self.ds_C.n_objs, self.ds_C.n_vars, 12) - 2), self.min_pc)
+            return max((min(self.ds_C.n_objs, self.ds_C.n_vars, 11) - 1), self.min_pc)
         else:
-            return max((min(self.ds_S.n_objs, self.ds_S.n_vars, 12) - 2), self.min_pc)
+            return max((min(self.ds_S.n_objs, self.ds_S.n_vars, 11) - 1), self.min_pc)
 
 
     def _calc_n_pc_default(self):
