@@ -152,7 +152,7 @@ class PCScatterPlot(PlotBase):
         # FIXME: This is a hack to show PC1 X(%), Y(%) for prefmap scores
         if expl_y_vars is not None:
             self.expl_y_vars = list(expl_y_vars.mat.xs('calibrated'))
-
+        self.external_mapping = False
         if pc_matrix is not None:
             self.add_PC_set(pc_matrix, expl_vars)
 

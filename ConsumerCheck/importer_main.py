@@ -27,11 +27,14 @@ import logging
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import os.path
 
+# SciPy imports
+import numpy as _np
+
 # Enthought imports
 from traits.api import HasTraits, Bool, File, List, Str
 from traitsui.api import View, Item
 from traitsui.menu import OKButton
-from pyface.api import FileDialog, OK, CANCEL
+from pyface.api import FileDialog, OK, CANCEL, warning
 
 # Local imports
 import cc_config as conf
@@ -74,7 +77,7 @@ class ImporterMain(HasTraits):
         return ds
 
 
-    def dialog_multi_import(self):
+    def dialog_multi_import(self, parent_window=None):
         """Multi file import
 
         Open dialog for selecting multiple files.
@@ -104,6 +107,10 @@ class ImporterMain(HasTraits):
             ui = importer.edit_traits()
             if ui.result:
                 ds = importer.import_data()
+                if ds.values.dtype.type is _np.object_:
+                    logger.warning('Importing matrix with non-numeric values: {}'.format(ds.display_name))
+                    if parent_window is not None:
+                        warning(parent_window, 'This matrix contains non-numeric values. The statistical methods is not able to handle non-numeric categorical variables')
                 datasets.append(ds)
             else:
                 continue
@@ -115,7 +122,7 @@ class ImporterMain(HasTraits):
     def _show_file_selector(self):
         dlg = FileDialog(
             action='open files',
-#            default_path=self._last_open_path,
+            default_path=self._last_open_path,
             title='Import data')
         status = dlg.open()
         if status == OK:

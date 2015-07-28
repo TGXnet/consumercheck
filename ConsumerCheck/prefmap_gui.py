@@ -30,8 +30,9 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import (PCScatterPlot, ScatterSectorPlot, CLSectorPlot,
-                             CLSectorPlotControl, PCSectorPlotControl)
+from plot_pc_scatter import (PCScatterPlot,
+                             ScatterSectorPlot, PCSectorPlotControl,
+                             CLSectorPlot, CLSectorPlotControl)
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from prefmap_picker import PrefmapPicker

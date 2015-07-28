@@ -54,7 +54,7 @@ class MainViewHandler(Handler):
     def import_data(self, info):
         """Action called when activating importing of new data set"""
         # importer = ImporterMain()
-        imported = self.importer.dialog_multi_import()
+        imported = self.importer.dialog_multi_import(info.ui.control)
         if imported:
             info.object.dsc.add(*tuple(imported))
 

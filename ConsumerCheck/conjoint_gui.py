@@ -30,6 +30,21 @@ import numpy as _np
 # ETS imports
 import traits.api as _traits
 import traitsui.api as _traitsui
+from traits.trait_notifiers import set_change_event_tracers
+
+
+def pre_tr(obj, trait_name, old, new, handler):
+    print("Trace")
+
+
+def post_tr(obj, trait_name, old, new, handler, exception=None):
+    print("Trace: ", obj, trait_name, old, new, handler)
+    if exception is not None:
+        print("Trace ex: ", obj, trait_name, old, new, handler, exception)
+
+
+# set_change_event_tracers(post_tracer=post_tr)
+
 
 # Local imports
 from dataset import DataSet
@@ -223,18 +238,23 @@ conjoint_nodes = [
         node_for=[ConjointController],
         label='=Analysis results',
         children='table_win_launchers',
+        auto_open=True,
         view=conjoint_view,
         menu=[]),
     _traitsui.TreeNode(
         node_for=[ConjointController],
         label='=Main effect plots',
         children='me_plot_launchers',
+        auto_open=True,
         view=conjoint_view,
         menu=[]),
     _traitsui.TreeNode(
         node_for=[ConjointController],
         label='=Interaction plots',
         children='int_plot_launchers',
+        # FIXME: auto_open is her as and hack to force adding adding children
+        # to int plots when model is changed to 2
+        auto_open=True,
         view=conjoint_view,
         menu=[]),
     _traitsui.TreeNode(

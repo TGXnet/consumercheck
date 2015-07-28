@@ -9,12 +9,12 @@
 # Work Directory
 WD <- getwd()
 # Project Directory
-PD <- dirname(WD)
+PD <- dirname(dirname(WD))
 # Data Directory
 # Ham data
-HDD <- file.path(PD, "datasets", "HamData")
+HDD <- file.path(PD, "TestData", "HamData")
 # Barley bread data
-BDD <- file.path(PD, "datasets", "BarleyBread")
+BDD <- file.path(PD, "TestData", "BarleyBread")
 # DD <- "/home/thomas/TGXnet/Prosjekter/2009-13-ConsumerCheck/Conjoint/Conjoint_18_03_2013/data"
 
 library(Hmisc)
