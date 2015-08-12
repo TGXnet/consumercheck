@@ -157,7 +157,7 @@ class Prefmap(Model):
                 index=self.ds_Y.obj_n,
                 columns=self.ds_Y.var_n,
                 ),
-            display_name='Predicated after PC{}'.format(npc))
+            display_name='Predicted after PC{}'.format(npc))
         return pred_ds
 
 
