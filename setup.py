@@ -21,13 +21,11 @@ Elements to setup:
 
 Do a release
 python setup.py --help-commands
-python setup.py sdist upload
-python setup.py bdist_wininst  ???
-python setup.py bdist --formats=wininst  ???
-python setup.py bdist_msi  ???
+python setup.py sdist upload -r pypitest|pypi
 
 install: install_lib, install_data, install_scripts
 
+PyPI credentials can be found in: .pypirc
 
 """
 import sys
@@ -42,6 +40,9 @@ from setuptools.command.test import test as TestCommand
 
 
 here = path.abspath(path.dirname(__file__))
+
+# Metadatafiles
+# README.rst, HISTORY.rst ,AUTHORS.rst
 
 # Get the long description from the relevant file
 with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
@@ -66,7 +67,7 @@ setup(
     # Versions should comply with PEP440. For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.1.5',
+    version='1.2.0',
 
     description='Software for analysis of sensory and consumer data',
     long_description=long_description,
@@ -114,20 +115,21 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'pyparsing==1.5.6',
-        'pandas>=0.12.0',
-        'openpyxl>=1.7.0',
-        'xlrd>=0.9.2',
-        'PypeR>=1.1.1',
-        'colormath==1.0.8',
-        'chaco>=4.3.0',
+        'numpy',
+        'chaco',		# Problem? with ver 4.5.0
+        'pandas',
+        'openpyxl',
+        'xlrd',
+        'pyper <= 1.1.1',	# Fails with ver 1.1.2
+        'colormath',
+        'configparser',
     ],
 
     # List additional groups of dependencies here (e.g. development dependencies).
     # You can install these using the following syntax, for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'dev': ['check-manifest'],
+        'dev': ['Sphinx', 'check-manifest'],
         'testing': ['pytest', 'coverage'],
     },
 
@@ -145,6 +147,8 @@ setup(
     # data_files=[('my_data', ['data/data_file'])],
 
     # Automatically include any data files it finds inside your package directories?
+    # If you want the files and directories from MANIFEST.in to also be installed
+    # (e.g. if it is runtime-relevant data)
     # include_package_data=True,
 
     # To provide executable scripts, use entry points in preference to the
