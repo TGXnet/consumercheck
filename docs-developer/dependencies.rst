@@ -42,7 +42,7 @@ CC depends on a number of scientific Python packages. Unfortunately CC does not 
 ======== =========== ==============
  Name     Tested ver  Function
 ======== =========== ==============
-chaco     4.4.1       Plotting library -> 4.5.0
+chaco     4.4.1       Plotting library -> 4.5.0 (no something goes woring with 4.5.0)
 pandas    0.15.1      Matrix container
 numpy     1.9.2       Baisis for statistics and datatype
 traits    4.5.0       Event and type automation for Traitsui and Chaco
@@ -54,7 +54,6 @@ xlrd      0.9.3       For reading XL spredsheet
 openpyxl  1.8.5       For reading XL spredsheet
 colormath 2.1.0       Latest version
 pyper     1.1.2       Python <-> R communication
-wxPython  2.8.12.1    GUI backend
 
 Dependencies:
 chaco: enable
@@ -74,7 +73,7 @@ R version 3.0.0 or higher
 
 (A4) Required R packages
 ------------------------
-lmerTest
+lmerTest	2.0-11
 
 
 
