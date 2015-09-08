@@ -80,13 +80,13 @@ class ConjointMachine(object):
         Rwbin = op.join(self.r_origo, 'R-3.0.2', 'bin', 'R.exe')
         Rubin = op.join(self.r_origo, 'R-3.0.2', 'bin', 'R')
         Rlib = op.join(self.r_origo, 'R-3.0.2', 'library')
+        logger.info("Try Windows R path: {0}".format(Rwbin))
+        logger.info("Try Mac OSX R path: {0}".format(Rubin))
         if op.exists(Rwbin):
-            logger.info("Try R path: {0}".format(Rwbin))
             logger.info("R.exe found")
             self.r = pyper.R(RCMD=Rwbin, use_pandas=True)
             self.r('.libPaths("{0}")'.format(Rlib))
         elif op.exists(Rubin):
-            logger.info("Try R path: {0}".format(Rubin))
             logger.info("R found")
             self.r = pyper.R(RCMD=Rubin, use_pandas=True)
             self.r('.libPaths("{0}")'.format(Rlib))
