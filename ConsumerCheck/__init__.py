@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-__version__ = '1.1.5'
+__version__ = '1.3.1'
 __license__ = __doc__
 __project_url__ = 'http://sourceforge.net/projects/consumercheck/'
 __forum_url__   = 'http://consumercheck.co/'
