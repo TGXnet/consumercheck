@@ -11,10 +11,10 @@ programming skills.
 Latest changes
 ==============
 
-The end
+Nothing here yet.
 
 
 Roadmap
 =======
 
-Is here
+Nothing here yet.

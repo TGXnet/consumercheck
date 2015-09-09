@@ -150,14 +150,14 @@ class Prefmap(Model):
         return self.max_pc
 
 
-    def _mk_pred_ds(self, pred_mat):
+    def _mk_pred_ds(self, pred_mat, npc):
         pred_ds = DataSet(
             mat=_pd.DataFrame(
                 data=pred_mat,
                 index=self.ds_Y.obj_n,
                 columns=self.ds_Y.var_n,
                 ),
-            display_name='Predicated')
+            display_name='Predicted after PC{}'.format(npc))
         return pred_ds
 
 
@@ -252,14 +252,14 @@ class Prefmap(Model):
         # Return a dict with Y pred for each PC
         pYc = pls_obj.Y_predCal()
         ks = pYc.keys()
-        pYcs = [self._mk_pred_ds(pYc[k]) for k in ks]
+        pYcs = [self._mk_pred_ds(pYc[k], k) for k in ks]
         res.pred_cal_y = pYcs
 
         # Y_predVal()
         # Return a dict with Y pred for each PC
         pYv = pls_obj.Y_predVal()
         ks = pYv.keys()
-        pYvs = [self._mk_pred_ds(pYv[k]) for k in ks]
+        pYvs = [self._mk_pred_ds(pYv[k], k) for k in ks]
         res.pred_val_y = pYvs
 
         return res
