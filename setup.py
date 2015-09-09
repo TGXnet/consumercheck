@@ -22,6 +22,13 @@ Elements to setup:
 Do a release
 python setup.py --help-commands
 python setup.py sdist upload -r pypitest|pypi
+better use
+twine for secure uploading (by now)
+
+Look into:
+ + pre-sign your files with GPG
+ + upload_docs - Upload package documentation to PyPI
+ + upload_docs will attempt to run the build_sphinx command to generate uploadable
 
 install: install_lib, install_data, install_scripts
 
@@ -67,7 +74,7 @@ setup(
     # Versions should comply with PEP440. For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.2.0',
+    version='1.2.1',
 
     description='Software for analysis of sensory and consumer data',
     long_description=long_description,
@@ -126,6 +133,7 @@ setup(
     ],
 
     # List additional groups of dependencies here (e.g. development dependencies).
+    # http://pythonhosted.org/setuptools/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies
     # You can install these using the following syntax, for example:
     # $ pip install -e .[dev,test]
     extras_require={
@@ -158,14 +166,17 @@ setup(
 
     # Description here
     # http://pythonhosted.org/setuptools/setuptools.html#automatic-script-creation
-    # entry_points={
-    #     'console_scripts': [
-    #         'ccrun = ConsumerCheck.cc_start:main',
-    #     ],
-    #     'gui_scripts': [
-    #         'ccgui = ConsumerCheck.cc_start:main',
-    #     ],
-    # },
+    entry_points={
+        'console_scripts': [
+            'ccrun = ConsumerCheck.cc_start:main',
+        ],
+        'gui_scripts': [
+            'ccgui = ConsumerCheck.cc_start:main',
+        ],
+        'distutils.commands': [
+            'foo = mypackage.some_module:foo',
+        ],
+    },
 
     # zip_safe=False,
 
