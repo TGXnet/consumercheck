@@ -74,7 +74,7 @@ setup(
     # Versions should comply with PEP440. For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.2.1',
+    version='1.2.2',
 
     description='Software for analysis of sensory and consumer data',
     long_description=long_description,
@@ -123,13 +123,15 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'numpy',
-        'chaco',		# Problem? with ver 4.5.0
-        'pandas',
-        'openpyxl',
-        'xlrd',
-        'pyper <= 1.1.1',	# Fails with ver 1.1.2
-        'colormath',
-        'configparser',
+        'traits >=4.4.0, <4.5.0',	# Problem? with ver 4.5.0
+        'enable >=4.4.0, <4.5.0',	# Problem? with ver 4.5.0
+        #'chaco >=4.4.0, !=4.5.0',	# Problem? with ver 4.5.0
+        #'pandas',
+        #'openpyxl',
+        #'xlrd',
+        #'pyper >=1.1.1, !=1.1.2',	# Fails with ver 1.1.2
+        #'colormath',
+        #'configparser',
     ],
 
     # List additional groups of dependencies here (e.g. development dependencies).

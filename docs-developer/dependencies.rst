@@ -53,7 +53,7 @@ pyparsing 2.0.3       Needed by Enable, not installed automatic by pip
 xlrd      0.9.3       For reading XL spredsheet
 openpyxl  1.8.5       For reading XL spredsheet
 colormath 2.1.0       Latest version
-pyper     1.1.2       Python <-> R communication
+pyper     1.1.2       Python <-> R communication (diff ver 1.1.1 <--> 1.1.2)
 
 Dependencies:
 chaco: enable
