@@ -94,7 +94,7 @@ class CCConf(_CP.ConfigParser):
 
         OS X: I was not able to install the AppKit package
         '''
-        if _sys.platform == 'darwin_FIXME':
+        if _sys.platform == 'darwin':
             path = _op.expanduser(_op.join("~", ".config"))
             if not _op.isdir(path):
                 os.mkdir(path, 0755)
