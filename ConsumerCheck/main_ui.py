@@ -80,7 +80,7 @@ class MainViewHandler(Handler):
         # Import workspace
         try:
             info.object.dsc.read_datasets(state_file)
-        except (IOError, TypeError, TraitError):
+        except (IOError, TypeError, ImportError, TraitError):
             # FIXME: Open infor dialog
             logger.warning('Could not read workspace file')
         try:
