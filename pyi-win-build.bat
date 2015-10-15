@@ -4,4 +4,4 @@ pyi-build.exe ^
     --clean ^
     --noconfirm ^
     --distpath=pyi-build-cc-1.3.0 ^
-    pyi-cc.spec.py
+    pyi-cc.win.spec.py
