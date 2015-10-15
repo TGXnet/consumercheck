@@ -19,10 +19,10 @@
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
+import os
 import codecs
 import sys as _sys
 import os.path as _op
-from os import environ as _environ
 import configparser as _CP
 
 
@@ -95,7 +95,11 @@ class CCConf(_CP.ConfigParser):
         OS X: I was not able to install the AppKit package
         '''
         if _sys.platform == 'darwin_FIXME':
-            from AppKit import NSSearchPathForDirectoriesInDomains
+            path = _op.expanduser(_op.join("~", ".config"))
+            if not _op.isdir(path):
+                os.mkdir(path, 0755)
+
+            # from AppKit import NSSearchPathForDirectoriesInDomains
             # http://developer.apple.com
             # /DOCUMENTATION/Cocoa/Reference/Foundation/Miscellaneous
             # /Foundation_Functions/Reference/reference.html#
@@ -103,9 +107,9 @@ class CCConf(_CP.ConfigParser):
             # NSApplicationSupportDirectory = 14
             # NSUserDomainMask = 1
             # True for expanding the tilde into a fully qualified path
-            path = NSSearchPathForDirectoriesInDomains(14, 1, True)[0]
+            # path = NSSearchPathForDirectoriesInDomains(14, 1, True)[0]
         elif _sys.platform == 'win32':
-            path = _environ['APPDATA']
+            path = os._environ['APPDATA']
         else:
             path = _op.expanduser(_op.join("~", ".config"))
 
