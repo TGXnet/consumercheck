@@ -109,7 +109,7 @@ class CCConf(_CP.ConfigParser):
             # True for expanding the tilde into a fully qualified path
             # path = NSSearchPathForDirectoriesInDomains(14, 1, True)[0]
         elif _sys.platform == 'win32':
-            path = os._environ['APPDATA']
+            path = os.environ['APPDATA']
         else:
             path = _op.expanduser(_op.join("~", ".config"))
 
