@@ -34,6 +34,7 @@ from pyface.api import FileDialog, OK
 from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 #Local imports
+import cc_config as conf
 # from ui_results import TableViewController
 # from ds_matrix_view import TableViewer
 # from plot_pc_scatter import PCScatterPlot
@@ -47,6 +48,7 @@ from plugin_tree_helper import ViewNavigator, WindowLauncher
 sz_abs = (600, 600)
 sz_rel = (0.7, 1.0)
 bg_color = "white"
+img_path = conf.graphics_path()
 #==============================================================================
 
 
@@ -76,7 +78,7 @@ class PlotWindow(HasTraits):
     hwin = Any()
     view_loop = List(WindowLauncher)
     title_text = Str
-    save_plot = SVGButton(filename=pjoin(os.getcwd(), 'save.svg'),
+    save_plot = SVGButton(filename=pjoin(img_path, 'save.svg'),
                           width=32, height=32)
 
 

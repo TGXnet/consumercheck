@@ -37,6 +37,7 @@ from enable.api import ColorTrait, ComponentEditor
 from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 # Local imports
+import cc_config as conf
 from dataset import DataSet
 from plot_base import PlotBase, NoPlotControl
 from plot_interface import IPCScatterPlot
@@ -46,6 +47,7 @@ from plot_sector import SectorMixin
 #==============================================================================
 # Attributes to use for the plot view.
 bg_color = "white"
+img_path = conf.graphics_path()
 #==============================================================================
 
 
@@ -474,15 +476,15 @@ class CLSectorPlot(CLPlot, SectorMixin):
 class PCBaseControl(NoPlotControl):
     eq_axis = Bool(False)
     # vis_toggle = Button('Visibility')
-    y_down = SVGButton(filename=pjoin(os.getcwd(), 'y_down.svg'),
+    y_down = SVGButton(filename=pjoin(img_path, 'y_down.svg'),
                        width=32, height=32)
-    y_up = SVGButton(filename=pjoin(os.getcwd(), 'y_up.svg'),
+    y_up = SVGButton(filename=pjoin(img_path, 'y_up.svg'),
                      width=32, height=32)
-    x_down = SVGButton(filename=pjoin(os.getcwd(), 'x_down.svg'),
+    x_down = SVGButton(filename=pjoin(img_path, 'x_down.svg'),
                        width=32, height=32)
-    x_up = SVGButton(filename=pjoin(os.getcwd(), 'x_up.svg'),
+    x_up = SVGButton(filename=pjoin(img_path, 'x_up.svg'),
                      width=32, height=32)
-    reset_xy = SVGButton(filename=pjoin(os.getcwd(), 'reset_xy.svg'),
+    reset_xy = SVGButton(filename=pjoin(img_path, 'reset_xy.svg'),
                          width=32, height=32)
     traits_view = View(
         Group(

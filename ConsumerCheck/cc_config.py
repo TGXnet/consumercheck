@@ -89,6 +89,10 @@ class CCConf(_CP.ConfigParser):
         return _op.join(path, APP_NAME + '.pkl')
 
 
+    def _get_graphics_path(self):
+        return _op.dirname(_op.realpath(__file__))
+
+
     def _get_app_data_dir(self):
         '''Find path for storing configuration file on the different platforms
 
@@ -147,3 +151,7 @@ def log_file_url():
 
 def pkl_file_url():
     return _conf._get_pkl_file_name()
+
+
+def graphics_path():
+    return _conf._get_graphics_path()

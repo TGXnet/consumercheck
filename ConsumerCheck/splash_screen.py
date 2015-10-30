@@ -24,9 +24,13 @@ import os
 from pyface.image_resource import ImageResource
 from pyface.api import SplashScreen
 
+# Local imports
+import cc_config as conf
+
+
 img = ImageResource(
     'ConsumerCheckLogo.png',
-    search_path=[os.getcwd()],
+    search_path=[conf.graphics_path()],
     )
 splash = SplashScreen(image=img)
 
