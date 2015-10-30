@@ -22,6 +22,7 @@
 # SciPy imports
 import numpy as np
 import pandas as _pd
+from distutils.version import LooseVersion
 
 # Enthought library imports
 # FIXME: Namespace import
@@ -422,10 +423,17 @@ def lsmeans_main_selector(df, var_name):
     # Result column labels
     rcl = _pd.Index([u'Estimate', u'Standard Error', u'DF', u't-value',
                      u'Lower CI', u'Upper CI', u'p-value'])
-    # Selection column labels
-    # Set arithmetic
-    scl = acl.difference(rcl)
-    scl = scl.difference([var_name])
+    # FIXME: From pandas v0.15.0 (October 18, 2014)
+    # The Index set operations + and - were deprecated in order to provide these
+    # for numeric type operations on certain index types. + can be replaced by
+    # .union() or |, and - by .difference(). Further the method name
+    # Index.diff() is deprecated and can be replaced by Index.difference() (GH8226)
+    pdv = LooseVersion(_pd.__version__)
+    if pdv >= LooseVersion("0.15.0"):
+        scl = acl.difference(rcl)
+        scl = scl.difference([var_name])
+    else:
+        scl = acl - rcl - [var_name]
 
     # Picker
     p1 = df.loc[:, scl] == 'NA'
