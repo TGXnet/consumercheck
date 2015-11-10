@@ -10,11 +10,11 @@ ConsumerCheck is a software for statistical analysis of data from sensory and co
 Installation
 ============
 
-I wish the answer is:
+I wish the answer was:
 
 	pip install consumercheck
 
-But it is not that simple. ConsumerCheck uses **numpy** that is not easily automatically installed. Following is a list of the python modules that have to be present for ConsumerCheck to work.
+But unfortunately it is not that simple. The following list of python modules needs to be installed prior to using **pip install consumercheck** in order to make ConsumerCheck work.
 
 +-------------+------------+-----------------------------------------------------------------+
 | Name        | Tested ver | Function                                                        |
@@ -44,7 +44,7 @@ But it is not that simple. ConsumerCheck uses **numpy** that is not easily autom
 |configparser | 3.3.0      | Parsing configfile                                              |
 +-------------+------------+-----------------------------------------------------------------+
 
-In addition ConsumerCheck uses the `R <https://www.r-project.org/>`_ environment for statistical computing. So this have to be installed on you system for ConsumerCheck to function properly. There also have to be installed some libraries in the R environment:
+Moreover, ConsumerCheck uses the `R <https://www.r-project.org/>`_ environment for statistical computing. This means you need to have R (> 3.0) installed on your platform. Furthermore, the following R-package needs to be installed:
 
 	lmerTest	ver 2.0-11
 
@@ -52,13 +52,14 @@ In addition ConsumerCheck uses the `R <https://www.r-project.org/>`_ environment
 MS Windows and Mac OS X
 -----------------------
 
-If you are on MS Window or Mac OS X the easiest you can do is to install the `Anaconda <http://continuum.io/downloads>`_ python environment from Continiuum Analytic.
+If you are on MS Window or Mac OS X the easiest way is to install the required Python packages listed above by installing the `Anaconda <http://continuum.io/downloads>`_ python environment from Continuum Analytics.
 
-Then you have to use the Conda installer to add som python packages:
+Then you have to use the Conda installer to add some additional python packages that are needed for ConsumerCheck. In a Windows PowerShell / Mac terminal type:
 
 	conda install chaco
 
-ConsumerCheck can be installed with pip:
+
+After this, ConsumerCheck can be installed with pip:
 
 	pip install consumercheck
 
@@ -66,7 +67,7 @@ ConsumerCheck can be installed with pip:
 Linux
 -----
 
-The following installation procecure is tested on Debian Jessie 8.2.
+The following installation procecure was tested on Debian Jessie 8.2.
 
 On the shell commandline::
 
