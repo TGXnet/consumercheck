@@ -5,6 +5,8 @@ Copyright © 2009-2015 Thomas Graff.
 Licensed under the terms of the GNU GPLv3.
 (see `LICENSE.txt` for details)
 
+Updated: 2015-11-30
+
 
 Overview
 ========
