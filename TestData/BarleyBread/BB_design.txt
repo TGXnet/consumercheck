@@ -1,5 +1,0 @@
-	Barley	Salt
-1-Whole 23	1	1
-2-Whole 11	1	2
-3-Flakes 23	2	1
-4-Flakes 11	2	2
