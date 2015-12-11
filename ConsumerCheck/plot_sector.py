@@ -112,7 +112,9 @@ class SectorMixin(HasTraits):
                            type='polygon',
                            name=spn,
                            face_color=sector_colors[i],
-                           edge_color=(0, 0, 0),
+                           edge_color='indianred',
+                           edge_width=2.0,
+                           edge_style='dot',
                            alpha=0.5)
             pnmap[str(self.sector_points_dist[i])] = sp
         order = sorted(pnmap.keys(), key=int, reverse=True)
