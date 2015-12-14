@@ -286,11 +286,16 @@ class ConjointMachine(object):
         
         # Put all information into the final data array
         self.finalData = _pd.DataFrame(np.vstack(allConsList), columns=self.headerList)
+        # self.finalData.to_csv('ham_df.csv', sep=";")
+        # print("Written data frame")
 
 
     def _copy_values_into_r_env(self):
         # R merge
         self.r['conjDF'] = self.finalData
+        # print(self.r('load("ham.rda")'))
+        # print(self.r('conjDF <- ham'))
+        # print(self.r('rm(ham)'))
 
         # Construct R list with R lists of product design variables as well as
         # consumer attributes.
