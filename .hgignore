@@ -4,6 +4,7 @@ build
 docs*/*build
 consumercheck-*
 pyi-build-cc-*
-.spyderproject
+*project
+.settings
 Rdist
 ETSpackages
