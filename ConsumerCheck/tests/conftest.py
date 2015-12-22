@@ -197,7 +197,7 @@ def boxplot_ds():
         stat = pd.DataFrame(index=rown)
         stat['min'] = np.percentile(normi, 0, axis=1)
         stat['perc25'] = np.percentile(normi, 25, axis=1)
-        stat['med'] = np.percentile(normi, 50, axis=1)
+        stat['median'] = np.percentile(normi, 50, axis=1)
         stat['perc75'] = np.percentile(normi, 75, axis=1)
         stat['max'] = np.percentile(normi, 100, axis=1)
     else:
