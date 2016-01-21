@@ -173,6 +173,7 @@ class ConjointMachine(object):
         self.selected_designVars = asciify(selected_designVars)
         self.consLiking = consLiking
         self.consLikingTag = only_letters(consLiking.display_name)
+        # self.consLikingTag = consLiking.display_name
 
         # self._check_completeness()
         self._data_merge()
@@ -296,6 +297,7 @@ class ConjointMachine(object):
         # print(self.r('load("ham.rda")'))
         # print(self.r('conjDF <- ham'))
         # print(self.r('rm(ham)'))
+        # print(self.r('write.table(conjDF, file="conj.txt", sep ="\t", eol="\n", row.names=TRUE, col.names=TRUE)'))
 
         # Construct R list with R lists of product design variables as well as
         # consumer attributes.
