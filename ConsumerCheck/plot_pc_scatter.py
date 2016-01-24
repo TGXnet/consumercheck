@@ -86,26 +86,30 @@ class PCPlotData(ArrayPlotData):
 
     def add_PC_set(self, pc_ds, expl_vars):
         """Add a PC data set with metadata"""
+        set_n = len(self.plot_data)
 
-        values = pc_ds.values.transpose()
+        if set_n == 0:
+            self.n_pc = pc_ds.n_vars
+        else:
+            self.n_pc = min(self.n_pc, pc_ds.n_vars)
+
+        if len(pc_ds.subs) > 0:
+            for i, ss in enumerate(pc_ds.subs):
+                sarray = pc_ds.mat.loc[list(ss.row_selector)]
+                values = sarray.values.transpose()
+                for j, row in enumerate(values):
+                    dict_name = 's{}pc{}c{}'.format(set_n+1, (j+1), (i+1))
+                    self.arrays[dict_name] = row
+                pass
+            pass
+        else:
+            values = pc_ds.values.transpose()
+            for j, row in enumerate(values):
+                dict_name = 's{}pc{}c0'.format(set_n+1, (j+1))
+                self.arrays[dict_name] = row
+
         labels = pc_ds.obj_n
         color = pc_ds.style.fg_color
-
-        set_n = len(self.plot_data)
-        rows, cols = values.shape
-
-        print(values.shape)
-        print(pc_ds.values)
-        print(values)
-        
-        if set_n == 0:
-            self.n_pc = rows
-        else:
-            self.n_pc = min(self.n_pc, rows)
-
-        for i, row in enumerate(values):
-            dict_name = 's{}pc{}'.format(set_n+1, (i+1))
-            self.arrays[dict_name] = row
 
         pcds = PCDataSet()
         if labels is not None:
@@ -117,6 +121,7 @@ class PCPlotData(ArrayPlotData):
         if pc_ds is not None:
             pcds.pc_ds = pc_ds
         self.plot_data.append(pcds)
+
         return set_n+1
 
 
@@ -178,9 +183,6 @@ class PCScatterPlot(PlotBase):
           1. pc_matrix: DataSet with PC datapoints
           2. expl_vars: DataSet with explained variance
         """
-        matrix_t = pc_matrix.values.transpose()
-        labels = pc_matrix.obj_n
-        color = pc_matrix.style.fg_color
         set_id = self.data.add_PC_set(pc_matrix, expl_vars)
         self._plot_PC(set_id)
 
@@ -246,42 +248,60 @@ class PCScatterPlot(PlotBase):
     def _plot_PC(self, set_id, PCx=1, PCy=2):
         # Adds a PC plot rendrer to the plot object
 
-        print(set_id)
-        pd = self.data.plot_data[set_id-1]
-        
-        if len(pd.pc_ds.subs) > 0:
-            print("Vi har subset")
-        else:
-            print("Vi har ikke subset")
-        
-        # Typical id: ('s1pc1', 's1pc2')
-        x_id = 's{}pc{}'.format(set_id, PCx)
-        y_id = 's{}pc{}'.format(set_id, PCy)
-
         # FIXME: Value validation
         #sending to metadata for get_x_y_status
         if PCx < 1 or PCx > self.data.n_pc or PCy < 1 or PCy > self.data.n_pc:
             raise Exception(
                 "PC x:{}, y:{} for plot axis is out of range:{}".format(
                     PCx, PCy, self.data.n_pc))
+
         self.data.x_no, self.data.y_no = PCx, PCy
-        # plot definition
-        pd = (x_id, y_id)
-        # plot name
-        pn = 'plot_{}'.format(set_id)
+        
+        markers = ['dot',
+                   'square',
+                   'triangle',
+                   'circle',
+                   'inverted_triangle',
+                   'cross']
 
-        markers = ['dot', 'square', 'triangle', 'circle',
-                   'inverted_triangle', 'cross']
+        pdata = self.data.plot_data[set_id-1]
+        
+        if len(pdata.pc_ds.subs) > 0:
+            for ci, ss in enumerate(pdata.pc_ds.subs):
+                x_id = 's{}pc{}c{}'.format(set_id, PCx, (ci+1))
+                y_id = 's{}pc{}c{}'.format(set_id, PCy, (ci+1))
+                # plot definition
+                pd = (x_id, y_id)
+                # plot name
+                pn = 'plot_{}_class_{}'.format(set_id, (ci+1))
+                #plot
+                rl = self.plot(pd, type='scatter', name=pn,
+                               marker=markers[set_id-1 % 5], marker_size=2,
+                               color=ss.gr_style.fg_color
+                               )
+                pass
+            pass
+        else:
+            # Typical id: ('s1pc1', 's1pc2')
+            x_id = 's{}pc{}c0'.format(set_id, PCx)
+            y_id = 's{}pc{}c0'.format(set_id, PCy)
 
-        #plot
-        rl = self.plot(pd, type='scatter', name=pn,
-                       marker=markers[set_id-1 % 5], marker_size=2,
-                       color=self.data.plot_data[set_id-1].color,)
+            # plot definition
+            pd = (x_id, y_id)
+            # plot name
+            pn = 'plot_{}'.format(set_id)
+
+            #plot
+            rl = self.plot(pd, type='scatter', name=pn,
+                           marker=markers[set_id-1 % 5], marker_size=2,
+                           # color=self.data.plot_data[set_id-1].color
+                           )
+            #adding data labels
+            self._add_plot_data_labels(rl[0], pd, set_id)
+
         # Set axis title
         self._set_plot_axis_title()
-        #adding data labels
-        self._add_plot_data_labels(rl[0], pd, set_id)
-        return pn
+#         return pn
 
     def _set_plot_axis_title(self):
         tx = ['PC{0}'.format(self.data.x_no)]
@@ -702,8 +722,9 @@ if __name__ == '__main__':
     irds = DataSet(mat=pda)
     
     sd = ['red', 'green', 'blue']
-    sd = []
+    # sd = []
     for en, color in enumerate(sd):
+        en *= 10
         rs = ["O{0}".format(i+1) for i in range(en, en+10)]
         style = VisualStyle(fg_color = color)
         subset = SubSet(id=str(en), name=color, row_selector=rs, gr_style=style)
