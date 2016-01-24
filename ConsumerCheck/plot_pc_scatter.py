@@ -38,7 +38,7 @@ from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 # Local imports
 import cc_config as conf
-from dataset import DataSet
+from dataset import DataSet, SubSet, VisualStyle
 from plot_base import PlotBase, NoPlotControl
 from plot_interface import IPCScatterPlot
 from plot_sector import SectorMixin
@@ -63,7 +63,7 @@ class PCDataSet(HasTraits):
     color = ColorTrait('darkviolet')
     expl_vars = List()
     selected = List()
-    view_data = DataSet()
+    pc_ds = DataSet()
 
 
 class PCPlotData(ArrayPlotData):
@@ -75,7 +75,7 @@ class PCPlotData(ArrayPlotData):
     """
 
     # Metadata for each PC set
-    pc_ds = List(PCDataSet)
+    plot_data = List(PCDataSet)
     # Number of PC in the data sets
     # Lowest number if we have severals sets
     n_pc = Long()
@@ -84,11 +84,20 @@ class PCPlotData(ArrayPlotData):
     # The PC for the Y axis
     y_no = Int()
 
-    def add_PC_set(self, values, labels, color, expl_vars, view_data):
+    def add_PC_set(self, pc_ds, expl_vars):
         """Add a PC data set with metadata"""
 
-        set_n = len(self.pc_ds)
+        values = pc_ds.values.transpose()
+        labels = pc_ds.obj_n
+        color = pc_ds.style.fg_color
+
+        set_n = len(self.plot_data)
         rows, cols = values.shape
+
+        print(values.shape)
+        print(pc_ds.values)
+        print(values)
+        
         if set_n == 0:
             self.n_pc = rows
         else:
@@ -105,9 +114,9 @@ class PCPlotData(ArrayPlotData):
             pcds.color = color
         if expl_vars is not None:
             pcds.expl_vars = list(expl_vars.mat.xs('calibrated'))
-        if view_data is not None:
-            pcds.view_data = view_data
-        self.pc_ds.append(pcds)
+        if pc_ds is not None:
+            pcds.pc_ds = pc_ds
+        self.plot_data.append(pcds)
         return set_n+1
 
 
@@ -172,8 +181,7 @@ class PCScatterPlot(PlotBase):
         matrix_t = pc_matrix.values.transpose()
         labels = pc_matrix.obj_n
         color = pc_matrix.style.fg_color
-        set_id = self.data.add_PC_set(matrix_t, labels, color,
-                                      expl_vars, pc_matrix)
+        set_id = self.data.add_PC_set(pc_matrix, expl_vars)
         self._plot_PC(set_id)
 
     def show_points(self):
@@ -197,7 +205,7 @@ class PCScatterPlot(PlotBase):
         """Shows or hide datapoint labels for selected PC set."""
         self.visible_new_labels = show
         if set_id is None:
-            for sid in range(1, len(self.data.pc_ds)+1):
+            for sid in range(1, len(self.data.plot_data)+1):
                 self._show_set_labels(sid, show)
         else:
             self._show_set_labels(set_id, show)
@@ -228,7 +236,7 @@ class PCScatterPlot(PlotBase):
           1. PC index for X axis
           2. PC index for Y axis
         """
-        n_ds = len(self.data.pc_ds)
+        n_ds = len(self.data.plot_data)
         plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
         self.delplot(*plot_ids)
         for i in range(n_ds):
@@ -238,6 +246,14 @@ class PCScatterPlot(PlotBase):
     def _plot_PC(self, set_id, PCx=1, PCy=2):
         # Adds a PC plot rendrer to the plot object
 
+        print(set_id)
+        pd = self.data.plot_data[set_id-1]
+        
+        if len(pd.pc_ds.subs) > 0:
+            print("Vi har subset")
+        else:
+            print("Vi har ikke subset")
+        
         # Typical id: ('s1pc1', 's1pc2')
         x_id = 's{}pc{}'.format(set_id, PCx)
         y_id = 's{}pc{}'.format(set_id, PCy)
@@ -260,7 +276,7 @@ class PCScatterPlot(PlotBase):
         #plot
         rl = self.plot(pd, type='scatter', name=pn,
                        marker=markers[set_id-1 % 5], marker_size=2,
-                       color=self.data.pc_ds[set_id-1].color,)
+                       color=self.data.plot_data[set_id-1].color,)
         # Set axis title
         self._set_plot_axis_title()
         #adding data labels
@@ -270,7 +286,7 @@ class PCScatterPlot(PlotBase):
     def _set_plot_axis_title(self):
         tx = ['PC{0}'.format(self.data.x_no)]
         ty = ['PC{0}'.format(self.data.y_no)]
-        for pcds in self.data.pc_ds:
+        for pcds in self.data.plot_data:
             try:
                 ev_x = pcds.expl_vars[self.data.x_no-1]
                 ev_y = pcds.expl_vars[self.data.y_no-1]
@@ -297,8 +313,8 @@ class PCScatterPlot(PlotBase):
         xname, yname = point_data
         x = self.data.get_data(xname)
         y = self.data.get_data(yname)
-        labels = self.data.pc_ds[set_id-1].labels
-        color = self.data.pc_ds[set_id-1].color
+        labels = self.data.plot_data[set_id-1].labels
+        color = self.data.plot_data[set_id-1].color
         for i, label in enumerate(labels):
             label_obj = DataLabel(
                 component=plot_render,
@@ -443,7 +459,7 @@ class PCScatterPlot(PlotBase):
         self.underlays.append(ygrid)
 
     def _get_plot_data(self):
-        return self.data.pc_ds[0].view_data
+        return self.data.plot_data[0].pc_ds
 
 
 def calc_bounds(data_low, data_high, margin, tight_bounds):
@@ -674,11 +690,25 @@ class CLSectorPlotControl(PCBaseControl):
 
 
 if __name__ == '__main__':
-    from tests.conftest import iris_ds
+#     from tests.conftest import iris_ds
     import pandas as pd
+    
+    np.random.seed(10)
     gobli = (np.random.random((30, 4)) - 0.5) * 2
     pda = pd.DataFrame(gobli)
+    pda.columns = ["V{0}".format(i+1) for i in range(pda.shape[1])]
+    pda.index = ["O{0}".format(i+1) for i in range(pda.shape[0])]
+    
     irds = DataSet(mat=pda)
+    
+    sd = ['red', 'green', 'blue']
+    sd = []
+    for en, color in enumerate(sd):
+        rs = ["O{0}".format(i+1) for i in range(en, en+10)]
+        style = VisualStyle(fg_color = color)
+        subset = SubSet(id=str(en), name=color, row_selector=rs, gr_style=style)
+        irds.subs.append(subset)
+
     plot = ScatterSectorPlot(irds)
     # PCScatterPlot(res.loadings, res.expl_var, title='Loadings')
     # plot.add_PC_set(iris)
