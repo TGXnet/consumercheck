@@ -24,6 +24,7 @@ import logging
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 
 # SciPy imports
+import numpy as _np
 import pandas as _pd
 
 # Enthought imports
@@ -34,7 +35,7 @@ from traitsui.tabular_adapter import TabularAdapter
 from traits.api import implements
 
 # Local imports
-from dataset import DataSet
+from dataset import DataSet, SubSet, VisualStyle
 from importer_interfaces import IDataImporter
 from importer_file_base import ImporterFileBase
 
@@ -161,6 +162,7 @@ class ImporterTextFile(ImporterFileBase):
     char_encoding = Enum(
         ('ascii', 'utf_8', 'latin_1')
         )
+    classinfo = List(['_species'])
 
 
     def import_data(self):
@@ -212,11 +214,30 @@ class ImporterTextFile(ImporterFileBase):
         if not self.have_obj_names:
             dsdf.index = ["O{0}".format(i+1) for i in range(dsdf.shape[0])]
 
+        # Convert class collumn to class information
+        classes = set(dsdf.loc[:,self.classinfo[0]])
+        # List with index names
+        cl = []
+        # List with numeric array indexes
+        # indl = []
+        for c in classes:
+            ss = SubSet()
+            ss.id = str(c)
+            ss.name = 'Class {}'.format(c)
+            ss.row_selector = list(dsdf[dsdf.loc[:,self.classinfo[0]] == c].index)
+            # cl.append((c, dsdf[dsdf.loc[:,self.classinfo[0]] == c].index))
+            cl.append(ss)
+            # indl.append((c, _np.nonzero(dsdf.loc[:,self.classinfo[0]].values == c)[0]))
+
+        if len(self.classinfo) > 0:
+            dsdf.drop(self.classinfo[0], axis=1, inplace=True)
+        # print(indl)
         # Make DataSet
         ds = DataSet(
             mat=dsdf,
             display_name=self.ds_name,
             kind=self.kind,
+            subs=cl,
             )
         return ds
 
@@ -262,13 +283,19 @@ class ImporterTextFile(ImporterFileBase):
 
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
+    import os, sys
+    dpath = os.environ['CC_TESTDATA']
+    dfile = dpath + '/Iris/iris_numclass.csv'
     itf = ImporterTextFile(
-        file_path='datasets/Variants/CommaSeparated.csv',
+        file_path=dfile,
+        delimiter=',',
+        have_obj_names=False
         )
-    itf.configure_traits()
+    # itf.configure_traits()
     ds = itf.import_data()
-    print(ds.display_name)
     print(ds.mat.shape)
-    print(ds.mat.index)
-    print(ds.mat.columns)
-    print(ds.mat.dtypes)
+    print(ds.mat.head())
+    print(ds.subs_ids)
+    for sid in ds.subs_ids:
+        data = ds.get_subset(sid)
+        print(data)
