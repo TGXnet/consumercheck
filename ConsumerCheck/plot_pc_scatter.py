@@ -213,10 +213,12 @@ class PCScatterPlot(PlotBase):
             self._show_set_labels(set_id, show)
 
     def _show_set_labels(self, set_id, show):
+        pnl = [pn for pn in self.plots.keys() if 'plot_{}'.format(set_id) in pn]
         pn = 'plot_{}'.format(set_id)
-        plot = self.plots[pn][0]
-        for lab in plot.overlays:
-            lab.visible = show
+        for pn in pnl:
+            plot = self.plots[pn][0]
+            for lab in plot.overlays:
+                lab.visible = show
         plot.request_redraw()
 
     def get_x_y_status(self):
@@ -279,7 +281,9 @@ class PCScatterPlot(PlotBase):
                                marker=markers[set_id-1 % 5], marker_size=2,
                                color=ss.gr_style.fg_color
                                )
-                pass
+                labels = ss.row_selector
+                color = ss.gr_style.fg_color
+                self._add_plot_data_labels(rl[0], pd, labels, color)
             pass
         else:
             # Typical id: ('s1pc1', 's1pc2')
@@ -289,7 +293,7 @@ class PCScatterPlot(PlotBase):
             # plot definition
             pd = (x_id, y_id)
             # plot name
-            pn = 'plot_{}'.format(set_id)
+            pn = 'plot_{}_class_0'.format(set_id)
 
             #plot
             rl = self.plot(pd, type='scatter', name=pn,
@@ -297,7 +301,9 @@ class PCScatterPlot(PlotBase):
                            # color=self.data.plot_data[set_id-1].color
                            )
             #adding data labels
-            self._add_plot_data_labels(rl[0], pd, set_id)
+            labels = pdata.labels
+            color = pdata.color
+            self._add_plot_data_labels(rl[0], pd, labels, color)
 
         # Set axis title
         self._set_plot_axis_title()
@@ -329,12 +335,10 @@ class PCScatterPlot(PlotBase):
             self.x_axis.title = ' '.join(tx)
             self.y_axis.title = ' '.join(ty)
 
-    def _add_plot_data_labels(self, plot_render, point_data, set_id):
+    def _add_plot_data_labels(self, plot_render, point_data, labels, color):
         xname, yname = point_data
         x = self.data.get_data(xname)
         y = self.data.get_data(yname)
-        labels = self.data.plot_data[set_id-1].labels
-        color = self.data.plot_data[set_id-1].color
         for i, label in enumerate(labels):
             label_obj = DataLabel(
                 component=plot_render,
@@ -596,7 +600,7 @@ class PCPlotControl(PCBaseControl):
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
-        obj.model.show_labels(show=new, set_id=1)
+        obj.model.show_labels(set_id=1, show=new)
 
 
 class PCSectorPlotControl(PCBaseControl):
@@ -619,7 +623,7 @@ class PCSectorPlotControl(PCBaseControl):
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
-        obj.model.show_labels(show=new, set_id=1)
+        obj.model.show_labels(set_id=1, show=new)
 
     @on_trait_change('draw_sectors')
     def switch_sectors(self, obj, name, new):
@@ -651,16 +655,16 @@ class CLPlotControl(PCBaseControl):
     @on_trait_change('show_x_labels')
     def _switch_x_labels(self, obj, name, new):
         if obj.model.external_mapping:
-            obj.model.show_labels(show=new, set_id=2)
+            obj.model.show_labels(set_id=2, show=new)
         else:
-            obj.model.show_labels(show=new, set_id=1)
+            obj.model.show_labels(set_id=1, show=new)
 
     @on_trait_change('show_y_labels')
     def _switch_y_labels(self, obj, name, new):
         if obj.model.external_mapping:
-            obj.model.show_labels(show=new, set_id=1)
+            obj.model.show_labels(set_id=1, show=new)
         else:
-            obj.model.show_labels(show=new, set_id=2)
+            obj.model.show_labels(set_id=2, show=new)
 
 
 class CLSectorPlotControl(PCBaseControl):
@@ -686,16 +690,16 @@ class CLSectorPlotControl(PCBaseControl):
     @on_trait_change('show_x_labels')
     def _switch_x_labels(self, obj, name, new):
         if obj.model.external_mapping:
-            obj.model.show_labels(show=new, set_id=2)
+            obj.model.show_labels(set_id=2, show=new)
         else:
-            obj.model.show_labels(show=new, set_id=1)
+            obj.model.show_labels(set_id=1, show=new)
 
     @on_trait_change('show_y_labels')
     def _switch_y_labels(self, obj, name, new):
         if obj.model.external_mapping:
-            obj.model.show_labels(show=new, set_id=1)
+            obj.model.show_labels(set_id=1, show=new)
         else:
-            obj.model.show_labels(show=new, set_id=2)
+            obj.model.show_labels(set_id=2, show=new)
 
     @on_trait_change('draw_sectors')
     def switch_sectors(self, obj, name, new):
