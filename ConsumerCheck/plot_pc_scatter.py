@@ -190,18 +190,28 @@ class PCScatterPlot(PlotBase):
         """Shows or hide datapoints for PC set."""
 
         if self.visible_datasets == 3:
-            self.plots['plot_1'][0].visible = False
+#             self.plots['plot_1'][0].visible = False
+            self._toggle_points(1, False)
             self.visible_datasets = 2
         elif self.visible_datasets == 2:
-            self.plots['plot_1'][0].visible = True
-            self.plots['plot_2'][0].visible = False
+#             self.plots['plot_1'][0].visible = True
+#             self.plots['plot_2'][0].visible = False
+            self._toggle_points(1, True)
+            self._toggle_points(2, False)
             self.visible_datasets = 1
         else:
-            self.plots['plot_2'][0].visible = True
+#             self.plots['plot_2'][0].visible = True
+            self._toggle_points(2, True)
             self.visible_datasets = 3
 
-        self.plots['plot_1'][0].request_redraw()
-        self.plots['plot_2'][0].request_redraw()
+#         self.plots['plot_1'][0].request_redraw()
+#         self.plots['plot_2'][0].request_redraw()
+
+    def _toggle_points(self, set_id, visible):
+        pnl = [pn for pn in self.plots.keys() if 'plot_{}'.format(set_id) in pn]
+        for pn in pnl:
+            self.plots[pn][0].visible = visible
+            self.plots[pn][0].request_redraw()
 
     def show_labels(self, set_id=None, show=True):
         """Shows or hide datapoint labels for selected PC set."""
@@ -214,7 +224,6 @@ class PCScatterPlot(PlotBase):
 
     def _show_set_labels(self, set_id, show):
         pnl = [pn for pn in self.plots.keys() if 'plot_{}'.format(set_id) in pn]
-        pn = 'plot_{}'.format(set_id)
         for pn in pnl:
             plot = self.plots[pn][0]
             for lab in plot.overlays:
@@ -240,8 +249,9 @@ class PCScatterPlot(PlotBase):
           1. PC index for X axis
           2. PC index for Y axis
         """
+        plot_ids = self.plots.keys()
         n_ds = len(self.data.plot_data)
-        plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
+#         plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
         self.delplot(*plot_ids)
         for i in range(n_ds):
             self._plot_PC(i+1, PCx=x, PCy=y)
