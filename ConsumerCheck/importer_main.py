@@ -161,6 +161,8 @@ Conjoint analysis: 1 will not be used.
 Only numerical values are allowed in the data sets.
 ConsumerCheck is not able to handle non-English characters in the row and column names.
 If you experience problems when reading data from an Excel sheet; mark, copy, paste and save the actual data set in sheet 1 of a new Excel window.
+
+By adding a column where the column name starts with an underscore (_) you can add class information to the imported rows. By giving each row a numeric class id. This will add different colouring for each class in various plots.
 '''
         )
 

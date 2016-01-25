@@ -29,7 +29,7 @@ from traits.api import (HasTraits, Any, Instance, Bool, Str,
 from traitsui.api import (View, Group, Item, Handler,
                           Include, InstanceEditor)
 # from traitsui.menu import OKButton
-from chaco.api import GridPlotContainer
+from chaco.api import GridPlotContainer, PlotGraphicsContext
 from pyface.api import FileDialog, OK
 from enable.savage.trait_defs.ui.svg_button import SVGButton
 
@@ -47,6 +47,7 @@ from plugin_tree_helper import ViewNavigator, WindowLauncher
 # width, height
 sz_abs = (600, 600)
 sz_rel = (0.7, 1.0)
+sz_plot_img = (850, 650)
 bg_color = "white"
 img_path = conf.graphics_path()
 #==============================================================================
@@ -185,8 +186,9 @@ class OverviewPlotWindow(MultiPlotWindow):
              show_label=False,
              width=sz_abs[0], height=sz_abs[1]),
         Group(
+            Item('save_plot', show_label=False),
             Item('show_labels', label="Show labels"),
-            orientation="vertical"),
+            orientation="horizontal"),
         resizable=True,
         handler=PWC(),
         # kind = 'nonmodal',
@@ -196,8 +198,20 @@ class OverviewPlotWindow(MultiPlotWindow):
         )
 
     def _plots_default(self):
-        container = GridPlotContainer(background=bg_color)
+        container = FreezeableGridContainer(background=bg_color)
         return container
+
+
+class FreezeableGridContainer(GridPlotContainer):
+
+    def export_image(self, fname, size=sz_plot_img):
+        """Save plot as png image."""
+        # self.outer_bounds = list(size)
+        # self.do_layout(force=True)
+        gc = PlotGraphicsContext(self.outer_bounds)
+        gc.render_component(self)
+        gc.save(fname, file_format=None)
+
 
 
 class FileEditor(HasTraits):
@@ -207,12 +221,21 @@ class FileEditor(HasTraits):
     def _save_img(self, obj):
         """ Attaches a .png extension and exports the image.
         """
-        a, b, c = self.file_name.rpartition('.')
-        if c == 'png':
-            obj.plot.model.export_image(self.file_name)
-        else:
-            self.file_name = '{}.png'.format(self.file_name)
-            obj.plot.model.export_image(self.file_name)
+        try:
+            a, b, c = self.file_name.rpartition('.')
+            if c == 'png':
+                obj.plot.model.export_image(self.file_name)
+            else:
+                self.file_name = '{}.png'.format(self.file_name)
+                obj.plot.model.export_image(self.file_name)
+        except AttributeError:
+            a, b, c = self.file_name.rpartition('.')
+            if c == 'png':
+                obj.plots.export_image(self.file_name)
+            else:
+                self.file_name = '{}.png'.format(self.file_name)
+                obj.plots.export_image(self.file_name)
+
 
     def _save_as_img(self, obj):
         """ Specify a filename for the image, in destination folder.

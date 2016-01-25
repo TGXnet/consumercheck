@@ -67,7 +67,9 @@ class DataSet(_traits.HasTraits):
 
     style = _traits.Instance('VisualStyle', ())
 
-    subs = _traits.List('SubSet')
+    subs = _traits.List()
+    #A list of subset id's
+    subs_ids = _traits.Property()
 
     # FIXME: This data set has missing data
     # do you want to do somthing about it?
@@ -121,6 +123,10 @@ class DataSet(_traits.HasTraits):
             return False
 
 
+    def _get_subs_ids(self):
+        return [ss.id for ss in self.subs]
+
+
     def __eq__(self, other):
         return self.id == other
 
@@ -128,6 +134,11 @@ class DataSet(_traits.HasTraits):
     def __ne__(self, other):
         return self.id != other
 
+
+    def get_subset(self, sid):
+        nid = dict([(ss.id, ss) for ss in self.subs])
+        subset = nid.get(sid)
+        return self.mat.loc[list(subset.row_selector)]
 
 
 class VisualStyle(_traits.HasTraits):
@@ -138,6 +149,6 @@ class VisualStyle(_traits.HasTraits):
 class SubSet(_traits.HasTraits):
     id = _traits.Str()
     name = _traits.Str()
-    row_selector = _traits.List(_traits.Int())
-    col_selector = _traits.List(_traits.Int())
+    row_selector = _traits.List()
+#     col_selector = _traits.List(_traits.Int())
     gr_style = VisualStyle()

@@ -1,6 +1,6 @@
 '''ConsumerCheck
 '''
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (C) 2014 Thomas Graff <thomas.graff@tgxnet.no>
 #
 #  This file is part of ConsumerCheck.
@@ -17,7 +17,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 # Std lib imports
 import sys
@@ -42,11 +42,11 @@ from plugin_base import Result
 # Monkey patch PypeR to allow numeric axis names
 # FIXME: I should instead file a bugfix for PypeR
 def CCPandasDataFrameStr(obj):
-	# DataFrame will be converted to data.frame, have to explicitly name columns
-	# return 'data.frame(%s, row.names=%s)' % (', '.join(map(lambda a,b=obj:a+'='+getVec(obj[a]), obj)), getVec(obj.index))
-	cp = ["'{0}'={1}".format(p, getVec(q)) for p, q in obj.iteritems()]
-	cols = ', '.join(cp)
-	return 'data.frame({0}, row.names={1}, check.names=FALSE)'.format(cols, getVec(obj.index))
+        # DataFrame will be converted to data.frame, have to explicitly name columns
+        # return 'data.frame(%s, row.names=%s)' % (', '.join(map(lambda a,b=obj:a+'='+getVec(obj[a]), obj)), getVec(obj.index))
+        cp = ["'{0}'={1}".format(p, getVec(q)) for p, q in obj.iteritems()]
+        cols = ', '.join(cp)
+        return 'data.frame({0}, row.names={1}, check.names=FALSE)'.format(cols, getVec(obj.index))
 
 # FIXM: Do i realy need to do this
 # Think is was to allow numeric column and index names
@@ -72,9 +72,9 @@ class ConjointMachine(object):
             self.r_origo = op.dirname(op.abspath(__file__))
 
         if run_state:
-            self.run_state=run_state
+            self.run_state = run_state
         else:
-            self.run_state=None
+            self.run_state = None
         self.conjoint_calc_thread = None
         if start_r:
             self._start_r_interpreter()
@@ -179,6 +179,7 @@ class ConjointMachine(object):
         self.selected_designVars = asciify(selected_designVars)
         self.consLiking = consLiking
         self.consLikingTag = only_letters(consLiking.display_name)
+        # self.consLikingTag = consLiking.display_name
 
         # self._check_completeness()
         self._data_merge()
@@ -238,20 +239,20 @@ class ConjointMachine(object):
     def _data_merge(self):
         # Merge data from the following data arrays: consumer liking,
         # consumer attributes and design
-        
+
         # Get content from design array
         desData = self.design.values
         desVarNames = self.design.var_n
-        
+
         # Get content form cosumer liking array
         consData = self.consLiking.values
         consVarNames = self.consLiking.var_n
-        
+
         # Get content from consumer attributes array
         if self.consAtts and not self.consAtts.mat.empty:
             attrData = self.consAtts.values
             attrVarNames = self.consAtts.var_n
-        
+
         # Make list with column names
         self.headerList = ['Consumer', self.consLikingTag]
         self.headerList.extend(desVarNames)
@@ -262,51 +263,57 @@ class ConjointMachine(object):
         # -----------------------------
         allConsList = []
         consRows = np.shape(desData)[0]
-        
+
         # First loop through all consumers
         for consInd, cons in enumerate(consVarNames):
             consList = []
-            
+
             # Construct and append ID for the specific consumer
             consIDvec = np.array([consInd] * consRows).reshape(-1,1)
             consList.append(consIDvec)
-            
+
             # Append liking of the specific consumer
             consList.append(consData[:,consInd].reshape(-1,1))
-            
+
             # Append design matrix
             consList.append(desData)
-        
+
             # Append consumer attributes for each row (there are as many rows as there
-            # are products for the specific consumer)   
+            # are products for the specific consumer)
             attrBlockList = []
             if self.consAtts and not self.consAtts.mat.empty:
                 attrList = attrData[consInd,:]
                 for rowInd in range(consRows):
                     attrBlockList.append(attrList)
                 consList.append(np.vstack(attrBlockList))
-            
+
             # Convert consumer specific entry to an array and collect in allConsList
             consArr = np.hstack(consList)
             allConsList.append(consArr)
-        
+
         # Put all information into the final data array
         self.finalData = _pd.DataFrame(np.vstack(allConsList), columns=self.headerList)
+        # self.finalData.to_csv('ham_df.csv', sep=";")
+        # print("Written data frame")
 
 
     def _copy_values_into_r_env(self):
         # R merge
         self.r['conjDF'] = self.finalData
+        # print(self.r('load("ham.rda")'))
+        # print(self.r('conjDF <- ham'))
+        # print(self.r('rm(ham)'))
+        # print(self.r('write.table(conjDF, file="conj.txt", sep ="\t", eol="\n", row.names=TRUE, col.names=TRUE)'))
 
         # Construct R list with R lists of product design variables as well as
         # consumer attributes.
 
-        # Construct string holding design variables that is needed for 
+        # Construct string holding design variables that is needed for
         # construction of rCommand_fixedFactors
         selDesVarStr = ', '.join(
             ['"{0}"'.format(var) for var in self.selected_designVars])
 
-        # Construct string holding consumer attributes that is needed for 
+        # Construct string holding consumer attributes that is needed for
         # construction of rCommand_fixedFactors
         selConsAttStr = ', '.join(
             ['"{0}"'.format(attr) for attr in self.selected_consAtts])
@@ -371,7 +378,7 @@ class ConjointMachine(object):
 
     def _cn_strip(self, r_expr):
         '''R conjoint returns some arrays with spaces around variable names
-        
+
         This function strips this spaces out.
         This is required if i use PypeR 1.1.2
         '''
@@ -410,7 +417,7 @@ class ConjointMachine(object):
         """
         Returns residuals from R conjoint function.
         """
-        # Get size of liking data array. 
+        # Get size of liking data array.
         n_rows, n_cols = np.shape(self.consLiking.values)
 
         # r_vec = self.r.get('res[[1]][6]$residuals_Indiv')
