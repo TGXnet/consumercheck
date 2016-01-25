@@ -162,7 +162,7 @@ class ImporterTextFile(ImporterFileBase):
     char_encoding = Enum(
         ('ascii', 'utf_8', 'latin_1')
         )
-    classinfo = List(['_species'])
+    classinfo = List()
 
 
     def import_data(self):
@@ -214,6 +214,10 @@ class ImporterTextFile(ImporterFileBase):
         if not self.have_obj_names:
             dsdf.index = ["O{0}".format(i+1) for i in range(dsdf.shape[0])]
 
+
+        # Check if we hav a column with class information
+        # FIXME: It is now only support for one column with classinformation
+        self.classinfo = [cn for cn in dsdf.columns if cn[0] == '_']
         # Convert class collumn to class information
         classes = set(dsdf.loc[:,self.classinfo[0]])
         # List with index names
@@ -231,7 +235,7 @@ class ImporterTextFile(ImporterFileBase):
 
         if len(self.classinfo) > 0:
             dsdf.drop(self.classinfo[0], axis=1, inplace=True)
-        # print(indl)
+
         # Make DataSet
         ds = DataSet(
             mat=dsdf,
@@ -296,6 +300,6 @@ if __name__ == '__main__':
     print(ds.mat.shape)
     print(ds.mat.head())
     print(ds.subs_ids)
-    for sid in ds.subs_ids:
-        data = ds.get_subset(sid)
-        print(data)
+#     for sid in ds.subs_ids:
+#         data = ds.get_subset(sid)
+#         print(data)
