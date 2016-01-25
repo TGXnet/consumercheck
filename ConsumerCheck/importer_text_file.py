@@ -221,17 +221,20 @@ class ImporterTextFile(ImporterFileBase):
         # Convert class collumn to class information
         classes = set(dsdf.loc[:,self.classinfo[0]])
         # List with index names
+        auto_colors = ["green", "lightgreen", "blue", "lightblue", "red",
+                       "pink", "darkgray", "silver"]
         cl = []
         # List with numeric array indexes
         # indl = []
-        for c in classes:
+        for idx, cid in enumerate(classes):
             ss = SubSet()
-            ss.id = str(c)
-            ss.name = 'Class {}'.format(c)
-            ss.row_selector = list(dsdf[dsdf.loc[:,self.classinfo[0]] == c].index)
-            # cl.append((c, dsdf[dsdf.loc[:,self.classinfo[0]] == c].index))
+            ss.id = str(cid)
+            ss.name = 'Class {}'.format(cid)
+            ss.gr_style = VisualStyle(fg_color=auto_colors[idx%8])
+            ss.row_selector = list(dsdf[dsdf.loc[:,self.classinfo[0]] == cid].index)
+            # cl.append((cid, dsdf[dsdf.loc[:,self.classinfo[0]] == cid].index))
             cl.append(ss)
-            # indl.append((c, _np.nonzero(dsdf.loc[:,self.classinfo[0]].values == c)[0]))
+            # indl.append((cid, _np.nonzero(dsdf.loc[:,self.classinfo[0]].values == cid)[0]))
 
         if len(self.classinfo) > 0:
             dsdf.drop(self.classinfo[0], axis=1, inplace=True)
@@ -300,6 +303,6 @@ if __name__ == '__main__':
     print(ds.mat.shape)
     print(ds.mat.head())
     print(ds.subs_ids)
-#     for sid in ds.subs_ids:
-#         data = ds.get_subset(sid)
-#         print(data)
+    for ss in ds.subs:
+        data = ss.gr_style
+        data.print_traits()
