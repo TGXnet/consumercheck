@@ -94,8 +94,8 @@ class PCPlotData(ArrayPlotData):
             self.n_pc = min(self.n_pc, pc_ds.n_vars)
 
         if len(pc_ds.subs) > 0:
-            for i, ss in enumerate(pc_ds.subs):
-                sarray = pc_ds.mat.loc[list(ss.row_selector)]
+            for i, sid in enumerate(pc_ds.subs_ids):
+                sarray = pc_ds.get_subset(sid)
                 values = sarray.values.transpose()
                 for j, row in enumerate(values):
                     dict_name = 's{}pc{}c{}'.format(set_n+1, (j+1), (i+1))
