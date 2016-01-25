@@ -20,6 +20,7 @@
 #-----------------------------------------------------------------------------
 
 # Std lib imports
+import sys
 import logging
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import __builtin__
@@ -60,9 +61,14 @@ class ConjointMachine(object):
         # library.zip file
         # self.r_origo = op.dirname(op.dirname(op.abspath(__file__)))
         # cc_base_dir from __builtin__ set in consumercheck
-        if hasattr(__builtin__, "cc_base_dir"):
+        if getattr(sys, 'frozen', False):
+            # This is taken from http://pythonhosted.org/PyInstaller/
+            # we are running in a bundle
+            self.r_origo = sys._MEIPASS
+        elif hasattr(__builtin__, "cc_base_dir"):
             self.r_origo = __builtin__.cc_base_dir
         else:
+            # we are running in a normal Python environment
             self.r_origo = op.dirname(op.abspath(__file__))
 
         if run_state:

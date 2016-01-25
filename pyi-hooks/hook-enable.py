@@ -5,7 +5,7 @@ Created on Sat Apr 04 11:32:56 2015
 @author: thomas
 """
 
-from hookutils import collect_submodules, collect_data_files
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 # wx = collect_submodules('enable.wx')
 qt = collect_submodules('enable.qt4')

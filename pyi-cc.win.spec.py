@@ -30,6 +30,21 @@ imgs = Datafiles('ConsumerCheckLogo.png',
                  'y_up.svg',
                  proj_dir='ConsumerCheck')
 
+# New sytax
+added_files = [
+    ('ConsumerCheck/ConsumerCheckLogo.png', 'ConsumerCheckLogo.png'),
+    ('ConsumerCheck/reset_xy.svg', 'reset_xy.svg'),
+    ('ConsumerCheck/save.svg', 'save.svg'),
+    ('ConsumerCheck/x_down.svg', 'x_down.svg'),
+    ('ConsumerCheck/x_up.svg', 'x_up.svg'),
+    ('ConsumerCheck/y_down.svg', 'y_down.svg'),
+    ('ConsumerCheck/y_up.svg', 'y_up.svg'),
+    ('ConsumerCheck/graphics', 'graphics'),
+    ('docs-user/build/html', 'help-docs'),
+    ('Rdist/R-3.0.2', 'R-3.0.2'),
+    ('ConsumerCheck/rsrc', 'rsrc'),
+    ]
+
 imgs += Tree(os.path.join('ConsumerCheck', 'graphics'), prefix='graphics', excludes=[])
 
 # User documentation
@@ -43,6 +58,7 @@ rt_hooks = ['pyi-rthook_pyqt4.py']
 
 a = Analysis([os.path.join('ConsumerCheck', 'cc_start.py')],
              pathex=['ConsumerCheck'],
+             datas=added_files,
              hiddenimports=[],
              hookspath=['pyi-hooks'],
              runtime_hooks=rt_hooks,
@@ -69,15 +85,16 @@ exe = EXE(pyz,
           console=True )
 
 
-a.datas += imgs
-a.datas += renv
-a.datas += docs
+#a.datas += imgs
+#a.datas += renv
+#a.datas += docs
 
 
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
-               a.datas,
+#              a.datas,
                strip=None,
                upx=False,
                name='ConsumerCheck')
+# End

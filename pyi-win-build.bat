@@ -1,7 +1,7 @@
 @echo on
-pyi-build.exe ^
+pyinstaller.exe ^
     --log-level=INFO ^
     --clean ^
     --noconfirm ^
     --distpath=pyi-build-cc-1.3.3 ^
-    pyi-cc.win.spec.py
+    pyi-cc.win.spec
