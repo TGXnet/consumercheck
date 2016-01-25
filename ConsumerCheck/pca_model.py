@@ -104,6 +104,7 @@ class Pca(Model):
                 index=self.ds.obj_n,
                 columns=["PC-{0}".format(i+1) for i in range(mT.shape[1])],
                 ),
+            subs=self.ds.subs,
             display_name='Scores')
 
         # Loadings
