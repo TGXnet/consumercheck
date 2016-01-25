@@ -219,7 +219,10 @@ class ImporterTextFile(ImporterFileBase):
         # FIXME: It is now only support for one column with classinformation
         self.classinfo = [cn for cn in dsdf.columns if cn[0] == '_']
         # Convert class collumn to class information
-        classes = set(dsdf.loc[:,self.classinfo[0]])
+        if len(self.classinfo) > 0:
+            classes = set(dsdf.loc[:,self.classinfo[0]])
+        else:
+            classes = []
         # List with index names
         auto_colors = ["green", "lightgreen", "blue", "lightblue", "red",
                        "pink", "darkgray", "silver"]
