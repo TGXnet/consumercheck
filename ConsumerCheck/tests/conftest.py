@@ -3,6 +3,8 @@
 # Std lib imports
 import logging
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+
+import os
 import sys
 import os.path as osp
 import copy
@@ -37,6 +39,7 @@ from importer_main import ImporterMain
 @pytest.fixture
 def tdd():
     '''Test data dir (tdd)'''
+    return os.environ['CC_TESTDATA']
     here = osp.realpath(osp.dirname(__file__))
     basedir = osp.dirname(osp.dirname(here))
     return osp.join(basedir, 'TestData')
