@@ -27,6 +27,7 @@ import os.path as op
 import string
 from threading import Thread
 from itertools import combinations
+import psutil
 
 # Scipy imports
 import pyper
@@ -111,6 +112,26 @@ class ConjointMachine(object):
         r_env += self.r('search()')
         r_env += self.r('objects()')
         logger.info(r_env)
+
+
+    def abort_calculation(self):
+        '''
+        children(recursive=False)
+        suspend()
+        resume()
+        terminate()  # os.kill(pid, signal.SIGTERM)
+        kill()  # os.kill(pid, signal.SIGKILL)
+        The problem:
+        http://stackoverflow.com/questions/375427/non-blocking-read-on-a-subprocess-pipe-in-python
+        '''
+        print(self.r.prog.pid)
+        r_handle = psutil.Process(self.r.prog.pid)
+        r_handle.terminate()
+
+
+    def restart_r_intepreter(self):
+        self._start_r_interpreter()
+        self._load_conjoint_resources()
 
 
     def synchronous_calculation(self, design, selected_designVars,
@@ -427,15 +448,23 @@ class ConjointMachine(object):
         return np.mean(self.consLiking.values)
 
 
+class DummyState(object):
+    def __init__(self):
+        self.is_done = False
+        self.message = ''
+
+
 class ConjointCalcThread(Thread):
 
     def run(self):
+        self.run_state = DummyState()
         self.run_state.is_done = False
         self.run_state.messages = 'Starts calculating\n'
         rCommand_runAnalysis = self.conj.get_conj_r_cmd()
         self.run_state.messages += self.conj.r(rCommand_runAnalysis)
         self.run_state.messages += 'End calculation\n'
         self.run_state.is_done = True
+        # print("Calc done")
 
 
 def asciify(names):
@@ -460,7 +489,7 @@ if __name__ == '__main__':
     from tests.conftest import conjoint_dsc
     cm = ConjointMachine(start_r=True)
 
-    selected_structure = 1
+    selected_structure = 2
     dsc = conjoint_dsc()
     consAttr = get_ds_by_name('Consumers', dsc)
     odflLike = get_ds_by_name('Odour-flavor', dsc)
@@ -472,9 +501,17 @@ if __name__ == '__main__':
     empty = DataSet()
 
 #     res = cm.synchronous_calculation(designVar, selected_designVar, odflLike)
-    res = cm.synchronous_calculation(designVar, selected_designVar,
-                                     odflLike, selected_structure,
-                                     empty, [])
-    res.print_traits()
-    print(res.residualsTable.mat)
-    print(res.residIndTable.mat)
+#     res = cm.synchronous_calculation(designVar, selected_designVar,
+#                                      odflLike, selected_structure,
+#                                      empty, [])
+    print("Schedule")
+    cm.schedule_calculation(designVar, selected_designVar,
+                            odflLike, selected_structure,
+                            empty, [])
+    print("Sched done")
+    cm.abort_calculation()
+
+
+#     res.print_traits()
+#     print(res.residualsTable.mat)
+#     print(res.residIndTable.mat)
