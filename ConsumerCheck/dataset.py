@@ -67,7 +67,8 @@ class DataSet(_traits.HasTraits):
 
     style = _traits.Instance('VisualStyle', ())
 
-    subs = _traits.List()
+    # subs = {'species': [SubSet, SubSet], 'location': [SubSet, SubSet]}
+    subs = _traits.Dict(unicode, list)
     #A list of subset id's
     subs_ids = _traits.Property()
 
@@ -124,7 +125,7 @@ class DataSet(_traits.HasTraits):
 
 
     def _get_subs_ids(self):
-        return [ss.id for ss in self.subs]
+        return [ss.id for ssg in self.subs.itervalues() for ss in ssg]
 
 
     def __eq__(self, other):

@@ -162,7 +162,6 @@ class ImporterTextFile(ImporterFileBase):
     char_encoding = Enum(
         ('ascii', 'utf_8', 'latin_1')
         )
-    classinfo = List()
 
 
     def import_data(self):
@@ -216,39 +215,34 @@ class ImporterTextFile(ImporterFileBase):
 
 
         # Check if we hav a column with class information
-        # FIXME: It is now only support for one column with classinformation
-        self.classinfo = [cn for cn in dsdf.columns if cn[0] == '_']
-        # Convert class collumn to class information
-        if len(self.classinfo) > 0:
-            classes = set(dsdf.loc[:,self.classinfo[0]])
-        else:
-            classes = []
+        grouping_names = [cn for cn in dsdf.columns if cn[0] == '_']
+        groupings = [(gn, set(dsdf.loc[:,gn])) for gn in grouping_names]
+
         # List with index names
         auto_colors = ["green", "lightgreen", "blue", "lightblue", "red",
                        "pink", "darkgray", "silver"]
-        cl = []
-        # List with numeric array indexes
-        # indl = []
-        for idx, cid in enumerate(classes):
-            ss = SubSet()
-            ss.id = str(cid)
-            ss.name = 'Class {}'.format(cid)
-            ss.gr_style = VisualStyle(fg_color=auto_colors[idx%8])
-            ss.row_selector = list(dsdf[dsdf.loc[:,self.classinfo[0]] == cid].index)
-            # cl.append((cid, dsdf[dsdf.loc[:,self.classinfo[0]] == cid].index))
-            cl.append(ss)
-            # indl.append((cid, _np.nonzero(dsdf.loc[:,self.classinfo[0]].values == cid)[0]))
 
-        if len(self.classinfo) > 0:
-            dsdf.drop(self.classinfo[0], axis=1, inplace=True)
+        subsets_groups = {}
+        # grouping_name, classes_group
+        for gn, cg in groupings:
+            # subsets_group
+            ssg = []
+            for idx, cid in enumerate(cg):
+                ss = SubSet(id=str(cid), name='Class {}'.format(cid))
+                ss.gr_style = VisualStyle(fg_color=auto_colors[idx%8])
+                ss.row_selector = list(dsdf[dsdf.loc[:,gn] == cid].index)
+                ssg.append(ss)
+            ngn = gn[1:]
+            subsets_groups[ngn] = ssg
+            dsdf.drop(gn, axis=1, inplace=True)
 
         # Make DataSet
         ds = DataSet(
             mat=dsdf,
             display_name=self.ds_name,
             kind=self.kind,
-            subs=cl,
-            )
+            subs=subsets_groups,
+        )
         return ds
 
 
@@ -295,7 +289,8 @@ class ImporterTextFile(ImporterFileBase):
 if __name__ == '__main__':
     import os, sys
     dpath = os.environ['CC_TESTDATA']
-    dfile = dpath + '/Iris/iris_numclass.csv'
+    dfile = dpath + '/Iris/iris_multiclass.csv'
+    dfile = dpath + '/Iris/irisNoClass.data'
     itf = ImporterTextFile(
         file_path=dfile,
         delimiter=',',
@@ -306,6 +301,7 @@ if __name__ == '__main__':
     print(ds.mat.shape)
     print(ds.mat.head())
     print(ds.subs_ids)
-    for ss in ds.subs:
-        data = ss.gr_style
-        data.print_traits()
+    for ssg in ds.subs.itervalues():
+        for ss in ssg:
+            data = ss.gr_style
+            data.print_traits()
