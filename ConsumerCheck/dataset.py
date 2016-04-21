@@ -67,10 +67,8 @@ class DataSet(_traits.HasTraits):
 
     style = _traits.Instance('VisualStyle', ())
 
-    # subs = {'species': [SubSet, SubSet], 'location': [SubSet, SubSet]}
+    # Example: {'species': [SubSet, SubSet], 'location': [SubSet, SubSet]}
     subs = _traits.Dict(unicode, list)
-    #A list of subset id's
-    subs_ids = _traits.Property()
 
     # FIXME: This data set has missing data
     # do you want to do somthing about it?
@@ -112,6 +110,14 @@ class DataSet(_traits.HasTraits):
         return DataSet.new_id()
 
 
+    def __eq__(self, other):
+        return self.id == other
+
+
+    def __ne__(self, other):
+        return self.id != other
+
+
     def _get_id(self):
         return str(self._id)
 
@@ -124,21 +130,16 @@ class DataSet(_traits.HasTraits):
             return False
 
 
-    def _get_subs_ids(self):
-        return [ss.id for ssg in self.subs.itervalues() for ss in ssg]
+    def get_subset_groups(self):
+        return self.subs.keys()
 
 
-    def __eq__(self, other):
-        return self.id == other
+    def get_subsets(self, group):
+        return self.subs[group]
 
 
-    def __ne__(self, other):
-        return self.id != other
-
-
-    def get_subset(self, sid):
-        nid = dict([(ss.id, ss) for ss in self.subs])
-        subset = nid.get(sid)
+    def get_subset_rows(self, subset):
+        ''' Return a subset from given subset id'''
         return self.mat.loc[list(subset.row_selector)]
 
 

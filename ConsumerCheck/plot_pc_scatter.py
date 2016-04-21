@@ -31,7 +31,7 @@ import numpy as np
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
 from traits.api import (Bool, Int, List, Long, HasTraits, implements,
-                        Property, Range, on_trait_change)
+                        Property, Range, Str, on_trait_change)
 from traitsui.api import Item, Group, View, Label, Include
 from enable.api import ColorTrait, ComponentEditor
 from enable.savage.trait_defs.ui.svg_button import SVGButton
@@ -76,6 +76,8 @@ class PCPlotData(ArrayPlotData):
 
     # Metadata for each PC set
     plot_data = List(PCDataSet)
+    group_names = List([])
+    plot_group = Str('')
     # Number of PC in the data sets
     # Lowest number if we have severals sets
     n_pc = Long()
@@ -93,20 +95,24 @@ class PCPlotData(ArrayPlotData):
         else:
             self.n_pc = min(self.n_pc, pc_ds.n_vars)
 
+        values = pc_ds.values.transpose()
+        for j, row in enumerate(values):
+            dict_name = 's{}pc{}'.format(set_n+1, (j+1))
+            self.arrays[dict_name] = row
+
         if len(pc_ds.subs) > 0:
-            for i, sid in enumerate(pc_ds.subs_ids):
-                sarray = pc_ds.get_subset(sid)
-                values = sarray.values.transpose()
-                for j, row in enumerate(values):
-                    dict_name = 's{}pc{}c{}'.format(set_n+1, (j+1), (i+1))
-                    self.arrays[dict_name] = row
+            for gn in pc_ds.get_subset_groups():
+                self.group_names.append(gn)
+                subsets = pc_ds.get_subsets(gn)
+                for ss in subsets:
+                    sarray = pc_ds.get_subset_rows(ss)
+                    values = sarray.values.transpose()
+                    for j, row in enumerate(values):
+                        dict_name = 's{}pc{}g{}c{}'.format(set_n+1, (j+1), gn, ss.id)
+                        self.arrays[dict_name] = row
+                    pass
                 pass
             pass
-        else:
-            values = pc_ds.values.transpose()
-            for j, row in enumerate(values):
-                dict_name = 's{}pc{}c0'.format(set_n+1, (j+1))
-                self.arrays[dict_name] = row
 
         labels = pc_ds.obj_n
         color = pc_ds.style.fg_color
@@ -257,6 +263,22 @@ class PCScatterPlot(PlotBase):
             self._plot_PC(i+1, PCx=x, PCy=y)
         self.request_redraw()
 
+
+    def color_subsets_group(self, group=None):
+        if group is None:
+            self.data.plot_group = ''
+        else:
+            self.data.plot_group = group
+
+        plot_ids = self.plots.keys()
+        x, y, n = self.get_x_y_status()
+        n_ds = len(self.data.plot_data)
+        self.delplot(*plot_ids)
+        for i in range(n_ds):
+            self._plot_PC(i+1, PCx=x, PCy=y)
+        self.request_redraw()
+
+
     def _plot_PC(self, set_id, PCx=1, PCy=2):
         # Adds a PC plot rendrer to the plot object
 
@@ -278,14 +300,17 @@ class PCScatterPlot(PlotBase):
 
         pdata = self.data.plot_data[set_id-1]
         
-        if len(pdata.pc_ds.subs) > 0:
-            for ci, ss in enumerate(pdata.pc_ds.subs):
-                x_id = 's{}pc{}c{}'.format(set_id, PCx, (ci+1))
-                y_id = 's{}pc{}c{}'.format(set_id, PCy, (ci+1))
+        if self.data.plot_group:
+            group = self.data.plot_group
+            subsets = pdata.pc_ds.get_subsets(group)
+            for ci, ss in enumerate(subsets):
+                # 's{}pc{}g{}c{}'.format(set_n+1, (j+1), gn, ss.id)
+                x_id = 's{}pc{}g{}c{}'.format(set_id, PCx, group, ss.id)
+                y_id = 's{}pc{}g{}c{}'.format(set_id, PCy, group, ss.id)
                 # plot definition
                 pd = (x_id, y_id)
                 # plot name
-                pn = 'plot_{}_class_{}'.format(set_id, (ci+1))
+                pn = 'plot_{}_class_{}'.format(set_id, ss.id)
                 #plot
                 rl = self.plot(pd, type='scatter', name=pn,
                                marker=markers[set_id-1 % 5], marker_size=2,
@@ -297,8 +322,8 @@ class PCScatterPlot(PlotBase):
             pass
         else:
             # Typical id: ('s1pc1', 's1pc2')
-            x_id = 's{}pc{}c0'.format(set_id, PCx)
-            y_id = 's{}pc{}c0'.format(set_id, PCy)
+            x_id = 's{}pc{}'.format(set_id, PCx)
+            y_id = 's{}pc{}'.format(set_id, PCy)
 
             # plot definition
             pd = (x_id, y_id)
@@ -732,9 +757,10 @@ if __name__ == '__main__':
     pda = pd.DataFrame(gobli)
     pda.columns = ["V{0}".format(i+1) for i in range(pda.shape[1])]
     pda.index = ["O{0}".format(i+1) for i in range(pda.shape[0])]
-    
+
     irds = DataSet(mat=pda)
-    
+    irds.subs['en'] = []
+
     sd = ['red', 'green', 'blue']
     # sd = []
     for en, color in enumerate(sd):
@@ -742,7 +768,7 @@ if __name__ == '__main__':
         rs = ["O{0}".format(i+1) for i in range(en, en+10)]
         style = VisualStyle(fg_color = color)
         subset = SubSet(id=str(en), name=color, row_selector=rs, gr_style=style)
-        irds.subs.append(subset)
+        irds.subs['en'].append(subset)
 
     plot = ScatterSectorPlot(irds)
     # PCScatterPlot(res.loadings, res.expl_var, title='Loadings')
@@ -750,4 +776,5 @@ if __name__ == '__main__':
     # plot.plot_circle(True)
 
     with np.errstate(invalid='ignore'):
+        plot.color_subsets_group('en')
         plot.new_window(True)

@@ -290,7 +290,7 @@ if __name__ == '__main__':
     import os, sys
     dpath = os.environ['CC_TESTDATA']
     dfile = dpath + '/Iris/iris_multiclass.csv'
-    dfile = dpath + '/Iris/irisNoClass.data'
+    # dfile = dpath + '/Iris/irisNoClass.data'
     itf = ImporterTextFile(
         file_path=dfile,
         delimiter=',',
@@ -300,8 +300,4 @@ if __name__ == '__main__':
     ds = itf.import_data()
     print(ds.mat.shape)
     print(ds.mat.head())
-    print(ds.subs_ids)
-    for ssg in ds.subs.itervalues():
-        for ss in ssg:
-            data = ss.gr_style
-            data.print_traits()
+    print(ds.get_subset_groups())
