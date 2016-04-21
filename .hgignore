@@ -4,8 +4,9 @@ build
 docs*/*build
 *.egg-info
 consumercheck-*
-pyi-build-cc-*
+pyi-workdir
 *project
+pyi-dist-*
 .settings
 Rdist
 ETSpackages

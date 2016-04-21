@@ -5,7 +5,7 @@ Created on Fri Apr 03 20:33:21 2015
 @author: thomas
 """
 
-from hookutils import collect_submodules, collect_data_files
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 # wx = collect_submodules('pyface.wx')
 qt = collect_submodules('pyface.qt')
