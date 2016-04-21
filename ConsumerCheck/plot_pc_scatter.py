@@ -31,8 +31,8 @@ import numpy as np
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
 from traits.api import (Bool, Int, List, Long, HasTraits, implements,
-                        Property, Range, Str, on_trait_change)
-from traitsui.api import Item, Group, View, Label, Include
+                        Property, Range, Str, Unicode, on_trait_change)
+from traitsui.api import Item, Group, View, Label, Include, CheckListEditor
 from enable.api import ColorTrait, ComponentEditor
 from enable.savage.trait_defs.ui.svg_button import SVGButton
 
@@ -76,8 +76,8 @@ class PCPlotData(ArrayPlotData):
 
     # Metadata for each PC set
     plot_data = List(PCDataSet)
-    group_names = List([])
-    plot_group = Str('')
+    group_names = List([''])
+    plot_group = Unicode('')
     # Number of PC in the data sets
     # Lowest number if we have severals sets
     n_pc = Long()
@@ -561,6 +561,8 @@ class PCBaseControl(NoPlotControl):
                      width=32, height=32)
     reset_xy = SVGButton(filename=pjoin(img_path, 'reset_xy.svg'),
                          width=32, height=32)
+    subset_groups = List()
+
     traits_view = View(
         Group(
             Item('model', editor=ComponentEditor(bgcolor=bg_color),
@@ -630,8 +632,19 @@ class PCPlotControl(PCBaseControl):
         Item('y_down', show_label=False),
         Item('eq_axis', label="Equal scale axis"),
         Item('show_labels', label="Show labels"),
+        Item('subset_groups', label="Color subset groups",
+             editor=CheckListEditor(name='model.data.group_names')),
         orientation="horizontal",
     )
+
+
+    @on_trait_change('subset_groups')
+    def sel_subset(self, obj, name, new):
+        if not new:
+            obj.model.color_subsets_group()
+        else:
+            obj.model.color_subsets_group(new[0])
+
 
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
@@ -751,7 +764,9 @@ class CLSectorPlotControl(PCBaseControl):
 if __name__ == '__main__':
 #     from tests.conftest import iris_ds
     import pandas as pd
-    
+    from plot_windows import SinglePlotWindow
+    from importer_text_file import ImporterTextFile
+
     np.random.seed(10)
     gobli = (np.random.random((30, 4)) - 0.5) * 2
     pda = pd.DataFrame(gobli)
@@ -770,11 +785,20 @@ if __name__ == '__main__':
         subset = SubSet(id=str(en), name=color, row_selector=rs, gr_style=style)
         irds.subs['en'].append(subset)
 
-    plot = ScatterSectorPlot(irds)
-    # PCScatterPlot(res.loadings, res.expl_var, title='Loadings')
-    # plot.add_PC_set(iris)
-    # plot.plot_circle(True)
+    dpath = os.environ['CC_TESTDATA']
+    dfile = dpath + '/Iris/iris_multiclass.csv'
+
+    itf = ImporterTextFile(
+        file_path=dfile,
+        delimiter=',',
+        have_obj_names=False
+        )
+    # itf.configure_traits()
+    ds = itf.import_data()
+
+    plot = PCScatterPlot(ds)
+    plot_control = PCPlotControl(model=plot)
+    pw = SinglePlotWindow(plot=plot_control)
 
     with np.errstate(invalid='ignore'):
-        plot.color_subsets_group('en')
-        plot.new_window(True)
+        pw.configure_traits()
