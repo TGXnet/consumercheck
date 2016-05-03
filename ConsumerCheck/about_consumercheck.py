@@ -31,7 +31,7 @@ class ConsumerCheckAbout(HasTraits):
     <p align="center">Version: 1.4.0</p>
     <p align="center">ConsumerCheck is a program for statistical analysis and visualization.</p>
     <p align="center">ConsumerCheck development:<br />Thomas Graff, <a href="http://www.tgxnet.no">TGXnet</a></p>
-    <p align="center">Coding of statistical methods in Python, Python wrapping of R conjoint function and software development management. Oliver Tomic, <a href="http://www.kunnskapssenteret.no/en/frontpage">Norwegian Knowledge Centre for the Health Services</a></p>
+    <p align="center">Coding of statistical methods in Python, Python wrapping of R conjoint function and software development management. Oliver Tomic, <a href="http://www.fhi.no/eway/default.aspx?pid=240">Norwegian Institute of Public Health</a></p>
     <p align="center">Project Leader:<br /><a href="http://nofima.no/person/tormod-naes/">Tormod Næs</a>, <a href="http://nofima.no/en/">Nofima</a></p>
     <p align="center">ConsumerCheck is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
