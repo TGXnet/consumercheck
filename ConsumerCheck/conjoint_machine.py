@@ -103,12 +103,7 @@ class ConjointMachine(object):
 
 
     def _load_conjoint_resources(self):
-        self.r('library(Hmisc)')
-        self.r('library(lmerTest)')
-        # Set R working directory independent of Python working directory
-        r_wd = op.join(self.r_origo, "rsrc")
-        self.r('setwd("{0}")'.format(r_wd))
-        self.r('source("conjoint.r")')
+        self.r('library(SensMixed)')
         # Diagnostic to loggin system
         r_env = 'R environment\n'
         r_env += self.r('sessionInfo()')
@@ -179,7 +174,6 @@ class ConjointMachine(object):
         self.selected_designVars = asciify(selected_designVars)
         self.consLiking = consLiking
         self.consLikingTag = only_letters(consLiking.display_name)
-        # self.consLikingTag = consLiking.display_name
 
         # self._check_completeness()
         self._data_merge()
@@ -417,14 +411,8 @@ class ConjointMachine(object):
         """
         Returns residuals from R conjoint function.
         """
-        # Get size of liking data array.
-        n_rows, n_cols = np.shape(self.consLiking.values)
-
-        # r_vec = self.r.get('res[[1]][6]$residuals_Indiv')
-        r_vec = self.r.get('res[[1]][6]$residualsDoubleCentered')
-        vals = np.reshape(r_vec, (n_rows, n_cols))
-        val_df = _pd.DataFrame(vals, index=self.consLiking.obj_n, columns=self.consLiking.var_n)
-        res_ds = DataSet(mat=val_df, display_name='Double centred residuals')
+        val_df = self.r.get('res[[1]][6]$residualsFixed')
+        res_ds = DataSet(mat=val_df, display_name='Fixed residuals')
 
         return res_ds
 
@@ -483,4 +471,4 @@ if __name__ == '__main__':
                                      empty, [])
     res.print_traits()
     print(res.residualsTable.mat)
-    print(res.residIndTable.mat)
+    # print(res.residIndTable.mat)
