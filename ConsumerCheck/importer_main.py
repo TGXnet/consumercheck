@@ -149,26 +149,78 @@ class ImporterMain(HasTraits):
 
 class ImportNotice(HasTraits):
     message = Str('''
-This program allows for importing four different types of data:
- 1. Quantitative descriptive analysis (QDA); rows: products - columns: sensory attributes.
- 2. Consumer acceptance data; rows: products - columns: consumers.
- 3. Consumer characteristics; rows: consumers - columns: characteristics.
- 4. Experimental design; rows: products - columns: design variables.
+This summary provides information on the import of data into ConsumerCheck.
 
-Preference mapping: 3 and 4 will not be used.
-Conjoint analysis: 1 will not be used.
 
-Only numerical values are allowed in the data sets.
-ConsumerCheck is not able to handle non-English characters in the row and column names.
-If you experience problems when reading data from an Excel sheet; mark, copy, paste and save the actual data set in sheet 1 of a new Excel window.
+--------------
+Data structure
+--------------
+The following data structure is required for successful import:
 
-By adding a column where the column name starts with an underscore (_) you can add class information to the imported rows. By giving each row a numeric class id. This will add different colouring for each class in various plots.
+the data needs to be organised in typical two-way data matrices with rows and columns
+the data may or may not contain column names and row names 
+the data should be separated by either comma, space or semicolon
+Only numerical values are allowed in the data (example: numbers should be used to indicate levels of design variables, consumer characteristics, etc.)
+ConsumerCheck doesn't handle non-English characters in the row and column names
+
+
+--------------
+Data type tags
+--------------
+
+For improved usability and handling of the data within ConsumerCheck, each data should get a tag that indicates the type of data. Note that adding a tag is not mandatory, but may simplify use of the statistical methods in ConsumerCheck. The following tags are available:
+
+1. Tag for "Descriptive analysis/sensory profiling" data where:
+rows represent products 
+columns represent sensory attributes
+
+2. Tag for "Consumer liking" data where:
+rows represent products
+columns represent consumers
+
+3. Tag for "Consumer characteristics" data where:
+rows represent consumers
+columns represent characteristics
+
+4. Tag for "Product design" data where: 
+rows represent products
+columns represent design variables
+
+5. Tag for "Other" data where:
+	rows and columns represent data that is not suitable for any of the tags in 1 to 4 
+
+
+Example:
+With the analysis method "preference mapping", only data tagged "Descriptive analysis/sensory profiling" and "Consumer liking" will be available for selection.
+With the analysis method "conjoint analysis", only data tagged "Consumer liking", "Consumer characteristics" and "Product design" will be available for selection.
+
+
+-----------------
+Import from Excel
+-----------------
+
+Excel files and sheets may contain cells that store information that is invisible to the user. This may lead to various import errors when trying to import from such Excel files. If you experience problems when reading data from Excel, you may do the following to remedy the problem: 
+
+- mark only data you wish to import; copy and paste the data into a new Excel file sheet and try import from this new Excel file.
+
+
+----------------------------------------
+Defining categories for rows and columns
+----------------------------------------
+
+If you wish to introduce categories to you data, you may do so by adding category rows and/or category columns to your data matrix. 
+
+Categories representing rows (products):
+Add columns where the column name starts with an underscore (examples for a category column names: "_fatContent", "_brand", etc.). In the category column, provide a category ID for each row. By doing so, each row category will be represented by its own colour in the respective plots.
+
+Categories representing columns (variables such as sensory attributes, consumer characteristics, etx):
+Add rows where the row name starts with an underscore (examples for a category row names: "_sex", "_income", etc.). In the category row, provide a category ID for each column. By doing so, each column category will be represented by its own colour in the respective plots.
 '''
         )
 
     traits_view = View(
         Item('message', show_label=False, springy=True, style='custom' ),
-        title='Data import notice',
+        title='Data import summary',
         height=300,
         width=600,
         resizable=True,
