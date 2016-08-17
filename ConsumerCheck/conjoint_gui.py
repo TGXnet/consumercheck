@@ -108,7 +108,7 @@ class ConjointController(ModelController):
             ("Random effects", random_table),
             ("Pair-wise differences", diff_table),
             ("Full model residuals", residu_table),
-            ("Double centred residuals", resid_ind_table),
+            ("Fixed residuals", resid_ind_table),
             ]
 
         return [WindowLauncher(owner_ref=self, node_name=nn,
@@ -222,7 +222,7 @@ conjoint_view = _traitsui.View(
 
 ds_exp_action = _traitsui.Action(
     name='Copy to Data set',
-    visible_when='object.node_name in ("Double centred residuals", "Full model residuals")',
+    visible_when='object.node_name in ("Fixed residuals", "Full model residuals")',
     action='handler.export_data(editor, object)',
     )
 
@@ -426,7 +426,7 @@ for variables with a large number of categories.
         parent = editor.get_parent(obj)
         res_name = obj.node_name
         ind_resid = DataSet()
-        if res_name == 'Double centred residuals':
+        if res_name == 'Fixed residuals':
             ind_resid.copy_traits(
                 parent.model.res.residIndTable, traits=['mat', 'style'])
             ind_resid.display_name = '_double centred residuals ' + str(self.exported)
