@@ -20,10 +20,13 @@
 # Std lib imports
 import logging
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
+import requests
 import webbrowser
 from os import path, pardir
+from distutils.version import StrictVersion
 
 # Enthought imports
+from pyface.api import AboutDialog
 from traits.api import HasTraits, Instance, Any, TraitError
 from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
@@ -44,6 +47,8 @@ from plscr_gui import PlsrPcrPluginController, PlsrPcrCalcContainer, plscr_plugi
 from conjoint_gui import ConjointPluginController, ConjointCalcContainer, conjoint_plugin_view
 
 state_file = conf.pkl_file_url()
+
+VERSION='1.4.0'
 
 
 class MainViewHandler(Handler):
@@ -72,11 +77,25 @@ class MainViewHandler(Handler):
         else:
             webbrowser.open(dev_path)
 
+    def _check_new(self):
+        try:
+            req = requests.get('http://www.tgxnet.no/cc-ver.json', timeout=1.0)
+            req.raise_for_status()
+            verinfo = req.json()
+        except(requests.exceptions.RequestException):
+            return
+        running = StrictVersion(VERSION)
+        newest = StrictVersion(verinfo['currentVersion'])
+        if newest > running:
+            inf = AboutDialog()
+            text = "You are running version {} of ConsumerCheck, version {} is now available.".format(running, newest)
+            inf.information(text, title='New version')
+
+
     def init(self, info):
         # Close splash window
         logger.info('Init main ui')
         info.object.win_handle = info.ui.control
-
         # Import workspace
         try:
             info.object.dsc.read_datasets(state_file)
@@ -87,6 +106,7 @@ class MainViewHandler(Handler):
             info.object.splash.close()
         except AttributeError:
             pass
+        self._check_new()
 
     def closed(self, info, is_ok):
         info.object.dsc.save_datasets(state_file)
