@@ -14,3 +14,4 @@ ETSpackages
 *.wixobj
 *.wxs
 *.msi
+TestData
