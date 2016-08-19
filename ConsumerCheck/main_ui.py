@@ -48,7 +48,7 @@ from conjoint_gui import ConjointPluginController, ConjointCalcContainer, conjoi
 
 state_file = conf.pkl_file_url()
 
-VERSION='1.4.0'
+VERSION='1.4.1'
 
 
 class MainViewHandler(Handler):

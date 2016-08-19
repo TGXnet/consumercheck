@@ -28,7 +28,7 @@ class ConsumerCheckAbout(HasTraits):
     about_html = u'''
     <body text="#404040" bgcolor="#f0f0f0">
     <div align="center"><font size="7">About ConsumerCheck</font></div>
-    <p align="center">Version: 1.4.0</p>
+    <p align="center">Version: 1.4.1</p>
     <p align="center">ConsumerCheck is a program for statistical analysis and visualization.</p>
     <p align="center">ConsumerCheck development:<br />Thomas Graff, <a href="http://www.tgxnet.no">TGXnet</a></p>
     <p align="center">Coding of statistical methods in Python, Python wrapping of R conjoint function and software development management. Oliver Tomic, <a href="http://www.fhi.no/eway/default.aspx?pid=240">Norwegian Institute of Public Health</a></p>
