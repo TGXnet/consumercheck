@@ -10,3 +10,7 @@ pyi-dist-*
 .settings
 Rdist
 ETSpackages
+*.wixpdb
+*.wixobj
+*.wxs
+*.msi
