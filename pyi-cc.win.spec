@@ -12,8 +12,8 @@ added_files = [
     ('ConsumerCheck/y_up.svg', ''),
     ('ConsumerCheck/graphics', 'graphics'),
     ('docs-user/build/html', 'help-docs'),
-    ('Rdist/R-3.0.2', 'R-3.0.2'),
-    ('ConsumerCheck/rsrc', 'rsrc'),
+    ('Rdist/R-3.3.1', 'R-3.3.1'),
+#    ('ConsumerCheck/rsrc', 'rsrc'),
     ]
 #d
 

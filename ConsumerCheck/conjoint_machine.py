@@ -83,9 +83,9 @@ class ConjointMachine(object):
 
 
     def _start_r_interpreter(self):
-        Rwbin = op.join(self.r_origo, 'R-3.0.2', 'bin', 'R.exe')
-        Rubin = op.join(self.r_origo, 'R-3.0.2', 'bin', 'R')
-        Rlib = op.join(self.r_origo, 'R-3.0.2', 'library')
+        Rwbin = op.join(self.r_origo, 'R-3.3.1', 'bin', 'R.exe')
+        Rubin = op.join(self.r_origo, 'R-3.3.1', 'bin', 'R')
+        Rlib = op.join(self.r_origo, 'R-3.3.1', 'library')
         logger.info("Try Windows R path: {0}".format(Rwbin))
         logger.info("Try Mac OSX R path: {0}".format(Rubin))
         if op.exists(Rwbin):
