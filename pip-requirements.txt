@@ -1,8 +1,11 @@
-chaco==4.3.0
-traitsui==4.3.0
 pyparsing==1.5.6
 pandas==0.12.0
 openpyxl==1.7.0
 xlrd==0.9.2
 PypeR==1.1.1
 colormath==1.0.8
+traitsui>=4.3.0
+# --allow-external --allow-unverified
+PIL
+enable
+chaco>=4.3.0

@@ -1,0 +1,54 @@
+<?xml version='1.0'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+   <Product Id='B113C266-2746-4704-830C-869A32AEBEDE' Name='ConsumerCheck 1.4.0' Language='1033' 
+            Version='1.4.0' Manufacturer='Nofima' UpgradeCode='830D2987-E3B3-45D5-94B5-DAE73D95746B' >
+      <Package Description='ConsumerCheck base installer'
+               Comments='Simple ConsumerCheck installer'
+               Manufacturer='TGXnet' InstallerVersion='200' Compressed='yes' />
+
+      <Media Id='1' Cabinet='product.cab' EmbedCab='yes' />
+		
+		<!-- Step 1: Define the directory structure -->
+		<Directory Id='TARGETDIR' Name='SourceDir'>
+         <Directory Id='ProgramFilesFolder' Name='PFiles'>
+            <Directory Id='CCROOTDIR' Name='ConsumerCheck'>
+            </Directory>
+         </Directory>
+		 <!-- Start menu folder -->
+		 <Directory Id="ProgramMenuFolder">
+			<Directory Id="CcProgramFolder" Name="ConsumerCheck"/>
+		</Directory>
+      </Directory>
+
+	<!-- Step 2: Add files to your installer package -->
+	
+	<!-- Start menu item -->
+	<DirectoryRef Id="CcProgramFolder">
+		<Component Id="CcShortcut" Guid="8EA887F2-5538-48DD-AAF9-3090979BF223">
+			<Shortcut Id="CcStartMenuShortcut" 
+					   Name="ConsumerCheck"
+                       Description="Starts ConsumerCheck"
+                       Target="[CCROOTDIR]ccwin.exe"
+                       WorkingDirectory="CCROOTDIR"/>
+			<RemoveFolder Id="CcProgramFolder" On="uninstall"/>
+			<RegistryValue Root="HKCU" Key="Software\Microsoft\ConsumerCheck" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+		</Component>
+	</DirectoryRef>
+	
+	<!-- Step 3: Tell WiX how to make GUI and install the files -->
+    <Feature Id='Complete' Title='ConsumerCheck' Description='The complete package.'
+      Display='expand' Level='1' ConfigurableDirectory='CCROOTDIR'>
+      <Feature Id='MainProgram' Title='Program' Description='The main executable.' Level='1'>
+		 <ComponentGroupRef Id="CcFiles" />
+		 <ComponentRef Id="CcShortcut" />
+      </Feature>
+    </Feature>
+	<!-- WixUI_Mondo, WixUI_InstallDir -->
+    <UIRef Id="WixUI_Mondo" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+	<WixVariable Id="WixUILicenseRtf" Value="dummy_license.rtf" />
+
+    <Icon Id="cc.exe" SourceFile="ccwin.exe" />
+
+   </Product>
+</Wix>
