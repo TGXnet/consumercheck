@@ -15,3 +15,5 @@ ETSpackages
 *.wxs
 *.msi
 TestData
+.DS_Store
+
