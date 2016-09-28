@@ -4,7 +4,7 @@
 pyinstaller --noconfirm --log-level=INFO \
 	    --clean \
 	    --workpath="pyi-workdir" \
-	    --distpath="pyi-dist-1.4.1" \
+	    --distpath="pyi-dist-1.4.2" \
 	    pyi-specs/Consumercheck.spec
 
 # From version 3.3.x
@@ -27,4 +27,4 @@ pyinstaller --noconfirm --log-level=INFO \
 
 # pkgbuild --install-location /Applications --root pyi-specs/pyi-dist-1.4.0 cc-osx-1.4.0.pkg
 # pkgbuild --analyze --root pyi-specs/pyi-dist-1.4.0 cc-osx-1.4.0.plist
-hdiutil create ConsumerCheck_1.4.1_MacOSX.dmg -volname "CC dist" -srcfolder pyi-specs/pyi-dist-1.4.1
+hdiutil create ConsumerCheck_1.4.2_MacOSX.dmg -volname "CC dist" -srcfolder pyi-specs/pyi-dist-1.4.2

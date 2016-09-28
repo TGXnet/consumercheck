@@ -41,6 +41,6 @@ app = BUNDLE(exe,
              bundle_identifier='no.tgxnet.nofima.consumercheck',
              info_plist={
                  'NSHighResolutionCapable': 'True',
-                 'CFBundleVersion': '1.4.1',
+                 'CFBundleVersion': '1.4.2',
                  },
              )
