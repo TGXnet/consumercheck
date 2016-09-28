@@ -5,5 +5,5 @@ pyinstaller.exe ^
     --noconfirm ^
     --icon win-cc.ico ^
     --workpath=pyi-workdir ^
-    --distpath=pyi-dist-1.4.1 ^
+    --distpath=pyi-dist-1.4.2 ^
     pyi-cc-win.spec
