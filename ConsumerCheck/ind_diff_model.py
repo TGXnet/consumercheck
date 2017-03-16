@@ -40,10 +40,19 @@ class InComputeable(Exception):
 class IndDiff(Model):
     """Represent the IndDiff model between one X and Y data set."""
 
-    # Consumer liking
-    ds_C = DataSet()
-    # Descriptive analysis / sensory profiling
-    ds_S = DataSet()
+    # Consumer Liking
+    ds_L = DataSet()
+    # Consumer Attributes
+    ds_A = DataSet()
+    # response and independent variables
+    #  predicted variables and the observable variables
+    # Partial least squares Discriminant Analysis (PLS-DA) is a variant used when the Y is categorical.
+    # A PLS model will try to find the multidimensional direction in the X space that explains the
+    # maximum multidimensional variance direction in the Y space.
+    # X is an n x m matrix of predictors
+    # Y is an n x p matrix of responses
+    # Some PLS algorithms are only appropriate for the case where Y is a column vector (PLS1)
+    # general case of a matrix Y (PLS2)
     ds_X = _traits.Property()
     ds_Y = _traits.Property()
     settings = _traits.WeakRef()
@@ -106,12 +115,12 @@ class IndDiff(Model):
 
 
     def _C_have_zero_std_var(self):
-        self.C_zero_std = self._check_zero_std(self.ds_C)
+        self.C_zero_std = self._check_zero_std(self.ds_L)
         return bool(self.C_zero_std)
 
 
     def _S_have_zero_std_var(self):
-        self.S_zero_std = self._check_zero_std(self.ds_S)
+        self.S_zero_std = self._check_zero_std(self.ds_A)
         return bool(self.S_zero_std)
 
 
@@ -127,23 +136,23 @@ class IndDiff(Model):
 
     def _get_ds_X(self):
         if self.settings.int_ext_mapping == 'Internal':
-            return self.ds_C
+            return self.ds_L
         else:
-            return self.ds_S
+            return self.ds_A
 
 
     def _get_ds_Y(self):
         if self.settings.int_ext_mapping == 'Internal':
-            return self.ds_S
+            return self.ds_A
         else:
-            return self.ds_C
+            return self.ds_L
 
 
     def _get_max_pc(self):
         if self.settings.int_ext_mapping == 'Internal':
-            return max((min(self.ds_C.n_objs, self.ds_C.n_vars, 11) - 1), self.min_pc)
+            return max((min(self.ds_L.n_objs, self.ds_L.n_vars, 11) - 1), self.min_pc)
         else:
-            return max((min(self.ds_S.n_objs, self.ds_S.n_vars, 11) - 1), self.min_pc)
+            return max((min(self.ds_A.n_objs, self.ds_A.n_vars, 11) - 1), self.min_pc)
 
 
     def _calc_n_pc_default(self):

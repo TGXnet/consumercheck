@@ -35,7 +35,7 @@ from plot_pc_scatter import (PCScatterPlot,
                              CLSectorPlot, CLSectorPlotControl)
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
-from prefmap_picker import PrefmapPicker
+from ind_diff_picker import IndDiffPicker
 from dataset_container import DatasetContainer
 from plot_windows import OverviewPlotWindow, SinglePlotWindow
 from window_helper import multiplot_factory
@@ -53,7 +53,7 @@ class IndDiffController(ModelController):
 
     def _name_default(self):
         return "{0} - {1}".format(
-            self.model.ds_C.display_name, self.model.ds_S.display_name)
+            self.model.ds_L.display_name, self.model.ds_A.display_name)
 
 
     def _window_launchers_default(self):
@@ -118,15 +118,15 @@ class IndDiffController(ModelController):
         except InComputeable:
             self._show_zero_var_warning()
             if self.model.C_zero_std:
-                df = self.model.ds_C.mat.drop(self.model.C_zero_std, axis=1)
-                olds = self.model.ds_C
-                self.model.ds_C = DataSet(mat=df,
+                df = self.model.ds_L.mat.drop(self.model.C_zero_std, axis=1)
+                olds = self.model.ds_L
+                self.model.ds_L = DataSet(mat=df,
                                           display_name=olds.display_name,
                                           kind=olds.kind)
             if self.model.S_zero_std:
-                df = self.model.ds_S.mat.drop(self.model.S_zero_std, axis=1)
-                olds = self.model.ds_S
-                self.model.ds_S = DataSet(mat=df,
+                df = self.model.ds_A.mat.drop(self.model.S_zero_std, axis=1)
+                olds = self.model.ds_A
+                self.model.ds_A = DataSet(mat=df,
                                           display_name=olds.display_name,
                                           kind=olds.kind)
             res = self.model.res
@@ -319,7 +319,7 @@ class IndDiffCalcContainer(CalcContainer):
 
 class IndDiffPluginController(PluginController):
 
-    comb = _traits.Instance(PrefmapPicker, PrefmapPicker())
+    comb = _traits.Instance(IndDiffPicker, IndDiffPicker())
     last_selection = _traits.Set()
 
     dummy_model_controller = _traits.Instance(IndDiffController, IndDiffController(IndDiff()))
@@ -337,7 +337,7 @@ class IndDiffPluginController(PluginController):
 
     def _update_comb(self):
         dsc = self.model.dsc
-        self.comb.col_set = [('', '')] + dsc.get_id_name_map('Descriptive analysis / sensory profiling')
+        self.comb.col_set = [('', '')] + dsc.get_id_name_map('Consumer characteristics')
         self.comb.row_set = [('', '')] + dsc.get_id_name_map('Consumer liking')
         # self.comb._generate_combinations()
 
@@ -366,8 +366,8 @@ class IndDiffPluginController(PluginController):
             return
 
         calc_model = IndDiff(id=id_c+id_s,
-                             ds_C=ds_c,
-                             ds_S=ds_s,
+                             ds_L=ds_c,
+                             ds_A=ds_s,
                              settings=self.model.calculator)
         calculation = IndDiffController(calc_model, win_handle=self.win_handle)
         self.model.add(calculation)
@@ -414,22 +414,22 @@ if __name__ == '__main__':
     one_branch = False
 
     # Folder, File name, Display name, DS type
-    ds_C_meta = ('Cheese', 'ConsumerLiking.txt',
+    ds_L_meta = ('Cheese', 'ConsumerLiking.txt',
                  'Cheese liking', 'Consumer liking')
-    ds_S_meta = ('Cheese', 'SensoryData.txt',
-                 'Cheese profiling', 'Descriptive analysis / sensory profiling')
-    C = imp_ds(ds_C_meta)
-    S = imp_ds(ds_S_meta)
+    ds_A_meta = ('Cheese', 'ConsumerValues.txt',
+                 'Consumer values', 'Consumer characteristics')
+    L = imp_ds(ds_L_meta)
+    A = imp_ds(ds_A_meta)
 
     if one_branch:
-        ind_diff = IndDiff(ds_C=C, ds_S=S)
+        ind_diff = IndDiff(ds_L=L, ds_A=A)
         pc = IndDiffController(ind_diff)
         test = TestOneNode(one_model=pc)
         test.configure_traits(view=dummy_view(ind_diff_nodes))
     else:
         dsc = DatasetContainer()
-        dsc.add(C)
-        dsc.add(S)
+        dsc.add(L)
+        dsc.add(A)
         ind_diff = IndDiffCalcContainer(dsc=dsc)
         ppc = IndDiffPluginController(ind_diff)
         ppc.configure_traits(
