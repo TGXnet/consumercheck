@@ -20,22 +20,3 @@ def dummify(dataset, attributes):
             mat.insert(pos, attn, dummies)
         del(mat[attr])
     return dataset
-
-
-if __name__ == '__main__':
-    print("Start")
-    import pandas as pd
-    import dataset as ds
-
-    tor = ds.DataSet(display_name='Some values', kind='Consumer characteristics')
-    tor.mat = pd.DataFrame(
-        [[1, 'M', 'Good'],
-         [2, 'F', 'Poor'],
-         [1, 'M', 'Alive'],
-         [2, 'F', 'Good']],
-        index = ['V1', 'V2', 'V3', 'V4'],
-        columns = ['AgeGr', 'Sex', 'Health'])
-
-    print(tor.mat)
-    res = dummify(tor, ['AgeGr', 'Sex', 'Health'])
-    print(res.mat)
