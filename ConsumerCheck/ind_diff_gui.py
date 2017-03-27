@@ -249,12 +249,6 @@ no_view = _traitsui.View()
 
 
 ind_diff_view = _traitsui.View(
-    _traitsui.Item('int_ext_mapping', style='custom', label='Mapping'),
-    _traitsui.Item('ind_diff_method', style='custom', label='Method'),
-    _traitsui.Item('standardise_x', label='Standardise X',
-                   style='custom', show_label=True),
-    _traitsui.Item('standardise_y', label='Standardise Y',
-                   style='custom', show_label=True),
     _traitsui.Item('calc_n_pc',
                    editor=_traitsui.RangeEditor(
                        low_name='min_pc', high_name='max_pc', mode='auto'),
@@ -414,9 +408,9 @@ if __name__ == '__main__':
     one_branch = False
 
     # Folder, File name, Display name, DS type
-    ds_L_meta = ('Cheese', 'ConsumerLiking.txt',
-                 'Cheese liking', 'Consumer liking')
-    ds_A_meta = ('Cheese', 'ConsumerValues.txt',
+    ds_L_meta = ('HamData', 'Ham_consumer_liking.txt',
+                 'Ham liking', 'Consumer liking')
+    ds_A_meta = ('HamData', 'Ham_consumer_characteristics.txt',
                  'Consumer values', 'Consumer characteristics')
     L = imp_ds(ds_L_meta)
     A = imp_ds(ds_A_meta)

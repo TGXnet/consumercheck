@@ -45,7 +45,7 @@ class IndDiff(Model):
     # Consumer Attributes
     ds_A = DataSet()
     # response and independent variables
-    #  predicted variables and the observable variables
+    # predicted variables and the observable variables
     # Partial least squares Discriminant Analysis (PLS-DA) is a variant used when the Y is categorical.
     # A PLS model will try to find the multidimensional direction in the X space that explains the
     # maximum multidimensional variance direction in the Y space.
@@ -57,10 +57,6 @@ class IndDiff(Model):
     ds_Y = _traits.Property()
     settings = _traits.WeakRef()
     #checkbox bool for standardised results
-    standardise_x = _traits.Bool(False)
-    standardise_y = _traits.Bool(False)
-    int_ext_mapping = _traits.Enum('Internal', 'External')
-    ind_diff_method = _traits.Enum('PLSR', 'PCR')
     calc_n_pc = _traits.Int()
     min_pc = 2
     # max_pc = _traits.Property()
@@ -75,43 +71,18 @@ class IndDiff(Model):
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
         n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
-        if self.settings.ind_diff_method == 'PLSR':
-            pls = PLSR(self.ds_X.values, self.ds_Y.values,
-                      numPC=n_pc, cvType=["loo"],
-                      Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
-            return self._pack_res(pls)
-        elif self.settings.ind_diff_method == 'PCR':
-            pcr = PCR(self.ds_X.values, self.ds_Y.values,
-                      numPC=n_pc, cvType=["loo"],
-                      Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
-            return self._pack_res(pcr)
+        pls = PLSR(self.ds_X.values, self.ds_Y.values,
+                   numPC=n_pc, cvType=["loo"],
+                   Xstand=True, Ystand=True)
+        return self._pack_res(pls)
 
 
     def _have_zero_std(self):
         self.C_zero_std = []
         self.S_zero_std = []
-        if self._std_C() and self._std_S():
-            rC = self._C_have_zero_std_var()
-            rS = self._S_have_zero_std_var()
-            return rC or rS
-        elif self._std_C():
-            return self._C_have_zero_std_var()
-        elif self._std_S():
-            return self._S_have_zero_std_var()
-
-
-    def _std_C(self):
-        if self.settings.int_ext_mapping == 'Internal':
-            return self.settings.standardise_x
-        else:
-            return self.settings.standardise_y
-
-
-    def _std_S(self):
-        if self.settings.int_ext_mapping == 'Internal':
-            return self.settings.standardise_y
-        else:
-            return self.settings.standardise_x
+        rC = self._C_have_zero_std_var()
+        rS = self._S_have_zero_std_var()
+        return rC or rS
 
 
     def _C_have_zero_std_var(self):
@@ -135,24 +106,15 @@ class IndDiff(Model):
 
 
     def _get_ds_X(self):
-        if self.settings.int_ext_mapping == 'Internal':
-            return self.ds_L
-        else:
-            return self.ds_A
+        return self.ds_L
 
 
     def _get_ds_Y(self):
-        if self.settings.int_ext_mapping == 'Internal':
-            return self.ds_A
-        else:
-            return self.ds_L
+        return self.ds_A
 
 
     def _get_max_pc(self):
-        if self.settings.int_ext_mapping == 'Internal':
-            return max((min(self.ds_L.n_objs, self.ds_L.n_vars, 11) - 1), self.min_pc)
-        else:
-            return max((min(self.ds_A.n_objs, self.ds_A.n_vars, 11) - 1), self.min_pc)
+        return max((min(self.ds_L.n_objs, self.ds_L.n_vars, 11) - 1), self.min_pc)
 
 
     def _calc_n_pc_default(self):
@@ -172,11 +134,7 @@ class IndDiff(Model):
 
     def _pack_res(self, pls_obj):
         res = Result('IndDiff {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
-
-        if self.settings.int_ext_mapping == 'External':
-            res.external_mapping = True
-        else:
-            res.external_mapping = False
+        res.external_mapping = False
 
         # Scores X
         mT = pls_obj.X_scores()
