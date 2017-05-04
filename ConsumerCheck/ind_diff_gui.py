@@ -34,7 +34,6 @@ from plot_pc_scatter import (PCScatterPlot,
                              ScatterSectorPlot, PCSectorPlotControl,
                              CLSectorPlot, CLSectorPlotControl)
 from dialogs import ErrorMessage
-# from combination_table import CombinationTable
 from ind_diff_picker import IndDiffPicker
 from dataset_container import DatasetContainer
 from plot_windows import OverviewPlotWindow, SinglePlotWindow
@@ -47,13 +46,13 @@ from plugin_base import (ModelController, CalcContainer, PluginController,
 class IndDiffController(ModelController):
 
     window_launchers = _traits.List(_traits.Instance(WindowLauncher))
-    pred_y_cal_launch = _traits.List(_traits.Instance(WindowLauncher))
-    pred_y_val_launch = _traits.List(_traits.Instance(WindowLauncher))
+    # pred_y_cal_launch = _traits.List(_traits.Instance(WindowLauncher))
+    # pred_y_val_launch = _traits.List(_traits.Instance(WindowLauncher))
 
 
     def _name_default(self):
-        return "{0} - {1}".format(
-            self.model.ds_L.display_name, self.model.ds_A.display_name)
+        return "PCA({0})".format(
+            self.model.ds_L.display_name)
 
 
     def _window_launchers_default(self):
@@ -64,13 +63,13 @@ class IndDiffController(ModelController):
 
         std_launchers = [
             # ("Overview", plot_overview),
-            ("X Scores", scores_plot),
-            ("X&Y correlation loadings", corr_loadings_plot),
-            ("X loadings", loadings_x_plot),
-            ("Y loadings", loadings_y_plot),
-            ("Explained var in X", expl_var_x_plot),
-            ("Explained var in Y", expl_var_y_plot),
-            ]
+            # ("X Scores", scores_plot),
+            # ("X&Y correlation loadings", corr_loadings_plot),
+            # ("Loadings", loadings_x_plot),
+            # ("Y loadings", loadings_y_plot),
+            # ("Explained var in X", expl_var_x_plot),
+            # ("Explained var in Y", expl_var_y_plot),
+        ]
 
         return [WindowLauncher(node_name=nn, view_creator=fn,
                                owner_ref=self,
@@ -198,6 +197,11 @@ def pred_y_val_table(res, pcid):
 
 
 # Plot creators
+
+def tulla(res):
+    print("Hello plot")
+
+
 def scores_plot(res):
     plot = PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
     return plot
@@ -267,43 +271,44 @@ ind_diff_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
-        label='=Overview plot',
+        label='=Loadings X plot',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
         children='window_launchers',
         view=ind_diff_view,
         menu=[],
-        on_dclick=overview_activator),
-    _traitsui.TreeNode(
-        node_for=[IndDiffController],
-        label='=Y predicted (calibration)',
-        icon_path='graphics',
-        icon_group='overview.ico',
-        icon_open='overview.ico',
-        children='pred_y_cal_launch',
-        view=ind_diff_view,
-        menu=[],
-        # on_dclick=overview_activator,
-    ),
-    _traitsui.TreeNode(
-        node_for=[IndDiffController],
-        label='=Y predicted (validation)',
-        icon_path='graphics',
-        icon_group='overview.ico',
-        icon_open='overview.ico',
-        children='pred_y_val_launch',
-        view=ind_diff_view,
-        menu=[],
-        # on_dclick=overview_activator,
-    ),
+        on_dclick=tulla),
+    # _traitsui.TreeNode(
+    #     node_for=[IndDiffController],
+    #     label='=Y predicted (calibration)',
+    #     icon_path='graphics',
+    #     icon_group='overview.ico',
+    #     icon_open='overview.ico',
+    #     children='pred_y_cal_launch',
+    #     view=ind_diff_view,
+    #     menu=[],
+    #     # on_dclick=overview_activator,
+    # ),
+    # _traitsui.TreeNode(
+    #     node_for=[IndDiffController],
+    #     label='=Y predicted (validation)',
+    #     icon_path='graphics',
+    #     icon_group='overview.ico',
+    #     icon_open='overview.ico',
+    #     children='pred_y_val_launch',
+    #     view=ind_diff_view,
+    #     menu=[],
+    #     # on_dclick=overview_activator,
+    # ),
     _traitsui.TreeNode(
         node_for=[WindowLauncher],
         label='node_name',
         view=no_view,
         menu=[],
-        on_dclick=dclk_activator)
-    ]
+        on_dclick=dclk_activator
+    ),
+]
 
 
 class IndDiffCalcContainer(CalcContainer):
@@ -331,58 +336,81 @@ class IndDiffPluginController(PluginController):
 
     def _update_comb(self):
         dsc = self.model.dsc
-        self.comb.col_set = [('', '')] + dsc.get_id_name_map('Consumer characteristics')
-        self.comb.row_set = [('', '')] + dsc.get_id_name_map('Consumer liking')
-        # self.comb._generate_combinations()
+        self.comb.like_set = [('', '')] + dsc.get_id_name_map('Consumer characteristics')
+        self.comb.attr_set = [('', '')] + dsc.get_id_name_map('Consumer liking')
 
 
-    @_traits.on_trait_change('comb:combination_updated', post_init=True)
-    def _handle_selection(self, obj, name, old, new):
+    @_traits.on_trait_change('comb:consumer_liking_updated', post_init=False)
+    def _handle_like_sel(self, obj, name, old, new):
         self.model.calculations = []
-        selection = self.comb.get_selected_combinations()[0]
-        self._make_calculation(selection[0], selection[1])
+        selection = self.comb.sel_like[0]
+        self._make_pca_calc(selection)
 
 
-    def _make_calculation(self, id_c, id_s):
+    def _make_pca_calc(self, id_c):
         ds_c = self.model.dsc[id_c]
-        ds_s = self.model.dsc[id_s]
 
         # Check missing data
-        if ds_c.missing_data or ds_s.missing_data:
+        if ds_c.missing_data:
             self._show_missing_warning()
             return
 
-        # Check data set alignment
-        ns_c = ds_c.n_objs
-        ns_s = ds_s.n_objs
-        if ns_c != ns_s:
-            self._show_alignment_warning(ds_c, ds_s)
-            return
-
-        calc_model = IndDiff(id=id_c+id_s,
+        calc_model = IndDiff(id=id_c,
                              ds_L=ds_c,
-                             ds_A=ds_s,
                              settings=self.model.calculator)
         calculation = IndDiffController(calc_model, win_handle=self.win_handle)
         self.model.add(calculation)
 
 
+    @_traits.on_trait_change('comb:consumer_attributes_updated', post_init=False)
+    def _handle_attr_sel(self, obj, name, old, new):
+        selection = self.comb.sel_attr[0]
+        self._make_pls_calc(selection)
+
+
+    def _make_pls_calc(self, id_s):
+        ds_s = self.model.dsc[id_s]
+        calc = self.model.calculations[0]
+        ds_c = calc.model.ds_L
+
+        # Check missing data
+        if ds_s.missing_data:
+            self._show_missing_warning()
+            return
+
+        # Check data set alignment
+        # ns_c = ds_c.n_objs
+        # ns_s = ds_s.n_objs
+        # if ns_c != ns_s:
+        #     self._show_alignment_warning(ds_c, ds_s)
+        #     return
+
+        calc.model.id = ds_c.id + id_s
+        calc.model.ds_A = ds_s
+
+
     def _show_missing_warning(self):
         dlg = ErrorMessage()
         dlg.err_msg = 'This matrix has missing values'
-        dlg.err_val = ("At the current version of ConsumerCheck IndDiff does not handle missing values. There are three options to work around this problem:\n"
-                       "  1. Impute the missing values with the imputation method of your choice outside ConsumerCheck and re-import the data\n"
-                       "  2. Remove the column with the missing values and re-import the data\n"
-                       "  3. Remove the row with the missing values and re-import the data")
+        dlg.err_val = (
+            "At the current version of ConsumerCheck IndDiff does not handle missing values. "
+            "There are three options to work around this problem:\n"
+            "  1. Impute the missing values with the imputation method of your choice "
+            "outside ConsumerCheck and re-import the data\n"
+            "  2. Remove the column with the missing values and re-import the data\n"
+            "  3. Remove the row with the missing values and re-import the data")
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
     def _show_alignment_warning(self, ds_c, ds_s):
         dlg = ErrorMessage()
         dlg.err_msg = 'Consumer liking and sensory profiling data does not align'
-        dlg.err_val = 'The Consumer liking data and descriptive analysis/sensory profiling data do not align. There are {0} rows in {1} and {2} rows in the {3}. Please select other data.'.format(ds_c.n_objs, ds_c.display_name, ds_s.n_objs, ds_s.display_name)
+        dlg.err_val = (
+            "The Consumer liking data and descriptive analysis/sensory profiling "
+            "data do not align. There are {0} rows in {1} and {2} rows in the {3}. "
+            "Please select other data."
+        ).format(ds_c.n_objs, ds_c.display_name, ds_s.n_objs, ds_s.display_name)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
-
 
 
 selection_view = _traitsui.Group(
@@ -428,3 +456,5 @@ if __name__ == '__main__':
         ppc = IndDiffPluginController(ind_diff)
         ppc.configure_traits(
             view=ind_diff_plugin_view)
+        # ppc._make_calculation()
+        # ppc.print_traits()
