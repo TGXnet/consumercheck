@@ -27,8 +27,8 @@ import pandas as _pd
 import traits.api as _traits
 
 # Local imports
+from pca import nipalsPCA as PCA
 from plsr import nipalsPLS2 as PLSR
-from pcr import nipalsPCR as PCR
 from dataset import DataSet
 from plugin_base import Model, Result
 
@@ -55,8 +55,9 @@ class IndDiff(Model):
     # general case of a matrix Y (PLS2)
     ds_X = _traits.Property()
     ds_Y = _traits.Property()
+    pcax = _traits.Property()
     settings = _traits.WeakRef()
-    #checkbox bool for standardised results
+    # checkbox bool for standardised results
     calc_n_pc = _traits.Int()
     min_pc = 2
     # max_pc = _traits.Property()
@@ -66,11 +67,46 @@ class IndDiff(Model):
     S_zero_std = _traits.List()
 
 
+    def _get_pcax(self):
+        pca = PCA(self.ds_X.values, numPC=5, Xstand=True, cvType=["loo"])
+
+        return self._pack_pca_res(pca)
+
+
+    def _pack_pca_res(self, pca_obj):
+        res = Result('PCA {0}'.format(self.ds_X.display_name))
+
+        # Scores
+        mT = pca_obj.X_scores()
+        res.scores = DataSet(
+            mat=_pd.DataFrame(
+                data=mT,
+                index=self.ds_X.obj_n,
+                columns=["PC-{0}".format(i+1) for i in range(mT.shape[1])],
+            ),
+            subs=self.ds_X.subs,
+            display_name='Scores')
+
+        # Loadings
+        mP = pca_obj.X_loadings()
+        res.loadings = DataSet(
+            mat=_pd.DataFrame(
+                data=mP,
+                index=self.ds_X.var_n,
+                columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
+            ),
+            display_name='Loadings')
+
+        return res
+
+
+
     def _get_res(self):
         if self._have_zero_std():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
-        n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
+        # n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
+        n_pc = 5
         pls = PLSR(self.ds_X.values, self.ds_Y.values,
                    numPC=n_pc, cvType=["loo"],
                    Xstand=True, Ystand=True)
@@ -127,7 +163,7 @@ class IndDiff(Model):
                 data=pred_mat,
                 index=self.ds_Y.obj_n,
                 columns=self.ds_Y.var_n,
-                ),
+            ),
             display_name='Predicted after PC{}'.format(npc))
         return pred_ds
 
@@ -143,7 +179,7 @@ class IndDiff(Model):
                 data=mT,
                 index=self.ds_X.obj_n,
                 columns=["PC-{0}".format(i+1) for i in range(mT.shape[1])],
-                ),
+            ),
             display_name='X scores')
 
         # loadings_x
@@ -153,7 +189,7 @@ class IndDiff(Model):
                 data=mP,
                 index=self.ds_X.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
-                ),
+            ),
             display_name='X loadings')
 
         # loadings_y
@@ -164,7 +200,7 @@ class IndDiff(Model):
                 data=mQ,
                 index=self.ds_Y.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mQ.shape[1])],
-                ),
+            ),
             display_name='Y loadings')
 
         # expl_var_x
@@ -177,7 +213,7 @@ class IndDiff(Model):
                 data=[cal, cum_cal, val, cum_val],
                 index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
-                ),
+            ),
             display_name='Explained variance in X')
 
         # expl_var_y
@@ -190,7 +226,7 @@ class IndDiff(Model):
                 data=[cal, cum_cal, val, cum_val],
                 index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
                 columns=["PC-{0}".format(i+1) for i in range(len(cal))],
-                ),
+            ),
             display_name='Explained variance in Y')
 
         # X_corrLoadings()
@@ -201,7 +237,7 @@ class IndDiff(Model):
                 data=mXcl,
                 index=self.ds_X.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mXcl.shape[1])],
-                ),
+            ),
             display_name='X & Y correlation loadings')
 
         # Y_corrLoadings()
@@ -212,7 +248,7 @@ class IndDiff(Model):
                 data=mYcl,
                 index=self.ds_Y.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mXcl.shape[1])],
-                ),
+            ),
             display_name=self.ds_Y.display_name)
 
         # Y_predCal()
