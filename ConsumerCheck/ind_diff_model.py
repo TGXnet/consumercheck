@@ -27,23 +27,23 @@ import pandas as _pd
 import traits.api as _traits
 
 # Local imports
-from pca import nipalsPCA as PCA
-from plsr import nipalsPLS2 as PLSR
-from dataset import DataSet
-from plugin_base import Model, Result
+import pca
+import plsr
+import dataset as ds
+import plugin_base as pb
 
 
 class InComputeable(Exception):
     pass
 
 
-class IndDiff(Model):
+class IndDiff(pb.Model):
     """Represent the IndDiff model between one X and Y data set."""
 
     # Consumer Liking
-    ds_L = DataSet()
+    ds_L = ds.DataSet()
     # Consumer Attributes
-    ds_A = DataSet()
+    ds_A = ds.DataSet()
     # response and independent variables
     # predicted variables and the observable variables
     # Partial least squares Discriminant Analysis (PLS-DA) is a variant used when the Y is categorical.
@@ -68,17 +68,17 @@ class IndDiff(Model):
 
 
     def _get_pcax(self):
-        pca = PCA(self.ds_X.values, numPC=5, Xstand=True, cvType=["loo"])
+        cpca = pca.nipalsPCA(self.ds_X.values, numPC=5, Xstand=True, cvType=["loo"])
 
-        return self._pack_pca_res(pca)
+        return self._pack_pca_res(cpca)
 
 
     def _pack_pca_res(self, pca_obj):
-        res = Result('PCA {0}'.format(self.ds_X.display_name))
+        res = pb.Result('PCA {0}'.format(self.ds_X.display_name))
 
         # Scores
         mT = pca_obj.X_scores()
-        res.scores = DataSet(
+        res.scores = ds.DataSet(
             mat=_pd.DataFrame(
                 data=mT,
                 index=self.ds_X.obj_n,
@@ -89,7 +89,7 @@ class IndDiff(Model):
 
         # Loadings
         mP = pca_obj.X_loadings()
-        res.loadings = DataSet(
+        res.loadings = ds.DataSet(
             mat=_pd.DataFrame(
                 data=mP,
                 index=self.ds_X.var_n,
@@ -107,9 +107,10 @@ class IndDiff(Model):
                                 self.C_zero_std, self.S_zero_std)
         # n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
         n_pc = 5
-        pls = PLSR(self.ds_X.values, self.ds_Y.values,
-                   numPC=n_pc, cvType=["loo"],
-                   Xstand=True, Ystand=True)
+        pls = plsr.nipalsPLS2(
+            self.ds_X.values, self.ds_Y.values,
+            numPC=n_pc, cvType=["loo"],
+            Xstand=True, Ystand=True)
         return self._pack_res(pls)
 
 
@@ -158,7 +159,7 @@ class IndDiff(Model):
 
 
     def _mk_pred_ds(self, pred_mat, npc):
-        pred_ds = DataSet(
+        pred_ds = ds.DataSet(
             mat=_pd.DataFrame(
                 data=pred_mat,
                 index=self.ds_Y.obj_n,
@@ -169,12 +170,13 @@ class IndDiff(Model):
 
 
     def _pack_res(self, pls_obj):
-        res = Result('IndDiff {0}(X) & {1}(Y)'.format(self.ds_X.display_name, self.ds_Y.display_name))
+        res = pb.Result('IndDiff {0}(X) & {1}(Y)'.format(
+            self.ds_X.display_name, self.ds_Y.display_name))
         res.external_mapping = False
 
         # Scores X
         mT = pls_obj.X_scores()
-        res.scores_x = DataSet(
+        res.scores_x = ds.DataSet(
             mat=_pd.DataFrame(
                 data=mT,
                 index=self.ds_X.obj_n,
@@ -184,7 +186,7 @@ class IndDiff(Model):
 
         # loadings_x
         mP = pls_obj.X_loadings()
-        res.loadings_x = DataSet(
+        res.loadings_x = ds.DataSet(
             mat=_pd.DataFrame(
                 data=mP,
                 index=self.ds_X.var_n,
@@ -195,7 +197,7 @@ class IndDiff(Model):
         # loadings_y
         # Same as loading_x in external mapping?
         mQ = pls_obj.Y_loadings()
-        res.loadings_y = DataSet(
+        res.loadings_y = ds.DataSet(
             mat=_pd.DataFrame(
                 data=mQ,
                 index=self.ds_Y.var_n,
@@ -208,7 +210,7 @@ class IndDiff(Model):
         cum_cal = pls_obj.X_cumCalExplVar()[1:]
         val = pls_obj.X_valExplVar()
         cum_val = pls_obj.X_cumValExplVar()[1:]
-        res.expl_var_x = DataSet(
+        res.expl_var_x = ds.DataSet(
             mat=_pd.DataFrame(
                 data=[cal, cum_cal, val, cum_val],
                 index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
@@ -221,7 +223,7 @@ class IndDiff(Model):
         cum_cal = pls_obj.Y_cumCalExplVar()[1:]
         val = pls_obj.Y_valExplVar()
         cum_val = pls_obj.Y_cumValExplVar()[1:]
-        res.expl_var_y = DataSet(
+        res.expl_var_y = ds.DataSet(
             mat=_pd.DataFrame(
                 data=[cal, cum_cal, val, cum_val],
                 index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
@@ -232,7 +234,7 @@ class IndDiff(Model):
         # X_corrLoadings()
         # corr_loadings_x
         mXcl = pls_obj.X_corrLoadings()
-        res.corr_loadings_x = DataSet(
+        res.corr_loadings_x = ds.DataSet(
             mat=_pd.DataFrame(
                 data=mXcl,
                 index=self.ds_X.var_n,
@@ -243,7 +245,7 @@ class IndDiff(Model):
         # Y_corrLoadings()
         # corr_loadings_y
         mYcl = pls_obj.Y_corrLoadings()
-        res.corr_loadings_y = DataSet(
+        res.corr_loadings_y = ds.DataSet(
             mat=_pd.DataFrame(
                 data=mYcl,
                 index=self.ds_Y.var_n,
