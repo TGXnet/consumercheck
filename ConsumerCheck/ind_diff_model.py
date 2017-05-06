@@ -68,7 +68,7 @@ class IndDiff(pb.Model):
 
 
     def _get_pcax(self):
-        cpca = pca.nipalsPCA(self.ds_X.values, numPC=5, Xstand=True, cvType=["loo"])
+        cpca = pca.nipalsPCA(self.ds_X.values, numPC=5, Xstand=False, cvType=["loo"])
 
         return self._pack_pca_res(cpca)
 
@@ -89,13 +89,26 @@ class IndDiff(pb.Model):
 
         # Loadings
         mP = pca_obj.X_loadings()
-        res.loadings = ds.DataSet(
+        res.loadings_x = ds.DataSet(
             mat=_pd.DataFrame(
                 data=mP,
                 index=self.ds_X.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
             ),
             display_name='Loadings')
+
+        # Explained variance
+        cal = pca_obj.X_calExplVar()
+        cum_cal = pca_obj.X_cumCalExplVar()[1:]
+        val = pca_obj.X_valExplVar()
+        cum_val = pca_obj.X_cumValExplVar()[1:]
+        res.expl_var_x = ds.DataSet(
+            mat=_pd.DataFrame(
+                data=[cal, cum_cal, val, cum_val],
+                index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
+                columns=["PC-{0}".format(i+1) for i in range(len(cal))],
+            ),
+            display_name='Explained variance')
 
         return res
 
