@@ -37,11 +37,13 @@ import dataset_container as dc
 import plot_windows as pw
 import plugin_tree_helper as pth
 import plugin_base as pb
+from plot_pc_scatter import PCScatterPlot, PCPlotControl
+from plot_windows import SinglePlotWindow
 
 
 class IndDiffController(pb.ModelController):
 
-    window_launchers = _traits.List(_traits.Instance(pth.WindowLauncher))
+    pca_x = _traits.List(_traits.Instance(pth.WindowLauncher))
 
 
     def _name_default(self):
@@ -49,11 +51,11 @@ class IndDiffController(pb.ModelController):
             self.model.ds_L.display_name)
 
 
-    def _window_launchers_default(self):
-        return self._populate_window_launchers()
+    def _pca_x_default(self):
+        return self._populate_pca_x()
 
 
-    def _populate_window_launchers(self):
+    def _populate_pca_x(self):
 
         std_launchers = [
             # ("Overview", plot_overview),
@@ -68,7 +70,7 @@ class IndDiffController(pb.ModelController):
         return [pth.WindowLauncher(
             node_name=nn, view_creator=fn,
             owner_ref=self,
-            loop_name='window_launchers',) for nn, fn in std_launchers]
+            loop_name='pca_x',) for nn, fn in std_launchers]
 
 
     def _show_zero_var_warning(self):
@@ -100,6 +102,33 @@ class IndDiffController(pb.ModelController):
             res = self.model.res
 
         return res
+
+
+    def open_overview(self):
+        """Make PCA overview plot.
+
+        Plot an array of plots where we plot scores, loadings, corr. load and expl. var
+        for each of the data sets.
+        """
+        print("PCA loadings")
+        res = self.model.pcax
+        plot = loadings_x_plot(res)
+        # wl = self.window_launchers
+        # title = self._wind_title(res)
+        # self._show_plot_window(plot)
+        view_loop = self.pca_x
+
+        plot_control = PCPlotControl(plot)
+
+        win = SinglePlotWindow(
+            plot=plot_control,
+            res=res,
+            view_loop=view_loop,
+        )
+        # win.print_traits()
+        self._show_plot_window(win)
+
+
 
 
     def open_window(self, viewable, view_loop):
@@ -144,11 +173,15 @@ def scores_plot(res):
 
 
 def loadings_x_plot(res):
-    if res.external_mapping:
-        plot = pps.PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
-    else:
-        plot = pps.ScatterSectorPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    print(res.loadings_x.mat.head())
+    plot = pps.PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
     return plot
+
+    # if res.external_mapping:
+    #     plot = pps.PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    # else:
+    #     plot = pps.ScatterSectorPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    # return plot
 
 
 def expl_var_x_plot(res):
@@ -182,10 +215,10 @@ ind_diff_nodes = [
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
-        children='window_launchers',
+        children='pca_x',
         view=ind_diff_view,
         menu=[],
-        on_dclick=None),
+        on_dclick=pth.overview_activator),
     _traitsui.TreeNode(
         node_for=[pth.WindowLauncher],
         label='node_name',
@@ -221,8 +254,8 @@ class IndDiffPluginController(pb.PluginController):
 
     def _update_comb(self):
         dsc = self.model.dsc
-        self.comb.like_set = [('', '')] + dsc.get_id_name_map('Consumer characteristics')
-        self.comb.attr_set = [('', '')] + dsc.get_id_name_map('Consumer liking')
+        self.comb.like_set = [('', '')] + dsc.get_id_name_map('Consumer liking')
+        self.comb.attr_set = [('', '')] + dsc.get_id_name_map('Consumer characteristics')
 
 
     @_traits.on_trait_change('comb:consumer_liking_updated', post_init=False)
@@ -232,17 +265,17 @@ class IndDiffPluginController(pb.PluginController):
         self._make_pca_calc(selection)
 
 
-    def _make_pca_calc(self, id_c):
-        ds_c = self.model.dsc[id_c]
+    def _make_pca_calc(self, id_l):
+        ds_l = self.model.dsc[id_l]
 
         # Check missing data
-        if ds_c.missing_data:
+        if ds_l.missing_data:
             self._show_missing_warning()
             return
 
         calc_model = idm.IndDiff(
-            id=id_c,
-            ds_L=ds_c,
+            id=id_l,
+            ds_L=ds_l,
             settings=self.model.calculator)
         calculation = IndDiffController(calc_model, win_handle=self.win_handle)
         self.model.add(calculation)
@@ -254,25 +287,25 @@ class IndDiffPluginController(pb.PluginController):
         self._make_pls_calc(selection)
 
 
-    def _make_pls_calc(self, id_s):
-        ds_s = self.model.dsc[id_s]
+    def _make_pls_calc(self, id_a):
+        ds_a = self.model.dsc[id_a]
         calc = self.model.calculations[0]
-        ds_c = calc.model.ds_L
+        ds_l = calc.model.ds_L
 
         # Check missing data
-        if ds_s.missing_data:
+        if ds_a.missing_data:
             self._show_missing_warning()
             return
 
         # Check data set alignment
-        # ns_c = ds_c.n_objs
-        # ns_s = ds_s.n_objs
-        # if ns_c != ns_s:
-        #     self._show_alignment_warning(ds_c, ds_s)
+        # ns_l = ds_l.n_objs
+        # ns_a = ds_a.n_objs
+        # if ns_l != ns_a:
+        #     self._show_alignment_warning(ds_l, ds_a)
         #     return
 
-        calc.model.id = ds_c.id + id_s
-        calc.model.ds_A = ds_s
+        calc.model.id = ds_l.id + id_a
+        calc.model.ds_A = ds_a
 
 
     def _show_missing_warning(self):
@@ -288,14 +321,14 @@ class IndDiffPluginController(pb.PluginController):
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
-    def _show_alignment_warning(self, ds_c, ds_s):
+    def _show_alignment_warning(self, ds_l, ds_a):
         dlg = dlgs.ErrorMessage()
         dlg.err_msg = 'Consumer liking and sensory profiling data does not align'
         dlg.err_val = (
             "The Consumer liking data and descriptive analysis/sensory profiling "
             "data do not align. There are {0} rows in {1} and {2} rows in the {3}. "
             "Please select other data."
-        ).format(ds_c.n_objs, ds_c.display_name, ds_s.n_objs, ds_s.display_name)
+        ).format(ds_l.n_objs, ds_l.display_name, ds_a.n_objs, ds_a.display_name)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
@@ -322,9 +355,13 @@ if __name__ == '__main__':
     one_branch = False
 
     # Folder, File name, Display name, DS type
-    ds_L_meta = ('HamData', 'Ham_consumer_liking.txt',
-                 'Ham liking', 'Consumer liking')
-    ds_A_meta = ('HamData', 'Ham_consumer_characteristics.txt',
+    # ds_L_meta = ('HamData', 'Ham_consumer_liking.txt',
+    #              'Ham liking', 'Consumer liking')
+    # ds_A_meta = ('HamData', 'Ham_consumer_characteristics.txt',
+    #              'Consumer values', 'Consumer characteristics')
+    ds_L_meta = ('Cheese', 'ConsumerLiking.txt',
+                 'Cheese liking', 'Consumer liking')
+    ds_A_meta = ('Cheese', 'ConsumerValues.txt',
                  'Consumer values', 'Consumer characteristics')
     L = imp_ds(ds_L_meta)
     A = imp_ds(ds_A_meta)
