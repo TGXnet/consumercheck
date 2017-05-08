@@ -22,6 +22,7 @@
 # Scipy libs imports
 import numpy as _np
 import pandas as _pd
+import sklearn.cross_decomposition
 
 # ETS imports
 import traits.api as _traits
@@ -31,6 +32,7 @@ import pca
 import plsr
 import dataset as ds
 import plugin_base as pb
+import result_adapter as ra
 
 
 class InComputeable(Exception):
@@ -70,48 +72,8 @@ class IndDiff(pb.Model):
     def _get_pcax(self):
         cpca = pca.nipalsPCA(self.ds_X.values, numPC=5, Xstand=False, cvType=["loo"])
 
-        return self._pack_pca_res(cpca)
-
-
-    def _pack_pca_res(self, pca_obj):
-        res = pb.Result('PCA {0}'.format(self.ds_X.display_name))
-
-        # Scores
-        mT = pca_obj.X_scores()
-        res.scores = ds.DataSet(
-            mat=_pd.DataFrame(
-                data=mT,
-                index=self.ds_X.obj_n,
-                columns=["PC-{0}".format(i+1) for i in range(mT.shape[1])],
-            ),
-            subs=self.ds_X.subs,
-            display_name='Scores')
-
-        # Loadings
-        mP = pca_obj.X_loadings()
-        res.loadings_x = ds.DataSet(
-            mat=_pd.DataFrame(
-                data=mP,
-                index=self.ds_X.var_n,
-                columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
-            ),
-            display_name='Loadings')
-
-        # Explained variance
-        cal = pca_obj.X_calExplVar()
-        cum_cal = pca_obj.X_cumCalExplVar()[1:]
-        val = pca_obj.X_valExplVar()
-        cum_val = pca_obj.X_cumValExplVar()[1:]
-        res.expl_var_x = ds.DataSet(
-            mat=_pd.DataFrame(
-                data=[cal, cum_cal, val, cum_val],
-                index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
-                columns=["PC-{0}".format(i+1) for i in range(len(cal))],
-            ),
-            display_name='Explained variance')
-
-        return res
-
+        # return self._pack_pca_res(cpca)
+        return ra.adapt_oto_pca(cpca, self.ds_X, self.ds_X.display_name)
 
 
     def _get_res(self):
