@@ -43,7 +43,8 @@ from plot_windows import SinglePlotWindow
 
 class IndDiffController(pb.ModelController):
 
-    pca_x = _traits.List(_traits.Instance(pth.WindowLauncher))
+    pca_x_launchers = _traits.List(pth.WindowLauncher)
+    idx_pls_launchers = _traits.List(pth.WindowLauncher)
 
 
     def _name_default(self):
@@ -51,7 +52,7 @@ class IndDiffController(pb.ModelController):
             self.model.ds_L.display_name)
 
 
-    def _pca_x_default(self):
+    def _pca_x_launchers_default(self):
         return self._populate_pca_x()
 
 
@@ -70,7 +71,27 @@ class IndDiffController(pb.ModelController):
         return [pth.WindowLauncher(
             node_name=nn, view_creator=fn,
             owner_ref=self,
-            loop_name='pca_x',) for nn, fn in std_launchers]
+            loop_name='pca_x_launchers',) for nn, fn in std_launchers]
+
+
+
+    @_traits.on_trait_change('model.ds_A')
+    def _populate_idx_pls(self):
+        # FIXME: When to activate this
+        print("Watch this")
+        enum_pc = list(self.model.pcax.loadings.mat.columns)
+
+        wll = []
+        for n in enum_pc:
+            wl = pth.WindowLauncher(
+                owner_ref=self, node_name=str(n),
+                view_creator=None,
+                func_parms=tuple([n]),
+                loop_name='idx_win_launchers')
+            wll.append(wl)
+
+        self.idx_pls_launchers = wll
+
 
 
     def _show_zero_var_warning(self):
@@ -116,7 +137,7 @@ class IndDiffController(pb.ModelController):
         # wl = self.window_launchers
         # title = self._wind_title(res)
         # self._show_plot_window(plot)
-        view_loop = self.pca_x
+        view_loop = self.pca_x_launchers
 
         plot_control = PCPlotControl(plot)
 
@@ -173,10 +194,8 @@ def scores_plot(res):
 
 
 def loadings_x_plot(res):
-    print(res.loadings_x.mat.head())
-    plot = pps.PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    plot = pps.PCScatterPlot(res.loadings, res.expl_var, title='X loadings')
     return plot
-
     # if res.external_mapping:
     #     plot = pps.PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
     # else:
@@ -215,7 +234,17 @@ ind_diff_nodes = [
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
-        children='pca_x',
+        children='pca_x_launchers',
+        view=ind_diff_view,
+        menu=[],
+        on_dclick=pth.overview_activator),
+    _traitsui.TreeNode(
+        node_for=[IndDiffController],
+        label='=PLSR(X, Y)',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
+        children='idx_pls_launchers',
         view=ind_diff_view,
         menu=[],
         on_dclick=pth.overview_activator),
@@ -283,6 +312,7 @@ class IndDiffPluginController(pb.PluginController):
 
     @_traits.on_trait_change('comb:consumer_attributes_updated', post_init=False)
     def _handle_attr_sel(self, obj, name, old, new):
+        print("Its happening")
         selection = self.comb.sel_attr[0]
         self._make_pls_calc(selection)
 
