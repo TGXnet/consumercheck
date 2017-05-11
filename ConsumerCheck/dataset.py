@@ -143,6 +143,15 @@ class DataSet(_traits.HasTraits):
         return self.mat.loc[list(subset.row_selector)]
 
 
+    def copy(self, transpose=False):
+        new = self.clone_traits(traits=['display_name', 'kind', 'style', 'subs'])
+        if transpose:
+            new.mat = self.mat.transpose()
+        else:
+            new.mat = self.mat
+        return new
+
+
 class VisualStyle(_traits.HasTraits):
     fg_color = ColorTrait('black')
     bg_color = ColorTrait('white')
