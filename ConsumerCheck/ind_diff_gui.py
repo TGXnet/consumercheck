@@ -41,10 +41,36 @@ from plot_pc_scatter import PCScatterPlot, PCPlotControl
 from plot_windows import SinglePlotWindow
 
 
+class Elements(_traits.HasTraits):
+    name = _traits.Str('EnToTre')
+    number = _traits.Str('1002')
+    plots_act = _traits.List(pth.WindowLauncher)
+
+
+    def _plots_act_default(self):
+
+        acts = [
+            # ("Overview", plot_overview),
+            ("X Scores", scores_plot),
+            # ("X&Y correlation loadings", corr_loadings_plot),
+            ("Loadings", loadings_x_plot),
+            # ("Y loadings", loadings_y_plot),
+            # ("Explained var in X", expl_var_x_plot),
+            # ("Explained var in Y", expl_var_y_plot),
+        ]
+
+        return [pth.WindowLauncher(
+            node_name=nn,
+            view_creator=fn,
+            owner_ref=self,
+            loop_name='pca_x_launchers',) for nn, fn in acts]
+
+
+
 class IndDiffController(pb.ModelController):
 
     pca_x_launchers = _traits.List(pth.WindowLauncher)
-    idx_pls_launchers = _traits.List(pth.WindowLauncher)
+    idx_pls_launchers = _traits.List(Elements)
 
 
     def _name_default(self):
@@ -83,11 +109,9 @@ class IndDiffController(pb.ModelController):
 
         wll = []
         for n in enum_pc:
-            wl = pth.WindowLauncher(
-                owner_ref=self, node_name=str(n),
-                view_creator=None,
-                func_parms=tuple([n]),
-                loop_name='idx_win_launchers')
+            wl = Elements(
+                name=str(n),
+                number=str(n))
             wll.append(wl)
 
         self.idx_pls_launchers = wll
@@ -248,6 +272,12 @@ ind_diff_nodes = [
         view=ind_diff_view,
         menu=[],
         on_dclick=pth.overview_activator),
+    _traitsui.TreeNode(
+        node_for=[Elements],
+        label='name',
+        children='plots_act',
+        view=no_view,
+        menu=[]),
     _traitsui.TreeNode(
         node_for=[pth.WindowLauncher],
         label='node_name',
