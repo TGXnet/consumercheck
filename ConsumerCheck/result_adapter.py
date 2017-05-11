@@ -89,13 +89,222 @@ def adapt_sklearn_pca():
 
 
 def adapt_oto_pls():
-    pass
+    # FIXME: Not updated!!!
+    res = pb.Result('IndDiff {0}(X) & {1}(Y)'.format(
+        self.ds_X.display_name, self.ds_Y.display_name))
+    res.external_mapping = False
+
+    # Scores X
+    mT = pls_obj.X_scores()
+    res.scores_x = ds.DataSet(
+        mat=_pd.DataFrame(
+            data=mT,
+            index=self.ds_X.obj_n,
+            columns=["PC-{0}".format(i+1) for i in range(mT.shape[1])],
+        ),
+        display_name='X scores')
+
+    # loadings_x
+    mP = pls_obj.X_loadings()
+    res.loadings_x = ds.DataSet(
+        mat=_pd.DataFrame(
+            data=mP,
+            index=self.ds_X.var_n,
+            columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
+        ),
+        display_name='X loadings')
+
+    # loadings_y
+    # Same as loading_x in external mapping?
+    mQ = pls_obj.Y_loadings()
+    res.loadings_y = ds.DataSet(
+        mat=_pd.DataFrame(
+            data=mQ,
+            index=self.ds_Y.var_n,
+            columns=["PC-{0}".format(i+1) for i in range(mQ.shape[1])],
+        ),
+        display_name='Y loadings')
+
+    # expl_var_x
+    cal = pls_obj.X_calExplVar()
+    cum_cal = pls_obj.X_cumCalExplVar()[1:]
+    val = pls_obj.X_valExplVar()
+    cum_val = pls_obj.X_cumValExplVar()[1:]
+    res.expl_var_x = ds.DataSet(
+        mat=_pd.DataFrame(
+            data=[cal, cum_cal, val, cum_val],
+            index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
+            columns=["PC-{0}".format(i+1) for i in range(len(cal))],
+        ),
+        display_name='Explained variance in X')
+
+    # expl_var_y
+    cal = pls_obj.Y_calExplVar()
+    cum_cal = pls_obj.Y_cumCalExplVar()[1:]
+    val = pls_obj.Y_valExplVar()
+    cum_val = pls_obj.Y_cumValExplVar()[1:]
+    res.expl_var_y = ds.DataSet(
+        mat=_pd.DataFrame(
+            data=[cal, cum_cal, val, cum_val],
+            index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
+            columns=["PC-{0}".format(i+1) for i in range(len(cal))],
+        ),
+        display_name='Explained variance in Y')
+
+    # X_corrLoadings()
+    # corr_loadings_x
+    mXcl = pls_obj.X_corrLoadings()
+    res.corr_loadings_x = ds.DataSet(
+        mat=_pd.DataFrame(
+            data=mXcl,
+            index=self.ds_X.var_n,
+            columns=["PC-{0}".format(i+1) for i in range(mXcl.shape[1])],
+        ),
+        display_name='X & Y correlation loadings')
+
+    # Y_corrLoadings()
+    # corr_loadings_y
+    mYcl = pls_obj.Y_corrLoadings()
+    res.corr_loadings_y = ds.DataSet(
+        mat=_pd.DataFrame(
+            data=mYcl,
+            index=self.ds_Y.var_n,
+            columns=["PC-{0}".format(i+1) for i in range(mXcl.shape[1])],
+        ),
+        display_name=self.ds_Y.display_name)
+
+    # Y_predCal()
+    # Return a dict with Y pred for each PC
+    pYc = pls_obj.Y_predCal()
+    ks = pYc.keys()
+    pYcs = [self._mk_pred_ds(pYc[k], k) for k in ks]
+    res.pred_cal_y = pYcs
+
+    # Y_predVal()
+    # Return a dict with Y pred for each PC
+    pYv = pls_obj.Y_predVal()
+    ks = pYv.keys()
+    pYvs = [self._mk_pred_ds(pYv[k], k) for k in ks]
+    res.pred_val_y = pYvs
+
+    return res
 
 
+def adapt_sklearn_pls(pls, dsx, dsy, yname):
 
-def adapt_sklearn_pls():
-    pass
+    res = Result('IndDiff {0}(X) & {1}(Y)'.format(
+        dsx.display_name, yname))
+
+    # Scores X
+    mT = pls.x_scores_
+    res.scores_x = DataSet(
+        mat=_pd.DataFrame(
+            data=mT,
+            index=dsx.obj_n,
+            columns=["PC-{0}".format(i+1) for i in range(mT.shape[1])],
+        ),
+        display_name='X scores')
+
+    # loadings_x
+    mP = pls.x_loadings_
+    res.loadings_x = DataSet(
+        mat=_pd.DataFrame(
+            data=mP,
+            index=dsx.var_n,
+            columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
+        ),
+        display_name='X loadings')
+
+    # loadings_y
+    # Same as loading_x in external mapping?
+    mQ = pls.y_loadings_
+    res.loadings_y = DataSet(
+        mat=_pd.DataFrame(
+            data=mQ,
+            # index=dsy.var_n,
+            columns=["PC-{0}".format(i+1) for i in range(mQ.shape[1])],
+        ),
+        display_name='Y loadings')
+    # print(res.scores_x.mat)
+    # print(res.loadings_x.mat)
+    # res.loadings_y.print_traits()
+
+    # expl_var_x
+    # cal = pls.X_calExplVar()
+    # cum_cal = pls.X_cumCalExplVar()[1:]
+    # val = pls.X_valExplVar()
+    # cum_val = pls.X_cumValExplVar()[1:]
+    # res.expl_var_x = DataSet(
+    #     mat=_pd.DataFrame(
+    #         data=[cal, cum_cal, val, cum_val],
+    #         index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
+    #         columns=["PC-{0}".format(i+1) for i in range(len(cal))],
+    #     ),
+    #     display_name='Explained variance in X')
+
+    # # expl_var_y
+    # cal = pls.Y_calExplVar()
+    # cum_cal = pls.Y_cumCalExplVar()[1:]
+    # val = pls.Y_valExplVar()
+    # cum_val = pls.Y_cumValExplVar()[1:]
+    # res.expl_var_y = DataSet(
+    #     mat=_pd.DataFrame(
+    #         data=[cal, cum_cal, val, cum_val],
+    #         index=['calibrated', 'cumulative calibrated', 'validated', 'cumulative validated'],
+    #         columns=["PC-{0}".format(i+1) for i in range(len(cal))],
+    #     ),
+    #     display_name='Explained variance in Y')
+
+    # # X_corrLoadings()
+    # # corr_loadings_x
+    # mXcl = pls.X_corrLoadings()
+    # res.corr_loadings_x = DataSet(
+    #     mat=_pd.DataFrame(
+    #         data=mXcl,
+    #         index=dsx.var_n,
+    #         columns=["PC-{0}".format(i+1) for i in range(mXcl.shape[1])],
+    #     ),
+    #     display_name='X & Y correlation loadings')
+
+    # # Y_corrLoadings()
+    # # corr_loadings_y
+    # mYcl = pls.Y_corrLoadings()
+    # res.corr_loadings_y = DataSet(
+    #     mat=_pd.DataFrame(
+    #         data=mYcl,
+    #         index=dsy.var_n,
+    #         columns=["PC-{0}".format(i+1) for i in range(mXcl.shape[1])],
+    #     ),
+    #     display_name=dsy.display_name)
+
+    # # Y_predCal()
+    # # Return a dict with Y pred for each PC
+    # pYc = pls.Y_predCal()
+    # ks = pYc.keys()
+    # pYcs = [_mk_pred_ds(pYc[k], k) for k in ks]
+    # res.pred_cal_y = pYcs
+
+    # # Y_predVal()
+    # # Return a dict with Y pred for each PC
+    # pYv = pls.Y_predVal()
+    # ks = pYv.keys()
+    # pYvs = [_mk_pred_ds(pYv[k], k) for k in ks]
+    # res.pred_val_y = pYvs
+
+    return res
+
 
 
 def adapt_oto_pcr():
     pass
+
+
+def _mk_pred_ds(self, pred_mat, npc, dsy):
+    pred_ds = DataSet(
+        mat=_pd.DataFrame(
+            data=pred_mat,
+            index=dsy.obj_n,
+            columns=dsy.var_n,
+        ),
+        display_name='Predicted after PC{}'.format(npc))
+    return pred_ds
