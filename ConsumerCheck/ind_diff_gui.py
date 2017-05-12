@@ -41,28 +41,35 @@ from plot_pc_scatter import PCScatterPlot, PCPlotControl
 from plot_windows import SinglePlotWindow
 
 
+class WindowLauncher(_traits.HasTraits):
+    node_name = _traits.Str()
+    plot_func_name = _traits.Str()
+    owner_ref = _traits.WeakRef()
+    loop_name = _traits.Str()
+
+
 class Elements(_traits.HasTraits):
     name = _traits.Str()
     index = _traits.Str()
     calcc = _traits.WeakRef()
-    plots_act = _traits.List(pth.WindowLauncher)
+    plots_act = _traits.List(WindowLauncher)
 
 
     def _plots_act_default(self):
 
         acts = [
             # ("Overview", plot_overview),
-            ("X Scores", scores_plot),
+            ("X Scores", 'scores_plot'),
             # ("X&Y correlation loadings", corr_loadings_plot),
-            ("Loadings", loadings_x_plot),
+            ("Loadings", 'loadings_x_plot'),
             # ("Y loadings", loadings_y_plot),
             # ("Explained var in X", expl_var_x_plot),
             # ("Explained var in Y", expl_var_y_plot),
         ]
 
-        return [pth.WindowLauncher(
+        return [WindowLauncher(
             node_name=nn,
-            view_creator=fn,
+            plot_func_name=fn,
             owner_ref=self,
             loop_name='pca_x_launchers',) for nn, fn in acts]
 
@@ -70,7 +77,7 @@ class Elements(_traits.HasTraits):
 
 class IndDiffController(pb.ModelController):
 
-    pca_x_launchers = _traits.List(pth.WindowLauncher)
+    pca_x_launchers = _traits.List(WindowLauncher)
     idx_pls_launchers = _traits.List(Elements)
 
 
@@ -118,7 +125,7 @@ class IndDiffController(pb.ModelController):
         return res
 
 
-    def open_overview(self):
+    def pca_loadings_plot(self):
         """Make PCA overview plot.
 
         Plot an array of plots where we plot scores, loadings, corr. load and expl. var
@@ -143,6 +150,20 @@ class IndDiffController(pb.ModelController):
         self._show_plot_window(win)
 
 
+    def scores_plot(self, res):
+        # plot = pps.PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
+        plot = pps.PCScatterPlot(res.scores_x, title='X scores')
+        return plot
+
+
+    def loadings_x_plot(self, res):
+        plot = pps.PCScatterPlot(res.loadings_x, title='X loadings')
+        return plot
+
+
+    def expl_var_x_plot(res):
+        plot = pel.EVLinePlot(res.expl_var_x, title='Explained variance in X')
+        return plot
 
 
     def open_window(self, viewable, view_loop):
@@ -172,31 +193,12 @@ class IndDiffController(pb.ModelController):
 # Plot creators
 
 def dclk_activator(obj):
-    open_win_func = obj.view_creator
+    plot_func_name = obj.plot_func_name
     res = obj.owner_ref.calcc.model.calculate(obj.owner_ref.index)
     loop = getattr(obj.owner_ref.calcc, obj.loop_name)
-    view = open_win_func(res)
+    func = getattr(obj.owner_ref.calcc, plot_func_name)
+    view = func(res)
     obj.owner_ref.calcc.open_window(view, loop)
-
-
-def scores_plot(res):
-    plot = pps.PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
-    return plot
-
-
-def loadings_x_plot(res):
-    plot = pps.PCScatterPlot(res.loadings, res.expl_var, title='X loadings')
-    return plot
-    # if res.external_mapping:
-    #     plot = pps.PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
-    # else:
-    #     plot = pps.ScatterSectorPlot(res.loadings_x, res.expl_var_x, title='X loadings')
-    # return plot
-
-
-def expl_var_x_plot(res):
-    plot = pel.EVLinePlot(res.expl_var_x, title='Explained variance in X')
-    return plot
 
 
 no_view = _traitsui.View()
@@ -244,7 +246,7 @@ ind_diff_nodes = [
         view=no_view,
         menu=[]),
     _traitsui.TreeNode(
-        node_for=[pth.WindowLauncher],
+        node_for=[WindowLauncher],
         label='node_name',
         view=no_view,
         menu=[],
