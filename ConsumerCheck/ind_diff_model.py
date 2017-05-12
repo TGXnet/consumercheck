@@ -70,10 +70,22 @@ class IndDiff(pb.Model):
 
 
     def _get_pcax(self):
-        cpca = pca.nipalsPCA(self.ds_X.values, numPC=5, Xstand=False, cvType=["loo"])
+        cpca = pca.nipalsPCA(self.ds_X.values, numPC=3, Xstand=False, cvType=["loo"])
 
         # return self._pack_pca_res(cpca)
         return ra.adapt_oto_pca(cpca, self.ds_X, self.ds_X.display_name)
+
+
+    def calculate(self, index):
+        if self._have_zero_std():
+            raise InComputeable('Matrix have variables with zero variance',
+                                self.C_zero_std, self.S_zero_std)
+        n_pc = 3
+        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
+        dsx = self.ds_X.copy(transpose=True)
+        dsy = self.pcax.loadings.mat[index]
+        pls.fit(dsx.values, dsy.values)
+        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
 
 
     def _get_res(self):
@@ -81,12 +93,18 @@ class IndDiff(pb.Model):
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
         # n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
-        n_pc = 5
-        pls = plsr.nipalsPLS2(
-            self.ds_X.values, self.ds_Y.values,
-            numPC=n_pc, cvType=["loo"],
-            Xstand=True, Ystand=True)
-        return self._pack_res(pls)
+        n_pc = 3
+        # pls = plsr.nipalsPLS2(
+        #     self.ds_X.values, self.ds_Y.values,
+        #     numPC=n_pc, cvType=["loo"],
+        #     Xstand=True, Ystand=True)
+        # Must do manual centring and standardisation
+        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
+        dsx = self.ds_X.copy(transpose=True)
+        dsy = self.pcax.loadings.mat['PC-1']
+        pls.fit(dsx.values, dsy.values)
+        # return self._pack_res(pls)
+        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
 
 
     def _have_zero_std(self):
