@@ -42,8 +42,9 @@ from plot_windows import SinglePlotWindow
 
 
 class Elements(_traits.HasTraits):
-    name = _traits.Str('EnToTre')
-    number = _traits.Str('1002')
+    name = _traits.Str()
+    index = _traits.Str()
+    calcc = _traits.WeakRef()
     plots_act = _traits.List(pth.WindowLauncher)
 
 
@@ -78,44 +79,12 @@ class IndDiffController(pb.ModelController):
             self.model.ds_L.display_name)
 
 
-    def _pca_x_launchers_default(self):
-        return self._populate_pca_x()
-
-
-    def _populate_pca_x(self):
-
-        std_launchers = [
-            # ("Overview", plot_overview),
-            # ("X Scores", scores_plot),
-            # ("X&Y correlation loadings", corr_loadings_plot),
-            # ("Loadings", loadings_x_plot),
-            # ("Y loadings", loadings_y_plot),
-            # ("Explained var in X", expl_var_x_plot),
-            # ("Explained var in Y", expl_var_y_plot),
-        ]
-
-        return [pth.WindowLauncher(
-            node_name=nn, view_creator=fn,
-            owner_ref=self,
-            loop_name='pca_x_launchers',) for nn, fn in std_launchers]
-
-
-
     @_traits.on_trait_change('model.ds_A')
     def _populate_idx_pls(self):
         # FIXME: When to activate this
         print("Watch this")
         enum_pc = list(self.model.pcax.loadings.mat.columns)
-
-        wll = []
-        for n in enum_pc:
-            wl = Elements(
-                name=str(n),
-                number=str(n))
-            wll.append(wl)
-
-        self.idx_pls_launchers = wll
-
+        self.idx_pls_launchers = [Elements(name=name, index=name, calcc=self) for name in enum_pc]
 
 
     def _show_zero_var_warning(self):
@@ -200,17 +169,15 @@ class IndDiffController(pb.ModelController):
             super(IndDiffController, self).open_window(viewable, view_loop)
 
 
-def pred_y_cal_table(res, pcid):
-    ds = res.pred_cal_y[pcid-1]
-    return ds
-
-
-def pred_y_val_table(res, pcid):
-    ds = res.pred_val_y[pcid-1]
-    return ds
-
-
 # Plot creators
+
+def dclk_activator(obj):
+    open_win_func = obj.view_creator
+    res = obj.owner_ref.calcc.model.calculate(obj.owner_ref.index)
+    loop = getattr(obj.owner_ref.calcc, obj.loop_name)
+    view = open_win_func(res)
+    obj.owner_ref.calcc.open_window(view, loop)
+
 
 def scores_plot(res):
     plot = pps.PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
@@ -260,8 +227,7 @@ ind_diff_nodes = [
         icon_open='overview.ico',
         children='pca_x_launchers',
         view=ind_diff_view,
-        menu=[],
-        on_dclick=pth.overview_activator),
+        menu=[]),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
         label='=PLSR(X, Y)',
@@ -270,8 +236,7 @@ ind_diff_nodes = [
         icon_open='overview.ico',
         children='idx_pls_launchers',
         view=ind_diff_view,
-        menu=[],
-        on_dclick=pth.overview_activator),
+        menu=[]),
     _traitsui.TreeNode(
         node_for=[Elements],
         label='name',
@@ -283,7 +248,7 @@ ind_diff_nodes = [
         label='node_name',
         view=no_view,
         menu=[],
-        on_dclick=pth.dclk_activator
+        on_dclick=dclk_activator
     ),
 ]
 
