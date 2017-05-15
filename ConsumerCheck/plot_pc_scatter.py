@@ -196,22 +196,22 @@ class PCScatterPlot(PlotBase):
         """Shows or hide datapoints for PC set."""
 
         if self.visible_datasets == 3:
-#             self.plots['plot_1'][0].visible = False
+            # self.plots['plot_1'][0].visible = False
             self._toggle_points(1, False)
             self.visible_datasets = 2
         elif self.visible_datasets == 2:
-#             self.plots['plot_1'][0].visible = True
-#             self.plots['plot_2'][0].visible = False
+            # self.plots['plot_1'][0].visible = True
+            # self.plots['plot_2'][0].visible = False
             self._toggle_points(1, True)
             self._toggle_points(2, False)
             self.visible_datasets = 1
         else:
-#             self.plots['plot_2'][0].visible = True
+            # self.plots['plot_2'][0].visible = True
             self._toggle_points(2, True)
             self.visible_datasets = 3
 
-#         self.plots['plot_1'][0].request_redraw()
-#         self.plots['plot_2'][0].request_redraw()
+            # self.plots['plot_1'][0].request_redraw()
+            # self.plots['plot_2'][0].request_redraw()
 
     def _toggle_points(self, set_id, visible):
         pnl = [pn for pn in self.plots.keys() if 'plot_{}'.format(set_id) in pn]
@@ -283,14 +283,14 @@ class PCScatterPlot(PlotBase):
         # Adds a PC plot rendrer to the plot object
 
         # FIXME: Value validation
-        #sending to metadata for get_x_y_status
+        # sending to metadata for get_x_y_status
         if PCx < 1 or PCx > self.data.n_pc or PCy < 1 or PCy > self.data.n_pc:
             raise Exception(
                 "PC x:{}, y:{} for plot axis is out of range:{}".format(
                     PCx, PCy, self.data.n_pc))
 
         self.data.x_no, self.data.y_no = PCx, PCy
-        
+
         markers = ['dot',
                    'square',
                    'triangle',
@@ -299,7 +299,7 @@ class PCScatterPlot(PlotBase):
                    'cross']
 
         pdata = self.data.plot_data[set_id-1]
-        
+
         if self.data.plot_group:
             group = self.data.plot_group
             subsets = pdata.pc_ds.get_subsets(group)
@@ -311,7 +311,7 @@ class PCScatterPlot(PlotBase):
                 pd = (x_id, y_id)
                 # plot name
                 pn = 'plot_{}_class_{}'.format(set_id, ss.id)
-                #plot
+                # plot
                 rl = self.plot(pd, type='scatter', name=pn,
                                marker=markers[set_id-1 % 5], marker_size=2,
                                color=ss.gr_style.fg_color
@@ -330,19 +330,19 @@ class PCScatterPlot(PlotBase):
             # plot name
             pn = 'plot_{}_class_0'.format(set_id)
 
-            #plot
+            # plot
             rl = self.plot(pd, type='scatter', name=pn,
                            marker=markers[set_id-1 % 5], marker_size=2,
                            # color=self.data.plot_data[set_id-1].color
                            )
-            #adding data labels
+            # adding data labels
             labels = pdata.labels
             color = pdata.color
             self._add_plot_data_labels(rl[0], pd, labels, color)
 
         # Set axis title
         self._set_plot_axis_title()
-#         return pn
+        # return pn
 
     def _set_plot_axis_title(self):
         tx = ['PC{0}'.format(self.data.x_no)]
@@ -389,7 +389,7 @@ class PCScatterPlot(PlotBase):
                 bgcolor=(0.5, 0.5, 0.5, 0.0),
                 ## label_position = 'bottom left',
                 ## bgcolor = 'transparent',
-                )
+            )
             plot_render.overlays.append(label_obj)
 
     def plot_circle(self, show_half=False):
@@ -502,7 +502,7 @@ class PCScatterPlot(PlotBase):
             data_max=0.5,
             # transverse_bounds=(-99, 99),
             transverse_mapper=self.y_mapper
-            )
+        )
         self.underlays.append(xgrid)
         ygrid = PlotGrid(
             mapper=self.y_mapper,
@@ -514,7 +514,7 @@ class PCScatterPlot(PlotBase):
             data_max=0.5,
             # transverse_bounds=(-99, 99),
             transverse_mapper=self.x_mapper
-            )
+        )
         self.underlays.append(ygrid)
 
     def _get_plot_data(self):
@@ -762,7 +762,7 @@ class CLSectorPlotControl(PCBaseControl):
 
 
 if __name__ == '__main__':
-#     from tests.conftest import iris_ds
+    # from tests.conftest import iris_ds
     import pandas as pd
     from plot_windows import SinglePlotWindow
     from importer_text_file import ImporterTextFile
@@ -781,7 +781,7 @@ if __name__ == '__main__':
     for en, color in enumerate(sd):
         en *= 10
         rs = ["O{0}".format(i+1) for i in range(en, en+10)]
-        style = VisualStyle(fg_color = color)
+        style = VisualStyle(fg_color=color)
         subset = SubSet(id=str(en), name=color, row_selector=rs, gr_style=style)
         irds.subs['en'].append(subset)
 
@@ -792,7 +792,7 @@ if __name__ == '__main__':
         file_path=dfile,
         delimiter=',',
         have_obj_names=False
-        )
+    )
     # itf.configure_traits()
     ds = itf.import_data()
 
