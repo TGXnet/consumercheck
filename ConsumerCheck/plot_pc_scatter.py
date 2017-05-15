@@ -28,8 +28,8 @@ from os.path import join as pjoin
 import numpy as np
 
 # Enthought library imports
-from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
-from chaco.tools.api import ZoomTool, PanTool
+from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext, LassoOverlay
+from chaco.tools.api import ZoomTool, PanTool, LassoSelection, ScatterInspector
 from traits.api import (Bool, Int, List, Long, HasTraits, implements,
                         Property, Range, Str, Unicode, on_trait_change)
 from traitsui.api import Item, Group, View, Label, Include, CheckListEditor
@@ -182,6 +182,36 @@ class PCScatterPlot(PlotBase):
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
 
+        # Add lasso selection
+        # Right now, some of the tools are a little invasive, and we need the
+        # actual ScatterPlot object to give to them
+
+        my_plot = self.plots["plot_1_class_0"][0]
+        lasso_selection = LassoSelection(component=my_plot,
+                                         selection_datasource=my_plot.index,
+                                         drag_button="left")
+        my_plot.active_tool = lasso_selection
+        my_plot.tools.append(ScatterInspector(my_plot))
+        lasso_overlay = LassoOverlay(lasso_selection=lasso_selection,
+                                     component=my_plot)
+        my_plot.overlays.append(lasso_overlay)
+
+        # Uncomment this if you would like to see incremental updates:
+        # lasso_selection.incremental_select = True
+        self.index_datasource = my_plot.index
+        lasso_selection.on_trait_change(self._selection_changed, 'selection_changed')
+
+
+    def _selection_changed(self):
+        mask = self.index_datasource.metadata['selection']
+        print("New selection: ")
+        # print(np.compress(mask, np.arange(len(mask))))
+        labels = self.data.plot_data[0].labels
+        print(np.array(labels)[mask])
+        # Ensure that the points are printed immediately:
+        # sys.stdout.flush()
+
+
     def add_PC_set(self, pc_matrix, expl_vars=None):
         """Add a PC data set with metadata.
 
@@ -257,7 +287,7 @@ class PCScatterPlot(PlotBase):
         """
         plot_ids = self.plots.keys()
         n_ds = len(self.data.plot_data)
-#         plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
+        # plot_ids = ['plot_{}'.format(i+1) for i in range(n_ds)]
         self.delplot(*plot_ids)
         for i in range(n_ds):
             self._plot_PC(i+1, PCx=x, PCy=y)
