@@ -76,7 +76,7 @@ class IndDiff(pb.Model):
         return ra.adapt_oto_pca(cpca, self.ds_X, self.ds_X.display_name)
 
 
-    def calculate(self, index):
+    def calc_plsr_pcx(self, index):
         if self._have_zero_std():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
