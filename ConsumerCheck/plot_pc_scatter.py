@@ -30,8 +30,8 @@ import numpy as np
 # Enthought library imports
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import (Bool, Int, List, Long, HasTraits, implements,
-                        Property, Range, Str, Unicode, on_trait_change)
+from traits.api import (Bool, Button, Int, List, Long, HasTraits, implements,
+                        Property, Range, Str, Unicode, WeakRef, on_trait_change)
 from traitsui.api import Item, Group, View, Label, Include, CheckListEditor
 from enable.api import ColorTrait, ComponentEditor
 from enable.savage.trait_defs.ui.svg_button import SVGButton
@@ -181,12 +181,6 @@ class PCScatterPlot(PlotBase):
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
-
-        # Add lasso selection
-        # Right now, some of the tools are a little invasive, and we need the
-        # actual ScatterPlot object to give to them
-        my_plot = self.plots["plot_1_class_0"][0]
-        self.overlay_selection(my_plot)
 
 
     def add_PC_set(self, pc_matrix, expl_vars=None):
@@ -639,7 +633,9 @@ class PCBaseControl(NoPlotControl):
 
 
 class PCPlotControl(PCBaseControl):
+    created_me = WeakRef(allow_none=True)
     show_labels = Bool(True)
+    add_group = Button("Add group")
     plot_controllers = Group(
         Item('x_down', show_label=False),
         Item('x_up', show_label=False),
@@ -648,6 +644,7 @@ class PCPlotControl(PCBaseControl):
         Item('y_down', show_label=False),
         Item('eq_axis', label="Equal scale axis"),
         Item('show_labels', label="Show labels"),
+        Item('add_group', label="Add group"),
         Item('subset_groups', label="Color subset groups",
              editor=CheckListEditor(name='model.data.group_names')),
         orientation="horizontal",
@@ -667,8 +664,17 @@ class PCPlotControl(PCBaseControl):
         obj.model.show_labels(set_id=1, show=new)
 
 
+    @on_trait_change('add_group')
+    def _(self, obj, name, new):
+        mask = self.model.index_datasource.metadata['selection']
+        labels = self.model.data.plot_data[0].labels
+        self.created_me.add_group(np.array(labels)[mask])
+
+
+
 class PCSectorPlotControl(PCBaseControl):
     show_labels = Bool(True)
+    add_group = Bool(True)
     draw_sectors = Bool(False)
     plot_controllers = Group(
         Item('x_down', show_label=False),
@@ -814,7 +820,7 @@ if __name__ == '__main__':
 
     # plot = PCScatterPlot(ds)
     plot = SelectionScatterPlot(ds)
-    plot_control = PCPlotControl(model=plot)
+    plot_control = PCPlotControl(plot)
     pw = SinglePlotWindow(plot=plot_control)
 
     with np.errstate(invalid='ignore'):
