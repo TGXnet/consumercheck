@@ -41,48 +41,50 @@ from plot_pc_scatter import PCScatterPlot, PCPlotControl
 from plot_windows import SinglePlotWindow
 
 
-class WindowLauncher(_traits.HasTraits):
-    node_name = _traits.Str()
+class DiffWindowLauncher(pth.WindowLauncher):
     plot_func_name = _traits.Str()
-    owner_ref = _traits.WeakRef()
-    loop_name = _traits.Str()
 
 
-class Elements(_traits.HasTraits):
+class Element(_traits.HasTraits):
     name = _traits.Str()
     index = _traits.Str()
     calcc = _traits.WeakRef()
-    plots_act = _traits.List(WindowLauncher)
-
+    plots_act = _traits.List(DiffWindowLauncher)
 
     def _plots_act_default(self):
 
         acts = [
             # ("Overview", plot_overview),
-            ("X Scores", 'scores_plot'),
+            ("X Scores", 'plsr_x_scores_plot'),
             # ("X&Y correlation loadings", corr_loadings_plot),
-            ("Loadings", 'loadings_x_plot'),
+            ("X Loadings", 'plsr_x_loadings_plot'),
             # ("Y loadings", loadings_y_plot),
             # ("Explained var in X", expl_var_x_plot),
             # ("Explained var in Y", expl_var_y_plot),
         ]
 
-        return [WindowLauncher(
+        return [DiffWindowLauncher(
             node_name=nn,
             plot_func_name=fn,
             owner_ref=self,
-            loop_name='pca_x_launchers',) for nn, fn in acts]
+            loop_name='plots_act',) for nn, fn in acts]
+
+
+class Group(Element):
+    member_index = _traits.List()
 
 
 
 class IndDiffController(pb.ModelController):
 
-    pca_x_launchers = _traits.List(WindowLauncher)
-    idx_pls_launchers = _traits.List(Elements)
+    pca_x_launchers = _traits.List(Element)
+    idx_pls_launchers = _traits.List(Element)
+    groups_list = _traits.List(Element)
+    gr_name_inc = _traits.Int(0)
 
 
     def _name_default(self):
-        return "PCA({0})".format(
+        return "indDiff - {0}".format(
             self.model.ds_L.display_name)
 
 
@@ -91,7 +93,13 @@ class IndDiffController(pb.ModelController):
         # FIXME: When to activate this
         print("Watch this")
         enum_pc = list(self.model.pcax.loadings.mat.columns)
-        self.idx_pls_launchers = [Elements(name=name, index=name, calcc=self) for name in enum_pc]
+        self.pca_x_launchers = [Element(name=name, index=name, calcc=self) for name in enum_pc]
+
+
+    def add_group(self, members):
+        self.gr_name_inc += 1
+        el = Element(name="Group {0}".format(self.gr_name_inc), calcc=self, member_index=list(members))
+        self.groups_list.append(el)
 
 
     def _show_zero_var_warning(self):
@@ -126,42 +134,41 @@ class IndDiffController(pb.ModelController):
 
 
     def pca_loadings_plot(self):
-        """Make PCA overview plot.
-
-        Plot an array of plots where we plot scores, loadings, corr. load and expl. var
-        for each of the data sets.
+        """Make PCA loadings
         """
-        print("PCA loadings")
         res = self.model.pcax
-        plot = loadings_x_plot(res)
+        plot = self.pca_x_loadings_plot(res)
         # wl = self.window_launchers
         # title = self._wind_title(res)
         # self._show_plot_window(plot)
-        view_loop = self.pca_x_launchers
+        # view_loop = self.pca_x_launchers
 
-        plot_control = PCPlotControl(plot)
+        plot_control = PCPlotControl(plot, created_me=self)
 
         win = SinglePlotWindow(
             plot=plot_control,
-            res=res,
-            view_loop=view_loop,
+            res=res
         )
-        # win.print_traits()
         self._show_plot_window(win)
 
 
-    def scores_plot(self, res):
+    def pca_x_loadings_plot(self, res):
+        plot = pps.SelectionScatterPlot(res.loadings, title='X loadings')
+        return plot
+
+
+    def plsr_x_scores_plot(self, res):
         # plot = pps.PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
         plot = pps.PCScatterPlot(res.scores_x, title='X scores')
         return plot
 
 
-    def loadings_x_plot(self, res):
+    def plsr_x_loadings_plot(self, res):
         plot = pps.PCScatterPlot(res.loadings_x, title='X loadings')
         return plot
 
 
-    def expl_var_x_plot(res):
+    def plsr_x_expl_var_plot(res):
         plot = pel.EVLinePlot(res.expl_var_x, title='Explained variance in X')
         return plot
 
@@ -177,14 +184,16 @@ class IndDiffController(pb.ModelController):
             win = pw.SinglePlotWindow(
                 plot=plot_control,
                 res=res,
-                view_loop=view_loop)
+                # view_loop=view_loop
+            )
             self._show_plot_window(win)
         elif isinstance(viewable, pps.ScatterSectorPlot):
             plot_control = pps.PCSectorPlotControl(viewable)
             win = pw.SinglePlotWindow(
                 plot=plot_control,
                 res=res,
-                view_loop=view_loop)
+                # view_loop=view_loop
+            )
             self._show_plot_window(win)
         else:
             super(IndDiffController, self).open_window(viewable, view_loop)
@@ -194,11 +203,16 @@ class IndDiffController(pb.ModelController):
 
 def dclk_activator(obj):
     plot_func_name = obj.plot_func_name
-    res = obj.owner_ref.calcc.model.calculate(obj.owner_ref.index)
-    loop = getattr(obj.owner_ref.calcc, obj.loop_name)
+    res = obj.owner_ref.calcc.model.calc_plsr_pcx(obj.owner_ref.index)
+    # loop = getattr(obj.owner_ref.plots_act, obj.loop_name)
+    loop = obj.owner_ref.plots_act
     func = getattr(obj.owner_ref.calcc, plot_func_name)
     view = func(res)
     obj.owner_ref.calcc.open_window(view, loop)
+
+
+def plot_pca_loadings(obj):
+    obj.pca_loadings_plot()
 
 
 no_view = _traitsui.View()
@@ -223,13 +237,14 @@ ind_diff_nodes = [
         menu=[]),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
-        label='=Loadings X plot',
+        label='=PCA(set name)',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
         children='pca_x_launchers',
         view=ind_diff_view,
-        menu=[]),
+        menu=[],
+        on_dclick=plot_pca_loadings),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
         label='=PLSR(X, Y)',
@@ -240,13 +255,22 @@ ind_diff_nodes = [
         view=ind_diff_view,
         menu=[]),
     _traitsui.TreeNode(
-        node_for=[Elements],
+        node_for=[IndDiffController],
+        label='=Groups',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
+        children='groups_list',
+        view=ind_diff_view,
+        menu=[]),
+    _traitsui.TreeNode(
+        node_for=[Element],
         label='name',
         children='plots_act',
         view=no_view,
         menu=[]),
     _traitsui.TreeNode(
-        node_for=[WindowLauncher],
+        node_for=[DiffWindowLauncher],
         label='node_name',
         view=no_view,
         menu=[],
