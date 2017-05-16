@@ -88,6 +88,21 @@ class IndDiff(pb.Model):
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
 
 
+    def calc_plsr_groups(self, selection):
+        if self._have_zero_std():
+            raise InComputeable('Matrix have variables with zero variance',
+                                self.C_zero_std, self.S_zero_std)
+        n_pc = 3
+        sel = [str(e) for e in selection]
+        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
+        dsx = self.ds_X.copy(transpose=True)
+        dsx.mat = dsx.mat.loc[sel,:]
+        dsy = self.pcax.loadings.mat
+        dsy = dsy.loc[sel,:]
+        pls.fit(dsx.values, dsy.values)
+        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
+
+
     def _get_res(self):
         if self._have_zero_std():
             raise InComputeable('Matrix have variables with zero variance',

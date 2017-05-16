@@ -98,7 +98,7 @@ class IndDiffController(pb.ModelController):
 
     def add_group(self, members):
         self.gr_name_inc += 1
-        el = Element(name="Group {0}".format(self.gr_name_inc), calcc=self, member_index=list(members))
+        el = Group(name="Group {0}".format(self.gr_name_inc), calcc=self, member_index=list(members))
         self.groups_list.append(el)
 
 
@@ -203,8 +203,10 @@ class IndDiffController(pb.ModelController):
 
 def dclk_activator(obj):
     plot_func_name = obj.plot_func_name
-    res = obj.owner_ref.calcc.model.calc_plsr_pcx(obj.owner_ref.index)
-    # loop = getattr(obj.owner_ref.plots_act, obj.loop_name)
+    if isinstance(obj.owner_ref, Group):
+        res = obj.owner_ref.calcc.model.calc_plsr_groups(obj.owner_ref.member_index)
+    elif isinstance(obj.owner_ref, Element):
+        res = obj.owner_ref.calcc.model.calc_plsr_pcx(obj.owner_ref.index)
     loop = obj.owner_ref.plots_act
     func = getattr(obj.owner_ref.calcc, plot_func_name)
     view = func(res)
