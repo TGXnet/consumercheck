@@ -70,36 +70,44 @@ class Element(_traits.HasTraits):
             loop_name='plots_act',) for nn, fn in acts]
 
 
-class Group(Element):
+class Segment(Element):
     member_index = _traits.List()
-
 
 
 class IndDiffController(pb.ModelController):
 
-    pca_x_launchers = _traits.List(Element)
-    idx_pls_launchers = _traits.List(Element)
-    groups_list = _traits.List(Element)
+    pca_x_launchers = _traits.List(DiffWindowLauncher)
+    pca_x_response = _traits.List(Element)
+    sample_x_response = _traits.List(Element)
+    segment_x_response = _traits.List(Element)
     gr_name_inc = _traits.Int(0)
+    pca_name = _traits.Str()
 
 
     def _name_default(self):
-        return "indDiff - {0}".format(
-            self.model.ds_L.display_name)
+        return "indDiff - {0}".format(self.model.ds_L.display_name)
+
+
+    def _pca_name_default(self):
+        return "PCA({0})".format(self.model.ds_L.display_name)
 
 
     @_traits.on_trait_change('model.ds_A')
     def _populate_idx_pls(self):
-        # FIXME: When to activate this
-        print("Watch this")
+        self.pca_x_launchers = [
+            DiffWindowLauncher(
+                node_name="Loadings",
+                plot_func_name='pca_loadings_plot',
+                owner_ref=self)
+        ]
         enum_pc = list(self.model.pcax.loadings.mat.columns)
-        self.pca_x_launchers = [Element(name=name, index=name, calcc=self) for name in enum_pc]
+        self.pca_x_response = [Element(name=name, index=name, calcc=self) for name in enum_pc]
 
 
-    def add_group(self, members):
+    def add_segment(self, members):
         self.gr_name_inc += 1
-        el = Group(name="Group {0}".format(self.gr_name_inc), calcc=self, member_index=list(members))
-        self.groups_list.append(el)
+        el = Segment(name="Segment {0}".format(self.gr_name_inc), calcc=self, member_index=list(members))
+        self.segment_x_response.append(el)
 
 
     def _show_zero_var_warning(self):
@@ -141,7 +149,7 @@ class IndDiffController(pb.ModelController):
         # wl = self.window_launchers
         # title = self._wind_title(res)
         # self._show_plot_window(plot)
-        # view_loop = self.pca_x_launchers
+        # view_loop = self.pca_x_response
 
         plot_control = PCPlotControl(plot, created_me=self)
 
@@ -203,18 +211,21 @@ class IndDiffController(pb.ModelController):
 
 def dclk_activator(obj):
     plot_func_name = obj.plot_func_name
-    if isinstance(obj.owner_ref, Group):
-        res = obj.owner_ref.calcc.model.calc_plsr_groups(obj.owner_ref.member_index)
+    if isinstance(obj.owner_ref, Segment):
+        res = obj.owner_ref.calcc.model.calc_plsr_segments(obj.owner_ref.member_index)
+        func = getattr(obj.owner_ref.calcc, plot_func_name)
+        view = func(res)
+        loop = obj.owner_ref.plots_act
+        obj.owner_ref.calcc.open_window(view, loop)
     elif isinstance(obj.owner_ref, Element):
         res = obj.owner_ref.calcc.model.calc_plsr_pcx(obj.owner_ref.index)
-    loop = obj.owner_ref.plots_act
-    func = getattr(obj.owner_ref.calcc, plot_func_name)
-    view = func(res)
-    obj.owner_ref.calcc.open_window(view, loop)
-
-
-def plot_pca_loadings(obj):
-    obj.pca_loadings_plot()
+        func = getattr(obj.owner_ref.calcc, plot_func_name)
+        view = func(res)
+        loop = obj.owner_ref.plots_act
+        obj.owner_ref.calcc.open_window(view, loop)
+    elif isinstance(obj.owner_ref, IndDiffController):
+        func = getattr(obj.owner_ref, plot_func_name)
+        func()
 
 
 no_view = _traitsui.View()
@@ -236,41 +247,55 @@ ind_diff_nodes = [
         label='name',
         children='',
         view=ind_diff_view,
-        menu=[]),
+        menu=[]
+    ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
-        label='=PCA(set name)',
+        label='pca_name',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
         children='pca_x_launchers',
         view=ind_diff_view,
         menu=[],
-        on_dclick=plot_pca_loadings),
+    ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
-        label='=PLSR(X, Y)',
+        label='=PCs response',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
-        children='idx_pls_launchers',
+        children='pca_x_response',
         view=ind_diff_view,
-        menu=[]),
+        menu=[],
+    ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
-        label='=Groups',
+        label='=Liking samples response',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
-        children='groups_list',
+        children='sample_x_response',
         view=ind_diff_view,
-        menu=[]),
+        menu=[]
+    ),
+    _traitsui.TreeNode(
+        node_for=[IndDiffController],
+        label='=Liking segments response',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
+        children='segment_x_response',
+        view=ind_diff_view,
+        menu=[]
+    ),
     _traitsui.TreeNode(
         node_for=[Element],
         label='name',
         children='plots_act',
         view=no_view,
-        menu=[]),
+        menu=[]
+    ),
     _traitsui.TreeNode(
         node_for=[DiffWindowLauncher],
         label='node_name',

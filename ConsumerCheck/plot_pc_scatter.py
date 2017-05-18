@@ -635,7 +635,7 @@ class PCBaseControl(NoPlotControl):
 class PCPlotControl(PCBaseControl):
     created_me = WeakRef(allow_none=True)
     show_labels = Bool(True)
-    add_group = Button("Add group")
+    add_segment = Button("Add segment")
     plot_controllers = Group(
         Item('x_down', show_label=False),
         Item('x_up', show_label=False),
@@ -644,7 +644,7 @@ class PCPlotControl(PCBaseControl):
         Item('y_down', show_label=False),
         Item('eq_axis', label="Equal scale axis"),
         Item('show_labels', label="Show labels"),
-        Item('add_group', label="Add group"),
+        Item('add_segment', label="Add group"),
         Item('subset_groups', label="Color subset groups",
              editor=CheckListEditor(name='model.data.group_names')),
         orientation="horizontal",
@@ -664,11 +664,11 @@ class PCPlotControl(PCBaseControl):
         obj.model.show_labels(set_id=1, show=new)
 
 
-    @on_trait_change('add_group')
+    @on_trait_change('add_segment')
     def _(self, obj, name, new):
         mask = self.model.index_datasource.metadata['selection']
         labels = self.model.data.plot_data[0].labels
-        self.created_me.add_group(np.array(labels)[mask])
+        self.created_me.add_segment(np.array(labels)[mask])
 
 
 

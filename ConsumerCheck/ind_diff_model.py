@@ -88,7 +88,7 @@ class IndDiff(pb.Model):
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
 
 
-    def calc_plsr_groups(self, selection):
+    def calc_plsr_segments(self, selection):
         if self._have_zero_std():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
