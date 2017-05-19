@@ -30,6 +30,7 @@ import traits.api as _traits
 # Local imports
 import pca
 import plsr
+import dummify as df
 import dataset as ds
 import plugin_base as pb
 import result_adapter as ra
@@ -86,7 +87,7 @@ class IndDiff(pb.Model):
                                 self.C_zero_std, self.S_zero_std)
         n_pc = 3
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
-        dsx = self.ds_X.copy(transpose=True)
+        dsx = self.ds_X
         dsy = self.pcaY.loadings.mat[index]
         pls.fit(dsx.values, dsy.values)
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
@@ -99,7 +100,7 @@ class IndDiff(pb.Model):
         n_pc = 3
         sel = [str(e) for e in selection]
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
-        dsx = self.ds_X.copy(transpose=True)
+        dsx = self.ds_X
         dsx.mat = dsx.mat.loc[sel,:]
         dsy = self.pcaY.loadings.mat
         dsy = dsy.loc[sel,:]
@@ -156,14 +157,15 @@ class IndDiff(pb.Model):
 
     def _get_ds_X(self):
         """Get the independent variable X that is the consumer attributes"""
-        print("Hello")
-        print(self.settings.dummify_variables)
-        return self.ds_L
+        varn = [str(v) for v in self.settings.dummify_variables]
+        dsa = self.ds_A.copy(transpose=True)
+        dsx = df.dummify(dsa, varn)
+        return dsx
 
 
     def _get_ds_Y(self):
         """Get the response variable that is the consumer liking"""
-        return self.ds_A
+        return self.ds_L
 
 
     def _get_max_pc(self):

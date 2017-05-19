@@ -107,7 +107,8 @@ class IndDiffController(pb.ModelController):
 
     def get_result(self):
         try:
-            res = self.model.res
+            # res = self.model.res
+            res = None
         except idm.InComputeable:
             self._show_zero_var_warning()
             if self.model.C_zero_std:
@@ -174,12 +175,12 @@ class IndDiffController(pb.ModelController):
           + Plot subtype
           + DataSet type
         """
-        res = self.get_result()
+        # res = self.get_result()
         if isinstance(viewable, pps.CLSectorPlot):
             plot_control = pps.CLSectorPlotControl(viewable)
             win = pw.SinglePlotWindow(
                 plot=plot_control,
-                res=res,
+                # res=res,
                 # view_loop=view_loop
             )
             self._show_plot_window(win)
@@ -187,7 +188,7 @@ class IndDiffController(pb.ModelController):
             plot_control = pps.PCSectorPlotControl(viewable)
             win = pw.SinglePlotWindow(
                 plot=plot_control,
-                res=res,
+                # res=res,
                 # view_loop=view_loop
             )
             self._show_plot_window(win)
