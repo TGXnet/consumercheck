@@ -92,18 +92,6 @@ class IndDiffController(pb.ModelController):
         return "PCA({0})".format(self.model.ds_L.display_name)
 
 
-    @_traits.on_trait_change('model.ds_A')
-    def _populate_idx_pls(self):
-        self.pca_x_launchers = [
-            DiffWindowLauncher(
-                node_name="Loadings",
-                plot_func_name='pca_loadings_plot',
-                owner_ref=self)
-        ]
-        enum_pc = list(self.model.pcax.loadings.mat.columns)
-        self.pca_x_response = [Element(name=name, index=name, calcc=self) for name in enum_pc]
-
-
     def add_segment(self, members):
         self.gr_name_inc += 1
         el = Segment(name="Segment {0}".format(self.gr_name_inc), calcc=self, member_index=list(members))
@@ -144,7 +132,7 @@ class IndDiffController(pb.ModelController):
     def pca_loadings_plot(self):
         """Make PCA loadings
         """
-        res = self.model.pcax
+        res = self.model.pcaY
         plot = self.pca_x_loadings_plot(res)
         # wl = self.window_launchers
         # title = self._wind_title(res)
@@ -218,7 +206,7 @@ def dclk_activator(obj):
         loop = obj.owner_ref.plots_act
         obj.owner_ref.calcc.open_window(view, loop)
     elif isinstance(obj.owner_ref, Element):
-        res = obj.owner_ref.calcc.model.calc_plsr_pcx(obj.owner_ref.index)
+        res = obj.owner_ref.calcc.model.calc_plsr_pcY(obj.owner_ref.index)
         func = getattr(obj.owner_ref.calcc, plot_func_name)
         view = func(res)
         loop = obj.owner_ref.plots_act
@@ -237,6 +225,10 @@ ind_diff_view = _traitsui.View(
                        low_name='min_pc', high_name='max_pc', mode='auto'),
                    style='simple',
                    label='PC to calc:'),
+    _traitsui.Item('dummify_variables',
+                   editor=_traitsui.CheckListEditor(name='consumer_variables'),
+                   style='custom',
+                   label='Dummify variables:'),
     title='IndDiff settings',
 )
 
@@ -360,7 +352,6 @@ class IndDiffPluginController(pb.PluginController):
 
     @_traits.on_trait_change('comb:consumer_attributes_updated', post_init=False)
     def _handle_attr_sel(self, obj, name, old, new):
-        print("Its happening")
         selection = self.comb.sel_attr[0]
         self._make_pls_calc(selection)
 
@@ -375,15 +366,18 @@ class IndDiffPluginController(pb.PluginController):
             self._show_missing_warning()
             return
 
-        # Check data set alignment
-        # ns_l = ds_l.n_objs
-        # ns_a = ds_a.n_objs
-        # if ns_l != ns_a:
-        #     self._show_alignment_warning(ds_l, ds_a)
-        #     return
-
         calc.model.id = ds_l.id + id_a
         calc.model.ds_A = ds_a
+
+        self.model.calculator.consumer_variables = calc.model.ds_A.obj_n
+        calc.pca_x_launchers = [
+            DiffWindowLauncher(
+                node_name="Loadings",
+                plot_func_name='pca_loadings_plot',
+                owner_ref=calc)
+        ]
+        enum_pc = list(calc.model.pcaY.loadings.mat.columns)
+        calc.pca_x_response = [Element(name=name, index=name, calcc=calc) for name in enum_pc]
 
 
     def _show_missing_warning(self):
