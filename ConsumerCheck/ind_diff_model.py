@@ -82,6 +82,7 @@ class IndDiff(pb.Model):
 
 
     def calc_plsr_pcY(self, index):
+        # FIXME: Deprecated?
         if self._have_zero_std():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
@@ -106,6 +107,54 @@ class IndDiff(pb.Model):
         dsy = dsy.loc[sel,:]
         pls.fit(dsx.values, dsy.values)
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
+
+
+
+    def calc_plsr_da(self, segments):
+        '''Process
+        Add a row for each segments
+        Loop throu each segment row and set 1 where we have index and 0 for the rest
+        do this via property - no then segments have to be part of model
+        Hmmm
+        Add dummy segments to attr array as vel
+        '''
+        every = []
+        for seg in segments:
+            every.extend(seg.member_index)
+
+        dsx = self.ds_X
+        dsx.mat = dsx.mat.loc[every,:]
+
+        dsy = self.make_liking_dummy_segmented(segments)
+
+        n_pc = 2
+        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
+        pls.fit(dsx.values, dsy.values)
+        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
+
+
+    def make_liking_dummy_segmented(self, segments):
+        dsy_sd = self.ds_Y
+
+        if len(segments) < 1:
+            return dsy_sd
+
+        every = []
+        for seg in segments:
+            every.extend(seg.member_index)
+
+        dsy_sd.mat = dsy_sd.mat.loc[:,every]
+
+        segs = _pd.DataFrame(0, index=[seg.name for seg in segments], columns=every)
+        for seg in segments:
+            segs.loc[seg.name,seg.member_index] = 1
+
+        dsy_sd.mat = dsy_sd.mat.append(segs)
+
+        return dsy_sd
+
+
+
 
 
     def _get_res(self):
@@ -165,7 +214,7 @@ class IndDiff(pb.Model):
 
     def _get_ds_Y(self):
         """Get the response variable that is the consumer liking"""
-        return self.ds_L
+        return self.ds_L.copy(transpose=False)
 
 
     def _get_max_pc(self):
