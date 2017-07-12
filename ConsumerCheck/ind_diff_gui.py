@@ -370,7 +370,7 @@ class IndDiffPluginController(pb.PluginController):
         calc.model.id = ds_l.id + id_a
         calc.model.ds_A = ds_a
 
-        self.model.calculator.consumer_variables = calc.model.ds_A.obj_n
+        self.model.calculator.consumer_variables = calc.model.ds_A.var_n
         calc.pca_x_launchers = [
             DiffWindowLauncher(
                 node_name="Loadings",

@@ -85,7 +85,7 @@ class IndDiff(pb.Model):
         if self._have_zero_std():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
-        n_pc = 3
+        n_pc = 2
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         dsx = self.ds_X
         dsy = self.pcaY.loadings.mat[index]
@@ -97,7 +97,7 @@ class IndDiff(pb.Model):
         if self._have_zero_std():
             raise InComputeable('Matrix have variables with zero variance',
                                 self.C_zero_std, self.S_zero_std)
-        n_pc = 3
+        n_pc = 2
         sel = [str(e) for e in selection]
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         dsx = self.ds_X
@@ -158,7 +158,7 @@ class IndDiff(pb.Model):
     def _get_ds_X(self):
         """Get the independent variable X that is the consumer attributes"""
         varn = [str(v) for v in self.settings.dummify_variables]
-        dsa = self.ds_A.copy(transpose=True)
+        dsa = self.ds_A.copy(transpose=False)
         dsx = df.dummify(dsa, varn)
         return dsx
 
