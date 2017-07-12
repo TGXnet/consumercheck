@@ -201,7 +201,7 @@ class IndDiffController(pb.ModelController):
 def dclk_activator(obj):
     plot_func_name = obj.plot_func_name
     if isinstance(obj.owner_ref, Segment):
-        res = obj.owner_ref.calcc.model.calc_plsr_segments(obj.owner_ref.member_index)
+        res = obj.owner_ref.calcc.model.calc_plsr_da(obj.owner_ref.calcc.segment_x_response)
         func = getattr(obj.owner_ref.calcc, plot_func_name)
         view = func(res)
         loop = obj.owner_ref.plots_act
@@ -221,17 +221,34 @@ no_view = _traitsui.View()
 
 
 ind_diff_view = _traitsui.View(
-    _traitsui.Item('calc_n_pc',
-                   editor=_traitsui.RangeEditor(
-                       low_name='min_pc', high_name='max_pc', mode='auto'),
-                   style='simple',
-                   label='PC to calc:'),
+    # _traitsui.Item('calc_n_pc',
+    #                editor=_traitsui.RangeEditor(
+    #                    low_name='min_pc', high_name='max_pc', mode='auto'),
+    #                style='simple',
+    #                label='PC to calc:'),
     _traitsui.Item('dummify_variables',
                    editor=_traitsui.CheckListEditor(name='consumer_variables'),
                    style='custom',
                    label='Dummify variables:'),
     title='IndDiff settings',
 )
+
+
+
+ds_dum_attr_action = _traitsui.Action(
+    name='Export dummified attributes',
+    # visible_when='object.node_name in ("Fixed residuals", "Full model residuals")',
+    action='handler.export_dum_attr(editor, object)',
+)
+
+
+ds_dum_seg_action = _traitsui.Action(
+    name='Export dummified segments',
+    # visible_when='object.node_name in ("Fixed residuals", "Full model residuals")',
+    action='handler.export_dum_segments(editor, object)',
+)
+
+
 
 
 ind_diff_nodes = [
@@ -270,17 +287,17 @@ ind_diff_nodes = [
         icon_open='overview.ico',
         children='sample_x_response',
         view=ind_diff_view,
-        menu=[]
+        menu=_traitsui.Menu(ds_dum_attr_action),
     ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
-        label='=Liking segments response',
+        label='=Analysis of segments',
         icon_path='graphics',
         icon_group='overview.ico',
         icon_open='overview.ico',
         children='segment_x_response',
         view=ind_diff_view,
-        menu=[]
+        menu=_traitsui.Menu(ds_dum_seg_action),
     ),
     _traitsui.TreeNode(
         node_for=[Element],
@@ -403,6 +420,23 @@ class IndDiffPluginController(pb.PluginController):
             "Please select other data."
         ).format(ds_l.n_objs, ds_l.display_name, ds_a.n_objs, ds_a.display_name)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
+
+
+    def export_dum_attr(self, editor, obj):
+        dummy = obj.model.ds_X
+        dummy.display_name += '_dummified'
+        self.model.dsc.add(dummy)
+
+
+    def export_dum_segments(self, editor, obj):
+        dummy = obj.model.make_liking_dummy_segmented(obj.segment_x_response)
+        dummy.display_name += '_dummified'
+        self.model.dsc.add(dummy)
+
+
+
+
+
 
 
 selection_view = _traitsui.Group(
