@@ -146,9 +146,10 @@ class DataSet(_traits.HasTraits):
     def copy(self, transpose=False):
         new = self.clone_traits(traits=['display_name', 'kind', 'style', 'subs'])
         if transpose:
-            new.mat = self.mat.transpose()
+            tmp = self.mat.copy()
+            new.mat = tmp.transpose()
         else:
-            new.mat = self.mat
+            new.mat = self.mat.copy()
         return new
 
 
