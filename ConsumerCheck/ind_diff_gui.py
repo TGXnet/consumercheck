@@ -109,7 +109,7 @@ class IndDiffController(pb.ModelController):
     def pca_loadings_plot(self):
         """Make PCA loadings
         """
-        res = self.model.pcaY
+        res = self.model.pca_Y
         plot = self.pca_x_loadings_plot(res)
         # wl = self.window_launchers
         # title = self._wind_title(res)
@@ -151,7 +151,6 @@ class IndDiffController(pb.ModelController):
           + Plot subtype
           + DataSet type
         """
-        # res = self.get_result()
         if isinstance(viewable, pps.CLSectorPlot):
             plot_control = pps.CLSectorPlotControl(viewable)
             win = pw.SinglePlotWindow(
@@ -164,32 +163,39 @@ class IndDiffController(pb.ModelController):
             plot_control = pps.PCSectorPlotControl(viewable)
             win = pw.SinglePlotWindow(
                 plot=plot_control,
-                # res=res,
-                # view_loop=view_loop
+            )
+            self._show_plot_window(win)
+        elif isinstance(viewable, PCScatterPlot):
+            plot_control = PCPlotControl(viewable)
+            win = SinglePlotWindow(
+                plot=plot_control,
             )
             self._show_plot_window(win)
         else:
-            super(IndDiffController, self).open_window(viewable, view_loop)
+            print("Something missing here")
+            # super(IndDiffController, self).open_window(viewable, view_loop)
 
 
 # Plot creators
 
 def dclk_activator(obj):
-    plot_func_name = obj.plot_func_name
-    if isinstance(obj.owner_ref, Segment):
-        res = obj.owner_ref.calcc.model.calc_plsr_da(obj.owner_ref.calcc.segments_analysis)
-        func = getattr(obj.owner_ref.calcc, plot_func_name)
+    owner = obj.owner_ref
+    pfn = obj.plot_func_name
+    if isinstance(owner, Segment):
+        res = owner.calcc.model.calc_plsr_da(owner.calcc.segments_analysis)
+        func = getattr(owner.calcc, pfn)
         view = func(res)
-        loop = obj.owner_ref.plots_act
-        obj.owner_ref.calcc.open_window(view, loop)
-    elif isinstance(obj.owner_ref, TreeElement):
-        res = obj.owner_ref.calcc.model.calc_plsr_pcY(obj.owner_ref.index)
-        func = getattr(obj.owner_ref.calcc, plot_func_name)
+        loop = owner.plots_act
+        owner.calcc.open_window(view, loop)
+    elif isinstance(owner, TreeElement):
+        # Raw linking
+        res = owner.calcc.model.calc_pls_raw_liking()
+        func = getattr(owner.calcc, pfn)
         view = func(res)
-        loop = obj.owner_ref.plots_act
-        obj.owner_ref.calcc.open_window(view, loop)
-    elif isinstance(obj.owner_ref, IndDiffController):
-        func = getattr(obj.owner_ref, plot_func_name)
+        loop = owner.plots_act
+        owner.calcc.open_window(view, loop)
+    elif isinstance(owner, IndDiffController):
+        func = getattr(owner, pfn)
         func()
 
 
