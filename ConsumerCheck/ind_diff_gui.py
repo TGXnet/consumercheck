@@ -46,9 +46,9 @@ class DiffWindowLauncher(pth.WindowLauncher):
 
 
 class TreeElement(_traits.HasTraits):
-    # FIXME: What kind of element is this?
+    '''Represent a calculation (analysis) in the Individual Difference methods ensembe
+    '''
     name = _traits.Str()
-    index = _traits.Str()
     calcc = _traits.WeakRef()
     plots_act = _traits.List(DiffWindowLauncher)
 
@@ -89,8 +89,8 @@ class IndDiffController(pb.ModelController):
 
 
     def _individual_differences_default(self):
-        return [TreeElement(name='Pricipal components of likings', index='', calcc=self),
-                TreeElement(name='Liking data', index='', calcc=self)]
+        return [TreeElement(name='Pricipal components of likings', calcc=self),
+                TreeElement(name='Liking data', calcc=self)]
 
 
     def add_segment(self, members):
