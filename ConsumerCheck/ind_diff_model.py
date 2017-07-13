@@ -41,32 +41,40 @@ class InComputeable(Exception):
 
 
 class IndDiff(pb.Model):
-    """Represent the IndDiff model between one X and Y data set."""
+    """Represent the IndDiff model between X and Y data set.
+
+    A PLS model will try to find the multidimensional direction in the X space that
+    explains the maximum multidimensional variance direction in the Y space.
+
+    Consumer attributes is the independent predictors - observable variables X
+
+    Liking datata is the respons - predicted variables Y, this can be dummified
+
+    X is an n x m matrix of predictors
+    Y is an n x p matrix of responses
+    """
 
     # Consumer Liking
-    # respons in pcr (Y) or pca of this
     ds_L = ds.DataSet()
     # Consumer Attributes
-    # independent in pcr (X), to be dummified
     ds_A = ds.DataSet()
-    # response and independent variables
-    # predicted variables and the observable variables
-    # A PLS model will try to find the multidimensional direction in the X space that explains the
-    # maximum multidimensional variance direction in the Y space.
-    # X is an n x m matrix of predictors
-    # Y is an n x p matrix of responses
-    # Some PLS algorithms are only appropriate for the case where Y is a column vector (PLS1)
-    # general case of a matrix Y (PLS2)
+
+    # predictors
     ds_X = _traits.Property()
+    # responses
     ds_Y = _traits.Property()
+
     # Calculated PCA for the response variable
-    pcaY = _traits.Property()
+    pca_Y = _traits.Property()
+
     settings = _traits.WeakRef()
     # checkbox bool for standardised results
     calc_n_pc = _traits.Int()
     min_pc = 2
     # max_pc = _traits.Property()
     max_pc = 10
+
+    # Selection of variables to dummify
     dummify_variables = _traits.ListUnicode()
     consumer_variables = _traits.ListUnicode()
     min_std = _traits.Float(0.001)
@@ -74,24 +82,27 @@ class IndDiff(pb.Model):
     S_zero_std = _traits.List()
 
 
-    def _get_pcaY(self):
+    def _get_pca_Y(self):
         cpca = pca.nipalsPCA(self.ds_Y.values, numPC=3, Xstand=False, cvType=["loo"])
-
-        # return self._pack_pca_res(cpca)
         return ra.adapt_oto_pca(cpca, self.ds_Y, self.ds_Y.display_name)
 
 
-    def calc_plsr_pcY(self, index):
-        # FIXME: Deprecated?
-        if self._have_zero_std():
-            raise InComputeable('Matrix have variables with zero variance',
-                                self.C_zero_std, self.S_zero_std)
+    def calc_pls_raw_liking(self):
         n_pc = 2
-        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         dsx = self.ds_X
-        dsy = self.pcaY.loadings.mat[index]
+        dsy = self.ds_Y
+        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         pls.fit(dsx.values, dsy.values)
-        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
+        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore<rename>')
+
+
+    def calc_pls_pc_likings(self, pc_index):
+        n_pc = 2
+        dsx = self.ds_X
+        dsy = self.pca_Y.loadings.mat[pc_index]
+        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
+        pls.fit(dsx.values, dsy.values)
+        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Per<rename>')
 
 
     def calc_plsr_segments(self, selection):
@@ -103,7 +114,7 @@ class IndDiff(pb.Model):
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         dsx = self.ds_X
         dsx.mat = dsx.mat.loc[sel,:]
-        dsy = self.pcaY.loadings.mat
+        dsy = self.pca_Y.loadings.mat
         dsy = dsy.loc[sel,:]
         pls.fit(dsx.values, dsy.values)
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
@@ -170,7 +181,7 @@ class IndDiff(pb.Model):
         # Must do manual centring and standardisation
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         dsx = self.ds_X.copy(transpose=True)
-        dsy = self.pcaY.loadings.mat['PC-1']
+        dsy = self.pca_Y.loadings.mat['PC-1']
         pls.fit(dsx.values, dsy.values)
         # return self._pack_res(pls)
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
@@ -214,7 +225,7 @@ class IndDiff(pb.Model):
 
     def _get_ds_Y(self):
         """Get the response variable that is the consumer liking"""
-        return self.ds_L.copy(transpose=False)
+        return self.ds_L.copy(transpose=True)
 
 
     def _get_max_pc(self):
