@@ -45,7 +45,8 @@ class DiffWindowLauncher(pth.WindowLauncher):
     plot_func_name = _traits.Str()
 
 
-class Element(_traits.HasTraits):
+class TreeElement(_traits.HasTraits):
+    # FIXME: What kind of element is this?
     name = _traits.Str()
     index = _traits.Str()
     calcc = _traits.WeakRef()
@@ -70,32 +71,32 @@ class Element(_traits.HasTraits):
             loop_name='plots_act',) for nn, fn in acts]
 
 
-class Segment(Element):
+class Segment(TreeElement):
     member_index = _traits.List()
 
 
 class IndDiffController(pb.ModelController):
 
-    pca_x_launchers = _traits.List(DiffWindowLauncher)
-    pca_x_response = _traits.List(Element)
-    sample_x_response = _traits.List(Element)
-    segment_x_response = _traits.List(Element)
+    individual_differences = _traits.List(TreeElement)
+    segments_analysis = _traits.List(TreeElement)
+    apriori_segments = _traits.List(TreeElement)
+
     gr_name_inc = _traits.Int(0)
-    pca_name = _traits.Str()
 
 
     def _name_default(self):
         return "indDiff - {0}".format(self.model.ds_L.display_name)
 
 
-    def _pca_name_default(self):
-        return "PCA({0})".format(self.model.ds_L.display_name)
+    def _individual_differences_default(self):
+        return [TreeElement(name='Pricipal components of likings', index='', calcc=self),
+                TreeElement(name='Liking data', index='', calcc=self)]
 
 
     def add_segment(self, members):
         self.gr_name_inc += 1
         el = Segment(name="Segment {0}".format(self.gr_name_inc), calcc=self, member_index=list(members))
-        self.segment_x_response.append(el)
+        self.segments_analysis.append(el)
 
 
     def _show_zero_var_warning(self):
@@ -103,31 +104,6 @@ class IndDiffController(pb.ModelController):
         dlg.err_msg = 'Removed zero variance variables'
         dlg.err_val = ', '.join(self.model.C_zero_std+self.model.S_zero_std)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
-
-
-    def get_result(self):
-        try:
-            # res = self.model.res
-            res = None
-        except idm.InComputeable:
-            self._show_zero_var_warning()
-            if self.model.C_zero_std:
-                df = self.model.ds_L.mat.drop(self.model.C_zero_std, axis=1)
-                olds = self.model.ds_L
-                self.model.ds_L = ds.DataSet(
-                    mat=df,
-                    display_name=olds.display_name,
-                    kind=olds.kind)
-            if self.model.S_zero_std:
-                df = self.model.ds_A.mat.drop(self.model.S_zero_std, axis=1)
-                olds = self.model.ds_A
-                self.model.ds_A = ds.DataSet(
-                    mat=df,
-                    display_name=olds.display_name,
-                    kind=olds.kind)
-            res = self.model.res
-
-        return res
 
 
     def pca_loadings_plot(self):
@@ -201,12 +177,12 @@ class IndDiffController(pb.ModelController):
 def dclk_activator(obj):
     plot_func_name = obj.plot_func_name
     if isinstance(obj.owner_ref, Segment):
-        res = obj.owner_ref.calcc.model.calc_plsr_da(obj.owner_ref.calcc.segment_x_response)
+        res = obj.owner_ref.calcc.model.calc_plsr_da(obj.owner_ref.calcc.segments_analysis)
         func = getattr(obj.owner_ref.calcc, plot_func_name)
         view = func(res)
         loop = obj.owner_ref.plots_act
         obj.owner_ref.calcc.open_window(view, loop)
-    elif isinstance(obj.owner_ref, Element):
+    elif isinstance(obj.owner_ref, TreeElement):
         res = obj.owner_ref.calcc.model.calc_plsr_pcY(obj.owner_ref.index)
         func = getattr(obj.owner_ref.calcc, plot_func_name)
         view = func(res)
@@ -261,46 +237,27 @@ ind_diff_nodes = [
     ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
-        label='pca_name',
-        icon_path='graphics',
-        icon_group='overview.ico',
-        icon_open='overview.ico',
-        children='pca_x_launchers',
-        view=ind_diff_view,
-        menu=[],
-    ),
-    _traitsui.TreeNode(
-        node_for=[IndDiffController],
-        label='=PCs response',
-        icon_path='graphics',
-        icon_group='overview.ico',
-        icon_open='overview.ico',
-        children='pca_x_response',
-        view=ind_diff_view,
-        menu=[],
-    ),
-    _traitsui.TreeNode(
-        node_for=[IndDiffController],
-        label='=Liking samples response',
-        icon_path='graphics',
-        icon_group='overview.ico',
-        icon_open='overview.ico',
-        children='sample_x_response',
+        label='=Individual difference per ce',
+        children='individual_differences',
         view=ind_diff_view,
         menu=_traitsui.Menu(ds_dum_attr_action),
     ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
         label='=Analysis of segments',
-        icon_path='graphics',
-        icon_group='overview.ico',
-        icon_open='overview.ico',
-        children='segment_x_response',
+        children='segments_analysis',
         view=ind_diff_view,
         menu=_traitsui.Menu(ds_dum_seg_action),
     ),
     _traitsui.TreeNode(
-        node_for=[Element],
+        node_for=[IndDiffController],
+        label='=Coloring of a priori segments',
+        children='apriori_segments',
+        view=ind_diff_view,
+        menu=_traitsui.Menu(ds_dum_seg_action),
+    ),
+    _traitsui.TreeNode(
+        node_for=[TreeElement],
         label='name',
         children='plots_act',
         view=no_view,
@@ -309,9 +266,12 @@ ind_diff_nodes = [
     _traitsui.TreeNode(
         node_for=[DiffWindowLauncher],
         label='node_name',
+        icon_path='graphics',
+        icon_group='overview.ico',
+        icon_open='overview.ico',
         view=no_view,
         menu=[],
-        on_dclick=dclk_activator
+        on_dclick=dclk_activator,
     ),
 ]
 
@@ -388,14 +348,6 @@ class IndDiffPluginController(pb.PluginController):
         calc.model.ds_A = ds_a
 
         self.model.calculator.consumer_variables = calc.model.ds_A.var_n
-        calc.pca_x_launchers = [
-            DiffWindowLauncher(
-                node_name="Loadings",
-                plot_func_name='pca_loadings_plot',
-                owner_ref=calc)
-        ]
-        enum_pc = list(calc.model.pcaY.loadings.mat.columns)
-        calc.pca_x_response = [Element(name=name, index=name, calcc=calc) for name in enum_pc]
 
 
     def _show_missing_warning(self):
@@ -429,7 +381,7 @@ class IndDiffPluginController(pb.PluginController):
 
 
     def export_dum_segments(self, editor, obj):
-        dummy = obj.model.make_liking_dummy_segmented(obj.segment_x_response)
+        dummy = obj.model.make_liking_dummy_segmented(obj.segments_analysis)
         dummy.display_name += '_dummified'
         self.model.dsc.add(dummy)
 
