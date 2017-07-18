@@ -77,6 +77,12 @@ class IndDiff(pb.Model):
     # Selection of variables to dummify
     dummify_variables = _traits.ListUnicode()
     consumer_variables = _traits.ListUnicode()
+
+    # Liking PC to use in PLS
+    # liking_pc = _traits.List(_traits.Int)
+    selected_liking_pc = _traits.List(_traits.Int)
+    n_Y_pc = _traits.List([(0,'PC-1'),(1,'PC-2'),(2,'PC-3')])
+
     min_std = _traits.Float(0.001)
     C_zero_std = _traits.List()
     S_zero_std = _traits.List()
@@ -96,10 +102,10 @@ class IndDiff(pb.Model):
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore<rename>')
 
 
-    def calc_pls_pc_likings(self, pc_index):
+    def calc_pls_pc_likings(self, pc_sel):
         n_pc = 2
         dsx = self.ds_X
-        dsy = self.pca_Y.loadings.mat[pc_index]
+        dsy = self.pca_Y.scores.mat.iloc[:,pc_sel]
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         pls.fit(dsx.values, dsy.values)
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Per<rename>')

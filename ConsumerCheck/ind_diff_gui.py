@@ -189,7 +189,8 @@ def dclk_activator(obj):
         owner.calcc.open_window(view, loop)
     elif isinstance(owner, TreeElement):
         # Raw linking
-        res = owner.calcc.model.calc_pls_raw_liking()
+        # res = owner.calcc.model.calc_pls_raw_liking()
+        res = owner.calcc.model.calc_pls_pc_likings(owner.calcc.model.settings.selected_liking_pc)
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
@@ -208,10 +209,20 @@ ind_diff_view = _traitsui.View(
     #                    low_name='min_pc', high_name='max_pc', mode='auto'),
     #                style='simple',
     #                label='PC to calc:'),
-    _traitsui.Item('dummify_variables',
-                   editor=_traitsui.CheckListEditor(name='consumer_variables'),
-                   style='custom',
-                   label='Dummify variables:'),
+    _traitsui.Group(
+        _traitsui.Item('dummify_variables',
+                       editor=_traitsui.CheckListEditor(name='consumer_variables'),
+                       style='custom',
+                       label='Dummify variables:'),
+        label='Dummify variables',
+    ),
+    _traitsui.Group(
+        _traitsui.Item('selected_liking_pc',
+                       editor=_traitsui.CheckListEditor(name='n_Y_pc'),
+                       style='custom',
+                       label='Liking PC:'),
+        label='Liking PC',
+    ),
     title='IndDiff settings',
 )
 
