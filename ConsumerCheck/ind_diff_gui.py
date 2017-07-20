@@ -71,6 +71,11 @@ class TreeElement(_traits.HasTraits):
             loop_name='plots_act',) for nn, fn in acts]
 
 
+class SegmentTE(TreeElement):
+    pass
+
+
+
 class Segment(TreeElement):
     member_index = _traits.List()
 
@@ -78,7 +83,7 @@ class Segment(TreeElement):
 class IndDiffController(pb.ModelController):
 
     individual_differences = _traits.List(TreeElement)
-    segments_analysis = _traits.List(TreeElement)
+    segments_analysis = _traits.List()
     apriori_segments = _traits.List(TreeElement)
 
     gr_name_inc = _traits.Int(0)
@@ -93,10 +98,15 @@ class IndDiffController(pb.ModelController):
                 TreeElement(name='Liking data', calcc=self)]
 
 
+    def _segments_analysis_default(self):
+        return [DiffWindowLauncher(node_name='Define segments', plot_func_name='pca_loadings_plot', owner_ref=self),
+                SegmentTE(name='Discriminant analysis', calcc=self)]
+
+
     def add_segment(self, members):
         self.gr_name_inc += 1
-        el = Segment(name="Segment {0}".format(self.gr_name_inc), calcc=self, member_index=list(members))
-        self.segments_analysis.append(el)
+        el = Segment(name="Segment {0}".format(self.gr_name_inc), member_index=list(members))
+        self.model.settings.selected_segments.append(el)
 
 
     def _show_zero_var_warning(self):
@@ -108,6 +118,7 @@ class IndDiffController(pb.ModelController):
 
     def pca_loadings_plot(self):
         """Make PCA loadings
+        FIXME: scores? data transposed
         """
         res = self.model.pca_Y
         plot = self.pca_x_loadings_plot(res)
@@ -126,7 +137,8 @@ class IndDiffController(pb.ModelController):
 
 
     def pca_x_loadings_plot(self, res):
-        plot = pps.SelectionScatterPlot(res.loadings, title='X loadings')
+        # FIXME: scores?
+        plot = pps.SelectionScatterPlot(res.scores, title='Liking scores')
         return plot
 
 
@@ -181,8 +193,8 @@ class IndDiffController(pb.ModelController):
 def dclk_activator(obj):
     owner = obj.owner_ref
     pfn = obj.plot_func_name
-    if isinstance(owner, Segment):
-        res = owner.calcc.model.calc_plsr_da(owner.calcc.segments_analysis)
+    if isinstance(owner, SegmentTE):
+        res = owner.calcc.model.calc_plsr_da(owner.calcc.model.settings.selected_segments)
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
@@ -275,6 +287,13 @@ ind_diff_nodes = [
     ),
     _traitsui.TreeNode(
         node_for=[TreeElement],
+        label='name',
+        children='plots_act',
+        view=no_view,
+        menu=[]
+    ),
+    _traitsui.TreeNode(
+        node_for=[SegmentTE],
         label='name',
         children='plots_act',
         view=no_view,

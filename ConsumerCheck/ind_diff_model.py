@@ -82,6 +82,7 @@ class IndDiff(pb.Model):
     # liking_pc = _traits.List(_traits.Int)
     selected_liking_pc = _traits.List(_traits.Int)
     n_Y_pc = _traits.List([(0,'PC-1'),(1,'PC-2'),(2,'PC-3')])
+    selected_segments = _traits.List()
 
     min_std = _traits.Float(0.001)
     C_zero_std = _traits.List()
@@ -143,17 +144,19 @@ class IndDiff(pb.Model):
         dsx.mat = dsx.mat.loc[every,:]
 
         dsy = self.make_liking_dummy_segmented(segments)
+        dsy = dsy.copy(transpose=True)
 
         n_pc = 2
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         pls.fit(dsx.values, dsy.values)
-        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
+        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'PLS-DA')
 
 
     def make_liking_dummy_segmented(self, segments):
         dsy_sd = self.ds_Y
 
         if len(segments) < 1:
+            # FIXME: Show warning, no segments defined
             return dsy_sd
 
         every = []
@@ -166,7 +169,8 @@ class IndDiff(pb.Model):
         for seg in segments:
             segs.loc[seg.name,seg.member_index] = 1
 
-        dsy_sd.mat = dsy_sd.mat.append(segs)
+        # dsy_sd.mat = dsy_sd.mat.append(segs)
+        dsy_sd.mat = segs
 
         return dsy_sd
 
