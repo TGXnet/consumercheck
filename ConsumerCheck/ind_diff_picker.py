@@ -100,14 +100,14 @@ class IndDiffPicker(HasTraits):
     traits_view = View(
         Group(
             Group(
-                Label('Consumer Liking (X)'),
+                Label('Consumer Liking (Y)'),
                 Item('sel_like', editor=CheckListEditor(name='like_set'),
                      style='simple',
                      show_label=False),
                 orientation='vertical',
             ),
             Group(
-                Label('Consumer Attributes (Y)'),
+                Label('Consumer Attributes (X)'),
                 Item('sel_attr', editor=CheckListEditor(name='attr_set'),
                      style='simple',
                      show_label=False,
