@@ -75,6 +75,10 @@ class SegmentTE(TreeElement):
     pass
 
 
+class ColorTE(TreeElement):
+    pass
+
+
 
 class Segment(TreeElement):
     member_index = _traits.List()
@@ -103,6 +107,14 @@ class IndDiffController(pb.ModelController):
                 SegmentTE(name='Discriminant analysis', calcc=self)]
 
 
+    def _apriori_segments_default(self):
+        tor = self.model.ds_X
+        lise = []
+        for sub in tor.get_subset_groups():
+            lise.append(ColorTE(name=sub, calcc=self))
+        return lise
+
+
     def add_segment(self, members):
         self.gr_name_inc += 1
         el = Segment(name="Segment {0}".format(self.gr_name_inc), member_index=list(members))
@@ -118,9 +130,8 @@ class IndDiffController(pb.ModelController):
 
     def pca_loadings_plot(self):
         """Make PCA loadings
-        FIXME: scores? data transposed
         """
-        res = self.model.pca_Y
+        res = self.model.pca_L
         plot = self.pca_x_loadings_plot(res)
         # wl = self.window_launchers
         # title = self._wind_title(res)
@@ -137,8 +148,7 @@ class IndDiffController(pb.ModelController):
 
 
     def pca_x_loadings_plot(self, res):
-        # FIXME: scores?
-        plot = pps.SelectionScatterPlot(res.scores, title='Liking scores')
+        plot = pps.SelectionScatterPlot(res.loadings, title='Liking scores')
         return plot
 
 
@@ -195,6 +205,12 @@ def dclk_activator(obj):
     pfn = obj.plot_func_name
     if isinstance(owner, SegmentTE):
         res = owner.calcc.model.calc_plsr_da(owner.calcc.model.settings.selected_segments)
+        func = getattr(owner.calcc, pfn)
+        view = func(res)
+        loop = owner.plots_act
+        owner.calcc.open_window(view, loop)
+    elif isinstance(owner, ColorTE):
+        res = owner.calcc.model.calc_pls_raw_liking()
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
@@ -294,6 +310,13 @@ ind_diff_nodes = [
     ),
     _traitsui.TreeNode(
         node_for=[SegmentTE],
+        label='name',
+        children='plots_act',
+        view=no_view,
+        menu=[]
+    ),
+    _traitsui.TreeNode(
+        node_for=[ColorTE],
         label='name',
         children='plots_act',
         view=no_view,
