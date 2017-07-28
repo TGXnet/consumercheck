@@ -76,7 +76,23 @@ class SegmentTE(TreeElement):
 
 
 class ColorTE(TreeElement):
-    pass
+    def _plots_act_default(self):
+
+        acts = [
+            # ("Overview", plot_overview),
+            # ("Scores", 'pca_color_scores_plot'),
+            # ("X&Y correlation loadings", corr_loadings_plot),
+            ("Loadings", 'pca_color_loadings_plot'),
+            # ("Y loadings", loadings_y_plot),
+            # ("Explained var in X", expl_var_x_plot),
+            # ("Explained var in Y", expl_var_y_plot),
+        ]
+
+        return [DiffWindowLauncher(
+            node_name=nn,
+            plot_func_name=fn,
+            owner_ref=self,
+            loop_name='plots_act',) for nn, fn in acts]
 
 
 
@@ -108,11 +124,11 @@ class IndDiffController(pb.ModelController):
 
 
     def _apriori_segments_default(self):
-        tor = self.model.ds_X
-        lise = []
-        for sub in tor.get_subset_groups():
-            lise.append(ColorTE(name=sub, calcc=self))
-        return lise
+        attrs = self.model.ds_X
+        segments = []
+        for sub in attrs.get_subset_groups():
+            segments.append(ColorTE(name=sub, calcc=self))
+        return segments
 
 
     def add_segment(self, members):
@@ -149,6 +165,13 @@ class IndDiffController(pb.ModelController):
 
     def pca_x_loadings_plot(self, res):
         plot = pps.SelectionScatterPlot(res.loadings, title='Liking scores')
+        return plot
+
+
+    def pca_color_loadings_plot(self, res, group):
+        res.loadings.subs = self.model.ds_A.subs
+        plot = pps.SelectionScatterPlot(res.loadings, title='Liking scores')
+        plot.color_subsets_group(group)
         return plot
 
 
@@ -210,9 +233,9 @@ def dclk_activator(obj):
         loop = owner.plots_act
         owner.calcc.open_window(view, loop)
     elif isinstance(owner, ColorTE):
-        res = owner.calcc.model.calc_pls_raw_liking()
+        res = owner.calcc.model.pca_L
         func = getattr(owner.calcc, pfn)
-        view = func(res)
+        view = func(res, owner.name)
         loop = owner.plots_act
         owner.calcc.open_window(view, loop)
     elif isinstance(owner, TreeElement):
