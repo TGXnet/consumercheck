@@ -65,7 +65,7 @@ class IndDiff(pb.Model):
     ds_Y = _traits.Property()
 
     # Calculated PCA for the response variable
-    pca_Y = _traits.Property()
+    pca_L = _traits.Property()
 
     settings = _traits.WeakRef()
     # checkbox bool for standardised results
@@ -89,9 +89,9 @@ class IndDiff(pb.Model):
     S_zero_std = _traits.List()
 
 
-    def _get_pca_Y(self):
-        cpca = pca.nipalsPCA(self.ds_Y.values, numPC=3, Xstand=False, cvType=["loo"])
-        return ra.adapt_oto_pca(cpca, self.ds_Y, self.ds_Y.display_name)
+    def _get_pca_L(self):
+        cpca = pca.nipalsPCA(self.ds_L.values, numPC=3, Xstand=False, cvType=["loo"])
+        return ra.adapt_oto_pca(cpca, self.ds_L, self.ds_L.display_name)
 
 
     def calc_pls_raw_liking(self):
@@ -106,7 +106,7 @@ class IndDiff(pb.Model):
     def calc_pls_pc_likings(self, pc_sel):
         n_pc = 2
         dsx = self.ds_X
-        dsy = self.pca_Y.scores.mat.iloc[:,pc_sel]
+        dsy = self.pca_L.loadings.mat.iloc[:,pc_sel]
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         pls.fit(dsx.values, dsy.values)
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Per<rename>')
@@ -121,7 +121,7 @@ class IndDiff(pb.Model):
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         dsx = self.ds_X
         dsx.mat = dsx.mat.loc[sel,:]
-        dsy = self.pca_Y.loadings.mat
+        dsy = self.pca_L.loadings.mat
         dsy = dsy.loc[sel,:]
         pls.fit(dsx.values, dsy.values)
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
@@ -191,7 +191,7 @@ class IndDiff(pb.Model):
         # Must do manual centring and standardisation
         pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
         dsx = self.ds_X.copy(transpose=True)
-        dsy = self.pca_Y.loadings.mat['PC-1']
+        dsy = self.pca_L.loadings.mat['PC-1']
         pls.fit(dsx.values, dsy.values)
         # return self._pack_res(pls)
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
@@ -258,6 +258,7 @@ class IndDiff(pb.Model):
 
 
     def _pack_res(self, pls_obj):
+        # FIXME: Remove, replaced by adapter
         res = pb.Result('IndDiff {0}(X) & {1}(Y)'.format(
             self.ds_X.display_name, self.ds_Y.display_name))
         res.external_mapping = False
