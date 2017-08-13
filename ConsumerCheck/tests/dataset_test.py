@@ -7,18 +7,10 @@ What to test:
 '''
 
 import pytest
-import warnings
 import numpy as np
 import pandas as pd
 
-from dataset import DataSet, SubSet, VisualStyle
-
-
-@pytest.fixture
-def w2err(request):
-    '''Turn warnings into errors'''
-    warnings.simplefilter('error')
-    request.addfinalizer(lambda *args: warnings.resetwarnings())
+from dataset import DataSet, SubSet, VisualStyle, Level, Factor
 
 
 @pytest.fixture
@@ -59,21 +51,16 @@ def test_get_ndarray(w2err, a_df):
     assert isinstance(ds.values, np.ndarray)
 
 
-def test_style(a_df):
-    ds = DataSet(mat=a_df, style=VisualStyle(fg_color='beige', bg_color=(0.3, 0.7, 0.9, 1.0)))
-    ds.style.print_traits()
-    assert True
+def test_factor(a_df):
+    fac = Factor('Aldersgruppe')
+    fac.add_level(Level([0,1,2,3], 'tor'), check_idx="no")
 
+    with pytest.raises(ValueError):
+        fac.add_level(Level([], 'tor'), check_idx="no")
+    assert len(fac) == 1
 
-def test_subset(a_df):
-    ds = DataSet(mat=a_df)
-    sub1 = SubSet(id='tor', name='Test 1',
-                  row_selector=[0, 2],
-                  col_selector=[1, 2],
-                  gr_style=VisualStyle(fg_color='green', bg_color='red'))
-    ds.subs.append(sub1)
-    print(ds.mat)
-    assert True
+    fac.add_level(Level([2,3,4,5], 'petter'), check_idx="toss_overlaping")
+    assert len(fac.get_idx('petter')) == 2
 
 
 # Test data set with missing data
