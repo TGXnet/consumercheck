@@ -24,6 +24,14 @@ sys.path.insert(0, here)
 
 
 @pytest.fixture
+def w2err(request):
+    '''Turn warnings into errors'''
+    import warnings
+    warnings.simplefilter('error')
+    request.addfinalizer(lambda *args: warnings.resetwarnings())
+
+
+@pytest.fixture
 def check_trait_interface():
     import traits.has_traits
     # 0: no check, 1: log warings, 2: error
