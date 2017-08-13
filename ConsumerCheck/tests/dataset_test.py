@@ -1,16 +1,12 @@
 '''DataSet tests
-
-What to test:
- * Unique datast id
- * Empty data set
- * Has missing data
 '''
 
 import pytest
 import numpy as np
 import pandas as pd
 
-from dataset import DataSet, SubSet, VisualStyle, Level, Factor
+# Test subject
+import dataset as mx
 
 
 @pytest.fixture
@@ -25,41 +21,41 @@ def a_df(request):
 
 
 def test_ds_unique_id(w2err):
-    ds1 = DataSet()
-    ds2 = DataSet()
+    ds1 = mx.DataSet()
+    ds2 = mx.DataSet()
     assert isinstance(ds1.id, str)
     assert ds1.id != ds2.id
 
 
 def test_missing_data(w2err):
     td = pd.DataFrame([[1, 2, np.nan], [4, 5, 6]])
-    ds_missing = DataSet(mat=td)
+    ds_missing = mx.DataSet(mat=td)
     td = pd.DataFrame([[1, 2, 3], [4, 5, 6]])
-    ds_complete = DataSet(mat=td)
+    ds_complete = mx.DataSet(mat=td)
     assert ds_missing.missing_data
     assert not ds_complete.missing_data
 
 
 def test_shape(w2err, a_df):
-    ds = DataSet(mat=a_df)
+    ds = mx.DataSet(mat=a_df)
     assert isinstance(ds.var_n, list) and isinstance(ds.obj_n, list)
     assert len(ds.var_n) == ds.n_vars and len(ds.obj_n) == ds.n_objs
 
 
 def test_get_ndarray(w2err, a_df):
-    ds = DataSet(mat=a_df)
+    ds = mx.DataSet(mat=a_df)
     assert isinstance(ds.values, np.ndarray)
 
 
 def test_factor(a_df):
-    fac = Factor('Aldersgruppe')
-    fac.add_level(Level([0,1,2,3], 'tor'), check_idx="no")
+    fac = mx.Factor('Aldersgruppe')
+    fac.add_level(mx.Level([0,1,2,3], 'tor'), check_idx="no")
 
     with pytest.raises(ValueError):
-        fac.add_level(Level([], 'tor'), check_idx="no")
+        fac.add_level(mx.Level([], 'tor'), check_idx="no")
     assert len(fac) == 1
 
-    fac.add_level(Level([2,3,4,5], 'petter'), check_idx="toss_overlaping")
+    fac.add_level(mx.Level([2,3,4,5], 'petter'), check_idx="toss_overlaping")
     assert len(fac.get_idx('petter')) == 2
 
 
