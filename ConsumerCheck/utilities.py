@@ -19,6 +19,7 @@
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
+import random
 from colormath.color_objects import LCHabColor, sRGBColor
 from colormath.color_conversions import convert_color
 
@@ -38,6 +39,22 @@ COLOR_PALETTE = [
 # hue_value_2d_span()
 #
 # There are three axes; L* , c* and h*(deg).
+
+'''
+FIXME: New ideas for nicer colors
+HSL and HSV
+https://stackoverflow.com/questions/43044/algorithm-to-randomly-generate-an-aesthetically-pleasing-color-palette
+https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
+https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
+http://devmag.org.za/2012/07/29/how-to-choose-colours-procedurally-algorithms/
+https://en.wikipedia.org/wiki/Color_difference#CIE94
+https://softwareengineering.stackexchange.com/questions/44929/color-schemes-generation-theory-and-algorithms
+https://arstechnica.com/information-technology/2017/05/an-ai-invented-a-bunch-of-new-paint-colors-that-are-hilariously-wrong/
+https://en.wikipedia.org/wiki/Color_quantization
+https://www.technologyreview.com/s/604026/the-algorithm-expanding-the-science-of-color/
+http://www.vandelaydesign.com/ui-design-colors/
+https://github.com/google/palette.js/tree/master
+'''
 
 
 def hue_span(n):
@@ -70,6 +87,15 @@ def value_span(n):
 
     cr = [c_conv(i) for i in range(n + 1)]
     return cr
+
+
+def rnd_color(palette=(1.0, 1.0, 1.0, 1.0)):
+    ''' Return a random color
+    palette: an rgba tuple. A for alpha transparency
+    '''
+    rndrgb = tuple([random.random() for _ in range(3)])
+    outrgb = ((palette[0]+rndrgb[0])/2, (palette[1]+rndrgb[1])/2, (palette[2]+rndrgb[2])/2, 1.0)
+    return outrgb
 
 
 if __name__ == '__main__':
