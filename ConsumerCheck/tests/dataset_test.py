@@ -1,7 +1,8 @@
-'''DataSet tests
+'''py.test test for dataset
 '''
-
 import pytest
+
+# Scipy imports
 import numpy as np
 import pandas as pd
 
@@ -12,7 +13,8 @@ import dataset as mx
 @pytest.fixture
 def a_df(request):
     '''Makes a simple DataFrame'''
-    shape = (3, 4)
+    np.random.seed(1)
+    shape = (12, 4)
     df = pd.DataFrame(
         np.random.randn(*shape),
         index=["O{}".format(i+1) for i in range(shape[0])],
@@ -47,8 +49,8 @@ def test_get_ndarray(w2err, a_df):
     assert isinstance(ds.values, np.ndarray)
 
 
-def test_factor(a_df):
-    fac = mx.Factor('Aldersgruppe')
+def test_factor():
+    fac = mx.Factor('Aldersgruppe', size=5)
     fac.add_level(mx.Level([0,1,2,3], 'tor'), check_idx="no")
 
     with pytest.raises(ValueError):
@@ -57,6 +59,34 @@ def test_factor(a_df):
 
     fac.add_level(mx.Level([2,3,4,5], 'petter'), check_idx="toss_overlaping")
     assert len(fac.get_idx('petter')) == 2
+
+
+def test_fac_select(a_df):
+    ds = mx.DataSet(mat=a_df)
+    # import pudb; pu.db
+    print("\n")
+    print(ds.mat)
+
+    import ipdb; ipdb.set_trace()
+    # Row object selectors
+    ofac = mx.Factor('Objects', a_df.shape[0], mx.Level([0,1,3,11], 'en'), default_ds_axis="row")
+    print("\n")
+    print(ofac.get_labels(ds, 'en'))
+    print(ofac.get_values(ds, 'en'))
+    print("\n")
+    print(ofac._get_nonleveled(ds, 0))
+    print(ofac.get_rest_values(ds))
+    print(ofac.get_rest_labels(ds))
+
+    # Column variable selectors
+    vfac = mx.Factor('Variables', a_df.shape[1], mx.Level([0,1,2], 'en'), default_ds_axis="col")
+    print("\n")
+    print(vfac.get_labels(ds, 'en'))
+    print(vfac.get_values(ds, 'en'))
+    print("\n")
+    print(vfac._get_nonleveled(ds, 1))
+    print(vfac.get_rest_values(ds))
+    print(vfac.get_rest_labels(ds))
 
 
 # Test data set with missing data
