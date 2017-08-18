@@ -30,7 +30,7 @@ import numpy as np
 # Enthought library imports
 from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
-from traits.api import (Bool, Button, Int, List, Long, HasTraits, implements,
+from traits.api import (Bool, Button, Int, Instance, List, Long, HasTraits, implements,
                         Property, Range, Str, Unicode, WeakRef, on_trait_change)
 from traitsui.api import Item, Group, View, Label, Include, CheckListEditor
 from enable.api import ColorTrait, ComponentEditor
@@ -38,7 +38,7 @@ from enable.savage.trait_defs.ui.svg_button import SVGButton
 
 # Local imports
 import cc_config as conf
-from dataset import DataSet, SubSet, VisualStyle
+from dataset import DataSet, SubSet, VisualStyle, Factor, Level
 from plot_base import PlotBase, NoPlotControl
 from plot_interface import IPCScatterPlot
 from plot_sector import SectorMixin
@@ -78,6 +78,7 @@ class PCPlotData(ArrayPlotData):
     plot_data = List(PCDataSet)
     group_names = List([''])
     plot_group = Unicode('')
+    coloring_factor = Instance(Factor)
     # Number of PC in the data sets
     # Lowest number if we have severals sets
     n_pc = Long()
@@ -86,7 +87,8 @@ class PCPlotData(ArrayPlotData):
     # The PC for the Y axis
     y_no = Int()
 
-    def add_PC_set(self, pc_ds, expl_vars):
+
+    def add_PC_set(self, pc_ds, expl_vars, factor=None):
         """Add a PC data set with metadata"""
         set_n = len(self.plot_data)
 
@@ -100,7 +102,11 @@ class PCPlotData(ArrayPlotData):
             dict_name = 's{}pc{}'.format(set_n+1, (j+1))
             self.arrays[dict_name] = row
 
+        # if factor is not None:
+        #     self.coloring_factor = factor
+
         if len(pc_ds.subs) > 0:
+            # FIXME: replaced by update_color_level_data()
             for gn in pc_ds.get_subset_groups():
                 self.group_names.append(gn)
                 subsets = pc_ds.get_subsets(gn)
@@ -131,6 +137,47 @@ class PCPlotData(ArrayPlotData):
         return set_n+1
 
 
+    def update_color_level_data(self, set_id):
+        '''To handle added level data to the active coloring_factor
+
+        Will run throug the levels and create new datasources for each of the levels.
+        Also hav to delet the old data source or check if it already exist
+
+        Heuristics:
+        Must indicate which dataset to copy values from. Can check if the size of
+        the wanted axis index for the dataset is lager than the largest index in the Factor
+        '''
+
+        if self.coloring_factor is not None:
+            self.coloring_factor.default_ds_axis = 'row'
+            # Assumes rows with obj and col with PC
+            pdata = self.plot_data[set_id-1]
+            pcds = pdata.pc_ds
+            facname = self.coloring_factor.name
+
+            for lvn in self.coloring_factor.levels:
+                # get the subset row data for this level
+                submx = self.coloring_factor.get_values(pcds, lvn)
+                selT = submx.T
+                # enumerate values to get the various PC vectors (one row for each PC)
+                for i, pcvec in enumerate(selT, 1):
+                    # Create keynames for vectors
+                    # 'ds{}fc{}lv{}pc{}' ds nummer, factor name, level name, PC nummer
+                    kn = "ds{0}:fc{1}:lv{2}:pc{3}".format(set_id, facname, lvn, i)
+                    # intert key-vector into plot data array or update if data already exist
+                    self.arrays[kn] = pcvec
+            # Create datasorce for the points not in a level
+            submx = self.coloring_factor.get_rest_values(pcds)
+            selT = submx.T
+            for i, pcvec in enumerate(selT, 1):
+                # Create keynames for vectors
+                # 'ds{}fc{}lv{}pc{}' ds nummer, factor name, level name, PC nummer
+                kn = "ds{0}:fc{1}:lv{2}:pc{3}".format(set_id, facname, 'not', i)
+                # intert key-vector into plot data array or update if data already exist
+                self.arrays[kn] = pcvec
+
+
+
 class PCScatterPlot(PlotBase):
     """Principal Component scatter plot.
 
@@ -148,6 +195,7 @@ class PCScatterPlot(PlotBase):
     visible_datasets = Int(3)
     plot_data = Property()
     expl_y_vars = List()
+
 
     def __init__(self, pc_matrix=None,
                  expl_vars=None, expl_y_vars=None,
@@ -176,22 +224,24 @@ class PCScatterPlot(PlotBase):
             self.expl_y_vars = list(expl_y_vars.mat.xs('calibrated'))
         self.external_mapping = False
         if pc_matrix is not None:
-            self.add_PC_set(pc_matrix, expl_vars)
+            factor = kwargs.pop('factor', None)
+            self.add_PC_set(pc_matrix, expl_vars, factor)
 
         self._add_zero_axis()
         self.tools.append(PanTool(self))
         self.overlays.append(ZoomTool(self, tool_mode="box", always_on=False))
 
 
-    def add_PC_set(self, pc_matrix, expl_vars=None):
+    def add_PC_set(self, pc_matrix, expl_vars=None, factor=None):
         """Add a PC data set with metadata.
 
         Args:
           1. pc_matrix: DataSet with PC datapoints
           2. expl_vars: DataSet with explained variance
         """
-        set_id = self.data.add_PC_set(pc_matrix, expl_vars)
+        set_id = self.data.add_PC_set(pc_matrix, expl_vars, factor)
         self._plot_PC(set_id)
+
 
     def show_points(self):
         """Shows or hide datapoints for PC set."""
@@ -214,11 +264,13 @@ class PCScatterPlot(PlotBase):
             # self.plots['plot_1'][0].request_redraw()
             # self.plots['plot_2'][0].request_redraw()
 
+
     def _toggle_points(self, set_id, visible):
         pnl = [pn for pn in self.plots.keys() if 'plot_{}'.format(set_id) in pn]
         for pn in pnl:
             self.plots[pn][0].visible = visible
             self.plots[pn][0].request_redraw()
+
 
     def show_labels(self, set_id=None, show=True):
         """Shows or hide datapoint labels for selected PC set."""
@@ -229,6 +281,7 @@ class PCScatterPlot(PlotBase):
         else:
             self._show_set_labels(set_id, show)
 
+
     def _show_set_labels(self, set_id, show):
         pnl = [pn for pn in self.plots.keys() if 'plot_{}'.format(set_id) in pn]
         for pn in pnl:
@@ -236,6 +289,7 @@ class PCScatterPlot(PlotBase):
             for lab in plot.overlays:
                 lab.visible = show
         plot.request_redraw()
+
 
     def get_x_y_status(self):
         """Query which PC is ploted for X and Y axis.
@@ -248,6 +302,7 @@ class PCScatterPlot(PlotBase):
 
         """
         return (self.data.x_no, self.data.y_no, self.data.n_pc)
+
 
     def set_x_y_pc(self, x, y):
         """Set which PC to plot for X and Y axis.
@@ -280,6 +335,27 @@ class PCScatterPlot(PlotBase):
         self.request_redraw()
 
 
+    def factor_colors(self, factor=None):
+        # FIXME: Will replace color_subsets_group()
+        pass
+
+
+    @on_trait_change('data:coloring_factor:levels[]', post_init=False)
+    def _update_plot_factor_coloring(self, obj, name, old, new):
+        self.data.update_color_level_data(1)
+        plot_ids = self.plots.keys()
+        x, y, n = self.get_x_y_status()
+        n_ds = len(self.data.plot_data)
+        self.delplot(*plot_ids)
+        ds = self.datasources.keys()
+        for k in ds:
+            del self.datasources[k]
+
+        for i in range(n_ds):
+            self._plot_PC(i+1, PCx=x, PCy=y)
+        self.request_redraw()
+
+
     def _plot_PC(self, set_id, PCx=1, PCy=2):
         # Adds a PC plot rendrer to the plot object
 
@@ -300,8 +376,8 @@ class PCScatterPlot(PlotBase):
                    'cross']
 
         pdata = self.data.plot_data[set_id-1]
-
         if self.data.plot_group:
+            # FIXME: To be replace by next elif clause
             group = self.data.plot_group
             subsets = pdata.pc_ds.get_subsets(group)
             for ci, ss in enumerate(subsets):
@@ -321,6 +397,41 @@ class PCScatterPlot(PlotBase):
                 color = ss.gr_style.fg_color
                 self._add_plot_data_labels(rl[0], pd, labels, color)
             pass
+        elif self.data.coloring_factor is not None:
+            facname = self.data.coloring_factor.name
+            for lvn, lv in self.data.coloring_factor.levels.iteritems():
+                # "ds{0}:fc{1}:lv{2}:pc{3}".format(set_id, facname, lv.name, i)
+                x_id = 'ds{0}:fc{1}:lv{2}:pc{3}'.format(set_id, facname, lvn, PCx)
+                y_id = 'ds{0}:fc{1}:lv{2}:pc{3}'.format(set_id, facname, lvn, PCy)
+                # plot definition
+                pd = (x_id, y_id)
+                # plot name
+                pn = 'plot_{}_class_{}'.format(set_id, lvn)
+                # plot
+                rl = self.plot(pd, type='scatter', name=pn,
+                               marker=markers[set_id-1 % 5], marker_size=2,
+                               color=lv.color
+                               )
+                labels = lv.get_labels(pdata.pc_ds, axis=0)
+                color = lv.color
+                self._add_plot_data_labels(rl[0], pd, labels, color)
+            # Plot the rest of the points as black
+            # "ds{0}:fc{1}:lv{2}:pc{3}".format(set_id, facname, lv.name, i)
+            x_id = 'ds{0}:fc{1}:lv{2}:pc{3}'.format(set_id, facname, 'not', PCx)
+            y_id = 'ds{0}:fc{1}:lv{2}:pc{3}'.format(set_id, facname, 'not', PCy)
+            # plot definition
+            pd = (x_id, y_id)
+            # plot name
+            pn = 'plot_{}_class_{}'.format(set_id, 'not')
+            # plot
+            rl = self.plot(pd, type='scatter', name=pn,
+                           marker=markers[set_id-1 % 5], marker_size=2,
+                           color=pdata.color
+                           )
+
+            labels = self.data.coloring_factor.get_rest_labels(pdata.pc_ds)
+            color = pdata.color
+            self._add_plot_data_labels(rl[0], pd, labels, color)
         else:
             # Typical id: ('s1pc1', 's1pc2')
             x_id = 's{}pc{}'.format(set_id, PCx)
@@ -350,6 +461,7 @@ class PCScatterPlot(PlotBase):
         self._set_plot_axis_title()
         # return pn
 
+
     def _set_plot_axis_title(self):
         tx = ['PC{0}'.format(self.data.x_no)]
         ty = ['PC{0}'.format(self.data.y_no)]
@@ -376,6 +488,7 @@ class PCScatterPlot(PlotBase):
             self.x_axis.title = ' '.join(tx)
             self.y_axis.title = ' '.join(ty)
 
+
     def _add_plot_data_labels(self, plot_render, point_data, labels, color):
         xname, yname = point_data
         x = self.data.get_data(xname)
@@ -397,6 +510,7 @@ class PCScatterPlot(PlotBase):
                 ## bgcolor = 'transparent',
             )
             plot_render.overlays.append(label_obj)
+
 
     def plot_circle(self, show_half=False):
         """Add bounding circles to the plot."""
@@ -427,6 +541,7 @@ class PCScatterPlot(PlotBase):
 
         ## self._set_axis_margin()
 
+
     def toggle_eq_axis(self, set_equal):
         """Set orthonormal or normal plot range."""
         if set_equal:
@@ -436,6 +551,7 @@ class PCScatterPlot(PlotBase):
             self._reset_axis()
         ## self.request_redraw()
 
+
     def export_image(self, fname, size=(800, 600)):
         """Save plot as png image."""
         # self.outer_bounds = list(size)
@@ -443,6 +559,7 @@ class PCScatterPlot(PlotBase):
         gc = PlotGraphicsContext(self.outer_bounds)
         gc.render_component(self)
         gc.save(fname, file_format=None)
+
 
     def _set_axis_equal(self, margin_factor=0.15):
         """For orthonormal ploting"""
@@ -467,6 +584,7 @@ class PCScatterPlot(PlotBase):
         self.index_range.set_bounds(*index_bounds)
         self.value_range.set_bounds(*value_bounds)
 
+
     def _set_axis_margin(self, margin_factor=0.15):
         self._reset_axis()
         index_tight_bounds = self.index_range.low, self.index_range.high
@@ -478,12 +596,14 @@ class PCScatterPlot(PlotBase):
         self.index_range.set_bounds(*index_bounds)
         self.value_range.set_bounds(*value_bounds)
 
+
     def _calc_margin_bounds(self, low, high, margin_factor=0.15):
         space = high - low
         space_margin = space * margin_factor
         margin_low = low - space_margin / 2
         margin_high = high + space_margin / 2
         return margin_low, margin_high
+
 
     def _adjust_range(self):
         self.index_range.margin = 0.15
@@ -493,9 +613,11 @@ class PCScatterPlot(PlotBase):
         self.index_range.bounds_func = calc_bounds
         self.value_range.bounds_func = calc_bounds
 
+
     def _reset_axis(self):
         self.index_range.reset()
         self.value_range.reset()
+
 
     def _add_zero_axis(self):
         xgrid = PlotGrid(
@@ -522,6 +644,7 @@ class PCScatterPlot(PlotBase):
             transverse_mapper=self.x_mapper
         )
         self.underlays.append(ygrid)
+
 
     def _get_plot_data(self):
         return self.data.plot_data[0].pc_ds
@@ -587,13 +710,16 @@ class PCBaseControl(NoPlotControl):
     # def switch_visibility(self, obj, name, new):
     #     obj.model.show_points()
 
+
     @on_trait_change('eq_axis')
     def switch_axis(self, obj, name, new):
         obj.model.toggle_eq_axis(new)
 
+
     @on_trait_change('reset_xy')
     def pc_axis_reset(self, obj, name, new):
         obj.model.set_x_y_pc(1, 2)
+
 
     @on_trait_change('x_up')
     def pc_axis_x_up(self, obj, name, new):
@@ -604,6 +730,7 @@ class PCBaseControl(NoPlotControl):
             x = 1
         obj.model.set_x_y_pc(x, y)
 
+
     @on_trait_change('x_down')
     def pc_axis_x_down(self, obj, name, new):
         x, y, n = obj.model.get_x_y_status()
@@ -613,6 +740,7 @@ class PCBaseControl(NoPlotControl):
             x = n
         obj.model.set_x_y_pc(x, y)
 
+
     @on_trait_change('y_up')
     def pc_axis_y_up(self, obj, name, new):
         x, y, n = obj.model.get_x_y_status()
@@ -621,6 +749,7 @@ class PCBaseControl(NoPlotControl):
         else:
             y = 1
         obj.model.set_x_y_pc(x, y)
+
 
     @on_trait_change('y_down')
     def pc_axis_y_down(self, obj, name, new):
@@ -636,6 +765,7 @@ class PCPlotControl(PCBaseControl):
     created_me = WeakRef(allow_none=True)
     show_labels = Bool(True)
     add_segment = Button("Add segment")
+    teller = Int(0)
     plot_controllers = Group(
         Item('x_down', show_label=False),
         Item('x_up', show_label=False),
@@ -666,9 +796,15 @@ class PCPlotControl(PCBaseControl):
 
     @on_trait_change('add_segment')
     def _(self, obj, name, new):
+        self.teller += 1
+        lvn = "Segment {}".format(self.teller)
         mask = self.model.index_datasource.metadata['selection']
-        labels = self.model.data.plot_data[0].labels
-        self.created_me.add_segment(np.array(labels)[mask])
+        ds = self.model.data.plot_data[0].pc_ds
+        uidx = self.model.data.coloring_factor._get_nonleveled(ds, 0)
+        print("Lengde", len(mask), len(uidx))
+        # lv = Level(np.where(mask)[0], lvn)
+        lv = Level(np.array(uidx)[mask], lvn)
+        self.model.data.coloring_factor.add_level(lv, check_idx="toss_overlaping")
 
 
 
@@ -691,13 +827,16 @@ class PCSectorPlotControl(PCBaseControl):
         orientation="horizontal",
     )
 
+
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
         obj.model.show_labels(set_id=1, show=new)
 
+
     @on_trait_change('draw_sectors')
     def switch_sectors(self, obj, name, new):
         obj.model.switch_sectors(new)
+
 
     @on_trait_change('model.n_sectors', post_init=True)
     def change_sectors(self, obj, name, new):
@@ -722,12 +861,14 @@ class CLPlotControl(PCBaseControl):
         orientation="horizontal",
     )
 
+
     @on_trait_change('show_x_labels')
     def _switch_x_labels(self, obj, name, new):
         if obj.model.external_mapping:
             obj.model.show_labels(set_id=2, show=new)
         else:
             obj.model.show_labels(set_id=1, show=new)
+
 
     @on_trait_change('show_y_labels')
     def _switch_y_labels(self, obj, name, new):
@@ -757,12 +898,14 @@ class CLSectorPlotControl(PCBaseControl):
         orientation="horizontal",
     )
 
+
     @on_trait_change('show_x_labels')
     def _switch_x_labels(self, obj, name, new):
         if obj.model.external_mapping:
             obj.model.show_labels(set_id=2, show=new)
         else:
             obj.model.show_labels(set_id=1, show=new)
+
 
     @on_trait_change('show_y_labels')
     def _switch_y_labels(self, obj, name, new):
@@ -771,9 +914,11 @@ class CLSectorPlotControl(PCBaseControl):
         else:
             obj.model.show_labels(set_id=2, show=new)
 
+
     @on_trait_change('draw_sectors')
     def switch_sectors(self, obj, name, new):
         obj.model.switch_sectors(new)
+
 
     @on_trait_change('model.n_sectors', post_init=True)
     def change_sectors(self, obj, name, new):
@@ -781,47 +926,3 @@ class CLSectorPlotControl(PCBaseControl):
         if isinstance(new, int):
             obj.remove_sectors()
             obj.draw_sectors(new)
-
-
-if __name__ == '__main__':
-    # from tests.conftest import iris_ds
-    import pandas as pd
-    from plot_windows import SinglePlotWindow
-    from importer_text_file import ImporterTextFile
-
-    np.random.seed(10)
-    gobli = (np.random.random((30, 4)) - 0.5) * 2
-    pda = pd.DataFrame(gobli)
-    pda.columns = ["V{0}".format(i+1) for i in range(pda.shape[1])]
-    pda.index = ["O{0}".format(i+1) for i in range(pda.shape[0])]
-
-    irds = DataSet(mat=pda)
-    irds.subs['en'] = []
-
-    sd = ['red', 'green', 'blue']
-    # sd = []
-    for en, color in enumerate(sd):
-        en *= 10
-        rs = ["O{0}".format(i+1) for i in range(en, en+10)]
-        style = VisualStyle(fg_color=color)
-        subset = SubSet(id=str(en), name=color, row_selector=rs, gr_style=style)
-        irds.subs['en'].append(subset)
-
-    dpath = os.environ['CC_TESTDATA']
-    dfile = dpath + '/Iris/iris_multiclass.csv'
-
-    itf = ImporterTextFile(
-        file_path=dfile,
-        delimiter=',',
-        have_obj_names=False
-    )
-    # itf.configure_traits()
-    ds = itf.import_data()
-
-    # plot = PCScatterPlot(ds)
-    plot = SelectionScatterPlot(ds)
-    plot_control = PCPlotControl(plot)
-    pw = SinglePlotWindow(plot=plot_control)
-
-    with np.errstate(invalid='ignore'):
-        pw.configure_traits()
