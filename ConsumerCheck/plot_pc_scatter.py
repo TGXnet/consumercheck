@@ -762,7 +762,6 @@ class PCBaseControl(NoPlotControl):
 
 
 class PCPlotControl(PCBaseControl):
-    created_me = WeakRef(allow_none=True)
     show_labels = Bool(True)
     add_segment = Button("Add segment")
     teller = Int(0)
