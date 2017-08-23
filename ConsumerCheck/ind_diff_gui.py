@@ -119,7 +119,7 @@ class IndDiffController(pb.ModelController):
 
 
     def _segments_analysis_default(self):
-        return [DiffWindowLauncher(node_name='Define segments', plot_func_name='pca_loadings_plot', owner_ref=self),
+        return [DiffWindowLauncher(node_name='Define segments', plot_func_name='define_segments_plot', owner_ref=self),
                 SegmentTE(name='Discriminant analysis', calcc=self)]
 
 
@@ -131,12 +131,6 @@ class IndDiffController(pb.ModelController):
         return segments
 
 
-    def add_segment(self, members):
-        self.gr_name_inc += 1
-        el = Segment(name="Segment {0}".format(self.gr_name_inc), member_index=list(members))
-        self.model.settings.selected_segments.append(el)
-
-
     def _show_zero_var_warning(self):
         dlg = dlgs.ErrorMessage()
         dlg.err_msg = 'Removed zero variance variables'
@@ -144,9 +138,7 @@ class IndDiffController(pb.ModelController):
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
-    def pca_loadings_plot(self):
-        """Make PCA loadings
-        """
+    def define_segments_plot(self):
         res = self.model.pca_L
         plot = self.pca_x_loadings_plot(res)
         # wl = self.window_launchers
@@ -154,7 +146,7 @@ class IndDiffController(pb.ModelController):
         # self._show_plot_window(plot)
         # view_loop = self.pca_x_response
 
-        plot_control = PCPlotControl(plot, created_me=self)
+        plot_control = PCPlotControl(plot)
 
         win = SinglePlotWindow(
             plot=plot_control,
@@ -164,7 +156,9 @@ class IndDiffController(pb.ModelController):
 
 
     def pca_x_loadings_plot(self, res):
+        self.model.selected_segments = seg = ds.Factor('Segments', 500)
         plot = pps.SelectionScatterPlot(res.loadings, title='Liking scores')
+        plot.data.coloring_factor = seg
         return plot
 
 
@@ -227,7 +221,7 @@ def dclk_activator(obj):
     owner = obj.owner_ref
     pfn = obj.plot_func_name
     if isinstance(owner, SegmentTE):
-        res = owner.calcc.model.calc_plsr_da(owner.calcc.model.settings.selected_segments)
+        res = owner.calcc.model.calc_plsr_da(owner.calcc.model.selected_segments)
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
@@ -496,28 +490,31 @@ if __name__ == '__main__':
     one_branch = False
 
     # Folder, File name, Display name, DS type
-    # ds_L_meta = ('HamData', 'Ham_consumer_liking.txt',
-    #              'Ham liking', 'Consumer liking')
-    # ds_A_meta = ('HamData', 'Ham_consumer_characteristics.txt',
-    #              'Consumer values', 'Consumer characteristics')
-    ds_L_meta = ('Cheese', 'ConsumerLiking.txt',
-                 'Cheese liking', 'Consumer liking')
-    ds_A_meta = ('Cheese', 'ConsumerValues.txt',
-                 'Consumer values', 'Consumer characteristics')
-    L = imp_ds(ds_L_meta)
-    A = imp_ds(ds_A_meta)
+    cheese_L_meta = ('Cheese', 'ConsumerLiking.txt',
+                     'Cheese liking', 'Consumer liking')
+    cheese_A_meta = ('Cheese', 'ConsumerValues.txt',
+                     'Consumer values', 'Consumer characteristics')
+    ham_L_meta = ('HamData', 'Ham_consumer_liking_categories.csv',
+                  'Ham linking - categories', 'Consumer liking')
+    ham_A_meta = ('HamData', 'Ham_consumer_attributes_categories.csv',
+                  'Ham attributes - categories', 'Consumer characteristics')
+    CL = imp_ds(*cheese_L_meta)
+    CA = imp_ds(*cheese_A_meta)
+    HL = imp_ds(*ham_L_meta)
+    HA = imp_ds(*ham_A_meta)
 
     if one_branch:
-        ind_diff = idm.IndDiff(ds_L=L, ds_A=A)
+        ind_diff = idm.IndDiff(ds_L=CL, ds_A=CA)
         pc = IndDiffController(ind_diff)
         test = pb.TestOneNode(one_model=pc)
         test.configure_traits(view=pb.dummy_view(ind_diff_nodes))
     else:
         dsc = dc.DatasetContainer()
-        dsc.add(L)
-        dsc.add(A)
+        dsc.add(imp_ds(*ham_L_meta))
+        dsc.add(imp_ds(*ham_A_meta))
+        dsc.add(imp_ds(*cheese_L_meta))
+        dsc.add(imp_ds(*cheese_A_meta))
         ind_diff = IndDiffCalcContainer(dsc=dsc)
         ppc = IndDiffPluginController(ind_diff)
         ppc.configure_traits(
             view=ind_diff_plugin_view)
-        # ppc.print_traits()

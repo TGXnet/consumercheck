@@ -82,7 +82,7 @@ class IndDiff(pb.Model):
     # liking_pc = _traits.List(_traits.Int)
     selected_liking_pc = _traits.List(_traits.Int)
     n_Y_pc = _traits.List([(0,'PC-1'),(1,'PC-2'),(2,'PC-3')])
-    selected_segments = _traits.List()
+    selected_segments = _traits.Instance(ds.Factor)
 
     min_std = _traits.Float(0.001)
     C_zero_std = _traits.List()
@@ -127,7 +127,6 @@ class IndDiff(pb.Model):
         return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore')
 
 
-
     def calc_plsr_da(self, segments):
         '''Process
         Add a row for each segments
@@ -136,12 +135,17 @@ class IndDiff(pb.Model):
         Hmmm
         Add dummy segments to attr array as vel
         '''
-        every = []
-        for seg in segments:
-            every.extend(seg.member_index)
+        if len(segments) < 1:
+            # FIXME: Show warning, no segments defined
+            return
 
-        dsx = self.ds_X
-        dsx.mat = dsx.mat.loc[every,:]
+        # every = []
+        # for seg in segments:
+        #     every.extend(seg.member_index)
+
+        # dsx = self.ds_X
+        # dsx.mat = dsx.mat.loc[every,:]
+        dsx = segments.get_combined_levels_subset(self.ds_X, axis=0)
 
         dsy = self.make_liking_dummy_segmented(segments)
         dsy = dsy.copy(transpose=True)
@@ -153,29 +157,25 @@ class IndDiff(pb.Model):
 
 
     def make_liking_dummy_segmented(self, segments):
-        dsy_sd = self.ds_Y
+        # every = []
+        # for seg in segments:
+        #     every.extend(seg.member_index)
 
-        if len(segments) < 1:
-            # FIXME: Show warning, no segments defined
-            return dsy_sd
+        # dsy_sd = self.ds_Y
+        # dsy_sd.mat = dsy_sd.mat.loc[:,every]
+        dsy_sd = segments.get_combined_levels_subset(self.ds_Y, axis=0)
 
-        every = []
-        for seg in segments:
-            every.extend(seg.member_index)
-
-        dsy_sd.mat = dsy_sd.mat.loc[:,every]
-
-        segs = _pd.DataFrame(0, index=[seg.name for seg in segments], columns=every)
-        for seg in segments:
-            segs.loc[seg.name,seg.member_index] = 1
+        index = segments.levels.keys()
+        columns = segments.get_combined_levels_labels(self.ds_Y, axis=0)
+        segs = _pd.DataFrame(0, index=index, columns=columns)
+        for lvn, lv in segments.levels.iteritems():
+            cols = lv.get_labels(self.ds_Y, 0)
+            segs.loc[lvn,cols] = 1
 
         # dsy_sd.mat = dsy_sd.mat.append(segs)
         dsy_sd.mat = segs
 
         return dsy_sd
-
-
-
 
 
     def _get_res(self):
