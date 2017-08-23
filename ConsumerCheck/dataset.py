@@ -365,11 +365,73 @@ class Factor(_traits.HasTraits):
                 return dataset.mat.columns[idx]
 
 
-    def _get_nonleveled(self, dataset, axis):
-        '''Return all indexed for ann array that is not in a level
+    def _get_all_leveled(self):
+        '''The index combined from all the levels
         '''
-        lvs = set(_itr.chain.from_iterable([lv.selector for lv in self.levels.itervalues()]))
-        return list(set(range(dataset.mat.shape[axis])).difference(lvs))
+        return list(_itr.chain.from_iterable([lv.selector for lv in self.levels.itervalues()]))
+
+
+    def get_combined_levels_subset(self, dataset, axis=None):
+        '''Return numpy subarray
+        '''
+        sub_ds = dataset.copy()
+        idx = self._get_all_leveled()
+        if axis is not None:
+            if axis == 0:
+                sub_ds.mat = dataset.mat.iloc[idx,:]
+                return sub_ds
+            elif axis == 1:
+                sub_ds.mat = dataset.mat.iloc[:,idx]
+                return sub_ds
+            raise ValueError('Illegale value for axis')
+        else:
+            if self.default_ds_axis == "row":
+                sub_ds.mat = dataset.mat[idx,:]
+                return sub_ds
+            else:
+                sub_ds.mat = dataset.mat[:,idx]
+                return sub_ds
+
+
+    def get_combined_levels_values(self, dataset, axis=None):
+        '''Return numpy subarray
+        '''
+        idx = self._get_all_leveled()
+        if axis is not None:
+            if axis == 0:
+                return dataset.mat.values[idx,:]
+            elif axis == 1:
+                return dataset.mat.values[:,idx]
+            raise ValueError('Illegale value for axis')
+        else:
+            if self.default_ds_axis == "row":
+                return dataset.mat.values[idx,:]
+            else:
+                return dataset.mat.values[:,idx]
+
+
+    def get_combined_levels_labels(self, dataset, axis=None):
+        '''Return list of all selected labels
+        '''
+        idx = self._get_all_leveled()
+        if axis is not None:
+            if axis == 0:
+                return dataset.mat.index[idx]
+            elif axis == 1:
+                return dataset.mat.columns[idx]
+            raise ValueError('Illegale value for axis')
+        else:
+            if self.default_ds_axis == "row":
+                return dataset.mat.index[idx]
+            else:
+                return dataset.mat.columns[idx]
+
+
+    def _get_nonleveled(self, dataset, axis):
+        '''The indexes for a dataset that is not in a level
+        '''
+        lvs = self._get_all_leveled()
+        return list(set(range(dataset.mat.shape[axis])).difference(set(lvs)))
 
 
     def get_rest_values(self, dataset, axis=None):
@@ -393,7 +455,7 @@ class Factor(_traits.HasTraits):
 
 
     def get_rest_labels(self, dataset, axis=None):
-        '''Return list of selected labels
+        '''Return list of not selected labels
         '''
         if axis is not None:
             if axis == 0:
