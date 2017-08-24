@@ -75,6 +75,10 @@ class SegmentTE(TreeElement):
     pass
 
 
+class PCLikingTE(TreeElement):
+    pass
+
+
 class ColorTE(TreeElement):
     def _plots_act_default(self):
 
@@ -109,7 +113,7 @@ class IndDiffController(pb.ModelController):
 
 
     def _individual_differences_default(self):
-        return [TreeElement(name='Pricipal components of likings', calcc=self),
+        return [PCLikingTE(name='Pricipal components of likings', calcc=self),
                 TreeElement(name='Liking data', calcc=self)]
 
 
@@ -220,10 +224,14 @@ def dclk_activator(obj):
         view = func(res, owner.name)
         loop = owner.plots_act
         owner.calcc.open_window(view, loop)
+    elif isinstance(owner, PCLikingTE):
+        res = owner.calcc.model.calc_pls_pc_likings(owner.calcc.model.settings.selected_liking_pc)
+        func = getattr(owner.calcc, pfn)
+        view = func(res)
+        loop = owner.plots_act
+        owner.calcc.open_window(view, loop)
     elif isinstance(owner, TreeElement):
-        # Raw linking
         res = owner.calcc.model.calc_pls_raw_liking()
-        # res = owner.calcc.model.calc_pls_pc_likings(owner.calcc.model.settings.selected_liking_pc)
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
@@ -307,7 +315,7 @@ ind_diff_nodes = [
         menu=_traitsui.Menu(ds_dum_seg_action),
     ),
     _traitsui.TreeNode(
-        node_for=[TreeElement],
+        node_for=[TreeElement, PCLikingTE],
         label='name',
         children='plots_act',
         view=no_view,
