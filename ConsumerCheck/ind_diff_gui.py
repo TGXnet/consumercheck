@@ -196,7 +196,7 @@ class IndDiffController(pb.ModelController):
         return plot
 
 
-    def open_window(self, viewable, view_loop):
+    def open_window(self, viewable, view_loop, res):
         """Expected viewable is by now:
           + Plot subtype
           + DataSet type
@@ -205,18 +205,21 @@ class IndDiffController(pb.ModelController):
             plot_control = pps.PCPlotControl(viewable)
             win = SinglePlotWindow(
                 plot=plot_control,
+                res=res,
             )
             self._show_plot_window(win)
         elif isinstance(viewable, pps.CLPlot):
             plot_control = pps.CLPlotControl(viewable)
             win = pw.SinglePlotWindow(
                 plot=plot_control,
+                res=res,
             )
             self._show_plot_window(win)
         elif isinstance(viewable, pel.EVLinePlot):
             plot_control = pps.NoPlotControl(viewable)
             win = SinglePlotWindow(
                 plot=plot_control,
+                res=res,
             )
             self._show_plot_window(win)
         else:
@@ -234,25 +237,25 @@ def dclk_activator(obj):
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
-        owner.calcc.open_window(view, loop)
+        owner.calcc.open_window(view, loop, res)
     elif isinstance(owner, ColorTE):
         res = owner.calcc.model.pca_L
         func = getattr(owner.calcc, pfn)
         view = func(res, owner.name)
         loop = owner.plots_act
-        owner.calcc.open_window(view, loop)
+        owner.calcc.open_window(view, loop, res)
     elif isinstance(owner, PCLikingTE):
         res = owner.calcc.model.calc_pls_pc_likings(owner.calcc.model.settings.selected_liking_pc)
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
-        owner.calcc.open_window(view, loop)
+        owner.calcc.open_window(view, loop, res)
     elif isinstance(owner, TreeElement):
         res = owner.calcc.model.calc_pls_raw_liking()
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
-        owner.calcc.open_window(view, loop)
+        owner.calcc.open_window(view, loop, res)
     elif isinstance(owner, IndDiffController):
         func = getattr(owner, pfn)
         func()

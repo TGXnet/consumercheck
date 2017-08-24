@@ -95,7 +95,8 @@ class IndDiff(pb.Model):
         dsx = self.ds_X
         dsy = self.ds_Y
         plsr = PLSR(dsx.values, dsy.values, numpPC=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
-        return ra.adapt_oto_plsr(plsr, dsx, dsy)
+        title = 'PLSR({0} ~ {1})'.format(dsx.display_name, dsy.display_name)
+        return ra.adapt_oto_plsr(plsr, dsx, dsy, title)
 
 
     def calc_pls_pc_likings(self, pc_sel):
@@ -104,7 +105,8 @@ class IndDiff(pb.Model):
         dsy = self.pca_L.loadings
         dsy.mat = dsy.mat.iloc[:,pc_sel]
         plsr = PLSR(dsx.values, dsy.values, numpPC=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
-        return ra.adapt_oto_plsr(plsr, dsx, dsy)
+        title = 'PLSR({0} ~ {1})'.format(dsx.display_name, dsy.display_name)
+        return ra.adapt_oto_plsr(plsr, dsx, dsy, title)
 
 
     def calc_plsr_da(self, segments):
@@ -126,7 +128,8 @@ class IndDiff(pb.Model):
 
         n_pc = 2
         plsr = PLSR(dsx.values, dsy.values, numpPC=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
-        return ra.adapt_oto_plsr(plsr, dsx, dsy)
+        title = 'PLSR-DA({0} ~ {1})'.format(dsx.display_name, dsy.display_name)
+        return ra.adapt_oto_plsr(plsr, dsx, dsy, title)
 
 
     def make_liking_dummy_segmented(self, segments):

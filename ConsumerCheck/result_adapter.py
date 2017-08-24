@@ -89,9 +89,9 @@ def adapt_sklearn_pca():
 
 
 
-def adapt_oto_plsr(plsr, dsx, dsy):
+def adapt_oto_plsr(plsr, dsx, dsy, title):
 
-    res = Result('PLSR {0}(X) & {1}(Y)'.format(dsx.display_name, dsy.display_name))
+    res = Result(title)
 
     # scores_x
     mT = plsr.X_scores()
