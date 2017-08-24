@@ -37,7 +37,6 @@ import dataset_container as dc
 import plot_windows as pw
 import plugin_tree_helper as pth
 import plugin_base as pb
-from plot_pc_scatter import PCScatterPlot, PCPlotControl, NoPlotControl
 from plot_windows import SinglePlotWindow
 
 
@@ -140,7 +139,7 @@ class IndDiffController(pb.ModelController):
     def define_segments_plot(self):
         res = self.model.pca_L
         plot = self.pca_x_loadings_plot(res)
-        plot_control = PCPlotControl(plot)
+        plot_control = pps.PCSelectionControl(plot)
 
         win = SinglePlotWindow(
             plot=plot_control,
@@ -169,7 +168,7 @@ class IndDiffController(pb.ModelController):
 
 
     def plsr_corr_loadings_plot(self, res):
-        plot = pps.CLSectorPlot(
+        plot = pps.CLPlot(
             res.corr_loadings_x, res.expl_var_x,
             res.corr_loadings_y, res.expl_var_y,
             em=False,
@@ -202,26 +201,20 @@ class IndDiffController(pb.ModelController):
           + Plot subtype
           + DataSet type
         """
-        if isinstance(viewable, pps.CLSectorPlot):
-            plot_control = pps.CLSectorPlotControl(viewable)
-            win = pw.SinglePlotWindow(
-                plot=plot_control,
-            )
-            self._show_plot_window(win)
-        elif isinstance(viewable, pps.ScatterSectorPlot):
-            plot_control = pps.PCSectorPlotControl(viewable)
-            win = pw.SinglePlotWindow(
-                plot=plot_control,
-            )
-            self._show_plot_window(win)
-        elif isinstance(viewable, PCScatterPlot):
-            plot_control = PCPlotControl(viewable)
+        if isinstance(viewable, pps.PCScatterPlot):
+            plot_control = pps.PCPlotControl(viewable)
             win = SinglePlotWindow(
                 plot=plot_control,
             )
             self._show_plot_window(win)
+        elif isinstance(viewable, pps.CLPlot):
+            plot_control = pps.CLPlotControl(viewable)
+            win = pw.SinglePlotWindow(
+                plot=plot_control,
+            )
+            self._show_plot_window(win)
         elif isinstance(viewable, pel.EVLinePlot):
-            plot_control = NoPlotControl(viewable)
+            plot_control = pps.NoPlotControl(viewable)
             win = SinglePlotWindow(
                 plot=plot_control,
             )
@@ -305,8 +298,6 @@ ds_dum_seg_action = _traitsui.Action(
     # visible_when='object.node_name in ("Fixed residuals", "Full model residuals")',
     action='handler.export_dum_segments(editor, object)',
 )
-
-
 
 
 ind_diff_nodes = [
@@ -480,10 +471,6 @@ class IndDiffPluginController(pb.PluginController):
         dummy = obj.model.make_liking_dummy_segmented(obj.segments_analysis)
         dummy.display_name += '_dummified'
         self.model.dsc.add(dummy)
-
-
-
-
 
 
 

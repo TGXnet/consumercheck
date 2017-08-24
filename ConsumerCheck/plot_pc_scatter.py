@@ -763,8 +763,6 @@ class PCBaseControl(NoPlotControl):
 
 class PCPlotControl(PCBaseControl):
     show_labels = Bool(True)
-    add_segment = Button("Add segment")
-    teller = Int(0)
     plot_controllers = Group(
         Item('x_down', show_label=False),
         Item('x_up', show_label=False),
@@ -773,7 +771,6 @@ class PCPlotControl(PCBaseControl):
         Item('y_down', show_label=False),
         Item('eq_axis', label="Equal scale axis"),
         Item('show_labels', label="Show labels"),
-        Item('add_segment', label="Add group"),
         Item('subset_groups', label="Color subset groups",
              editor=CheckListEditor(name='model.data.group_names')),
         orientation="horizontal",
@@ -791,19 +788,6 @@ class PCPlotControl(PCBaseControl):
     @on_trait_change('show_labels')
     def switch_labels(self, obj, name, new):
         obj.model.show_labels(set_id=1, show=new)
-
-
-    @on_trait_change('add_segment')
-    def _(self, obj, name, new):
-        self.teller += 1
-        lvn = "Segment {}".format(self.teller)
-        mask = self.model.index_datasource.metadata['selection']
-        ds = self.model.data.plot_data[0].pc_ds
-        uidx = self.model.data.coloring_factor._get_nonleveled(ds, 0)
-        print("Lengde", len(mask), len(uidx))
-        # lv = Level(np.where(mask)[0], lvn)
-        lv = Level(np.array(uidx)[mask], lvn)
-        self.model.data.coloring_factor.add_level(lv, check_idx="toss_overlaping")
 
 
 
@@ -925,3 +909,48 @@ class CLSectorPlotControl(PCBaseControl):
         if isinstance(new, int):
             obj.remove_sectors()
             obj.draw_sectors(new)
+
+
+class PCSelectionControl(PCBaseControl):
+    show_labels = Bool(True)
+    add_segment = Button("Add segment")
+    teller = Int(0)
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_labels', label="Show labels"),
+        Item('add_segment', label="Add group"),
+        Item('subset_groups', label="Color subset groups",
+             editor=CheckListEditor(name='model.data.group_names')),
+        orientation="horizontal",
+    )
+
+
+    @on_trait_change('subset_groups')
+    def sel_subset(self, obj, name, new):
+        if not new:
+            obj.model.color_subsets_group()
+        else:
+            obj.model.color_subsets_group(new[0])
+
+
+    @on_trait_change('show_labels')
+    def switch_labels(self, obj, name, new):
+        obj.model.show_labels(set_id=1, show=new)
+
+
+    @on_trait_change('add_segment')
+    def _(self, obj, name, new):
+        self.teller += 1
+        lvn = "Segment {}".format(self.teller)
+        mask = self.model.index_datasource.metadata['selection']
+        ds = self.model.data.plot_data[0].pc_ds
+        uidx = self.model.data.coloring_factor._get_nonleveled(ds, 0)
+        print("Lengde", len(mask), len(uidx))
+        # lv = Level(np.where(mask)[0], lvn)
+        lv = Level(np.array(uidx)[mask], lvn)
+        self.model.data.coloring_factor.add_level(lv, check_idx="toss_overlaping")
