@@ -22,14 +22,13 @@
 # Scipy libs imports
 import numpy as _np
 import pandas as _pd
-import sklearn.cross_decomposition
 
 # ETS imports
 import traits.api as _traits
 
 # Local imports
 import pca
-import plsr
+from plsr import nipalsPLS2 as PLSR
 import dummify as df
 import dataset as ds
 import plugin_base as pb
@@ -95,18 +94,17 @@ class IndDiff(pb.Model):
         n_pc = 2
         dsx = self.ds_X
         dsy = self.ds_Y
-        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
-        pls.fit(dsx.values, dsy.values)
-        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Tore<rename>')
+        plsr = PLSR(dsx.values, dsy.values, numpPC=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
+        return ra.adapt_oto_plsr(plsr, dsx, dsy)
 
 
     def calc_pls_pc_likings(self, pc_sel):
         n_pc = 2
         dsx = self.ds_X
-        dsy = self.pca_L.loadings.mat.iloc[:,pc_sel]
-        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
-        pls.fit(dsx.values, dsy.values)
-        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'Per<rename>')
+        dsy = self.pca_L.loadings
+        dsy.mat = dsy.mat.iloc[:,pc_sel]
+        plsr = PLSR(dsx.values, dsy.values, numpPC=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
+        return ra.adapt_oto_plsr(plsr, dsx, dsy)
 
 
     def calc_plsr_da(self, segments):
@@ -127,9 +125,8 @@ class IndDiff(pb.Model):
         dsy = dsy.copy(transpose=True)
 
         n_pc = 2
-        pls = sklearn.cross_decomposition.PLSRegression(n_components=n_pc)
-        pls.fit(dsx.values, dsy.values)
-        return ra.adapt_sklearn_pls(pls, dsx, dsy, 'PLS-DA')
+        plsr = PLSR(dsx.values, dsy.values, numpPC=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
+        return ra.adapt_oto_plsr(plsr, dsx, dsy)
 
 
     def make_liking_dummy_segmented(self, segments):
