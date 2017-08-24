@@ -37,7 +37,7 @@ import dataset_container as dc
 import plot_windows as pw
 import plugin_tree_helper as pth
 import plugin_base as pb
-from plot_pc_scatter import PCScatterPlot, PCPlotControl
+from plot_pc_scatter import PCScatterPlot, PCPlotControl, NoPlotControl
 from plot_windows import SinglePlotWindow
 
 
@@ -57,11 +57,11 @@ class TreeElement(_traits.HasTraits):
         acts = [
             # ("Overview", plot_overview),
             ("X Scores", 'plsr_x_scores_plot'),
-            # ("X&Y correlation loadings", corr_loadings_plot),
+            ("X & Y correlation loadings", 'plsr_corr_loadings_plot'),
             ("X Loadings", 'plsr_x_loadings_plot'),
-            # ("Y loadings", loadings_y_plot),
-            # ("Explained var in X", expl_var_x_plot),
-            # ("Explained var in Y", expl_var_y_plot),
+            ("Y loadings", 'plsr_y_loadings_plot'),
+            ("Explained var in X", 'plsr_x_expl_var_plot'),
+            ("Explained var in Y", 'plsr_y_expl_var_plot'),
         ]
 
         return [DiffWindowLauncher(
@@ -164,18 +164,36 @@ class IndDiffController(pb.ModelController):
 
 
     def plsr_x_scores_plot(self, res):
-        # plot = pps.PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
-        plot = pps.PCScatterPlot(res.scores_x, title='X scores')
+        plot = pps.PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
+        return plot
+
+
+    def plsr_corr_loadings_plot(self, res):
+        plot = pps.CLSectorPlot(
+            res.corr_loadings_x, res.expl_var_x,
+            res.corr_loadings_y, res.expl_var_y,
+            em=False,
+            title='X & Y correlation loadings')
         return plot
 
 
     def plsr_x_loadings_plot(self, res):
-        plot = pps.PCScatterPlot(res.loadings_x, title='X loadings')
+        plot = pps.PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
         return plot
 
 
-    def plsr_x_expl_var_plot(res):
+    def plsr_y_loadings_plot(self, res):
+        plot = pps.PCScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
+        return plot
+
+
+    def plsr_x_expl_var_plot(self, res):
         plot = pel.EVLinePlot(res.expl_var_x, title='Explained variance in X')
+        return plot
+
+
+    def plsr_y_expl_var_plot(self, res):
+        plot = pel.EVLinePlot(res.expl_var_y, title='Explained variance in Y')
         return plot
 
 
@@ -202,8 +220,14 @@ class IndDiffController(pb.ModelController):
                 plot=plot_control,
             )
             self._show_plot_window(win)
+        elif isinstance(viewable, pel.EVLinePlot):
+            plot_control = NoPlotControl(viewable)
+            win = SinglePlotWindow(
+                plot=plot_control,
+            )
+            self._show_plot_window(win)
         else:
-            print("Something missing here")
+            print("open_window missing something")
             # super(IndDiffController, self).open_window(viewable, view_loop)
 
 
