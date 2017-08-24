@@ -95,11 +95,6 @@ class ColorTE(TreeElement):
             loop_name='plots_act',) for nn, fn in acts]
 
 
-
-class Segment(TreeElement):
-    member_index = _traits.List()
-
-
 class IndDiffController(pb.ModelController):
 
     individual_differences = _traits.List(TreeElement)
@@ -141,11 +136,6 @@ class IndDiffController(pb.ModelController):
     def define_segments_plot(self):
         res = self.model.pca_L
         plot = self.pca_x_loadings_plot(res)
-        # wl = self.window_launchers
-        # title = self._wind_title(res)
-        # self._show_plot_window(plot)
-        # view_loop = self.pca_x_response
-
         plot_control = PCPlotControl(plot)
 
         win = SinglePlotWindow(
@@ -194,8 +184,6 @@ class IndDiffController(pb.ModelController):
             plot_control = pps.CLSectorPlotControl(viewable)
             win = pw.SinglePlotWindow(
                 plot=plot_control,
-                # res=res,
-                # view_loop=view_loop
             )
             self._show_plot_window(win)
         elif isinstance(viewable, pps.ScatterSectorPlot):
@@ -234,8 +222,8 @@ def dclk_activator(obj):
         owner.calcc.open_window(view, loop)
     elif isinstance(owner, TreeElement):
         # Raw linking
-        # res = owner.calcc.model.calc_pls_raw_liking()
-        res = owner.calcc.model.calc_pls_pc_likings(owner.calcc.model.settings.selected_liking_pc)
+        res = owner.calcc.model.calc_pls_raw_liking()
+        # res = owner.calcc.model.calc_pls_pc_likings(owner.calcc.model.settings.selected_liking_pc)
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
