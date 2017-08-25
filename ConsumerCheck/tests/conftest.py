@@ -313,8 +313,8 @@ def all_dsc():
     return dsc
 
 
-def imp_ds(ds_meta_info):
-    folder, file_name, ds_name, kind = ds_meta_info
+def imp_ds(folder, file_name, ds_name, kind):
+    # folder, file_name, ds_name, kind = ds_meta_info
     importer = ImporterMain()
     home = tdd()
     ds_url = osp.join(home, folder, file_name)
