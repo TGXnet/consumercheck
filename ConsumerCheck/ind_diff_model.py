@@ -80,9 +80,35 @@ class IndDiff(pb.Model):
     selected_liking_pc = _traits.List(_traits.Int)
     n_Y_pc = _traits.List([(0,'PC-1'),(1,'PC-2'),(2,'PC-3')])
     selected_segments = _traits.Instance(ds.Factor)
+    num_segments = _traits.Int(0)
+
+    # Export buttons
+    ev_export_segments = _traits.Button('Export segments')
+    ev_export_dummified = _traits.Button('Export dummified')
 
     C_zero_std = _traits.List()
     S_zero_std = _traits.List()
+
+
+    @_traits.on_trait_change('ev_export_segments')
+    def _one(self, obj, name, old, new):
+        calc = self.owner.calculations[0].model
+        dsy_sd = calc.make_liking_dummy_segmented(calc.selected_segments)
+        dsy_sd.display_name += '_segments'
+        self.owner.dsc.add(dsy_sd)
+
+
+    @_traits.on_trait_change('ev_export_dummified')
+    def _two(self, obj, name, old, new):
+        calc = self.owner.calculations[0].model
+        dummy = calc.ds_X
+        dummy.display_name += '_dummified'
+        self.owner.dsc.add(dummy)
+
+
+    @_traits.on_trait_change('selected_segments:levels')
+    def track_segments(self, obj, name, old, new):
+        self.settings.num_segments = len(obj.levels)
 
 
     def _get_pca_L(self):

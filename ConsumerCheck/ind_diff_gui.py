@@ -104,8 +104,6 @@ class IndDiffController(pb.ModelController):
     segments_analysis = _traits.List()
     apriori_segments = _traits.List(TreeElement)
 
-    gr_name_inc = _traits.Int(0)
-
 
     def _name_default(self):
         return "indDiff - {0}".format(self.model.ds_L.display_name)
@@ -265,11 +263,9 @@ no_view = _traitsui.View()
 
 
 ind_diff_view = _traitsui.View(
-    # _traitsui.Item('calc_n_pc',
-    #                editor=_traitsui.RangeEditor(
-    #                    low_name='min_pc', high_name='max_pc', mode='auto'),
-    #                style='simple',
-    #                label='PC to calc:'),
+    _traitsui.Item('ev_export_segments', show_label=False),
+    _traitsui.Item('ev_export_dummified', show_label=False),
+    _traitsui.Item('num_segments', style='readonly'),
     _traitsui.Group(
         _traitsui.Item('dummify_variables',
                        editor=_traitsui.CheckListEditor(name='consumer_variables'),
@@ -308,28 +304,28 @@ ind_diff_nodes = [
         node_for=[IndDiffController],
         label='name',
         children='',
-        view=ind_diff_view,
+        view=no_view,
         menu=[]
     ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
         label='=Individual difference per ce',
         children='individual_differences',
-        view=ind_diff_view,
+        view=no_view,
         menu=_traitsui.Menu(ds_dum_attr_action),
     ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
         label='=Analysis of segments',
         children='segments_analysis',
-        view=ind_diff_view,
+        view=no_view,
         menu=_traitsui.Menu(ds_dum_seg_action),
     ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
         label='=Coloring of a priori segments',
         children='apriori_segments',
-        view=ind_diff_view,
+        view=no_view,
         menu=_traitsui.Menu(ds_dum_seg_action),
     ),
     _traitsui.TreeNode(
@@ -369,6 +365,9 @@ ind_diff_nodes = [
 class IndDiffCalcContainer(pb.CalcContainer):
     calculator = _traits.Instance(idm.IndDiff, idm.IndDiff())
 
+    def __init__(self, *args, **kwargs):
+        super(IndDiffCalcContainer, self).__init__(*args, **kwargs)
+        self.calculator.owner = self
 
 
 class IndDiffPluginController(pb.PluginController):
