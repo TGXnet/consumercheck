@@ -8,16 +8,17 @@ https://docs.python.org/2/distutils/index.html
 http://pythonhosted.org/setuptools/index.html
 https://pypi.python.org/pypi/twine
 https://www.pypa.io/en/latest/
+http://python-notes.curiousefficiency.org/en/latest/pep_ideas/core_packaging_api.html
 
 run:
  + python setup.py sdist
    to create source distribution
 
 Elements to setup:
- * Generate frozen installation folder with pyinstaller?
- * Generate installation package
- * Generate source distribution - sdist
- * Run test, check?
+ + Generate frozen installation folder with pyinstaller?
+ + Generate installation package
+ + Generate source distribution - sdist
+ + Run test, check?
 
 Do a release
 python setup.py --help-commands
@@ -35,83 +36,22 @@ install: install_lib, install_data, install_scripts
 PyPI credentials can be found in: .pypirc
 
 """
+import os
 import sys
-from os import path
 from codecs import open  # To use a consistent encoding
 # from pkg_resources import parse_version
 from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
+
+# import setuputils.commands
 
 
-# import ConsumerCheck
-
-
-here = path.abspath(path.dirname(__file__))
+here = os.path.abspath(os.path.dirname(__file__))
 
 # Metadatafiles
 # README.rst, HISTORY.rst ,AUTHORS.rst
 
-# Get the long description from the relevant file
-with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
-    long_description = f.read()
-
-
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        errcode = pytest.main(self.test_args)
-        sys.exit(errcode)
-
 
 setup(
-    name='ConsumerCheck',
-
-    # Versions should comply with PEP440. For a discussion on single-sourcing
-    # the version across setup.py and the project code, see
-    # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.4.2',
-
-    description='Software for analysis of sensory and consumer data',
-    long_description=long_description,
-
-    # The project's main homepage.
-    url='http://sourceforge.net/projects/consumercheck/',
-
-    # Author details
-    author='Thomas Graff',
-    author_email='graff.thomas@gmail.com',
-
-    # Maintainer details
-    maintainer='Oliver Tomic',
-    maintainer_email='olivertomic@zoho.com',
-
-    license='GNU GPLv3',
-
-    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    classifiers=[
-        'Natural Language :: English',
-        'Development Status :: 4 - Beta',
-        'Programming Language :: Python :: 2.7',
-        'Environment :: Win32 (MS Windows)',
-        'Environment :: X11 Applications :: Qt',
-        'Topic :: Scientific/Engineering',
-        'Intended Audience :: Education',
-        'Intended Audience :: End Users/Desktop',
-        'Intended Audience :: Science/Research',
-        'Operating System :: POSIX',
-        'Operating System :: MacOS',
-        'Operating System :: Microsoft :: Windows',
-        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-    ],
-
-    # What does your project relate to?
-    keywords='statistic education science',
-
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=['ConsumerCheck', 'ConsumerCheck.tests'],
@@ -138,17 +78,27 @@ setup(
     # http://pythonhosted.org/setuptools/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies
     # You can install these using the following syntax, for example:
     # $ pip install -e .[dev,test]
-    extras_require={
-        'dev': ['Sphinx', 'check-manifest'],
-        'testing': ['pytest', 'coverage'],
-    },
+    # extras_require={
+    #     'dev': ['Sphinx', 'check-manifest'],
+    #     'testing': ['pytest', 'coverage'],
+    # },
+
+    # setup_requires=[
+    #     'pytest-runner >=2.10, <3dev'
+    # ],
+
+    # tests_require=[
+    #     'pytest'
+    # ],
+
+    # python_requires=None,
 
     # If there are data files included in your packages that need to be
     # installed, specify them here. If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    package_data={
-        'ConsumerCheck': ['*.svg', '*.png', 'graphics/*.ico', 'rsrc/*.r'],
-    },
+    # package_data={
+    #     'ConsumerCheck': ['*.svg', '*.png', 'graphics/*.ico', 'rsrc/*.r'],
+    # },
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages.
@@ -168,22 +118,20 @@ setup(
 
     # Description here
     # http://pythonhosted.org/setuptools/setuptools.html#automatic-script-creation
-    entry_points={
-        'console_scripts': [
-            'ccrun = ConsumerCheck.cc_start:main',
-        ],
-        'gui_scripts': [
-            'ccgui = ConsumerCheck.cc_start:main',
-        ],
-        'distutils.commands': [
-            'foo = mypackage.some_module:foo',
-        ],
+    # entry_points={
+    #     'console_scripts': [
+    #         'ccrun = ConsumerCheck.cc_start:main',
+    #     ],
+    #     'gui_scripts': [
+    #         'ccgui = ConsumerCheck.cc_start:main',
+    #     ],
+    #     'distutils.commands': [
+    #         'foo = mypackage.some_module:foo',
+    #     ],
+    # },
+
+    cmdclass={
+        # 'test': PyTest,
+        'pylint': setuputils.commands.PylintCommand,
     },
-
-    # zip_safe=False,
-
-    cmdclass={'test': PyTest},
-    platforms='any',
-    test_suite='ConsumerCheck.tests.test_consumercheck',
-    tests_require=['pytest'],
 )

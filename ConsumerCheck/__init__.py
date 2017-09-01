@@ -19,9 +19,20 @@ You should have received a copy of the GNU General Public License
 along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-__version__ = '1.3.3'
+import os
+# Directory of the current file
+__dir__ = os.path.dirname(os.path.abspath(__file__))
+
+
+def ver():
+    with open(os.path.join(__dir__, 'VERSION.txt')) as fh:
+        ver = fh.read().strip()
+    return ver
+
+
+__version__ = ver()
 __license__ = __doc__
-__project_url__ = 'http://sourceforge.net/projects/consumercheck/'
+__project_url__ = 'https://github.com/TGXnet/consumercheck'
 __forum_url__   = 'http://consumercheck.co/'
 
 # Dear (Debian, RPM, ...) package makers, please feel free to customize the
@@ -29,11 +40,6 @@ __forum_url__   = 'http://consumercheck.co/'
 DATAPATH = LOCALEPATH = DOCPATH = ''
 DATAPATH = '/usr/share/consumercheck/images'
 DOCPATH = '/usr/share/doc/python-consumercheck-doc/html'
-
-
-import os
-# Directory of the current file
-__dir__ = os.path.dirname(os.path.abspath(__file__))
 
 
 # def add_to_distribution(dist):
