@@ -42,7 +42,7 @@ from codecs import open  # To use a consistent encoding
 # from pkg_resources import parse_version
 from setuptools import setup, find_packages
 
-# import setuputils.commands
+import setuputils.commands
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -118,20 +118,21 @@ setup(
 
     # Description here
     # http://pythonhosted.org/setuptools/setuptools.html#automatic-script-creation
-    # entry_points={
-    #     'console_scripts': [
-    #         'ccrun = ConsumerCheck.cc_start:main',
-    #     ],
-    #     'gui_scripts': [
-    #         'ccgui = ConsumerCheck.cc_start:main',
-    #     ],
-    #     'distutils.commands': [
-    #         'foo = mypackage.some_module:foo',
-    #     ],
-    # },
+    entry_points={
+        # 'console_scripts': [
+        #     'ccrun = ConsumerCheck.cc_start:main',
+        # ],
+        # 'gui_scripts': [
+        #     'ccgui = ConsumerCheck.cc_start:main',
+        # ],
+        # 'distutils.commands': [
+        #     'petter = setuputils.commands.PylintCommand',
+        # ],
+    },
 
     cmdclass={
         # 'test': PyTest,
         'pylint': setuputils.commands.PylintCommand,
+        'pyinst': setuputils.commands.PyInstallerCommand,
     },
 )
