@@ -950,7 +950,7 @@ class PCSelectionControl(PCBaseControl):
         mask = self.model.index_datasource.metadata['selection']
         ds = self.model.data.plot_data[0].pc_ds
         uidx = self.model.data.coloring_factor._get_nonleveled(ds, 0)
-        print("Lengde", len(mask), len(uidx))
+        # print("Lengde", len(mask), len(uidx))
         # lv = Level(np.where(mask)[0], lvn)
         lv = Level(np.array(uidx)[mask], lvn)
         self.model.data.coloring_factor.add_level(lv, check_idx="toss_overlaping")

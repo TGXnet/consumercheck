@@ -1,23 +1,17 @@
 """ MixIn for lasso selection
 """
+
+# SciPy libs import
 import numpy as np
 
 # Enthought library imports
 from chaco.api import LassoOverlay
 from chaco.tools.api import LassoSelection, ScatterInspector
 import traits.api as tr
-# from traits.api import (Bool, Int, List, Long, HasTraits, implements,
-#                         Property, Range, Str, Unicode, on_trait_change)
-# from traitsui.api import Item, Group, View, Label, Include, CheckListEditor
 import traitsui.api as tui
-
-# Local imports
-
 
 
 class LassoMixin(tr.HasTraits):
-    """
-    """
 
     def overlay_selection(self, plot):
         lasso_selection = LassoSelection(component=plot,
@@ -32,7 +26,7 @@ class LassoMixin(tr.HasTraits):
         # Uncomment this if you would like to see incremental updates:
         # lasso_selection.incremental_select = True
         self.index_datasource = plot.index
-        lasso_selection.on_trait_change(self._selection_changed, 'selection_changed')
+        # lasso_selection.on_trait_change(self._selection_changed, 'selection_changed')
 
 
     def _selection_changed(self):
@@ -41,5 +35,3 @@ class LassoMixin(tr.HasTraits):
         # print(np.compress(mask, np.arange(len(mask))))
         labels = self.data.plot_data[0].labels
         print(np.array(labels)[mask])
-        # Ensure that the points are printed immediately:
-        # sys.stdout.flush()
