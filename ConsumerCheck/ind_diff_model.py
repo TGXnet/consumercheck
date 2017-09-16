@@ -85,9 +85,16 @@ class IndDiff(pb.Model):
     # Export buttons
     ev_export_segments = _traits.Button('Export segments')
     ev_export_dummified = _traits.Button('Export dummified')
+    ev_remove_segments = _traits.Button('Remove segments')
 
     C_zero_std = _traits.List()
     S_zero_std = _traits.List()
+
+
+    @_traits.on_trait_change('ev_remove_segments')
+    def _zero(self, obj, name, old, new):
+        calc = self.owner.calculations[0].model
+        calc.selected_segments.levels = {}
 
 
     @_traits.on_trait_change('ev_export_segments')

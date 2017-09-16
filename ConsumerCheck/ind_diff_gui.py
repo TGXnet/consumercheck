@@ -263,6 +263,7 @@ no_view = _traitsui.View()
 
 
 ind_diff_view = _traitsui.View(
+    _traitsui.Item('ev_remove_segments', show_label=False),
     _traitsui.Item('ev_export_segments', show_label=False),
     _traitsui.Item('ev_export_dummified', show_label=False),
     _traitsui.Item('num_segments', style='readonly'),
@@ -286,6 +287,7 @@ ind_diff_view = _traitsui.View(
 
 
 ds_dum_attr_action = _traitsui.Action(
+    # FIXME: Remove this
     name='Export dummified attributes',
     # visible_when='object.node_name in ("Fixed residuals", "Full model residuals")',
     action='handler.export_dum_attr(editor, object)',
@@ -293,6 +295,7 @@ ds_dum_attr_action = _traitsui.Action(
 
 
 ds_dum_seg_action = _traitsui.Action(
+    # FIXME: Remove this
     name='Export dummified segments',
     # visible_when='object.node_name in ("Fixed residuals", "Full model residuals")',
     action='handler.export_dum_segments(editor, object)',
