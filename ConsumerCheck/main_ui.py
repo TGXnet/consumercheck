@@ -195,7 +195,7 @@ class MainUi(HasTraits):
             Item('conjoint', editor=InstanceEditor(view=conjoint_plugin_view),
                  style='custom', label="Conjoint", show_label=False),
             Item('ind_diff', editor=InstanceEditor(view=ind_diff_plugin_view),
-                 style='custom', label="Ind Diff", show_label=False),
+                 style='custom', label="Individual differences", show_label=False),
             layout='tabbed'
         ),  # end UI tabs group
         resizable=True,

@@ -106,16 +106,16 @@ class IndDiffController(pb.ModelController):
 
 
     def _name_default(self):
-        return "indDiff - {0}".format(self.model.ds_L.display_name)
+        return "Individual differences - {0}".format(self.model.ds_L.display_name)
 
 
     def _individual_differences_default(self):
-        return [PCLikingTE(name='Pricipal components of likings', calcc=self),
-                TreeElement(name='Liking data', calcc=self)]
+        return [PCLikingTE(name="PLSR: PC's of consumer liking (Y) - consumer characteristics (X)", calcc=self),
+                TreeElement(name="PLSR: Consumer liking (Y) - consumer characteristics (X)", calcc=self)]
 
 
     def _segments_analysis_default(self):
-        return [DiffWindowLauncher(node_name='Define segments', plot_func_name='define_segments_plot', owner_ref=self),
+        return [DiffWindowLauncher(node_name="Define consumer segments", plot_func_name='define_segments_plot', owner_ref=self),
                 SegmentTE(name='Discriminant analysis', calcc=self)]
 
 
@@ -309,7 +309,7 @@ ind_diff_nodes = [
     ),
     _traitsui.TreeNode(
         node_for=[IndDiffController],
-        label='=Individual difference per ce',
+        label='=Study individual differences',
         children='individual_differences',
         view=no_view,
         menu=_traitsui.Menu(ds_dum_attr_action),
@@ -490,4 +490,4 @@ selection_view = _traitsui.Group(
 
 
 ind_diff_plugin_view = pb.make_plugin_view(
-    'IndDiff', ind_diff_nodes, selection_view, ind_diff_view)
+    'Individual differences', ind_diff_nodes, selection_view, ind_diff_view)
