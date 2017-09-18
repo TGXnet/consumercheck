@@ -38,6 +38,7 @@ import plot_windows as pw
 import plugin_tree_helper as pth
 import plugin_base as pb
 from plot_windows import SinglePlotWindow
+from dialogs import ErrorMessage
 
 
 class DiffWindowLauncher(pth.WindowLauncher):
@@ -231,7 +232,20 @@ def dclk_activator(obj):
     owner = obj.owner_ref
     pfn = obj.plot_func_name
     if isinstance(owner, SegmentTE):
-        res = owner.calcc.model.calc_plsr_da(owner.calcc.model.selected_segments)
+        segments = owner.calcc.model.selected_segments
+        try:
+            n = 0
+            n = len(segments)
+            if n < 2:
+                raise Exception()
+        except (TypeError, Exception):
+            dlg = ErrorMessage()
+            dlg.err_msg = 'You have to define 2 or more segments before you can do this analysis'
+            dlg.err_val = 'Defined segments: {}'.format(n)
+            # dlg.edit_traits(parent=self.win_handle, kind='modal')
+            dlg.configure_traits()
+            return
+        res = owner.calcc.model.calc_plsr_da(segments)
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
