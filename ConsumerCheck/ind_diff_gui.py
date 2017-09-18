@@ -257,7 +257,20 @@ def dclk_activator(obj):
         loop = owner.plots_act
         owner.calcc.open_window(view, loop, res)
     elif isinstance(owner, PCLikingTE):
-        res = owner.calcc.model.calc_pls_pc_likings(owner.calcc.model.settings.selected_liking_pc)
+        selpc = owner.calcc.model.settings.selected_liking_pc
+        try:
+            n = 0
+            n = len(selpc)
+            if n < 1:
+                raise Exception()
+        except Exception:
+            dlg = ErrorMessage()
+            dlg.err_msg = 'You have to select principal components of consumer liking'
+            dlg.err_val = ''
+            # dlg.edit_traits(parent=self.win_handle, kind='modal')
+            dlg.configure_traits()
+            return
+        res = owner.calcc.model.calc_pls_pc_likings(selpc)
         func = getattr(owner.calcc, pfn)
         view = func(res)
         loop = owner.plots_act
