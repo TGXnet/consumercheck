@@ -263,25 +263,34 @@ no_view = _traitsui.View()
 
 
 ind_diff_view = _traitsui.View(
-    _traitsui.Item('ev_remove_segments', show_label=False),
-    _traitsui.Item('ev_export_segments', show_label=False),
-    _traitsui.Item('ev_export_dummified', show_label=False),
-    _traitsui.Item('num_segments', style='readonly'),
     _traitsui.Group(
-        _traitsui.Item('dummify_variables',
-                       editor=_traitsui.CheckListEditor(name='consumer_variables'),
-                       style='custom',
-                       label='Dummify variables:'),
-        label='Dummify variables',
+        _traitsui.Group(
+            _traitsui.Item('dummify_variables',
+                           editor=_traitsui.CheckListEditor(name='consumer_variables'),
+                           style='custom',
+                           show_label=False),
+            label="Dummify consumer characteristics used in PLSR",
+        ),
+        _traitsui.Group(
+            _traitsui.Item('selected_liking_pc',
+                           editor=_traitsui.CheckListEditor(name='n_Y_pc'),
+                           style='custom',
+                           show_label=False),
+            label="Principal components of consumer liking used in PLSR",
+        ),
+        _traitsui.Item('ev_export_dummified', show_label=False),
+        label="Settings for 'Study idividual differences' models",
+        show_border=True,
     ),
     _traitsui.Group(
-        _traitsui.Item('selected_liking_pc',
-                       editor=_traitsui.CheckListEditor(name='n_Y_pc'),
-                       style='custom',
-                       label='Liking PC:'),
-        label='Liking PC',
+        _traitsui.Group(
+            _traitsui.Item('num_segments', style='readonly',
+                           label="Number of consumer segments"),
+        ),
+        _traitsui.Item('ev_export_segments', show_label=False),
+        _traitsui.Item('ev_remove_segments', show_label=False),
+        label='Consumer Segments',
     ),
-    title='IndDiff settings',
 )
 
 

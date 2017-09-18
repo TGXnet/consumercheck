@@ -83,9 +83,9 @@ class IndDiff(pb.Model):
     num_segments = _traits.Int(0)
 
     # Export buttons
-    ev_export_segments = _traits.Button('Export segments')
-    ev_export_dummified = _traits.Button('Export dummified')
-    ev_remove_segments = _traits.Button('Remove segments')
+    ev_export_dummified = _traits.Button("Export dummified variables to 'Data sets' tab")
+    ev_export_segments = _traits.Button("Export consumer segments to 'Data sets' tab")
+    ev_remove_segments = _traits.Button("Remove segments")
 
     C_zero_std = _traits.List()
     S_zero_std = _traits.List()
