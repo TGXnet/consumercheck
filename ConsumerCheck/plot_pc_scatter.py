@@ -791,6 +791,26 @@ class PCPlotControl(PCBaseControl):
 
 
 
+class IndDiffPlotControl(PCBaseControl):
+    show_labels = Bool(True)
+    plot_controllers = Group(
+        Item('x_down', show_label=False),
+        Item('x_up', show_label=False),
+        Item('reset_xy', show_label=False),
+        Item('y_up', show_label=False),
+        Item('y_down', show_label=False),
+        Item('eq_axis', label="Equal scale axis"),
+        Item('show_labels', label="Show labels"),
+        orientation="horizontal",
+    )
+
+
+    @on_trait_change('show_labels')
+    def switch_labels(self, obj, name, new):
+        obj.model.show_labels(set_id=1, show=new)
+
+
+
 class PCSectorPlotControl(PCBaseControl):
     show_labels = Bool(True)
     add_group = Bool(True)
@@ -924,18 +944,8 @@ class PCSelectionControl(PCBaseControl):
         Item('eq_axis', label="Equal scale axis"),
         Item('show_labels', label="Show labels"),
         Item('add_segment', label="Add group"),
-        Item('subset_groups', label="Color subset groups",
-             editor=CheckListEditor(name='model.data.group_names')),
         orientation="horizontal",
     )
-
-
-    @on_trait_change('subset_groups')
-    def sel_subset(self, obj, name, new):
-        if not new:
-            obj.model.color_subsets_group()
-        else:
-            obj.model.color_subsets_group(new[0])
 
 
     @on_trait_change('show_labels')

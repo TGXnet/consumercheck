@@ -201,7 +201,7 @@ class IndDiffController(pb.ModelController):
           + DataSet type
         """
         if isinstance(viewable, pps.PCScatterPlot):
-            plot_control = pps.PCPlotControl(viewable)
+            plot_control = pps.IndDiffPlotControl(viewable)
             win = SinglePlotWindow(
                 plot=plot_control,
                 res=res,
