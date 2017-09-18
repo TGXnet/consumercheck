@@ -52,11 +52,11 @@ class CCConf(_CP.ConfigParser):
             self._init_conf_file()
 
 
-    def get(self, section, option):
+    def get(self, section, option, **kwargs):
         try:
-            return super(CCConf, self).get(section, option)
+            return super(CCConf, self).get(section, option, **kwargs)
         except _CP.NoSectionError:
-            return super(CCConf, self).get('DEFAULT', option)
+            return super(CCConf, self).get('DEFAULT', option, **kwargs)
 
 
     def set_and_write(self, section, option, value):

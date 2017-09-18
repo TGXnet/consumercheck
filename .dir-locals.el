@@ -5,5 +5,6 @@
   (ffip-project-file . ".hg")
   (ffip-project-root . "."))
  (python-mode
-  (elpy-project-root . ".")
-  ))
+  (pyvenv-workon . cc-dev)
+  (elpy-project-root . ".")))
+

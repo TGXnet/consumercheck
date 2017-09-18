@@ -45,6 +45,7 @@ from pca_gui import PcaPluginController, PcaCalcContainer, pca_plugin_view
 from prefmap_gui import PrefmapPluginController, PrefmapCalcContainer, prefmap_plugin_view
 from plscr_gui import PlsrPcrPluginController, PlsrPcrCalcContainer, plscr_plugin_view
 from conjoint_gui import ConjointPluginController, ConjointCalcContainer, conjoint_plugin_view
+from ind_diff_gui import IndDiffPluginController, IndDiffCalcContainer, ind_diff_plugin_view
 
 state_file = conf.pkl_file_url()
 
@@ -137,6 +138,8 @@ class MainUi(HasTraits):
     plscr = Instance(PlsrPcrPluginController)
     # Object representing the Conjoint and the GUI tab
     conjoint = Instance(ConjointPluginController)
+    # Object representing the IndDiff and the GUI tab
+    ind_diff = Instance(IndDiffPluginController)
 
     # Create an action that open dialog for dataimport
     import_action = Action(name='Add &Data set', action='import_data')
@@ -168,6 +171,10 @@ class MainUi(HasTraits):
         conjoint = ConjointCalcContainer(dsc=self.dsc)
         return ConjointPluginController(conjoint)
 
+    def _ind_diff_default(self):
+        ind_diff = IndDiffCalcContainer(dsc=self.dsc)
+        return IndDiffPluginController(ind_diff)
+
     def _toggle_advanced(self):
         self.en_advanced = not self.en_advanced
         print(self.en_advanced)
@@ -187,6 +194,8 @@ class MainUi(HasTraits):
                  style='custom', label="PLSR/PCR", show_label=False),
             Item('conjoint', editor=InstanceEditor(view=conjoint_plugin_view),
                  style='custom', label="Conjoint", show_label=False),
+            Item('ind_diff', editor=InstanceEditor(view=ind_diff_plugin_view),
+                 style='custom', label="Individual differences", show_label=False),
             layout='tabbed'
         ),  # end UI tabs group
         resizable=True,

@@ -24,6 +24,14 @@ sys.path.insert(0, here)
 
 
 @pytest.fixture
+def w2err(request):
+    '''Turn warnings into errors'''
+    import warnings
+    warnings.simplefilter('error')
+    request.addfinalizer(lambda *args: warnings.resetwarnings())
+
+
+@pytest.fixture
 def check_trait_interface():
     import traits.has_traits
     # 0: no check, 1: log warings, 2: error
@@ -305,8 +313,8 @@ def all_dsc():
     return dsc
 
 
-def imp_ds(ds_meta_info):
-    folder, file_name, ds_name, kind = ds_meta_info
+def imp_ds(folder, file_name, ds_name, kind):
+    # folder, file_name, ds_name, kind = ds_meta_info
     importer = ImporterMain()
     home = tdd()
     ds_url = osp.join(home, folder, file_name)

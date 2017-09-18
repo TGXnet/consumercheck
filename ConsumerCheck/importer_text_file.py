@@ -210,8 +210,12 @@ class ImporterTextFile(ImporterFileBase):
 
         if not self.have_var_names:
             dsdf.columns = ["V{0}".format(i+1) for i in range(dsdf.shape[1])]
+        else:
+            dsdf.columns = [str(n) for n in dsdf.columns]
         if not self.have_obj_names:
             dsdf.index = ["O{0}".format(i+1) for i in range(dsdf.shape[0])]
+        else:
+            dsdf.index = [str(n) for n in dsdf.index]
 
 
         # Check if we hav a column with class information
@@ -229,7 +233,7 @@ class ImporterTextFile(ImporterFileBase):
             ssg = []
             for idx, cid in enumerate(cg):
                 ss = SubSet(id=str(cid), name='Class {}'.format(cid))
-                ss.gr_style = VisualStyle(fg_color=auto_colors[idx%8])
+                ss.gr_style = VisualStyle(fg_color=auto_colors[idx % 8])
                 ss.row_selector = list(dsdf[dsdf.loc[:,gn] == cid].index)
                 ssg.append(ss)
             ngn = gn[1:]

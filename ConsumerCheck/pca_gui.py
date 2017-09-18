@@ -33,7 +33,7 @@ from plot_pc_scatter import PCScatterPlot
 from plot_windows import OverviewPlotWindow
 from window_helper import multiplot_factory
 from plugin_tree_helper import (WindowLauncher, dclk_activator, overview_activator)
-from plugin_base import (ModelController, CalcContainer, PluginController, CalcContainer,
+from plugin_base import (ModelController, CalcContainer, PluginController,
                          dummy_view, TestOneNode, make_plugin_view)
 
 
@@ -110,7 +110,7 @@ class PcaController(ModelController):
         for each of the data sets.
         """
         res = self.get_result()
- 
+
         wl = self.window_launchers
         title = self._wind_title(res)
 
