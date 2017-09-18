@@ -93,9 +93,10 @@ def rnd_color(palette=(1.0, 1.0, 1.0, 1.0)):
     ''' Return a random color
     palette: an rgba tuple. A for alpha transparency
     '''
-    rndrgb = tuple([random.random() for _ in range(3)])
-    outrgb = ((palette[0]+rndrgb[0])/2, (palette[1]+rndrgb[1])/2, (palette[2]+rndrgb[2])/2, 1.0)
-    return outrgb
+    # rndrgb = tuple([random.random() for _ in range(3)])
+    # outrgb = ((palette[0]+rndrgb[0])/2, (palette[1]+rndrgb[1])/2, (palette[2]+rndrgb[2])/2, 1.0)
+    # return outrgb
+    return tuple([random.random() for _ in range(3)])
 
 
 if __name__ == '__main__':
