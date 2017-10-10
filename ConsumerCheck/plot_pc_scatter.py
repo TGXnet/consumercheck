@@ -665,10 +665,51 @@ class SelectionScatterPlot(PCScatterPlot, LassoMixin):
     pass
 
 
+class IndDiffScatterPlot(PCScatterPlot):
+
+    def _set_plot_axis_title(self):
+        tx = ['Component {0}'.format(self.data.x_no)]
+        ty = ['Component {0}'.format(self.data.y_no)]
+        for pcds in self.data.plot_data:
+            try:
+                ev_x = pcds.expl_vars[self.data.x_no-1]
+                ev_y = pcds.expl_vars[self.data.y_no-1]
+                tx.append('({0:.0f}%)'.format(ev_x))
+                ty.append('({0:.0f}%)'.format(ev_y))
+            except IndexError:
+                pass
+        if self.expl_y_vars is not None:
+            try:
+                ev_x = self.expl_y_vars[self.data.x_no-1]
+                ev_y = self.expl_y_vars[self.data.y_no-1]
+                tx.append('({0:.0f}%)'.format(ev_x))
+                ty.append('({0:.0f}%)'.format(ev_y))
+            except IndexError:
+                pass
+        if len(tx) == 3:
+            self.x_axis.title = tx[0]+' X'+tx[1]+', Y'+tx[2]
+            self.y_axis.title = ty[0]+' X'+ty[1]+', Y'+ty[2]
+        else:
+            self.x_axis.title = ' '.join(tx)
+            self.y_axis.title = ' '.join(ty)
+
+
 class CLPlot(PCScatterPlot):
 
     def __init__(self, clx, evx, cly, evy, em, **kwargs):
         super(CLPlot, self).__init__(**kwargs)
+        clx.style.fg_color = 'blue'
+        self.add_PC_set(clx, evx)
+        cly.style.fg_color = 'red'
+        self.add_PC_set(cly, evy)
+        self.plot_circle(True)
+        self.external_mapping = em
+
+
+class IndDiffCLPlot(IndDiffScatterPlot):
+
+    def __init__(self, clx, evx, cly, evy, em, **kwargs):
+        super(IndDiffScatterPlot, self).__init__(**kwargs)
         clx.style.fg_color = 'blue'
         self.add_PC_set(clx, evx)
         cly.style.fg_color = 'red'
