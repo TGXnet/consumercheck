@@ -8,7 +8,7 @@ class IndDiffPicker(HasTraits):
 
     This is a dialogue for selecting a:
      * Consumer Liking dataset (X)
-     * Consumer Attributes dataset (Y)
+     * Consumer Characteristics dataset (Y)
     '''
     """UI for selecting datasets for Individual Differences analysis
 
@@ -28,7 +28,7 @@ class IndDiffPicker(HasTraits):
     """
     # Consumer Liking (X)
     like_set = List(Tuple())
-    # Consumer Attributes (Y)
+    # Consumer Characteristics (Y)
     attr_set = List(Tuple())
     sel_like = List()
     sel_attr = List()
@@ -107,7 +107,7 @@ class IndDiffPicker(HasTraits):
                 orientation='vertical',
             ),
             Group(
-                Label('Consumer Attributes (X)'),
+                Label('Consumer Characteristics (X)'),
                 Item('sel_attr', editor=CheckListEditor(name='attr_set'),
                      style='simple',
                      show_label=False,
