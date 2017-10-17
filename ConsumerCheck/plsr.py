@@ -1610,7 +1610,7 @@ class nipalsPLS2:
 
                 # Module 8: STEP 4
                 q_num = np.dot(np.transpose(Y_new), t)
-                q_denom = np.dot(np.transpose(t), t)
+                q_denom = npla.norm(q_num)
                 q = q_num / q_denom
                 
                 # Module 8: STEP 5
@@ -2049,7 +2049,7 @@ class nipalsPLS2:
         
                         # Module 8: STEP 4
                         q_num = np.dot(np.transpose(Y_new), t)
-                        q_denom = np.dot(np.transpose(t), t)
+                        q_denom = npla.norm(q_num)
                         q = q_num / q_denom
                         
                         # Module 8: STEP 5
