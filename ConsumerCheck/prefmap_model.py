@@ -47,7 +47,7 @@ class Prefmap(Model):
     ds_X = _traits.Property()
     ds_Y = _traits.Property()
     settings = _traits.WeakRef()
-    #checkbox bool for standardised results
+    # Checkbox bool for standardised results
     standardise_x = _traits.Bool(False)
     standardise_y = _traits.Bool(False)
     int_ext_mapping = _traits.Enum('Internal', 'External')
@@ -68,8 +68,8 @@ class Prefmap(Model):
         n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
         if self.settings.prefmap_method == 'PLSR':
             pls = PLSR(self.ds_X.values, self.ds_Y.values,
-                      numPC=n_pc, cvType=["loo"],
-                      Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
+                       numPC=n_pc, cvType=["loo"],
+                       Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
             return self._pack_res(pls)
         elif self.settings.prefmap_method == 'PCR':
             pcr = PCR(self.ds_X.values, self.ds_Y.values,
@@ -168,6 +168,8 @@ class Prefmap(Model):
             res.external_mapping = True
         else:
             res.external_mapping = False
+
+        res.prefmap_methods = self.settings.prefmap_method
 
         # Scores X
         mT = pls_obj.X_scores()

@@ -58,7 +58,7 @@ import traits.api as _traits
 from enable.api import ColorTrait
 
 # Local import
-from utilities import rnd_color
+from utilities import rnd_color, from_palette
 
 
 DS_TYPES = ['Product design',
@@ -216,7 +216,8 @@ class Level(_traits.HasTraits):
         self.selector = list(idx)
         self.name = name
         if color is None:
-            self.color = rnd_color()
+            # self.color = rnd_color()
+            self.color = from_palette()
         else:
             self.color = color
 
@@ -503,6 +504,7 @@ class SubSet(_traits.HasTraits):
     '''FIXME: deprecated by Level'''
     id = _traits.Str()
     name = _traits.Unicode()
+    # Index label list
     row_selector = _traits.List()
-#     col_selector = _traits.List(_traits.Int())
+    # col_selector = _traits.List(_traits.Int())
     gr_style = VisualStyle()

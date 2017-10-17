@@ -30,7 +30,7 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from plscr_model import PlsrPcr, InComputeable
 from plot_ev_line import EVLinePlot
-from plot_pc_scatter import PCScatterPlot, CLPlot, CLPlotControl
+from plot_pc_scatter import PCScatterPlot, CLPlot, CLPlotControl, IndDiffScatterPlot, IndDiffCLPlot
 from dialogs import ErrorMessage
 # from combination_table import CombinationTable
 from plscr_picker import PlscrPicker
@@ -196,33 +196,43 @@ def pred_y_val_table(res, pcid):
 
 # Plot creators
 def scores_plot(res):
-    plot = PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
+    if res.plscr_method == 'PLSR':
+        plot = IndDiffScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
+    else:
+        plot = PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
     return plot
 
 
 def loadings_x_plot(res):
-    plot = PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    if res.plscr_method == 'PLSR':
+        plot = IndDiffScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+    else:
+        plot = PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
     return plot
 
 
 def loadings_y_plot(res):
-    plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
+    if res.plscr_method == 'PLSR':
+        plot = IndDiffScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
+    else:
+        plot = PCScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
     return plot
 
 
 def corr_loadings_plot(res):
-    # plot = PCScatterPlot(title='Correlation loadings')
     clx = res.corr_loadings_x
-    # clx.style.fg_color = 'blue'
     cly = res.corr_loadings_y
-    # cly.style.fg_color = 'red'
-    # plot.add_PC_set(clx, res.expl_var_x)
-    # plot.add_PC_set(cly, res.expl_var_y)
-    # plot.plot_circle(True)
-    plot = CLPlot(clx, res.expl_var_x,
-                  cly, res.expl_var_y,
-                  res.external_mapping,
-                  title='X&Y correlation loadings')
+    if res.plscr_method == 'PLSR':
+        plot = IndDiffCLPlot(
+            clx, res.expl_var_x,
+            cly, res.expl_var_y,
+            em=False,
+            title='X&Y correlation loadings')
+    else:
+        plot = CLPlot(clx, res.expl_var_x,
+                      cly, res.expl_var_y,
+                      res.external_mapping,
+                      title='X&Y correlation loadings')
     return plot
 
 

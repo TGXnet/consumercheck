@@ -55,13 +55,12 @@ class TreeElement(_traits.HasTraits):
     def _plots_act_default(self):
 
         acts = [
-            # ("Overview", plot_overview),
             ("X Scores", 'plsr_x_scores_plot'),
             ("X & Y correlation loadings", 'plsr_corr_loadings_plot'),
             ("X Loadings", 'plsr_x_loadings_plot'),
             ("Y loadings", 'plsr_y_loadings_plot'),
-            ("Explained var in X", 'plsr_x_expl_var_plot'),
-            ("Explained var in Y", 'plsr_y_expl_var_plot'),
+            ("Explained variance in X", 'plsr_x_expl_var_plot'),
+            ("Explained variance in Y", 'plsr_y_expl_var_plot'),
         ]
 
         return [DiffWindowLauncher(
@@ -149,7 +148,7 @@ class IndDiffController(pb.ModelController):
 
     def pca_x_loadings_plot(self, res):
         self.model.selected_segments = seg = ds.Factor('Segments', 500)
-        plot = pps.SelectionScatterPlot(res.loadings, title='Liking scores')
+        plot = pps.SelectionScatterPlot(res.loadings, res.expl_var, title='Liking scores')
         plot.data.coloring_factor = seg
         return plot
 
@@ -162,12 +161,12 @@ class IndDiffController(pb.ModelController):
 
 
     def plsr_x_scores_plot(self, res):
-        plot = pps.PCScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
+        plot = pps.IndDiffScatterPlot(res.scores_x, res.expl_var_x, res.expl_var_y, title='X scores')
         return plot
 
 
     def plsr_corr_loadings_plot(self, res):
-        plot = pps.CLPlot(
+        plot = pps.IndDiffCLPlot(
             res.corr_loadings_x, res.expl_var_x,
             res.corr_loadings_y, res.expl_var_y,
             em=False,
@@ -176,12 +175,12 @@ class IndDiffController(pb.ModelController):
 
 
     def plsr_x_loadings_plot(self, res):
-        plot = pps.PCScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
+        plot = pps.IndDiffScatterPlot(res.loadings_x, res.expl_var_x, title='X loadings')
         return plot
 
 
     def plsr_y_loadings_plot(self, res):
-        plot = pps.PCScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
+        plot = pps.IndDiffScatterPlot(res.loadings_y, res.expl_var_y, title='Y loadings')
         return plot
 
 
