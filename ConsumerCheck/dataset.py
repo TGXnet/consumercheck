@@ -504,6 +504,7 @@ class SubSet(_traits.HasTraits):
     '''FIXME: deprecated by Level'''
     id = _traits.Str()
     name = _traits.Unicode()
+    # Index label list
     row_selector = _traits.List()
-#     col_selector = _traits.List(_traits.Int())
+    # col_selector = _traits.List(_traits.Int())
     gr_style = VisualStyle()
