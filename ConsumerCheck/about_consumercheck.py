@@ -27,12 +27,12 @@ from traits.api import HasTraits, HTML
 from traitsui.api import View, Item
 
 # Local imports
-import ConsumerCheck
+import __init__
 
 
 
 def about_html():
-    ver = ConsumerCheck.__version__
+    ver = __init__.__version__
     with codecs.open('about.tmpl', encoding='utf-8') as fh:
         uabout_tmpl = fh.read()
     return uabout_tmpl.format(ver)

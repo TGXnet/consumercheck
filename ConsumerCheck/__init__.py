@@ -20,8 +20,15 @@ along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import sys
+
 # Directory of the current file
-__dir__ = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, 'frozen', False):
+    # we are running in a bundle
+    __dir__ = sys._MEIPASS
+else:
+    # we are running in a normal Python environment
+    __dir__ = os.path.dirname(os.path.abspath(__file__))
 
 
 def ver():
