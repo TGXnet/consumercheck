@@ -192,6 +192,7 @@ class PCScatterPlot(PlotBase):
 
     # Should new labels be visible?
     visible_new_labels = Bool(True)
+    draw_correlation_circles = Bool(False)
     visible_datasets = Int(3)
     plot_data = Property()
     expl_y_vars = List()
@@ -317,6 +318,8 @@ class PCScatterPlot(PlotBase):
         self.delplot(*plot_ids)
         for i in range(n_ds):
             self._plot_PC(i+1, PCx=x, PCy=y)
+        if self.draw_correlation_circles:
+            self.plot_circle(True)
         self.request_redraw()
 
 
@@ -703,6 +706,7 @@ class CLPlot(PCScatterPlot):
         cly.style.fg_color = 'red'
         self.add_PC_set(cly, evy)
         self.plot_circle(True)
+        self.draw_correlation_circles = True
         self.external_mapping = em
 
 
@@ -715,6 +719,7 @@ class IndDiffCLPlot(IndDiffScatterPlot):
         cly.style.fg_color = 'red'
         self.add_PC_set(cly, evy)
         self.plot_circle(True)
+        self.draw_correlation_circles = True
         self.external_mapping = em
 
 
