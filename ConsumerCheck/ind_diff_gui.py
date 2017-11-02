@@ -37,7 +37,6 @@ import dataset_container as dc
 import plot_windows as pw
 import plugin_tree_helper as pth
 import plugin_base as pb
-from plot_windows import SinglePlotWindow
 from dialogs import ErrorMessage
 
 
@@ -139,7 +138,7 @@ class IndDiffController(pb.ModelController):
         plot = self.pca_x_loadings_plot(res)
         plot_control = pps.PCSelectionControl(plot)
 
-        win = SinglePlotWindow(
+        win = pw.SinglePlotWindow(
             plot=plot_control,
             res=res
         )
@@ -185,12 +184,12 @@ class IndDiffController(pb.ModelController):
 
 
     def plsr_x_expl_var_plot(self, res):
-        plot = pel.EVLinePlot(res.expl_var_x, title='Explained variance in X')
+        plot = pel.IndDiffEVLinePlot(res.expl_var_x, title='Explained variance in X')
         return plot
 
 
     def plsr_y_expl_var_plot(self, res):
-        plot = pel.EVLinePlot(res.expl_var_y, title='Explained variance in Y')
+        plot = pel.IndDiffEVLinePlot(res.expl_var_y, title='Explained variance in Y')
         return plot
 
 
@@ -201,7 +200,7 @@ class IndDiffController(pb.ModelController):
         """
         if isinstance(viewable, pps.PCScatterPlot):
             plot_control = pps.IndDiffPlotControl(viewable)
-            win = SinglePlotWindow(
+            win = pw.SinglePlotWindow(
                 plot=plot_control,
                 res=res,
             )
@@ -213,9 +212,9 @@ class IndDiffController(pb.ModelController):
                 res=res,
             )
             self._show_plot_window(win)
-        elif isinstance(viewable, pel.EVLinePlot):
+        elif isinstance(viewable, pel.IndDiffEVLinePlot):
             plot_control = pps.NoPlotControl(viewable)
-            win = SinglePlotWindow(
+            win = pw.SinglePlotWindow(
                 plot=plot_control,
                 res=res,
             )

@@ -29,7 +29,7 @@ import traitsui.api as _traitsui
 # Local imports
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
-from plot_ev_line import EVLinePlot
+from plot_ev_line import IndDiffEVLinePlot
 from plot_pc_scatter import (PCScatterPlot, IndDiffScatterPlot, IndDiffCLPlot,
                              ScatterSectorPlot, PCSectorPlotControl,
                              CLSectorPlot, CLSectorPlotControl)
@@ -68,8 +68,8 @@ class PrefmapController(ModelController):
             ("X&Y correlation loadings", corr_loadings_plot),
             ("X loadings", loadings_x_plot),
             ("Y loadings", loadings_y_plot),
-            ("Explained var in X", expl_var_x_plot),
-            ("Explained var in Y", expl_var_y_plot),
+            ("Explained variance in X", expl_var_x_plot),
+            ("Explained variance in Y", expl_var_y_plot),
             ]
 
         return [WindowLauncher(node_name=nn, view_creator=fn,
@@ -252,12 +252,12 @@ def corr_loadings_plot(res):
 
 
 def expl_var_x_plot(res):
-    plot = EVLinePlot(res.expl_var_x, title='Explained variance in X')
+    plot = IndDiffEVLinePlot(res.expl_var_x, title='Explained variance in X')
     return plot
 
 
 def expl_var_y_plot(res):
-    plot = EVLinePlot(res.expl_var_y, title='Explained variance in Y')
+    plot = IndDiffEVLinePlot(res.expl_var_y, title='Explained variance in Y')
     return plot
 
 

@@ -188,6 +188,23 @@ class EVLinePlot(PlotBase):
 
 
 
+class IndDiffEVLinePlot(EVLinePlot):
+
+    def __init__(self, expl_var=None, **kwargs):
+        """Constructor signature.
+
+        :param expl_var: Calibrated and validated explained variance for each calculated PC.
+        :type pc_matrix: DataSet
+
+        Returns:
+          A new created plot object
+
+        """
+        super(IndDiffEVLinePlot, self).__init__(expl_var, **kwargs)
+        self.x_axis.title = "# of components"
+
+
+
 if __name__ == '__main__':
     import pandas as pd
     cal = np.array([56.4, 78.9, 96.0, 99.4, 99.99])
@@ -196,6 +213,6 @@ if __name__ == '__main__':
     ds = DataSet(mat=df)
     print(ds.mat)
 
-    plot = EVLinePlot(ds)
+    plot = IndDiffEVLinePlot(ds)
     # plot.legend.visible = True
     plot.new_window(True)
