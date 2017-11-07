@@ -44,7 +44,7 @@ class ConjointCalcState(_traits.HasTraits):
         width=600,
         resizable=True,
         buttons=[
-            _traitsui.Action(name='Cancel', action='_on_close', enabled_when='not is_done'),
+            # _traitsui.Action(name='Cancel', action='_on_close', enabled_when='not is_done'),
             _traitsui.Action(name='OK', action='_on_close', enabled_when='is_done')],
     )
 
