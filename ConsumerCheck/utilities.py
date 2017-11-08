@@ -22,7 +22,7 @@
 import random
 from colormath.color_objects import LCHabColor, sRGBColor
 from colormath.color_conversions import convert_color
-from chaco.default_colors import cbrewer as COLOR_PALETTE
+# from chaco.default_colors import cbrewer as COLOR_PALETTE
 # from chaco.default_colors import palette11 as COLOR_PALETTE
 
 
@@ -70,6 +70,21 @@ COLOR_PALETTE2 = [
     (0.9, 0.77, 0.58, 1.0),
     (0.7, 0.7, 0.7, 1.0),
 ]
+
+
+COLOR_PALETTE = [
+    (0.0, 0.0, 0.5, 1.0),
+    (1.0, 0.0, 0.0, 1.0),
+    (0.5, 0.0, 0.5, 1.0),
+    (1.0, 1.0, 0.0, 1.0),
+    (0.0, 1.0, 0.0, 1.0),
+    (0.0, 0.5, 0.5, 1.0),
+    (0.5, 0.5, 0.0, 1.0),
+    (0.0, 0.0, 1.0, 1.0),
+    (0.0, 0.5, 0.0, 1.0),
+    (1.0, 0.0, 1.0, 1.0),
+]
+
 
 cpidx = -1
 
