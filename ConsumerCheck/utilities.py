@@ -22,6 +22,8 @@
 import random
 from colormath.color_objects import LCHabColor, sRGBColor
 from colormath.color_conversions import convert_color
+from chaco.default_colors import cbrewer as COLOR_PALETTE
+# from chaco.default_colors import palette11 as COLOR_PALETTE
 
 
 # a6cee3 (0.65, 0.81, 0.89, 1.0)
@@ -36,7 +38,7 @@ from colormath.color_conversions import convert_color
 
 # Dark color palette for plot lines
 # R, G, B
-COLOR_PALETTE = [
+COLOR_PALETTE1 = [
     (0.65, 0.81, 0.89, 1.0),
     (0.12, 0.47, 0.71, 1.0),
     (0.7, 0.87, 0.54, 1.0),

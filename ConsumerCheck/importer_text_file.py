@@ -38,6 +38,8 @@ from traits.api import implements
 from dataset import DataSet, SubSet, VisualStyle
 from importer_interfaces import IDataImporter
 from importer_file_base import ImporterFileBase
+from utilities import from_palette
+
 
 
 class RawLineAdapter(TabularAdapter):
@@ -233,7 +235,8 @@ class ImporterTextFile(ImporterFileBase):
             ssg = []
             for idx, cid in enumerate(cg):
                 ss = SubSet(id=str(cid), name='Class {}'.format(cid))
-                ss.gr_style = VisualStyle(fg_color=auto_colors[idx % 8])
+                # ss.gr_style = VisualStyle(fg_color=auto_colors[idx % 8])
+                ss.gr_style = VisualStyle(fg_color=from_palette())
                 ss.row_selector = list(dsdf[dsdf.loc[:,gn] == cid].index)
                 ssg.append(ss)
             ngn = gn[1:]
