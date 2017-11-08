@@ -32,37 +32,8 @@ class IndDiffPicker(HasTraits):
     attr_set = List(Tuple())
     sel_like = List()
     sel_attr = List()
-    combination = Tuple()
-    combination_updated = Event()
     consumer_liking_updated = Event()
     consumer_attributes_updated = Event()
-
-
-    # @on_trait_change('sel_like,sel_attr')
-    # def _new_selection(self, obj, name, old_value, new_value):
-    #     """Example of docstring on the _new_selection method.
-
-    #     The _new_selection method may be documented in either the class level
-    #     docstring, or as a docstring on the _new_selection method itself.
-
-    #     Either form is acceptable, but the two should not be mixed. Choose one
-    #     convention to document the _new_selection method and be consistent with it.
-
-    #     Note:
-    #         Do not include the `self` parameter in the ``Args`` section.
-
-    #     Args:
-    #         param1 (str): Description of `param1`.
-    #         param2 (:obj:`int`, optional): Description of `param2`. Multiple
-    #             lines are supported.
-    #         param3 (:obj:`list` of :obj:`str`): Description of `param3`.
-
-    #     """
-    #     if not (self.sel_like and self.sel_attr):
-    #         return
-    #     sel = (self.sel_like[0], self.sel_attr[0])
-    #     self.combination = sel
-    #     self.combination_updated = True
 
 
     @on_trait_change('sel_like')
@@ -73,28 +44,6 @@ class IndDiffPicker(HasTraits):
     @on_trait_change('sel_attr')
     def _attr_selection(self, obj, name, old, new):
         self.consumer_attributes_updated = True
-
-
-    # def get_selected_combination(self):
-    #     """Example of docstring on the _new_selection method.
-
-    #     The _new_selection method may be documented in either the class level
-    #     docstring, or as a docstring on the _new_selection method itself.
-
-    #     Either form is acceptable, but the two should not be mixed. Choose one
-    #     convention to document the _new_selection method and be consistent with it.
-
-    #     Note:
-    #         Do not include the `self` parameter in the ``Args`` section.
-
-    #     Args:
-    #         param1 (str): Description of `param1`.
-    #         param2 (:obj:`int`, optional): Description of `param2`. Multiple
-    #             lines are supported.
-    #         param3 (:obj:`list` of :obj:`str`): Description of `param3`.
-
-    #     """
-    #     return self.combination
 
 
     traits_view = View(

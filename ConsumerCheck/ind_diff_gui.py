@@ -457,10 +457,10 @@ class IndDiffPluginController(pb.PluginController):
     @_traits.on_trait_change('comb:consumer_attributes_updated', post_init=False)
     def _handle_attr_sel(self, obj, name, old, new):
         selection = self.comb.sel_attr[0]
-        self._make_pls_calc(selection)
+        self._update_pls_calc(selection)
 
 
-    def _make_pls_calc(self, id_a):
+    def _update_pls_calc(self, id_a):
         ds_a = self.model.dsc[id_a]
         calc = self.model.calculations[0]
         ds_l = calc.model.ds_L
@@ -468,6 +468,13 @@ class IndDiffPluginController(pb.PluginController):
         # Check missing data
         if ds_a.missing_data:
             self._show_missing_warning()
+            return
+
+        # Check dataset alignment
+        ns_a = ds_a.n_objs
+        ns_l = ds_l.n_vars
+        if ns_a != ns_l:
+            self._show_alignment_warning(ds_a, ds_l)
             return
 
         calc.model.id = ds_l.id + id_a
@@ -489,14 +496,14 @@ class IndDiffPluginController(pb.PluginController):
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
-    def _show_alignment_warning(self, ds_l, ds_a):
+    def _show_alignment_warning(self, ds_a, ds_l):
         dlg = dlgs.ErrorMessage()
-        dlg.err_msg = 'Consumer liking and sensory profiling data does not align'
+        dlg.err_msg = 'Consumer liking and Consumer characteristics data does not align'
         dlg.err_val = (
-            "The Consumer liking data and descriptive analysis/sensory profiling "
+            "The Consumer liking data and Consumer characteristics "
             "data do not align. There are {0} rows in {1} and {2} rows in the {3}. "
             "Please select other data."
-        ).format(ds_l.n_objs, ds_l.display_name, ds_a.n_objs, ds_a.display_name)
+        ).format(ds_a.n_objs, ds_a.display_name, ds_l.n_vars, ds_l.display_name)
         dlg.edit_traits(parent=self.win_handle, kind='modal')
 
 
