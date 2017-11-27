@@ -366,7 +366,7 @@ class nipalsPLS1:
                     
         # Now store all PRESSE values into an array. Then compute MSEE and
         # RMSEE.
-        self.PRESSEarr_indVar_X = np.array(self.PRESSEdict_indVar_X.values())
+        self.PRESSEarr_indVar_X = np.array(list(self.PRESSEdict_indVar_X.values()))
         self.MSEEarr_indVar_X = self.PRESSEarr_indVar_X / \
                 np.shape(self.arrX_input)[0]
         self.RMSEEarr_indVar_X = np.sqrt(self.MSEEarr_indVar_X)
@@ -525,7 +525,8 @@ class nipalsPLS1:
         # ---------------------------------------------------------------------
         # Compute total RMSEP and store values in a dictionary and list.            
         self.RMSEE_total_dict = {}
-        self.RMSEE_total_list = np.sqrt(self.MSEE_total_list)
+        self.RMSEE_total_list = np.sqrt(list(self.MSEE_total_list))
+
         
         for ind, RMSEE in enumerate(self.RMSEE_total_list):
             self.RMSEE_total_dict[ind] = RMSEE
@@ -549,16 +550,17 @@ class nipalsPLS1:
             numObj = np.shape(self.vecy)[0]
             
             if self.cvType[0] == "loo":
-                # print "loo"
+                print("loo")
                 cvComb = cv.LeaveOneOut(numObj)
             elif self.cvType[0] == "lpo":
-                # print "lpo"
+                print("lpo")
                 cvComb = cv.LeavePOut(numObj, self.cvType[1])
             elif self.cvType[0] == "lolo":
-                # print "lolo"
+                print("lolo")
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
                 print('Requested form of cross validation is not available')
+                pass
 
             
             # Collect predicted y (i.e. yhat) for each CV segment in a  
@@ -792,7 +794,7 @@ class nipalsPLS1:
             # -----------------------------------------------------------------
             # Compute total RMSECV and store values in a dictionary and list.            
             self.RMSECV_total_dict = {}
-            self.RMSECV_total_list = np.sqrt(self.MSECV_total_list)
+            self.RMSECV_total_list = np.sqrt(list(self.MSECV_total_list))
             
             for ind, RMSECV in enumerate(self.RMSECV_total_list):
                 self.RMSECV_total_dict[ind] = RMSECV
@@ -834,7 +836,7 @@ class nipalsPLS1:
                         
             # Now store all PRESSE values into an array. Then compute MSEE and
             # RMSEE.
-            self.PRESSCVarr_indVar_X = np.array(self.PRESSCVdict_indVar_X.values())
+            self.PRESSCVarr_indVar_X = np.array(list(self.PRESSCVdict_indVar_X.values()))
             self.MSECVarr_indVar_X = self.PRESSCVarr_indVar_X / \
                     np.shape(self.arrX_input)[0]
             self.RMSECVarr_indVar_X = np.sqrt(self.MSECVarr_indVar_X)
@@ -1450,6 +1452,7 @@ class nipalsPLS2:
         self.y_scoresList = []
         self.x_loadingsList = []
         self.y_loadingsList = []
+        self.y_loadingsList_alt = []
         self.x_loadingsWeightsList = []
         self.coeffList = []
         self.Y_residualsList = [self.arrY]
@@ -1485,8 +1488,10 @@ class nipalsPLS2:
 
                 # Module 8: STEP 4
                 q_num = np.dot(np.transpose(Y_new), t)
-                q_denom = np.dot(np.transpose(t), t)
+                q_denom = npla.norm(q_num)
                 q = q_num / q_denom
+                q_denom_alt = np.dot(np.transpose(t), t)
+                q_alt = q_num / q_denom_alt
                 
                 # Module 8: STEP 5
                 u_old = u_new.copy()
@@ -1522,6 +1527,7 @@ class nipalsPLS2:
             self.x_loadingsList.append(p.reshape(-1))
             self.y_scoresList.append(u_new.reshape(-1))
             self.y_loadingsList.append(q.reshape(-1))
+            self.y_loadingsList_alt.append(q_alt.reshape(-1))
             self.x_loadingsWeightsList.append(w.reshape(-1))
             self.coeffList.append(c.reshape(-1))
             
@@ -1535,6 +1541,7 @@ class nipalsPLS2:
         self.arrP = np.array(np.transpose(self.x_loadingsList))
         self.arrU = np.array(np.transpose(self.y_scoresList))
         self.arrQ = np.array(np.transpose(self.y_loadingsList))
+        self.arrQ_alt = np.array(np.transpose(self.y_loadingsList_alt))
         self.arrW = np.array(np.transpose(self.x_loadingsWeightsList))
         self.arrC = np.eye(self.numPC) * np.array(np.transpose(self.coeffList))
         
@@ -1582,7 +1589,7 @@ class nipalsPLS2:
                     
         # Now store all PRESSE values into an array. Then compute MSEE and
         # RMSEE.
-        self.PRESSEarr_indVar = np.array(self.PRESSEdict_indVar.values())
+        self.PRESSEarr_indVar = np.array(list(self.PRESSEdict_indVar.values()))
         self.MSEEarr_indVar = self.PRESSEarr_indVar / \
                 np.shape(self.arrY_input)[0]
         self.RMSEEarr_indVar = np.sqrt(self.MSEEarr_indVar)
@@ -1707,7 +1714,7 @@ class nipalsPLS2:
                     
         # Now store all PRESSE values into an array. Then compute MSEE and
         # RMSEE.
-        self.PRESSEarr_indVar_X = np.array(self.PRESSEdict_indVar_X.values())
+        self.PRESSEarr_indVar_X = np.array(list(self.PRESSEdict_indVar_X.values()))
         self.MSEEarr_indVar_X = self.PRESSEarr_indVar_X / \
                 np.shape(self.arrX_input)[0]
         self.RMSEEarr_indVar_X = np.sqrt(self.MSEEarr_indVar_X)
@@ -1804,16 +1811,17 @@ class nipalsPLS2:
             numObj = np.shape(self.arrY)[0]
             
             if self.cvType[0] == "loo":
-                # print "loo"
+                print("loo")
                 cvComb = cv.LeaveOneOut(numObj)
             elif self.cvType[0] == "lpo":
-                # print "lpo"
+                print("lpo")
                 cvComb = cv.LeavePOut(numObj, self.cvType[1])
             elif self.cvType[0] == "lolo":
-                # print "lolo"
+                print("lolo")
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
                 print('Requested form of cross validation is not available')
+                pass
             
                         
             # Collect predicted y (i.e. yhat) for each CV segment in a  
@@ -1913,7 +1921,7 @@ class nipalsPLS2:
         
                         # Module 8: STEP 4
                         q_num = np.dot(np.transpose(Y_new), t)
-                        q_denom = np.dot(np.transpose(t), t)
+                        q_denom = npla.norm(q_num)
                         q = q_num / q_denom
                         
                         # Module 8: STEP 5
@@ -2052,7 +2060,9 @@ class nipalsPLS2:
             # component.            
             self.PRESSdict_indVar = {}
             
-            # First compute PRESSCV for zero components            
+            # First compute PRESSCV for zero components
+#            Y_cent = self.arrY_input - np.average(self.arrY_input, axis=0)
+#            self.PRESSCV_0_indVar = np.sum(np.square(Y_cent), axis=0)            
             varY = np.var(self.arrY_input, axis=0, ddof=1)
             self.PRESSCV_0_indVar = (varY * np.square(np.shape(self.arrY_input)[0])) \
                     / (np.shape(x_train)[0])
@@ -2067,7 +2077,7 @@ class nipalsPLS2:
                         
             # Now store all PRESSCV values into an array. Then compute MSECV and
             # RMSECV.
-            self.PRESSCVarr_indVar = np.array(self.PRESSdict_indVar.values())
+            self.PRESSCVarr_indVar = np.array(list(self.PRESSdict_indVar.values()))
             self.MSECVarr_indVar = self.PRESSCVarr_indVar / \
                     np.shape(self.arrY_input)[0]
             self.RMSECVarr_indVar = np.sqrt(self.MSECVarr_indVar)
@@ -2174,7 +2184,7 @@ class nipalsPLS2:
                         
             # Now store all PRESSCV values into an array. Then compute MSECV 
             # and RMSECV.
-            self.PRESSCVarr_indVar_X = np.array(self.PRESSdict_indVar_X.values())
+            self.PRESSCVarr_indVar_X = np.array(list(self.PRESSdict_indVar_X.values()))
             self.MSECVarr_indVar_X = self.PRESSCVarr_indVar_X / \
                     np.shape(self.arrX_input)[0]
             self.RMSECVarr_indVar_X = np.sqrt(self.MSECVarr_indVar_X)
@@ -2266,7 +2276,7 @@ class nipalsPLS2:
         settingsDict['Ystand'] = self.Ystand
         settingsDict['analysed X'] = self.arrX
         settingsDict['analysed Y'] = self.arrY
-        # print self.cvType
+        print(self.cvType)
         settingsDict['cv type'] = self.cvType
         
         return settingsDict
@@ -2526,7 +2536,7 @@ class nipalsPLS2:
         """
         Returns an array holding Y loadings. First column for component 1, etc.
         """
-        return self.arrQ
+        return self.arrQ_alt
     
     
     def scoresRegressionCoeffs(self):
@@ -2853,7 +2863,7 @@ def plotPLS(model, objNames, XvarNames, YvarNames):
     yMinLim = yMin - limY
     
     ax.set_xlim(xMinLim,xMaxLim)
-    ax.set_ylim(yMaxLim,yMinLim)
+    ax.set_ylim(yMinLim,yMaxLim)
     
     
     # Plot title, axis names. 
@@ -2874,6 +2884,7 @@ def plotPLS(model, objNames, XvarNames, YvarNames):
     
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    print('Y variable names:', YvarNames)
     
     # Loop through all coordinates (PC1,PC2) and names to plot scores.
     for ind, varName in enumerate(YvarNames):
@@ -2933,7 +2944,7 @@ def plotPLS(model, objNames, XvarNames, YvarNames):
     yMinLim = yMin - limY
     
     ax.set_xlim(xMinLim,xMaxLim)
-    ax.set_ylim(yMaxLim,yMinLim)
+    ax.set_ylim(yMinLim,yMaxLim)
     
     
     # Plot title, axis names. 
@@ -2994,8 +3005,14 @@ def plotPLS(model, objNames, XvarNames, YvarNames):
         ax.scatter(XcorrLoadings[ind,0], XcorrLoadings[ind,1], s=10, c='w', \
             marker='o', edgecolor='r')
         
-#        ax.text(XcorrLoadings[ind,0], XcorrLoadings[ind,1], varName, \
-#                fontsize=10, color='r')
+        ax.text(XcorrLoadings[ind,0], XcorrLoadings[ind,1], varName, \
+                fontsize=10, color='r')
+    
+    # Plot title, axis names. 
+    ax.set_xlabel('PC1 ({0}%, {1}%)'.format(str(round(XexplVar[0],1)), \
+            str(round(YexplVar[0],1))))
+    ax.set_ylabel('PC2 ({0}%, {1}%)'.format(str(round(XexplVar[1],1)), \
+            str(round(YexplVar[1],1))))    
     
     # Other plot settings    
     ax.set_title('X & Y correlation loadings plot')
@@ -3005,6 +3022,39 @@ def plotPLS(model, objNames, XvarNames, YvarNames):
     
     plt.show()
     
+
+
+#==============================================================================
+# Plot cumulative explained variance in X (CALIBRATED and VALIDATED)
+#==============================================================================
+
+    XcalExplVar = model.X_cumCalExplVar()
+    XvalExplVar = model.X_cumValExplVar()
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    
+    # Construct positions for ticks along x-axis.
+    xPos = range(len(XcalExplVar))
+    
+    # Do the plotting and set the ticks on x-axis with corresponding name.
+    ax.plot(xPos, XcalExplVar, color='b', linestyle='solid', \
+            linewidth=1, label='Calidated explained variance')
+    ax.plot(xPos, XvalExplVar, color='r', linestyle='solid', \
+            linewidth=1, label='Validated explained variance')
+    ax.set_xticks(xPos)
+
+    ax.set_xlabel('# of components')
+    ax.set_ylabel('Explained variance [%]')
+    ax.set_title('Explained variance in X')
+    
+    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
+    ltext = plt.gca().get_legend().get_texts()
+    plt.setp(ltext[0], fontsize = 10, color = 'k')
+    
+    plt.show()
+
+
     
 #==============================================================================
 # Plot cumulative explained variance in Y (CALIBRATED and VALIDATED)
@@ -3026,6 +3076,7 @@ def plotPLS(model, objNames, XvarNames, YvarNames):
             linewidth=1, label='Validated explained variance')
     ax.set_xticks(xPos)
 
+    ax.set_xlabel('# of components')
     ax.set_ylabel('Explained variance [%]')
     ax.set_title('Explained variance in Y')
     
@@ -3108,23 +3159,23 @@ def plotPLS(model, objNames, XvarNames, YvarNames):
 
 
 #==============================================================================
-# Plot X loadings
+# Plot X loadings line plot
 #==============================================================================
-    
-    Xloadings = model.X_loadings()
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    
-    ax.plot(Xloadings[:,0], color='b', linewidth=1, label='PC1')
-    ax.plot(Xloadings[:,1], color='r', linewidth=1, label='PC2')
-    ax.plot(Xloadings[:,2], color='g', linewidth=1, label='PC3')
-
-    ax.set_title('X loadings')
-    
-    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
-    ltext = plt.gca().get_legend().get_texts()
-    plt.setp(ltext[0], fontsize = 10, color = 'k')
-    
-    plt.show() 
-            
+#    
+#    Xloadings = model.X_loadings()
+#
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111)
+#    
+#    ax.plot(Xloadings[:,0], color='b', linewidth=1, label='PC1')
+#    ax.plot(Xloadings[:,1], color='r', linewidth=1, label='PC2')
+#    ax.plot(Xloadings[:,2], color='g', linewidth=1, label='PC3')
+#
+#    ax.set_title('X loadings')
+#    
+#    plt.legend(loc='lower right', shadow=True, labelspacing=.1)
+#    ltext = plt.gca().get_legend().get_texts()
+#    plt.setp(ltext[0], fontsize = 10, color = 'k')
+#    
+#    plt.show() 
+#            
