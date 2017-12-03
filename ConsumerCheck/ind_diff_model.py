@@ -87,8 +87,8 @@ class IndDiff(pb.Model):
     ev_export_segments = _traits.Button("Export consumer segments to 'Data sets' tab")
     ev_remove_segments = _traits.Button("Remove segments")
 
-    C_zero_std = _traits.List()
-    S_zero_std = _traits.List()
+    min_std = _traits.Float(0.001)
+    L_zero_std = _traits.List()
 
 
     @_traits.on_trait_change('ev_remove_segments')
@@ -119,8 +119,27 @@ class IndDiff(pb.Model):
 
 
     def _get_pca_L(self):
-        cpca = pca.nipalsPCA(self.ds_L.values, numPC=3, Xstand=False, cvType=["loo"])
+        # if self._L_have_zero_std_var():
+        #     raise InComputeable(
+        #         'Matrix have variables with zero variance', self.L_zero_std)
+        # cpca = pca.nipalsPCA(self.ds_L.values, numPC=3, Xstand=False, cvType=["loo"])
+        cpca = pca.nipalsPCA(self.ds_L.values, numPC=3, Xstand=False, cvType=None)
         return ra.adapt_oto_pca(cpca, self.ds_L, self.ds_L.display_name)
+
+
+    def _L_have_zero_std_var(self):
+        self.L_zero_std = self._check_zero_std(self.ds_L)
+        return bool(self.L_zero_std)
+
+
+    def _check_zero_std(self, ds):
+        zero_std_var = []
+        sv = ds.values.std(axis=0)
+        dm = sv < self.min_std
+        if _np.any(dm):
+            vv = _np.array(ds.var_n)
+            zero_std_var = list(vv[_np.nonzero(dm)])
+        return zero_std_var
 
 
     def calc_pls_raw_liking(self):
