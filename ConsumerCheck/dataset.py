@@ -115,12 +115,34 @@ class DataSet(_traits.HasTraits):
     obj_n = _traits.Property()
     values = _traits.Property()
 
+    # FIXME: This is a dubious solution
+    matcat = _traits.Instance(_pd.DataFrame)
+    valuescat = _traits.Property()
+
 
     def _get_values(self):
         if self.missing_data:
             return _np.ma.masked_invalid(self.mat.values)
         else:
             return self.mat.values
+
+
+    def _make_matcat(self):
+        matcat = self.mat.copy()
+        for cn, ssl in self.subs.items():
+            cs = _pd.Series(index=self.mat.index)
+            for ss in ssl:
+                cs[list(ss.row_selector)] = ss.id
+                matcat[cn] = cs
+        self.matcat = matcat
+
+
+    def _get_valuescat(self):
+        try:
+            return self.matcat.values
+        except AttributeError:
+            self._make_matcat()
+            return self.matcat.values
 
 
     def _get_n_vars(self):

@@ -53,8 +53,13 @@ class DSTableViewer(Controller):
 
     def _get_header(self):
         varnames = [('Names', 'index')]
-        for i, vn in enumerate(self.model.var_n):
-            varnames.append((unicode(vn), i))
+        if len(self.model.subs) < 1:
+            for i, vn in enumerate(self.model.var_n):
+                varnames.append((unicode(vn), i))
+        else:
+            self.model._make_matcat()
+            for i, vn in enumerate(self.model.matcat.columns):
+                varnames.append((unicode(vn), i))
         return varnames
 
 
@@ -86,20 +91,40 @@ class DSTableViewer(Controller):
             columns = self.header,
             obj_names = self.model.obj_n)
 
-        view = View(
-            Item('values', editor=TabularEditor(adapter=aa),
-                 show_label=False),
-            Item('handler.cp_clip', show_label=False),
-            title=header_txt,
-            resizable=True,
-            width=900, height=400,
-            buttons=[OKButton])
+
+        if len(self.model.subs) < 1:
+            view = View(
+                Item('values', editor=TabularEditor(adapter=aa),
+                     show_label=False),
+                Item('handler.cp_clip', show_label=False),
+                title=header_txt,
+                resizable=True,
+                width=900, height=400,
+                buttons=[OKButton])
+        else:
+            view = View(
+                Item('valuescat', editor=TabularEditor(adapter=aa),
+                     show_label=False),
+                Item('handler.cp_clip', show_label=False),
+                title=header_txt,
+                resizable=True,
+                width=900, height=400,
+                buttons=[OKButton])
 
         return view
 
 
 if __name__ == '__main__':
-    from tests.conftest import simple_ds
-    ds = simple_ds()
+    # from tests.conftest import simple_ds
+    from importer_text_file import ImporterTextFile
+    itf = ImporterTextFile(
+        file_path='../problem/Ham_consumer_liking _withCateg_2.txt',
+        delimiter='\t',
+        have_obj_names=True
+    )
+    ds = itf.import_data()
+    # import pudb; pu.db
+    # print(ds.valuescat)
+    # ds = simple_ds()
     dstv = DSTableViewer(ds)
     dstv.configure_traits(view=dstv.get_view())
