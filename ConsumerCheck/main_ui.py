@@ -32,6 +32,7 @@ from traitsui.api import View, Item, Group, Handler, InstanceEditor
 from traitsui.menu import Action, Menu, MenuBar
 
 # Local imports
+import __init__
 import cc_config as conf
 from dataset import DataSet
 from dataset_container import DatasetContainer
@@ -48,8 +49,6 @@ from conjoint_gui import ConjointPluginController, ConjointCalcContainer, conjoi
 from ind_diff_gui import IndDiffPluginController, IndDiffCalcContainer, ind_diff_plugin_view
 
 state_file = conf.pkl_file_url()
-
-VERSION='1.4.2'
 
 
 class MainViewHandler(Handler):
@@ -85,7 +84,8 @@ class MainViewHandler(Handler):
             verinfo = req.json()
         except(requests.exceptions.RequestException):
             return
-        running = StrictVersion(VERSION)
+        running = StrictVersion(__init__.__version__)
+        print(__init__.__version__)
         newest = StrictVersion(verinfo['currentVersion'])
         if newest > running:
             inf = AboutDialog()
