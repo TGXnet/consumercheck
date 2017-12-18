@@ -1,75 +1,126 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 21 13:10:44 2011
-
-@author: Oliver Tomic (OTO), <oliver.tomic@nofima.no>
-
-"""
 
 # Import necessary modules
 import numpy as np
 import numpy.linalg as npla
 import statTools as st
 import cross_val as cv
-# import matplotlib.pyplot as plt
+
 
 
 
 class nipalsPCA:
     """
-    GENERAL INFO:
-    -------------
-    This class carries out Principal Component Analysis on arrays using
+    This class carries out Principal Component Analysis using the
     NIPALS algorithm.
     
     
-    EXAMPLE USE:
-    ----
-    import pca    
+    PARAMETERS
+    ----------
+    arrX : numpy array
+        A numpy array containing the data
     
-    model = pca.nipalsPCA(array, numPC=5, Xstand=False)
-    model = pca.nipalsPCA(array)
-    model = pca.nipalsPCA(array, numPC=3)
-    model = pca.nipalsPCA(array, Xstand=True)
-    model = pca.nipalsPCA(array, cvType=["loo"])
-    model = pca.nipalsPCA(array, cvType=["lpo", 4])
-    model = pca.nipalsPCA(array, cvType=["lolo", [1,2,3,2,3,1]])
-        
+    numComp : int, optional
+        An integer that defines how many components are to be computed
     
-    TYPES:
-    ------
-    array: <array>
-    numPC: <integer>
-    mode: <boolean>  
-                False: first column centre input data then run PCA 
-                True: first scale columns of input data to equal variance
-                         then run PCA
+    Xstand : boolean, optional
+        Defines whether variables in ``arrX`` are to be standardised/scaled or centered
+	
+        False : columns of ``arrX`` are mean centred (default)
+            ``Xstand = False``
+	
+        True : columns of ``arrX`` are mean centred and devided by their own standard deviation
+            ``Xstand = True``
+    
+    cvType : list, optional
+        The list defines cross validation settings when computing the PCA model. Note if `cvType` is not provided, cross validation will not be performed and as such cross validation results will not be available. Choose cross validation type from the following:
+	
+        loo : leave one out / a.k.a. full cross validation (default)
+            ``cvType = ["loo"]``
+	
+        KFold : leave out one fold or segment
+            ``cvType = ["KFold", numFolds]``
+	
+            numFolds: int 
+	    
+            Number of folds or segments 
+			
+        lolo : leave one label out
+            ``cvType = ["lolo", lablesList]``
+	    
+            lablesList: list
+	    
+        Sequence of lables. Must be same lenght as number of rows in ``arrX``. Leaves out objects with same lable. 
+
+
+    RETURNS
+    -------
+    class
+        A class that contains the PCA model and computational results
+    
+    
+    EXAMPLES
+    --------
+
+    First import the hoggorm package.
+
+    >>> import hoggorm as ho
+
+    Import your data into a numpy array.
+
+    >>> myData
+    array([[ 5.7291665,  3.416667 ,  3.175    ,  2.6166668,  6.2208333],
+           [ 6.0749993,  2.7416666,  3.6333339,  3.3833334,  6.1708336],
+           [ 6.1166663,  3.4916666,  3.5208333,  2.7125003,  6.1625004],
+           ..., 
+           [ 6.3333335,  2.3166668,  4.1249995,  4.3541665,  6.7500005],
+           [ 5.8250003,  4.8291669,  1.4958333,  1.0958334,  6.0999999],
+           [ 5.6499996,  4.6624999,  1.9291668,  1.0749999,  6.0249996]])
+    >>> np.shape(myData)
+    (14, 5)
+    
+    Examples of how to compute a PCA model using different settings for the input parameters.
+
+    >>> model = ho.nipalsPCA(arrX=myData, numComp=5, Xstand=False)
+    >>> model = ho.nipalsPCA(arrX=myData)
+    >>> model = ho.nipalsPCA(arrX=myData, numComp=3)
+    >>> model = ho.nipalsPCA(arrX=myData, Xstand=True)
+    >>> model = ho.nipalsPCA(arrX=myData, cvType=["loo"])
+    >>> model = ho.nipalsPCA(arrX=myData, cvType=["Kfold", 4])
+    >>> model = ho.nipalsPCA(arrX=myData, cvType=["lolo", [1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7]])
+	
+    Examples of how to extract results from the PCA model.
+
+    >>> scores = model.X_scores()
+    >>> loadings = model.X_loadings()
+    >>> cumulativeCalibratedExplainedVariance_allVariables = model.X_cumCalExplVar_indVar()
+
     """
     
     def __init__(self, arrX, **kargs):
         """
         On initialisation check how arrX and arrY are to be pre-processed 
         (Xstand and Ystand are either True or False). Then check whether 
-        number of PC's chosen by user is OK.
+        number of components chosen by user is OK.
         """
         
 #===============================================================================
-#         Check what is provided by user for PCA
+#         Check what is provided by user
 #===============================================================================
         
-        # Check whether number of PC's that are to be computed is provided.
-        # If NOT, then number of PC's is set to either number of objects or
-        # variables of X whichever is smallest (numPC). If number of  
-        # PC's IS provided, then number is checked against maxPC and set to
-        # numPC if provided number is larger.
-        if 'numPC' not in kargs.keys(): 
+        # Check whether number of components that are to be computed is provided.
+        # If NOT, then number of components is set to either number of objects or
+        # variables of X whichever is smallest (numComp). If number of  
+        # components IS provided, then number is checked against maxPC and set to
+        # numComp if provided number is larger.
+        if 'numComp' not in kargs.keys(): 
             self.numPC = min(np.shape(arrX))
         else:
             maxNumPC = min(np.shape(arrX))           
-            if kargs['numPC'] > maxNumPC:
+            if kargs['numComp'] > maxNumPC:
                 self.numPC = maxNumPC
             else:
-                self.numPC = kargs['numPC']
+                self.numPC = kargs['numComp']
         
         
         # Define X and Y within class such that the data can be accessed from
@@ -105,8 +156,8 @@ class nipalsPCA:
             self.cvType = kargs['cvType']
         
         
-        # Before PLS2 NIPALS algorithm starts initiate dictionaries and lists
-        # in which results are stored.
+        # Before PLS2 NIPALS algorithm starts initiate and lists in which
+        # results will be stored.
         self.X_scoresList = []
         self.X_loadingsList = []
         self.X_loadingsWeightsList = []
@@ -114,14 +165,14 @@ class nipalsPCA:
         self.X_residualsList = [self.arrX]
         
         
-        # Collect residual matrices/arrays after each computed PC
+        # Collect residual matrices/arrays after each computed component
         self.resids = {}
         self.X_residualsDict = {}
         
-        # Collect predicted matrices/array Xhat after each computed PC
+        # Collect predicted matrices/array Xhat after each computed component
         self.calXhatDict_singPC = {}
         
-        # Collect explained variance in each PC
+        # Collect explained variance in each component
         self.calExplainedVariancesDict = {}
         self.X_calExplainedVariancesList = []
 
@@ -130,13 +181,21 @@ class nipalsPCA:
 #        Here the NIPALS PCA algorithm on X starts 
 #===============================================================================
         threshold = 1.0e-8
-        #X_new = self.data.copy()
         X_new = self.arrX.copy()
         
         # Compute number of principal components as specified by user 
         for j in range(self.numPC): 
             
-            t = X_new[:,0].reshape(-1,1)
+            # Check if first column contains only zeros. If yes, then
+            # NIPALS will not converge and (npla.norm(num) will contain 
+            # nan's). Rather put in other starting values.
+            if not np.any(X_new[:, 0]):
+                X_repl_nonCent = np.arange(np.shape(X_new)[0])
+                X_repl = X_repl_nonCent - np.mean(X_repl_nonCent)
+                t = X_repl.reshape(-1,1)
+            
+            else:
+                t = X_new[:,0].reshape(-1,1)
             
             # Iterate until score vector converges according to threshold
             while 1:
@@ -151,13 +210,13 @@ class nipalsPCA:
                 SS = np.sum(np.square(diff))
                 
                 # Check whether sum of squares is smaller than threshold. Break
-                # out of loop if true and start computation of next PC.
+                # out of loop if true and start computation of next component.
                 if SS < threshold: 
                     self.X_scoresList.append(t)
                     self.X_loadingsList.append(p)
                     break
             
-            # Peel off information explained by actual PC and continue with
+            # Peel off information explained by actual component and continue with
             # decomposition on the residuals (X_new = E).
             X_old = X_new.copy()
             Xhat_j = np.dot(t, np.transpose(p))
@@ -174,7 +233,7 @@ class nipalsPCA:
                 self.calXhatDict_singPC[j+1] = Xhat_j + self.Xmeans
             
             
-        # Collect scores and loadings for the actual PC.
+        # Collect scores and loadings for the actual component.
         self.arrT = np.hstack(self.X_scoresList)
         self.arrP = np.hstack(self.X_loadingsList)
         
@@ -204,6 +263,7 @@ class nipalsPCA:
             self.calXpredList.append(Xhat)
         # ---------------------------------------------------------------------
         
+        
         # ---------------------------------------------------------------------
         # Collect all PRESSE for individual variables in a dictionary. 
         # Keys represent number of component.            
@@ -216,17 +276,18 @@ class nipalsPCA:
         # Compute PRESS for each Xhat for 1, 2, 3, etc number of components
         # and compute explained variance
         for ind, Xhat in enumerate(self.calXpredList):
-            diffX = st.centre(self.arrX_input) - st.centre(Xhat)
+            diffX = self.arrX_input - Xhat
             PRESSE_indVar_X = np.sum(np.square(diffX), axis=0)
             self.PRESSEdict_indVar_X[ind+1] = PRESSE_indVar_X
                     
         # Now store all PRESSE values into an array. Then compute MSEE and
         # RMSEE.
-        self.PRESSEarr_indVar_X = np.array(self.PRESSEdict_indVar_X.values())
+        self.PRESSEarr_indVar_X = np.array(list(self.PRESSEdict_indVar_X.values()))
         self.MSEEarr_indVar_X = self.PRESSEarr_indVar_X / \
                 np.shape(self.arrX_input)[0]
         self.RMSEEarr_indVar_X = np.sqrt(self.MSEEarr_indVar_X)
         # ---------------------------------------------------------------------
+        
         
         # ---------------------------------------------------------------------
         # Compute explained variance for each variable in X using the
@@ -253,6 +314,7 @@ class nipalsPCA:
             self.cumCalExplVarX_indVar[ind] = self.cumCalExplVarXarr_indVar[:,ind]
         # ---------------------------------------------------------------------
         
+        
         # ---------------------------------------------------------------------
         # Collect total PRESSE across all variables in a dictionary. Also,
         # compute total calibrated explained variance in X.
@@ -262,6 +324,7 @@ class nipalsPCA:
         for ind, PRESSE_X in enumerate(self.PRESSE_total_list_X):
             self.PRESSE_total_dict_X[ind] = PRESSE_X
         # ---------------------------------------------------------------------
+        
         
         # ---------------------------------------------------------------------
         # Collect total MSEE across all variables in a dictionary. Also,
@@ -282,7 +345,7 @@ class nipalsPCA:
             self.XcumCalExplVarArr = np.average(self.cumCalExplVarXarr_indVar, axis=1)
             self.XcumCalExplVarList = list(self.XcumCalExplVarArr)
         
-        # Construct list with total explained variance in X for each PC
+        # Construct list with total explained variance in X for each component
         self.XcalExplVarList = []
         for ind, item in enumerate(self.XcumCalExplVarList):
             if ind == len(self.XcumCalExplVarList)-1: break
@@ -296,6 +359,7 @@ class nipalsPCA:
         for ind, item in enumerate(self.calXpredList):
             self.calXpredDict[ind+1] = item 
         # ---------------------------------------------------------------------
+        
         
         # ---------------------------------------------------------------------
         # Compute total RMSEE and store values in a dictionary and list.            
@@ -316,40 +380,33 @@ class nipalsPCA:
             numObj = np.shape(self.arrX)[0]
             
             if self.cvType[0] == "loo":
-                # print "loo"
                 cvComb = cv.LeaveOneOut(numObj)
-            elif self.cvType[0] == "lpo":
-                # print "lpo"
-                cvComb = cv.LeavePOut(numObj, self.cvType[1])
+            elif self.cvType[0] == "KFold":
+                cvComb = cv.KFold(numObj, k=self.cvType[1])
             elif self.cvType[0] == "lolo":
-                # print "lolo"
                 cvComb = cv.LeaveOneLabelOut(self.cvType[1])
             else:
                 print('Requested form of cross validation is not available')
             
             
             # Collect predicted x (i.e. xhat) for each CV segment in a
-            # dictionary according to number of PC
+            # dictionary according to number of component
             self.valXpredDict = {}
             for ind in range(1, self.numPC+1):
-                self.valXpredDict[ind] = []
-            
-            # Collect train and test set in dictionaries for each PC and put
-            # them in this list.            
-            self.cvTrainAndTestDataList = []            
+                self.valXpredDict[ind] = np.zeros(np.shape(self.arrX_input))
             
 
             # Collect: validation X scores T, validation X loadings P,
             # validation Y scores U, validation Y loadings Q,
             # validation X loading weights W and scores regression coefficients C
-            # in lists for each PC
+            # in lists for each component
             self.val_arrTlist = []
             self.val_arrPlist = []
             self.val_arrQlist = [] 
 
-            # Collect train and test set in a dictionary for each PC            
+            # Collect train and test set in a dictionary for each component            
             self.cvTrainAndTestDataList = []
-            self.X_train_means_list = []          
+            self.X_train_means_arr = np.zeros(np.shape(self.arrX_input))          
             
             # First devide into combinations of training and test sets
             for train_index, test_index in cvComb:
@@ -377,7 +434,7 @@ class nipalsPCA:
                     # Center X test using mean from training set
                     X_test_proc = X_test - X_train_mean
                 # -------------------------------------------------------------
-                self.X_train_means_list.append(X_train_mean)
+                self.X_train_means_arr[test_index,] = X_train_mean
                 
         
                 # Here the NIPALS PCA algorithm starts
@@ -393,7 +450,16 @@ class nipalsPCA:
                 # Compute number of principal components as specified by user 
                 for j in range(self.numPC): 
                     
-                    t = X_new[:,0].reshape(-1,1)
+                    # Check if first column contains only zeros. If yes, then
+                    # NIPALS will not converge and (npla.norm(num) will contain 
+                    # nan's). Rather put in other starting values.
+                    if not np.any(X_new[:, 0]):
+                        X_repl_nonCent = np.arange(np.shape(X_new)[0])
+                        X_repl = X_repl_nonCent - np.mean(X_repl_nonCent)
+                        t = X_repl.reshape(-1,1)
+                    
+                    else:
+                        t = X_new[:,0].reshape(-1,1)
                     
                     # Iterate until score vector converges according to threshold
                     while 1:
@@ -408,19 +474,19 @@ class nipalsPCA:
                         SS = np.sum(np.square(diff))
                         
                         # Check whether sum of squares is smaller than threshold. Break
-                        # out of loop if true and start computation of next PC.
+                        # out of loop if true and start computation of next component.
                         if SS < threshold: 
                             scoresList.append(t)
                             loadingsList.append(p)
                             break
                     
-                    # Peel off information explained by actual PC and continue with
+                    # Peel off information explained by actual component and continue with
                     # decomposition on the residuals (X_new = E).
                     X_old = X_new.copy()
                     Xhat_j = np.dot(t, np.transpose(p))
                     X_new = X_old - Xhat_j
                 
-                # Collect X scores and X loadings for the actual PC.
+                # Collect X scores and X loadings for the actual component.
                 valT = np.hstack(scoresList)
                 valP = np.hstack(loadingsList)
                 
@@ -435,9 +501,9 @@ class nipalsPCA:
                 # Construct validated predicted X first for one component, 
                 # then two, three, etc
                 for ind in range(0, dims):
-                    
-                    part_projT = projT[:,0:ind+1].reshape(1,-1)
-                    part_valP = valP[:,0:ind+1]
+
+                    part_projT = projT[:, 0:ind+1]
+                    part_valP = valP[:, 0:ind+1]
                     valPredX_proc = np.dot(part_projT, np.transpose(part_valP))
                     
                     
@@ -449,18 +515,11 @@ class nipalsPCA:
                     else:
                         valPredX = valPredX_proc + X_train_mean
                     
-                    self.valXpredDict[ind+1].append(valPredX)
-                
-            
-            # Convert list of one-row arrays into one array such that it 
-            # corresponds to the orignial variable
-            for ind in range(1, dims+1):
-                self.valXpredDict[ind] = np.vstack(self.valXpredDict[ind])
+                    self.valXpredDict[ind+1][test_index, :] = valPredX
                 
 
             # Put all predicitons into an array that corresponds to the
-            # original variable
-            #self.valPredXarrList = []
+            # original array
             self.valXpredList = []
             valPreds = self.valXpredDict.values()
             for preds in valPreds:
@@ -478,38 +537,37 @@ class nipalsPCA:
             # validation 
             self.valXpredList = self.valXpredDict.values()
             
-            # Collect all PRESS in a dictionary. Keys represent number of 
+            # Collect all PRESSCV in a dictionary. Keys represent number of 
             # component.            
-            self.PRESSdict_indVar_X = {}
+            self.PRESSCVdict_indVar_X = {}
             
             # First compute PRESSCV for zero components            
-            varX = np.var(self.arrX_input, axis=0, ddof=1)
-            self.PRESSCV_0_indVar_X = (varX * np.square(np.shape(self.arrX_input)[0])) \
-                    / (np.shape(X_train)[0])
-            self.PRESSdict_indVar_X[0] = self.PRESSCV_0_indVar_X
+            self.PRESSCV_0_indVar_X = np.sum(np.square(self.arrX_input - self.X_train_means_arr), axis=0)
+            self.PRESSCVdict_indVar_X[0] = self.PRESSCV_0_indVar_X
             
             # Compute PRESSCV for each Yhat for 1, 2, 3, etc number of 
             # components and compute explained variance
             for ind, Xhat in enumerate(self.valXpredList):
                 #diffX = self.arrX_input - Xhat
-                diffX = st.centre(self.arrX_input) - st.centre(Xhat)
+                diffX = self.arrX_input - Xhat
                 PRESSCV_indVar_X = np.sum(np.square(diffX), axis=0)
-                self.PRESSdict_indVar_X[ind+1] = PRESSCV_indVar_X
+                self.PRESSCVdict_indVar_X[ind+1] = PRESSCV_indVar_X
                         
             # Now store all PRESSCV values into an array. Then compute MSECV 
             # and RMSECV.
-            self.PRESSCVarr_indVar_X = np.array(self.PRESSdict_indVar_X.values())
+            self.PRESSCVarr_indVar_X = np.array(list(self.PRESSCVdict_indVar_X.values()))
             self.MSECVarr_indVar_X = self.PRESSCVarr_indVar_X / \
                     np.shape(self.arrX_input)[0]
             self.RMSECVarr_indVar_X = np.sqrt(self.MSECVarr_indVar_X)
             # -----------------------------------------------------------------
             
+            
             # -----------------------------------------------------------------
             # Compute explained variance for each variable in X using the
-            # MSEP for each variable. Also collect PRESS, MSECV, RMSECV in 
+            # MSEP for each variable. Also collect PRESSCV, MSECV, RMSECV in 
             # their respective dictionaries for each variable. Keys represent 
             # now variables and NOT components as above with 
-            # self.PRESSdict_indVar
+            # self.PRESSCVdict_indVar
             self.cumValExplVarXarr_indVar = np.zeros(np.shape(self.MSECVarr_indVar_X))
             MSECV_0_indVar_X = self.MSECVarr_indVar_X[0,:]
             
@@ -529,6 +587,7 @@ class nipalsPCA:
                 self.cumValExplVarX_indVar[ind] = self.cumValExplVarXarr_indVar[:,ind]
             # -----------------------------------------------------------------
             
+            
             # -----------------------------------------------------------------
             # Collect total PRESSCV across all variables in a dictionary.
             self.PRESSCV_total_dict_X = {}
@@ -537,6 +596,7 @@ class nipalsPCA:
             for ind, PRESSCV_X in enumerate(self.PRESSCV_total_list_X):
                 self.PRESSCV_total_dict_X[ind] = PRESSCV_X
             # -----------------------------------------------------------------
+
             
             # -----------------------------------------------------------------
             # Collect total MSECV across all variables in a dictionary. Also,
@@ -566,6 +626,7 @@ class nipalsPCA:
                         self.XcumValExplVarList[ind]
                 self.XvalExplVarList.append(explVarComp)
             # -----------------------------------------------------------------
+
             
             # -----------------------------------------------------------------
             # Compute total RMSECV and store values in a dictionary and list.            
@@ -580,11 +641,11 @@ class nipalsPCA:
     def modelSettings(self):
         """
         Returns a dictionary holding the settings under which NIPALS PCA was
-        run. Dictionary key represents order of PC.
+        run.
         """
         # Collect settings under which PCA was run.
         self.settings = {}
-        self.settings['numPC'] = self.numPC
+        self.settings['numComp'] = self.numPC
         self.settings['Xstand'] = self.Xstand
         self.settings['arrX'] = self.arrX_input
         self.settings['analysed arrX'] = self.arrX
@@ -594,32 +655,33 @@ class nipalsPCA:
     
     def X_means(self):
         """
-        Returns the score matrix T. First column holds scores for PC1, 
-        second column holds scores for PC2, etc.
+        Returns array holding the column means of input array X.
         """
         return self.Xmeans.reshape(1,-1)    
         
     
     def X_scores(self):
         """
-        Returns the score matrix T. First column holds scores for PC1, 
-        second column holds scores for PC2, etc.
+        Returns array holding scores T. First column holds scores for 
+        component 1, second column holds scores for component 2, etc.
         """
         return self.arrT
         
     
     def X_loadings(self):
         """
-        Returns the loading matrix P. First column holds loadings for PC1, 
-        second column holds scores for PC2, etc.
+        Returns array holding loadings P of array X. Rows represent variables
+        and columns represent components. First column holds loadings for 
+        component 1, second column holds scores for component 2, etc.
         """
         return self.arrP
     
     
     def X_corrLoadings(self):
         """
-        Returns correlation loadings. First column holds correlation loadings
-        for PC1, second column holds scores for PC2, etc.
+        Returns array holding correlation loadings of array X. First column 
+        holds correlation loadings for component 1, second column holds 
+        correlation loadings for component 2, etc.
         """
 
         # Creates empty matrix for correlation loadings
@@ -627,7 +689,7 @@ class nipalsPCA:
             np.shape(self.arrP)[0]), float)
         
         # Compute correlation loadings:
-        # For each PC in score matrix
+        # For each component in score matrix
         for PC in range(np.shape(self.arrT)[1]):
             PCscores = self.arrT[:, PC]
             
@@ -635,7 +697,7 @@ class nipalsPCA:
             for var in range(np.shape(self.arrX)[1]):
                 origVar = self.arrX[:, var]
                 corrs = np.corrcoef(PCscores, origVar)
-                arr_corrLoadings[PC, var] = corrs[0,1]
+                arr_corrLoadings[PC, var] = corrs[0, 1]
         
         self.arr_corrLoadings = np.transpose(arr_corrLoadings)
         
@@ -644,8 +706,8 @@ class nipalsPCA:
     
     def X_residuals(self):
         """
-        Returns a dictionary holding the residual matrices E after each 
-        computed PC. Dictionary key represents order of PC.
+        Returns a dictionary holding arrays of residuals for array X after 
+        each computed component. Dictionary key represents order of component.
         """
         return self.X_residualsDict
     
@@ -653,7 +715,8 @@ class nipalsPCA:
     def X_calExplVar(self):
         """
         Returns a list holding the calibrated explained variance for 
-        each PC. 
+        each component. First number in list is for component 1, second number 
+        for component 2, etc.
         """
         return self.XcalExplVarList
     
@@ -661,176 +724,224 @@ class nipalsPCA:
     def X_cumCalExplVar_indVar(self):
         """
         Returns an array holding the cumulative calibrated explained variance
-        for each variable in X after each PC.
+        for each variable in X after each component. First row represents zero
+        components, second row represents one component, third row represents 
+        two components, etc. Columns represent variables.
         """
         return self.cumCalExplVarXarr_indVar
     
     
     def X_cumCalExplVar(self):
         """
-        Returns a list holding the cumulative calibrated explained variance for 
-        each PC. Dictionary key represents order of PC. 
+        Returns a list holding the cumulative validated explained variance 
+        for array X after each component. First number represents zero 
+        components, second number represents component 1, etc.
         """
         return self.XcumCalExplVarList
     
     
     def X_predCal(self):
         """
-        Returns a dictionary holding the predicted matrices Xhat from 
-        calibration after each computed PC. Dictionary key represents order 
-        of PC.
+        Returns a dictionary holding the predicted arrays Xhat from 
+        calibration after each computed component. Dictionary key represents 
+        order of component.
         """
         return self.calXpredDict
     
     
     def X_PRESSE_indVar(self):
         """
-        Returns array holding PRESSE for each individual variable acquired
-        through calibration after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
+        Returns array holding PRESSE for each individual variable in X
+        acquired through calibration after each computed component. First row 
+        is PRESSE for zero components, second row for component 1, third row 
+        for component 2, etc.
         """
         return self.PRESSEarr_indVar_X
     
     
     def X_PRESSE(self):
         """
-        Returns an array holding PRESS across all variables in X acquired  
-        through calibration after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
+        Returns array holding PRESSE across all variables in X acquired  
+        through calibration after each computed component. First row is PRESSE 
+        for zero components, second row for component 1, third row for 
+        component 2, etc.
         """   
         return self.PRESSE_total_list_X
     
     
     def X_MSEE_indVar(self):
         """
-        Returns an arrary holding MSE from calibration for each variable in X. 
-        First row is MSE for zero components, second row for component 1, etc.
+        Returns an array holding MSEE for each variable in array X acquired 
+        through calibration after each computed component. First row holds MSEE 
+        for zero components, second row for component 1, third row for 
+        component 2, etc.
         """
         return self.MSEEarr_indVar_X
     
     
     def X_MSEE(self):
         """
-        Returns an array holding MSE across all variables in X acquired through 
-        calibration after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
+        Returns an array holding MSEE across all variables in X acquired 
+        through calibration after each computed component. First row is MSEE 
+        for zero components, second row for component 1, third row for 
+        component 2, etc.
         """   
         return self.MSEE_total_list_X
     
     
     def X_RMSEE_indVar(self):
         """
-        Returns an arrary holding RMSE from calibration for each variable in X. 
-        First row is MSE for zero components, second row for component 1, etc.
+        Returns an array holding RMSEE for each variable in array X acquired 
+        through calibration after each components. First row holds RMSEE 
+        for zero components, second row for component 1, third row for 
+        component 2, etc.
         """
         return self.RMSEEarr_indVar_X
     
     
     def X_RMSEE(self):
         """
-        Returns an array holding RMSE across all variables in X acquired through 
-        calibration after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
+        Returns an array holding RMSEE across all variables in X acquired 
+        through calibration after each computed component. First row is RMSEE 
+        for zero components, second row for component 1, third row for 
+        component 2, etc.
         """   
         return self.RMSEE_total_list_X
     
     
     def X_valExplVar(self):
         """
-        Returns list holding calibrated explained variance for each PC in X.
+        Returns a list holding the validated explained variance for X after
+        each component. First number in list is for component 1, second number 
+        for component 2, third number for component 3, etc.
         """
         return  self.XvalExplVarList
     
     
     def X_cumValExplVar_indVar(self):
         """
-        Returns array holding cumulative validated explained variance in X for
-        each variable. Rows represent variables in X. Rows represent number of
-        components.
+        Returns an array holding the cumulative validated explained variance
+        for each variable in X after each component. First row represents 
+        zero components, second row represents component 1, third row for 
+        compnent 2, etc. Columns represent variables.
         """
         return self.cumValExplVarXarr_indVar
     
     
     def X_cumValExplVar(self):
         """
-        Returns list holding cumulative calibrated explained variance in X.
+        Returns a list holding the cumulative validated explained variance 
+        for array X after each component.
         """
         return self.XcumValExplVarList
     
     
     def X_predVal(self):
         """
-        Returns dictionary holding arrays of predicted Xhat after each component 
-        from validation. Dictionary key represents order of PC.
+        Returns a dictionary holding the predicted arrays Xhat from 
+        validation after each computed component. Dictionary key represents 
+        order of component.
         """
         return self.valXpredDict
     
     
     def X_PRESSCV_indVar(self):
         """
-        Returns array holding PRESS for each individual variable in X acquired
-        through cross validation after each computed PC. First row is PRESS for
-        zero components, second row component 1, third row for component 2, etc.
+        Returns array holding PRESSEV for each individual variable in X 
+        acquired through cross validation after each computed component. First 
+        row is PRESSCV for zero components, second row for component 1, third 
+        row for component 2, etc.
         """
         return self.PRESSCVarr_indVar_X
     
     
     def X_PRESSCV(self):
         """
-        Returns an array holding PRESS across all variables in X acquired  
-        through cross validation after each computed PC. First row is PRESS for 
-        zero components, second row component 1, third row for component 2, etc.
+        Returns an array holding PRESSCV across all variables in X acquired  
+        through cross validation after each computed component. First row is 
+        PRESSEV for zero components, second row for component 1, third row for 
+        component 2, etc.
         """   
         return self.PRESSCV_total_list_X
     
     
     def X_MSECV_indVar(self):
         """
-        Returns an arrary holding MSE from cross validation for each variable  
-        in X. First row is MSE for zero components, second row for component 1, 
-        etc.
+        Returns an arrary holding MSECV for each variable in X acquired through  
+        cross validation. First row is MSECV for zero components, second row 
+        for component 1, etc.
         """
         return self.MSECVarr_indVar_X
     
     
     def X_MSECV(self):
         """
-        Returns an array holding MSE across all variables in X acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
+        Returns an array holding MSECV across all variables in X acquired 
+        through cross validation after each computed component. First row is 
+        MSECV for zero components, second row for component 1, third row for 
+        component 2, etc.
         """   
         return self.MSECV_total_list_X
     
     
     def X_RMSECV_indVar(self):
         """
-        Returns an arrary holding RMSE from cross validation for each variable
-        in X. First row is MSE for zero components, second row for component 1, 
-        etc.
+        Returns an arrary holding RMSECV for each variable in X acquired 
+        through cross validation after each computed component. First row is 
+        RMSECV for zero components, second row for component 1, third row for 
+        component 2, etc.
         """
         return self.RMSECVarr_indVar_X
     
     
     def X_RMSECV(self):
         """
-        Returns an array holding RMSE across all variables in X acquired through 
-        cross validation after each computed PC. First row is PRESS for zero
-        components, second row component 1, third row for component 2, etc.
+        Returns an array holding RMSECV across all variables in X acquired 
+        through cross validation after each computed component. First row is 
+        RMSECV for zero components, second row for component 1, third row for 
+        component 2, etc.
         """   
         return self.RMSECV_total_list_X
     
     
+    def X_scores_predict(self, Xnew, numComp=1):
+        """
+        Returns array of X scores from new X data using the exsisting model. 
+        Rows represent objects and columns represent components.
+        """
+                
+        assert numComp <= self.numPC, ValueError('Maximum numComp = ' + str(self.numPC))
+        assert numComp > -1, ValueError('numComp must be >= 0')
+
+        # First pre-process new X data accordingly
+        if self.Xstand == True:
+            
+            x_new = (Xnew - np.average(self.arrX_input, axis=0)) / \
+                    np.std(self.arrX_input, ddof=1)
+        
+        else:
+            
+            x_new = (Xnew - np.average(self.arrX_input, axis=0))
+               
+        # Compute the scores for new object
+        projT = np.dot(x_new, self.arrP[:, 0:numComp])
+        
+        return projT
+    
+    
     def cvTrainAndTestData(self):
         """
-        Returns a list consisting of dictionaries holding training and test sets.
+        Returns a list consisting of dictionaries holding training and test
+        sets.
         """
         return self.cvTrainAndTestDataList
     
     
     def corrLoadingsEllipses(self):
         """
-        Returns the ellipses that represent 50% and 100% expl. variance in
-        correlation loadings plot.
+        Returns a dictionary hodling coordinates of ellipses that represent 
+        50% and 100% expl. variance in correlation loadings plot. The 
+        coordinates are stored in arrays.
         """
         # Create range for ellipses
         t = np.arange(0.0, 2*np.pi, 0.01)
@@ -852,302 +963,3 @@ class nipalsPCA:
         ellipses['y100perc'] = ycords100perc
         
         return ellipses
-
-
-
-
-def plots(model, pc=[1,2], plots=[1,2,3,4], objNames=[], varNames=[]):
-    """
-    This functions generates plots that visualise the most important results
-    from PCA
-    """
-    
-    # Generate names/numbers for objects if no objects are given
-    if bool(objNames) == False:
-        numObj, numVar = np.shape(model.modelSettings()['arrX'])
-        
-        for num in range(1, numObj+1):
-            label = 'Obj {0}'.format(num)
-            objNames.append(label)
-    
-    
-    # Generate names/numbers for variables if no objects are given
-    if bool(varNames) == False:
-        numObj, numVar = np.shape(model.modelSettings()['arrX'])
-        
-        for num in range(1, numVar+1):
-            label = 'Var {0}'.format(num)
-            varNames.append(label)
-    
-    # Generate a list with names of PC's used for PCA
-    obj, numPC = np.shape(model.X_scores())
-    pcNames = []
-    
-    for num in range(numPC+1):
-        label = 'PC{0}'.format(num)
-        pcNames.append(label)
-    
-    # Generate plot as requested by user
-    for item in plots:
-        print item        
-        
-        # SCORES PLOT        
-        if item == 1:
-            
-            # Access PCA scores and explained variances from model
-            Xscores = model.X_scores()
-            XexplVar = model.X_calExplVar()
-            
-            # Initiate plot
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-                        
-            # Find maximum and minimum scores along along PC's selected
-            # by the user
-            xMax = max(Xscores[:,pc[0]-1])
-            xMin = min(Xscores[:,pc[0]-1])
-            
-            yMax = max(Xscores[:,pc[1]-1])
-            yMin = min(Xscores[:,pc[1]-1])
-                        
-            # Compute sufficient distance of label text from scatter point
-            xSpace = (xMax / 100) * 5
-            ySpace = (yMax / 100) * 4
-                        
-            # Set limits for dashed lines representing the axes.
-            # x-axis
-            if abs(xMax) >= abs(xMin):
-                extraX = xMax * .4
-                limX = xMax * .3
-            
-            elif abs(xMax) < abs(xMin):
-                extraX = abs(xMin) * .4
-                limX = abs(xMin) * .3
-            
-            # y-axis
-            if abs(yMax) >= abs(yMin):
-                extraY = yMax * .4
-                limY = yMax * .3
-            
-            elif abs(yMax) < abs(yMin):
-                extraY = abs(yMin) * .4
-                limY = abs(yMin) * .3
-                        
-            # Loop through all coordinates (PC1,PC2) and names to plot scores.
-            for ind, name in enumerate(objNames):
-                
-                ax.scatter(Xscores[ind,pc[0]-1], Xscores[ind,pc[1]-1], s=10, \
-                        c='w', marker='o', edgecolor='grey')
-                ax.text(Xscores[ind,pc[0]-1] + xSpace, \
-                        Xscores[ind,pc[1]-1] + ySpace, name, fontsize=12)
-            
-            # Set limits for dashed lines representing axes
-            xMaxLine = xMax + extraX
-            xMinLine = xMin - extraX
-            
-            yMaxLine = yMax + extraY
-            yMinLine = yMin - extraY
-            
-            # Plot dashes axes lines
-            ax.plot([0,0], [yMaxLine,yMinLine], color='0.4', \
-                    linestyle='dashed', linewidth=1)
-            ax.plot([xMinLine,xMaxLine], [0,0], color='0.4', \
-                    linestyle='dashed', linewidth=1)
-                        
-            
-            # Set limits for plot regions.
-            xMaxLim = xMax + limX
-            xMinLim = xMin - limX
-            
-            yMaxLim = yMax + limY
-            yMinLim = yMin - limY
-            
-            ax.set_xlim(xMinLim,xMaxLim)
-            ax.set_ylim(yMaxLim,yMinLim)
-            
-            
-            # Plot title, axis names.             
-            ax.set_xlabel('{0} ({1}%)'.format(pcNames[pc[0]], \
-                    str(round(XexplVar[pc[0]-1],1))))
-            ax.set_ylabel('{0} ({1}%)'.format(pcNames[pc[1]], \
-                    str(round(XexplVar[pc[1]-1],1))))
-            
-            ax.set_title('PCA scores plot')
-            
-            plt.show()
-        
-        
-        # LOADINGS PLOT
-        if item == 2:
-            
-            # Access PCA scores and explained variances from model
-            Xloadings = model.X_loadings()
-            XexplVar = model.X_calExplVar()
-            
-            # Initiate plot
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-                        
-            # Find maximum and minimum scores along along PC's selected
-            # by the user
-            xMax = max(Xloadings[:,pc[0]-1])
-            xMin = min(Xloadings[:,pc[0]-1])
-            
-            yMax = max(Xloadings[:,pc[1]-1])
-            yMin = min(Xloadings[:,pc[1]-1])
-                        
-            # Compute sufficient distance of label text from scatter point
-            xSpace = (xMax / 100) * 5
-            ySpace = (yMax / 100) * 4
-                        
-            # Set limits for dashed lines representing the axes.
-            # x-axis
-            if abs(xMax) >= abs(xMin):
-                extraX = xMax * .4
-                limX = xMax * .3
-            
-            elif abs(xMax) < abs(xMin):
-                extraX = abs(xMin) * .4
-                limX = abs(xMin) * .3
-            
-            # y-axis
-            if abs(yMax) >= abs(yMin):
-                extraY = yMax * .4
-                limY = yMax * .3
-            
-            elif abs(yMax) < abs(yMin):
-                extraY = abs(yMin) * .4
-                limY = abs(yMin) * .3
-                        
-            # Loop through all coordinates (PC1,PC2) and names to plot scores.
-            for ind, name in enumerate(varNames):
-                
-                ax.scatter(Xloadings[ind,pc[0]-1], Xloadings[ind,pc[1]-1], \
-                        s=10, c='w', marker='o', edgecolor='grey')
-                ax.text(Xloadings[ind,pc[0]-1] + xSpace, \
-                        Xloadings[ind,pc[1]-1] + ySpace, name, fontsize=12)
-            
-            # Set limits for dashed lines representing axes
-            xMaxLine = xMax + extraX
-            xMinLine = xMin - extraX
-            
-            yMaxLine = yMax + extraY
-            yMinLine = yMin - extraY
-            
-            # Plot dashes axes lines
-            ax.plot([0,0], [yMaxLine,yMinLine], color='0.4', \
-                    linestyle='dashed', linewidth=1)
-            ax.plot([xMinLine,xMaxLine], [0,0], color='0.4', \
-                    linestyle='dashed', linewidth=1)
-                        
-            
-            # Set limits for plot regions.
-            xMaxLim = xMax + limX
-            xMinLim = xMin - limX
-            
-            yMaxLim = yMax + limY
-            yMinLim = yMin - limY
-            
-            ax.set_xlim(xMinLim,xMaxLim)
-            ax.set_ylim(yMinLim,yMaxLim)
-            
-            
-            # Plot title, axis names. 
-            ax.set_xlabel('{0} ({1}%)'.format(pcNames[pc[0]], \
-                    str(round(XexplVar[pc[0]-1],1))))
-            ax.set_ylabel('{0} ({1}%)'.format(pcNames[pc[1]], \
-                    str(round(XexplVar[pc[1]-1],1))))
-            
-            ax.set_title('PCA loadings plot')
-            
-            plt.show()
-        
-        
-        # CORRELATION LOADINGS PLOT
-        if item == 3:
-            
-            # Access PCA scores and explained variances from model
-            XcorrLoadings = model.X_corrLoadings()
-            XexplVar = model.X_calExplVar()
-            
-            # Compute coordinates for  circles in correlation loadings plot
-            t = np.arange(0.0, 2*np.pi, 0.01)
-            
-            # Coordinates for outer circle
-            xcords = np.cos(t)
-            ycords = np.sin(t)
-            
-            # Coordinates for inner circle
-            xcords50percent = 0.707 * np.cos(t)
-            ycords50percent = 0.707 * np.sin(t)
-            
-            # Initiate plot
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            
-            ax.plot(xcords, ycords, 'b-')
-            ax.plot(xcords50percent, ycords50percent, 'b-')
-            
-            #ax.scatter(pc1_CL, pc2_CL, s=10, c='r', marker='o', edgecolor='grey')
-            # Loop through all coordinates (PC1,PC2) and names to plot scores.
-            for ind, name in enumerate(varNames):
-                
-                ax.scatter(XcorrLoadings[ind,pc[0]-1], \
-                        XcorrLoadings[ind,pc[1]-1], \
-                        s=10, c='w', marker='o', edgecolor='grey')
-                ax.text(XcorrLoadings[ind,pc[0]-1] + xSpace, \
-                        XcorrLoadings[ind,pc[1]-1] + ySpace, name, fontsize=12)
-            
-            # Plot lines through origo.
-            left = -1.3; right = 1.3; top = 1.3; bottom = -1.3
-            ax.plot([0,0], [top,bottom], color='0.4', linestyle='dashed', \
-                    linewidth=1)
-            ax.plot([left,right], [0,0], color='0.4', linestyle='dashed', \
-                    linewidth=1)
-            
-            # Plot title, axis names. 
-            ax.set_xlabel('{0} ({1}%)'.format(pcNames[pc[0]], \
-                    str(round(XexplVar[pc[0]-1],1))))
-            ax.set_ylabel('{0} ({1}%)'.format(pcNames[pc[1]], \
-                    str(round(XexplVar[pc[1]-1],1))))
-            
-            ax.set_title('PCA correlation loadings plot')
-            
-            ax.set_xlim(-1.4,1.4)
-            ax.set_ylim(-1.1,1.1)
-            
-            plt.show()
-            
-        
-        # Explained variances plot        
-        if item == 4:
-            
-            # Access PCA scores and explained variances from model
-            cal = model.X_cumCalExplVar()
-            val = model.X_cumValExplVar()
-            
-            # Plot explained variances
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            
-            left = -0.2; right = len(pcNames) - 0.5; top = 105; bottom = -5
-            xPos = range(len(pcNames))
-            ax.plot(xPos, cal, color='0.4', linestyle='solid', linewidth=1, \
-                label='calibrated explained variance')
-            ax.plot(xPos, val, color='0.4', linestyle='dashed', linewidth=1, \
-                label='validated explained variance')
-            
-            ax.set_xticks(xPos)
-            
-            ax.set_xticklabels((pcNames), rotation=0, ha='center')
-            ax.set_ylabel('Explained variance')
-            
-            plt.legend(loc='lower right', shadow=True, labelspacing=.1)
-            ltext = plt.gca().get_legend().get_texts()
-            plt.setp(ltext[0], fontsize = 10, color = 'k')
-            
-            ax.set_xlim(left,right)
-            ax.set_ylim(bottom,top)
-            
-            plt.show()
-    

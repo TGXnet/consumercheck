@@ -1,14 +1,11 @@
-"""
-Utilities for cross validation.
+""" Utilities for cross validation.
 
 taken from scikits.learn
 
 # Author: Alexandre Gramfort <alexandre.gramfort@inria.fr>,
 #         Gael Varoquaux    <gael.varoquaux@normalesup.org>
 # License: BSD Style.
-# $Id$
- 
- 
+
 """
 
 
@@ -70,7 +67,7 @@ class LeaveOneOut(object):
 
     def __iter__(self):
         n = self.n
-        for i in xrange(n):
+        for i in range(n):
             test_index  = np.zeros(n, dtype=np.bool)
             test_index[i] = True
             train_index = np.logical_not(test_index)
@@ -189,9 +186,9 @@ class KFold(object):
     def __iter__(self):
         n = self.n
         k = self.k
-        j = np.ceil(n/k)
+        j = np.int(np.ceil(n/k))
 
-        for i in xrange(k):
+        for i in range(k):
             test_index  = np.zeros(n, dtype=np.bool)
             if i<k-1:
                 test_index[i*j:(i+1)*j] = True
