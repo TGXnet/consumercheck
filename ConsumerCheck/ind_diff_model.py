@@ -119,11 +119,10 @@ class IndDiff(pb.Model):
 
 
     def _get_pca_L(self):
-        # if self._L_have_zero_std_var():
-        #     raise InComputeable(
-        #         'Matrix have variables with zero variance', self.L_zero_std)
-        # cpca = pca.nipalsPCA(self.ds_L.values, numPC=3, Xstand=False, cvType=["loo"])
-        cpca = pca.nipalsPCA(self.ds_L.values, numPC=3, Xstand=False, cvType=None)
+        if self._L_have_zero_std_var():
+            raise InComputeable(
+                'Matrix have variables with zero variance', self.L_zero_std)
+        cpca = pca.nipalsPCA(self.ds_L.values, numPC=3, Xstand=False, cvType=["loo"])
         return ra.adapt_oto_pca(cpca, self.ds_L, self.ds_L.display_name)
 
 
