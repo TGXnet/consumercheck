@@ -27,8 +27,8 @@ import pandas as _pd
 import traits.api as _traits
 
 # Local imports
-import pca
-from plsr import nipalsPLS2 as PLSR
+from hoggorm import nipalsPCA as PCA
+from hoggorm import nipalsPLS2 as PLSR
 import dummify as df
 import dataset as ds
 import plugin_base as pb
@@ -122,7 +122,7 @@ class IndDiff(pb.Model):
         if self._L_have_zero_std_var():
             raise InComputeable(
                 'Matrix have variables with zero variance', self.L_zero_std)
-        cpca = pca.nipalsPCA(self.ds_L.values, numPC=3, Xstand=False, cvType=["loo"])
+        cpca = PCA(self.ds_L.values, numComp=3, Xstand=False, cvType=["loo"])
         return ra.adapt_oto_pca(cpca, self.ds_L, self.ds_L.display_name)
 
 
@@ -145,7 +145,7 @@ class IndDiff(pb.Model):
         n_pc = 2
         dsx = self.ds_X
         dsy = self.ds_Y
-        plsr = PLSR(dsx.values, dsy.values, numpPC=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
+        plsr = PLSR(dsx.values, dsy.values, numComp=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
         title = 'PLSR({0} ~ {1})'.format(dsx.display_name, dsy.display_name)
         return ra.adapt_oto_plsr(plsr, dsx, dsy, title)
 
@@ -155,7 +155,7 @@ class IndDiff(pb.Model):
         dsx = self.ds_X
         dsy = self.pca_L.loadings
         dsy.mat = dsy.mat.iloc[:,pc_sel]
-        plsr = PLSR(dsx.values, dsy.values, numpPC=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
+        plsr = PLSR(dsx.values, dsy.values, numComp=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
         title = 'PLSR({0} ~ {1})'.format(dsx.display_name, dsy.display_name)
         return ra.adapt_oto_plsr(plsr, dsx, dsy, title)
 
@@ -178,7 +178,7 @@ class IndDiff(pb.Model):
         dsy = dsy.copy(transpose=True)
 
         n_pc = 2
-        plsr = PLSR(dsx.values, dsy.values, numpPC=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
+        plsr = PLSR(dsx.values, dsy.values, numComp=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
         title = 'PLSR-DA({0} ~ {1})'.format(dsx.display_name, dsy.display_name)
         return ra.adapt_oto_plsr(plsr, dsx, dsy, title)
 

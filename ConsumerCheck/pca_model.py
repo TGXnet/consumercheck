@@ -27,7 +27,7 @@ import pandas as _pd
 import traits.api as _traits
 
 # Local imports
-from pca import nipalsPCA as PCA
+from hoggorm import nipalsPCA as PCA
 from dataset import DataSet
 from dataset_container import DatasetContainer
 from plugin_base import Model, Result
@@ -68,7 +68,7 @@ class Pca(Model):
             raise InComputeable('Matrix have variables with zero variance',
                                 self.zero_variance)
         pca = PCA(self.ds.values,
-                  numPC=self.settings.calc_n_pc, Xstand=std_ds, cvType=["loo"])
+                  numComp=self.settings.calc_n_pc, Xstand=std_ds, cvType=["loo"])
 
         return self._pack_res(pca)
 

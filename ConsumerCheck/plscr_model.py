@@ -27,8 +27,8 @@ import pandas as _pd
 import traits.api as _traits
 
 # Local imports
-from plsr import nipalsPLS2 as PLSR
-from pcr import nipalsPCR as PCR
+from hoggorm import nipalsPLS2 as PLSR
+from hoggorm import nipalsPCR as PCR
 from dataset import DataSet
 from plugin_base import Model, Result
 
@@ -68,12 +68,12 @@ class PlsrPcr(Model):
         n_pc = min(self.settings.calc_n_pc, self._get_max_pc())
         if self.settings.plscr_method == 'PLSR':
             pls = PLSR(self.ds_X.values, self.ds_Y.values,
-                       numPC=n_pc, cvType=["loo"],
+                       numComp=n_pc, cvType=["loo"],
                        Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
             return self._pack_res(pls)
         elif self.settings.plscr_method == 'PCR':
             pcr = PCR(self.ds_X.values, self.ds_Y.values,
-                      numPC=n_pc, cvType=["loo"],
+                      numComp=n_pc, cvType=["loo"],
                       Xstand=self.settings.standardise_x, Ystand=self.settings.standardise_y)
             return self._pack_res(pcr)
 
