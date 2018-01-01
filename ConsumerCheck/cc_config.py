@@ -23,7 +23,7 @@ import os
 import codecs
 import sys as _sys
 import os.path as _op
-import configparser as _CP
+from backports import configparser
 
 
 # __all__ = []
@@ -39,7 +39,7 @@ options_map = {
 }
 
 
-class CCConf(_CP.ConfigParser):
+class CCConf(configparser.ConfigParser):
 
     def __init__(self, defaults):
         super(CCConf, self).__init__(defaults)
@@ -48,21 +48,21 @@ class CCConf(_CP.ConfigParser):
             fp = codecs.open(self.cfg_file_name, 'r', 'utf-8')
             self.read_file(fp)
             fp.close()
-        except (IOError, _CP.ParsingError):
+        except (IOError, configparser.ParsingError):
             self._init_conf_file()
 
 
     def get(self, section, option, **kwargs):
         try:
             return super(CCConf, self).get(section, option, **kwargs)
-        except _CP.NoSectionError:
+        except configparser.NoSectionError:
             return super(CCConf, self).get('DEFAULT', option, **kwargs)
 
 
     def set_and_write(self, section, option, value):
         try:
             super(CCConf, self).set(section, option, value)
-        except _CP.NoSectionError:
+        except configparser.NoSectionError:
             self.add_section(section)
             super(CCConf, self).set(section, option, value)
         with codecs.open(self.cfg_file_name, 'w', 'utf-8') as fp:
@@ -130,7 +130,7 @@ def get_option(option):
         section  = options_map[option][0]
         return _conf.get(section, option)
     except KeyError:
-        raise _CP.NoOptionError(option, section)
+        raise configparser.NoOptionError(option, section)
 
 
 def set_option(option, value):
