@@ -23,7 +23,6 @@
 import sys
 import logging
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
-import __builtin__
 import os.path as op
 import string
 from threading import Thread
@@ -35,6 +34,7 @@ import numpy as np
 import pandas as _pd
 
 # Local imports
+import __init__
 from dataset import DataSet
 from plugin_base import Result
 
@@ -56,20 +56,7 @@ def CCPandasDataFrameStr(obj):
 class ConjointMachine(object):
 
     def __init__(self, run_state=None, start_r=True):
-        # Set root folder for R
-        # When this is bbfreeze'ed this file is packed into the
-        # library.zip file
-        # self.r_origo = op.dirname(op.dirname(op.abspath(__file__)))
-        # cc_base_dir from __builtin__ set in consumercheck
-        if getattr(sys, 'frozen', False):
-            # This is taken from http://pythonhosted.org/PyInstaller/
-            # we are running in a bundle
-            self.r_origo = sys._MEIPASS
-        elif hasattr(__builtin__, "cc_base_dir"):
-            self.r_origo = __builtin__.cc_base_dir
-        else:
-            # we are running in a normal Python environment
-            self.r_origo = op.dirname(op.abspath(__file__))
+        self.r_origo = __init__.__dir__
 
         if run_state:
             self.run_state = run_state

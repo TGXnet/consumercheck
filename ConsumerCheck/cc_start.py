@@ -23,7 +23,6 @@
 import logging
 import os.path as op
 import numpy as np
-import __builtin__
 import sys
 
 # Enthought imports
@@ -74,10 +73,6 @@ cc_logger.info('Starting ConsumerCheck')
 # Do nothing and forward exception to excepthook handler
 #push_exception_handler(handler=lambda o,t,ov,nv: None,
 #                       reraise_exceptions=True)
-
-
-# FIXME: Global var hack
-__builtin__.cc_base_dir = op.dirname(op.abspath(__file__))
 
 
 def main():

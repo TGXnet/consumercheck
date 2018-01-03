@@ -20,6 +20,7 @@
 #-----------------------------------------------------------------------------
 
 # Std lib imports
+import os
 import codecs
 
 # ETS imports
@@ -33,7 +34,7 @@ import __init__
 
 def about_html():
     ver = __init__.__version__
-    with codecs.open('about.tmpl', encoding='utf-8') as fh:
+    with codecs.open(os.path.join(__init__.__dir__, 'about.tmpl'), encoding='utf-8') as fh:
         uabout_tmpl = fh.read()
     return uabout_tmpl.format(ver)
 
