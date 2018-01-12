@@ -126,6 +126,10 @@ class IndDiffController(pb.ModelController):
         return segments
 
 
+    def _refresh_apriori_segments(self):
+        self.apriori_segments = self._apriori_segments_default()
+
+
     def _show_zero_var_warning(self):
         dlg = dlgs.ErrorMessage()
         dlg.err_msg = 'Removed zero variance variables'
@@ -479,6 +483,7 @@ class IndDiffPluginController(pb.PluginController):
 
         calc.model.id = ds_l.id + id_a
         calc.model.ds_A = ds_a
+        calc._refresh_apriori_segments()
 
         self.model.calculator.consumer_variables = calc.model.ds_A.var_n
 
