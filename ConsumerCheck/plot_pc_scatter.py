@@ -730,6 +730,10 @@ class CLSectorPlot(CLPlot, SectorMixin):
     pass
 
 
+class IndDiffCLSectorPlot(IndDiffCLPlot, SectorMixin):
+    pass
+
+
 class PCBaseControl(NoPlotControl):
     eq_axis = Bool(False)
     # vis_toggle = Button('Visibility')

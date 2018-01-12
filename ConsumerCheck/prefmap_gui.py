@@ -30,7 +30,7 @@ import traitsui.api as _traitsui
 from dataset import DataSet
 from prefmap_model import Prefmap, InComputeable
 from plot_ev_line import IndDiffEVLinePlot
-from plot_pc_scatter import (PCScatterPlot, IndDiffScatterPlot, IndDiffCLPlot,
+from plot_pc_scatter import (PCScatterPlot, IndDiffScatterPlot, IndDiffCLSectorPlot,
                              ScatterSectorPlot, PCSectorPlotControl,
                              CLSectorPlot, CLSectorPlotControl)
 from dialogs import ErrorMessage
@@ -169,7 +169,7 @@ class PrefmapController(ModelController):
           + DataSet type
         """
         res = self.get_result()
-        if isinstance(viewable, CLSectorPlot):
+        if isinstance(viewable, (CLSectorPlot, IndDiffCLSectorPlot)):
             plot_control = CLSectorPlotControl(viewable)
             win = SinglePlotWindow(
                 plot=plot_control,
@@ -238,7 +238,7 @@ def corr_loadings_plot(res):
     clx = res.corr_loadings_x
     cly = res.corr_loadings_y
     if res.prefmap_methods == 'PLSR':
-        plot = IndDiffCLPlot(
+        plot = IndDiffCLSectorPlot(
             clx, res.expl_var_x,
             cly, res.expl_var_y,
             em=False,
