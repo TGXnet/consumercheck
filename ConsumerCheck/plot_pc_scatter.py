@@ -28,7 +28,7 @@ from os.path import join as pjoin
 import numpy as np
 
 # Enthought library imports
-from chaco.api import ArrayPlotData, DataLabel, PlotGrid, PlotGraphicsContext
+from chaco.api import ArrayPlotData, DataLabel, Legend, PlotGrid, PlotGraphicsContext
 from chaco.tools.api import ZoomTool, PanTool
 from traits.api import (Bool, Button, Int, Instance, List, Long, HasTraits, implements,
                         Property, Range, Str, Unicode, WeakRef, on_trait_change)
@@ -379,6 +379,7 @@ class PCScatterPlot(PlotBase):
                    'cross']
 
         pdata = self.data.plot_data[set_id-1]
+        plots = {}
         if self.data.plot_group:
             # FIXME: To be replace by next elif clause
             group = self.data.plot_group
@@ -399,7 +400,9 @@ class PCScatterPlot(PlotBase):
                 labels = ss.row_selector
                 color = ss.gr_style.fg_color
                 self._add_plot_data_labels(rl[0], pd, labels, color)
-            pass
+                plots[ss.name] = rl[0]
+            legend = Legend(component=self, plots=plots, padding=10, align="ur")
+            self.overlays.append(legend)
         elif self.data.coloring_factor is not None:
             facname = self.data.coloring_factor.name
             for lvn, lv in self.data.coloring_factor.levels.iteritems():

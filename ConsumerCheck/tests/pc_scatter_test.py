@@ -5,7 +5,7 @@ import pudb; pu.db
 '''
 import pytest
 
-#Stdlib imports
+# Stdlib imports
 import os
 
 # Scipy imports
@@ -16,6 +16,7 @@ import pandas as pd
 import dataset as mx
 from plot_windows import SinglePlotWindow
 from importer_text_file import ImporterTextFile
+from utilities import from_palette
 
 # Test subject
 import plot_pc_scatter as pps
@@ -168,6 +169,41 @@ def test_color_factor():
     plot = pps.SelectionScatterPlot(irds)
     # plot = pps.SelectionScatterPlot(irds, factor=factor)
     plot.data.coloring_factor = factor
+    plot_control = pps.PCPlotControl(plot)
+    pw = SinglePlotWindow(plot=plot_control)
+
+    with np.errstate(invalid='ignore'):
+        pw.configure_traits()
+
+
+
+
+def test_color_legend():
+    # from pudb import set_trace; set_trace(paused=True)
+
+    np.random.seed(10)
+    gobli = (np.random.random((30, 4)) - 0.5) * 2
+    pda = pd.DataFrame(gobli)
+    pda.columns = ["V{0}".format(i+1) for i in range(pda.shape[1])]
+    pda.index = ["O{0}".format(i+1) for i in range(pda.shape[0])]
+
+    irds = mx.DataSet(mat=pda)
+    # Subset for index
+    ss1 = mx.SubSet(id='1', name='set1', row_selector=["O{0}".format(i+1) for i in range(10)])
+    ss1.gr_style = mx.VisualStyle(fg_color=from_palette())
+    ss2 = mx.SubSet(id='2', name='set2', row_selector=["O{0}".format(i+10) for i in range(10)])
+    ss2.gr_style = mx.VisualStyle(fg_color=from_palette())
+    ss3 = mx.SubSet(id='3', name='set3', row_selector=["O{0}".format(i+20) for i in range(11)])
+    ss3.gr_style = mx.VisualStyle(fg_color=from_palette())
+    sl = [ss1, ss2, ss3]
+    subs = {'GrEn': sl}
+
+    # factor = mx.Factor('TestColorFactor', irds.mat.shape[0])
+
+    irds.subs = subs
+    plot = pps.PCScatterPlot(irds, title='Test color plot')
+    plot.color_subsets_group('GrEn')
+
     plot_control = pps.PCPlotControl(plot)
     pw = SinglePlotWindow(plot=plot_control)
 
