@@ -154,7 +154,7 @@ class IndDiffController(pb.ModelController):
 
     def pca_color_loadings_plot(self, res, group):
         res.loadings.subs = self.model.ds_A.subs
-        plot = pps.SelectionScatterPlot(res.loadings, title='Liking scores')
+        plot = pps.PCScatterPlot(res.loadings, res.expl_var, title='Liking scores')
         plot.color_subsets_group(group)
         return plot
 
