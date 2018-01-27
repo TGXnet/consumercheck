@@ -30,7 +30,7 @@ import traitsui.api as _traitsui
 # Local imports
 from dataset import DataSet
 from plugin_base import Model
-from conjoint_machine import ConjointMachine
+from conjoint_machine import ConjointMachine, RNotFoundException
 
 
 class ConjointCalcState(_traits.HasTraits):
@@ -76,10 +76,20 @@ class Conjoint(Model):
 
     # Conjoint calculation state
     ccs = _traits.Instance(ConjointCalcState, ())
-    cm = _traits.Instance(ConjointMachine, ())
+    cm = _traits.Instance(ConjointMachine)
 
     # depends_on
     res = _traits.Property(depends_on='design_vars, consumers_vars, model_struct')
+
+
+    def _cm_default(self):
+        try:
+            return ConjointMachine()
+        except RNotFoundException:
+            self.ccs.messages = (
+                "Was not able to find and start R.\n"
+                "You have to check the installation of R")
+            self.ccs.edit_traits(kind='livemodal')
 
 
     @_traits.on_trait_change('owner_ref.model_struct')
