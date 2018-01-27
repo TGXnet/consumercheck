@@ -39,20 +39,6 @@ from dataset import DataSet
 from plugin_base import Result
 
 
-# Monkey patch PypeR to allow numeric axis names
-# FIXME: I should instead file a bugfix for PypeR
-def CCPandasDataFrameStr(obj):
-        # DataFrame will be converted to data.frame, have to explicitly name columns
-        # return 'data.frame(%s, row.names=%s)' % (', '.join(map(lambda a,b=obj:a+'='+getVec(obj[a]), obj)), getVec(obj.index))
-        cp = ["'{0}'={1}".format(p, getVec(q)) for p, q in obj.iteritems()]
-        cols = ', '.join(cp)
-        return 'data.frame({0}, row.names={1}, check.names=FALSE)'.format(cols, getVec(obj.index))
-
-# FIXM: Do i realy need to do this
-# Think is was to allow numeric column and index names
-# pyper.PandasDataFrameStr = CCPandasDataFrameStr
-
-
 class ConjointMachine(object):
 
     def __init__(self, run_state=None, start_r=True):
