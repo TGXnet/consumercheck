@@ -20,11 +20,13 @@
 # -----------------------------------------------------------------------------
 
 # Std lib imports
+import os
 import sys
+import string
 import logging
+import subprocess as sp
 logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import os.path as op
-import string
 from threading import Thread
 from itertools import combinations
 
@@ -37,6 +39,10 @@ import pandas as _pd
 import __init__
 from dataset import DataSet
 from plugin_base import Result
+
+
+class RNotFoundException(Exception):
+    pass
 
 
 class ConjointMachine(object):
@@ -56,34 +62,61 @@ class ConjointMachine(object):
 
 
     def _start_r_interpreter(self):
-        Rwbin = op.join(self.r_origo, 'R-3.3.1', 'bin', 'R.exe')
-        Rubin = op.join(self.r_origo, 'R-3.3.1', 'bin', 'R')
-        Rxbin = '/usr/local/bin/R'
-        Rlib = op.join(self.r_origo, 'R-3.3.1', 'library')
-        logger.info("Try Windows R path: {0}".format(Rwbin))
-        logger.info("Try Mac OSX R path: {0}".format(Rubin))
-        if op.exists(Rwbin):
-            logger.info("R.exe found")
-            self.r = pyper.R(RCMD=Rwbin, use_pandas=True)
-            self.r('.libPaths("{0}")'.format(Rlib))
-        elif op.exists(Rxbin):
-            logger.info("OSX R found")
-            self.r = pyper.R(RCMD=Rxbin, use_pandas=True)
-            # self.r('.libPaths("{0}")'.format(Rlib))
-        elif op.exists(Rubin):
-            logger.info("R found")
-            self.r = pyper.R(RCMD=Rubin, use_pandas=True)
-            self.r('.libPaths("{0}")'.format(Rlib))
+        '''Find and start a R intepreter
+
+        On windows systems use the packaged R env.
+        On Posix systems use the system installed R env.
+        Will raise RNotFoundException
+        '''
+        if sys.platform.startswith('win32'):
+            '''A MS Windows kind of system'''
+            logger.info("Running on a MS Windows system")
+            Rwbin = op.join(self.r_origo, 'R-3.3.1', 'bin', 'R.exe')
+            Rlib = op.join(self.r_origo, 'R-3.3.1', 'library')
+            logger.info("Try Windows R path: {0}".format(Rwbin))
+            if op.exists(Rwbin):
+                logger.info("R.exe found")
+                self.r = pyper.R(RCMD=Rwbin, use_pandas=True)
+                self.r('.libPaths("{0}")'.format(Rlib))
+            else:
+                '''Try to run R from system path
+                Give message if R is not found
+                '''
+                raise RNotFoundException()
         else:
-            Rbin = 'R'
-            logger.info("R.exe not found, so we are depending on system wide R installation")
-            self.r = pyper.R(RCMD=Rbin, use_pandas=True)
+            '''Not Windows, assumed to be a POSIX system
+
+            OS X Darwin or a Linux flavor
+            '''
+            logger.info("Assumed to run on a POSIX system")
+            Rxbin = self._find_posix_system_R()
+            logger.info("System R found at path: {0}".format(Rxbin))
+            self.r = pyper.R(RCMD=Rxbin, use_pandas=True)
+
+
+    def _find_posix_system_R(self):
+        '''First try to find R in system search path
+
+        If not found it will try a set of known locations for R
+        '''
+        try_paths = [
+            '/Library/Frameworks/R.framework/Resources/bin/R',
+            '/Library/Frameworks/tull/R',
+        ]
+        try:
+            path = sp.check_output(['which', 'R'])
+            return path.strip()
+        except sp.CalledProcessError:
+            for tp in try_paths:
+                if os.path.isfile(tp):
+                    return tp
+            raise RNotFoundException()
 
 
     def _load_conjoint_resources(self):
-        self.r('library(SensMixed)')
         # Diagnostic to loggin system
         r_env = 'R environment\n'
+        r_env += self.r('library(SensMixed)')
         r_env += self.r('sessionInfo()')
         r_env += self.r('getwd()')
         r_env += self.r('.libPaths()')
