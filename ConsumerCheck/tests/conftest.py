@@ -281,7 +281,7 @@ def conjoint_dsc():
     dsc = DatasetContainer()
 
     for mi in CONJOINT:
-        dsc.add(imp_ds(mi))
+        dsc.add(imp_ds(*mi))
 
     return dsc
 
