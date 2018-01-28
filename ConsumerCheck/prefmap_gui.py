@@ -241,7 +241,7 @@ def corr_loadings_plot(res):
         plot = IndDiffCLSectorPlot(
             clx, res.expl_var_x,
             cly, res.expl_var_y,
-            em=False,
+            em=res.external_mapping,
             title='X&Y correlation loadings')
     else:
         plot = CLSectorPlot(clx, res.expl_var_x,
