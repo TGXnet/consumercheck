@@ -244,10 +244,11 @@ def corr_loadings_plot(res):
             em=res.external_mapping,
             title='X&Y correlation loadings')
     else:
-        plot = CLSectorPlot(clx, res.expl_var_x,
-                            cly, res.expl_var_y,
-                            res.external_mapping,
-                            title='X&Y correlation loadings')
+        plot = CLSectorPlot(
+            clx, res.expl_var_x,
+            cly, res.expl_var_y,
+            res.external_mapping,
+            title='X&Y correlation loadings')
     return plot
 
 

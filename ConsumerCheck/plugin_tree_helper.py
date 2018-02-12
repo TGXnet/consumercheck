@@ -33,7 +33,7 @@ import chaco.api as _chaco
 from plot_base import NoPlotControl
 from plot_pc_scatter import (PCScatterPlot, PCPlotControl,
                              ScatterSectorPlot, PCSectorPlotControl,
-                             CLPlot, CLPlotControl,
+                             CLPlot, CLPlotControl, IndDiffCLSectorPlot,
                              CLSectorPlot, CLSectorPlotControl)
 from plot_histogram import StackedHistPlot, StackedPlotControl
 from plot_conjoint import InteractionPlot, InteractionPlotControl
@@ -96,7 +96,7 @@ class ViewNavigator(_traits.HasTraits):
             plot_control = StackedPlotControl(viewable)
         elif isinstance(viewable, InteractionPlot):
             plot_control = InteractionPlotControl(viewable)
-        elif isinstance(viewable, CLSectorPlot):
+        elif isinstance(viewable, (CLSectorPlot, IndDiffCLSectorPlot)):
             plot_control = CLSectorPlotControl(viewable)
         elif isinstance(viewable, CLPlot):
             plot_control = CLPlotControl(viewable)

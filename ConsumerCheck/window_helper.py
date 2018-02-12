@@ -24,7 +24,7 @@ from plot_base import NoPlotControl
 from plot_windows import SinglePlotWindow
 from plot_pc_scatter import (PCScatterPlot, PCPlotControl,
                              ScatterSectorPlot, PCSectorPlotControl,
-                             CLPlot, CLPlotControl,
+                             CLPlot, CLPlotControl, IndDiffCLSectorPlot,
                              CLSectorPlot, CLSectorPlotControl)
 
 
@@ -41,7 +41,7 @@ def plot_win_creator_closure(plot_func, res, view_loop, title, parent_win):
     def plot_window_creator():
         plot = plot_func(res)
 
-        if isinstance(plot, CLSectorPlot):
+        if isinstance(plot, (CLSectorPlot, IndDiffCLSectorPlot)):
             plot_control = CLSectorPlotControl(plot)
             win = SinglePlotWindow(
                 plot=plot_control,
