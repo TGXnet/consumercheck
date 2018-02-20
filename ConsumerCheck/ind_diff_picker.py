@@ -80,13 +80,14 @@ if __name__ == '__main__':
     print("Test start")
 
     def liking_print():
-        print(comb.sel_like)
+        comb.sel_attr = [0]
+        print("Liking:", comb.sel_like)
 
     def attr_print():
-        print(comb.sel_attr)
+        print("Attr:", comb.sel_attr)
 
-    like = [(1, 'Alfa'), (2, 'Bravo'), (3, 'Charlie')]
-    attr = [(1, 'One'), (2, 'Two'), (3, 'Three')]
+    like = [(0, ''), (1, 'Alfa'), (2, 'Bravo'), (3, 'Charlie')]
+    attr = [(0, ''), (1, 'One'), (2, 'Two'), (3, 'Three')]
     comb = IndDiffPicker(
         like_set=like,
         attr_set=attr)

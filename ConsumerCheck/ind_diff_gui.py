@@ -120,8 +120,14 @@ class IndDiffController(pb.ModelController):
 
     def _apriori_segments_default(self):
         attrs = self.model.ds_X
-        segments = []
-        for sub in attrs.get_subset_groups():
+        ssg = attrs.get_subset_groups()
+        if len(ssg) < 1:
+            cte = ColorTE(name='', calcc=self)
+            cte.plots_act = []
+            segments = [cte]
+        else:
+            segments = []
+        for sub in ssg:
             segments.append(ColorTE(name=sub, calcc=self))
         return segments
 
@@ -439,6 +445,7 @@ class IndDiffPluginController(pb.PluginController):
     def _handle_like_sel(self, obj, name, old, new):
         self.model.calculations = []
         selection = self.comb.sel_like[0]
+        self.comb.sel_attr = ['']
         self._make_pca_calc(selection)
 
 
@@ -461,7 +468,8 @@ class IndDiffPluginController(pb.PluginController):
     @_traits.on_trait_change('comb:consumer_attributes_updated', post_init=False)
     def _handle_attr_sel(self, obj, name, old, new):
         selection = self.comb.sel_attr[0]
-        self._update_pls_calc(selection)
+        if len(selection) > 0:
+            self._update_pls_calc(selection)
 
 
     def _update_pls_calc(self, id_a):
