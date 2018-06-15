@@ -1,5 +1,5 @@
 
-from traits.api import HasTraits, Int, List, Event, on_trait_change, Tuple, Button
+from traits.api import HasTraits, Int, List, Event, Bool, on_trait_change, Tuple, Button
 from traitsui.api import View, Item, CheckListEditor, Group, Label
 
 
@@ -32,6 +32,8 @@ class IndDiffPicker(HasTraits):
     attr_set = List(Tuple())
     sel_like = List()
     sel_attr = List()
+    standardise_x = Bool()
+    standardise_x_updated = Event()
     consumer_liking_updated = Event()
     consumer_attributes_updated = Event()
 
@@ -44,6 +46,11 @@ class IndDiffPicker(HasTraits):
     @on_trait_change('sel_attr')
     def _attr_selection(self, obj, name, old, new):
         self.consumer_attributes_updated = True
+
+
+    @on_trait_change('standardise_x')
+    def _stdx_selection(self, obj, name, old, new):
+        self.standardise_x_updated = True
 
 
     traits_view = View(
@@ -65,6 +72,7 @@ class IndDiffPicker(HasTraits):
             ),
             orientation='horizontal',
         ),
+        Item('standardise_x', label='Standardise consumer characteristics', style='custom', enabled_when='sel_like', show_label=True),
         resizable=True,
     )
 

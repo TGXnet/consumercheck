@@ -63,6 +63,9 @@ class IndDiff(pb.Model):
     # responses
     ds_Y = _traits.Property()
 
+    # Standardise
+    standardise_x = _traits.Bool()
+
     # Calculated PCA for the response variable
     pca_L = _traits.Property()
 
@@ -145,7 +148,7 @@ class IndDiff(pb.Model):
         n_pc = 2
         dsx = self.ds_X
         dsy = self.ds_Y
-        plsr = PLSR(dsx.values, dsy.values, numComp=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
+        plsr = PLSR(dsx.values, dsy.values, numComp=n_pc, cvType=["loo"], Xstand=self.standardise_x, Ystand=False)
         title = 'PLSR({0} ~ {1})'.format(dsx.display_name, dsy.display_name)
         return ra.adapt_oto_plsr(plsr, dsx, dsy, title)
 
@@ -155,7 +158,7 @@ class IndDiff(pb.Model):
         dsx = self.ds_X
         dsy = self.pca_L.loadings
         dsy.mat = dsy.mat.iloc[:,pc_sel]
-        plsr = PLSR(dsx.values, dsy.values, numComp=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
+        plsr = PLSR(dsx.values, dsy.values, numComp=n_pc, cvType=["loo"], Xstand=self.standardise_x, Ystand=False)
         title = 'PLSR({0} ~ {1})'.format(dsx.display_name, dsy.display_name)
         return ra.adapt_oto_plsr(plsr, dsx, dsy, title)
 
@@ -178,7 +181,7 @@ class IndDiff(pb.Model):
         dsy = dsy.copy(transpose=True)
 
         n_pc = 2
-        plsr = PLSR(dsx.values, dsy.values, numComp=n_pc, cvType=["loo"], Xstand=False, Ystand=False)
+        plsr = PLSR(dsx.values, dsy.values, numComp=n_pc, cvType=["loo"], Xstand=self.standardise_x, Ystand=False)
         title = 'PLSR-DA({0} ~ {1})'.format(dsx.display_name, dsy.display_name)
         return ra.adapt_oto_plsr(plsr, dsx, dsy, title)
 

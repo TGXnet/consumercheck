@@ -496,6 +496,12 @@ class IndDiffPluginController(pb.PluginController):
         self.model.calculator.consumer_variables = calc.model.ds_A.var_n
 
 
+    @_traits.on_trait_change('comb:standardise_x_updated', post_init=False)
+    def _handle_stdx_change(self, obj, name, old, new):
+        calc = self.model.calculations[0]
+        calc.model.standardise_x = self.comb.standardise_x
+
+
     def _show_missing_warning(self):
         dlg = dlgs.ErrorMessage()
         dlg.err_msg = 'This matrix has missing values'
