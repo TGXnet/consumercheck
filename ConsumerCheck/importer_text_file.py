@@ -28,11 +28,11 @@ import numpy as _np
 import pandas as _pd
 
 # Enthought imports
-from traits.api import Event, Str, Unicode, Int, List, Enum
-from traitsui.api import View, Group, Item, TabularEditor, EnumEditor, Handler
+import traits.api as _tr
+import traitsui.api as _tui
 from traitsui.menu import OKButton, CancelButton
 from traitsui.tabular_adapter import TabularAdapter
-from traits.api import implements
+
 
 # Local imports
 from dataset import DataSet, SubSet, VisualStyle
@@ -43,7 +43,7 @@ from utilities import from_palette
 
 
 class RawLineAdapter(TabularAdapter):
-    ncols = Int()
+    ncols = _tr.Int()
     # Temporary column to avoid crash
     columns = ['tmp']
     width = 70
@@ -53,8 +53,8 @@ class RawLineAdapter(TabularAdapter):
         self.columns = [("col{}".format(i), i) for i in range(self.ncols)]
 
 
-class PreviewTableEditor(TabularEditor):
-    update_cells = Event()
+class PreviewTableEditor(_tui.TabularEditor):
+    update_cells = _tr.Event()
 
 
 preview_table = PreviewTableEditor(
@@ -66,10 +66,10 @@ preview_table = PreviewTableEditor(
 )
 
 
-class FilePreviewer(Handler):
-    _raw_lines = List(Str)
-    _unicode_lines = List(Unicode)
-    _parsed_data = List()
+class FilePreviewer(_tui.Handler):
+    _raw_lines = _tr.List(_tr.Str)
+    _unicode_lines = _tr.List(_tr.Unicode)
+    _parsed_data = _tr.List()
 
 
     def init(self, info):
@@ -132,11 +132,11 @@ preview_handler = FilePreviewer()
 
 
 class ImporterTextFile(ImporterFileBase):
-    implements(IDataImporter)
+    _tr.implements(IDataImporter)
 
-    delimiter = Enum('\t', ',', ' ', ';')
-    decimal_mark = Enum('period', 'comma')
-    char_encoding = Str('utf_8')
+    delimiter = _tr.Enum('\t', ',', ' ', ';')
+    decimal_mark = _tr.Enum('period', 'comma')
+    char_encoding = _tr.Str('utf_8')
 
 
     def import_data(self):
@@ -223,29 +223,29 @@ class ImporterTextFile(ImporterFileBase):
         return ds
 
 
-    traits_view = View(
-        Group(
-            Item('file_path', style='readonly'),
-            Item('handler._parsed_data',
-                 editor=preview_table,
-                 id='table',
-                 show_label=False),
-            Item('delimiter',
-                 editor=EnumEditor(
-                     values={
-                         '\t': '1:Tab',
-                         ',': '2:Comma (,)',
-                         ' ': '3:Space',
-                         ';': '4:Semicolon (;)',
-                     }),
-                 style='custom'),
-            Item('decimal_mark'),
-            Item('ds_name', label='Data set name'),
-            Item('kind', editor=EnumEditor(name='kind_list'), label='Data set type'),
-            Item('have_var_names', label='Existing variable names',
-                 tooltip='Is first row variable names?'),
-            Item('have_obj_names', label='Existing object names',
-                 tooltip='Is first column object names?'),
+    traits_view = _tui.View(
+        _tui.Group(
+            _tui.Item('file_path', style='readonly'),
+            _tui.Item('handler._parsed_data',
+                      editor=preview_table,
+                      id='table',
+                      show_label=False),
+            _tui.Item('delimiter',
+                      editor=_tui.EnumEditor(
+                          values={
+                              '\t': '1:Tab',
+                              ',': '2:Comma (,)',
+                              ' ': '3:Space',
+                              ';': '4:Semicolon (;)',
+                          }),
+                      style='custom'),
+            _tui.Item('decimal_mark'),
+            _tui.Item('ds_name', label='Data set name'),
+            _tui.Item('kind', editor=_tui.EnumEditor(name='kind_list'), label='Data set type'),
+            _tui.Item('have_var_names', label='Existing variable names',
+                      tooltip='Is first row variable names?'),
+            _tui.Item('have_obj_names', label='Existing object names',
+                      tooltip='Is first column object names?'),
             show_labels=True,
         ),
         title='Raw data preview',
