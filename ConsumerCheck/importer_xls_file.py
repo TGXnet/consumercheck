@@ -1,6 +1,6 @@
 '''ConsumerCheck
 '''
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (C) 2014 Thomas Graff <thomas.graff@tgxnet.no>
 #
 #  This file is part of ConsumerCheck.
@@ -17,7 +17,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 # Std lib imports
 import logging
@@ -25,7 +25,6 @@ logger = logging.getLogger('tgxnet.nofima.cc.'+__name__)
 import os.path
 
 # Scipy imports
-# import numpy as np
 import pandas as _pd
 import xlrd
 
@@ -43,49 +42,38 @@ from importer_file_base import ImporterFileBase
 
 class RawLineAdapter(TabularAdapter):
     ncols = Int()
-    
-    #Temporary column to avoid crash
+    # Temporary column to avoid crash
     columns = ['tmp']
-    
     have_var_names = Bool(True)
-    
-#    bg_color  = Property()
-#    # font = 'Courier 10'
-#
-#    def _get_bg_color(self):
-#        if self.have_var_names and self.row == 0:
-#            return (230, 123, 123)
-#        elif self.row == 0:
-#            return (255, 255, 255)
 
 
     def _ncols_changed(self, info):
         self.columns = ["col{}".format(i) for i in range(self.ncols)]
 
+
 preview_table = TabularEditor(
     adapter=RawLineAdapter(),
     operations=[],
-    )
+)
 
 
 class FilePreviewer(Handler):
     _raw_lines = List(List)
     _parsed_data = List()
 
+
     def init(self, info):
         self._probe_read(info.object)
 
+
     def object_have_var_names_changed(self, info):
         preview_table.adapter.have_var_names = info.object.have_var_names
-        
-#    def object_have_obj_names_changed(self, info):
-#        preview_table.adapter.have_obj_names = info.object.have_obj_names
+
 
     def _probe_read(self, obj, no_lines=100, length=7):
-        lines = []  
         raw_data = xlrd.open_workbook(obj.file_path)
         data_sheet = raw_data.sheet_by_index(0)
-        
+
         if data_sheet.nrows < no_lines:
             no_lines = data_sheet.nrows
         if data_sheet.ncols < length:
@@ -114,7 +102,7 @@ class ImporterXlsFile(ImporterFileBase):
         self.ds = DataSet(
             kind=self.kind,
             display_name=self.ds_name
-            )
+        )
 
         xls = _pd.ExcelFile(self.file_path)
         sheet_name = xls.sheet_names[0]
@@ -138,7 +126,6 @@ class ImporterXlsFile(ImporterFileBase):
             Item('handler._parsed_data',
                  id='table',
                  editor=preview_table),
-            ## Item('transpose'),
             Item('ds_name', label='Data set name'),
             Item('kind', editor=EnumEditor(name='kind_list'), label='Data set type'),
             Item('have_var_names', label='Existing variable names',
@@ -146,7 +133,7 @@ class ImporterXlsFile(ImporterFileBase):
             Item('have_obj_names', label='Existing object names',
                  tooltip='Is first column object names?'),
             show_labels=True,
-            ),
+        ),
         title='Raw data preview',
         width=0.30,
         height=0.35,
@@ -154,7 +141,7 @@ class ImporterXlsFile(ImporterFileBase):
         buttons=[CancelButton, OKButton],
         handler=preview_handler,
         kind='livemodal',
-        )
+    )
 
 
 # Run the demo (if invoked from the command line):
