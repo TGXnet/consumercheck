@@ -1,6 +1,6 @@
 '''ConsumerCheck
 '''
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (C) 2014 Thomas Graff <thomas.graff@tgxnet.no>
 #
 #  This file is part of ConsumerCheck.
@@ -17,7 +17,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 # StdLib imports
 import logging
@@ -44,21 +44,9 @@ from utilities import from_palette
 
 class RawLineAdapter(TabularAdapter):
     ncols = Int()
-    
-    #Temporary column to avoid crash
+    # Temporary column to avoid crash
     columns = ['tmp']
-    
     width = 70
-    # have_var_names = Bool(True)
-    
-#    # font = 'Courier 10'
-#    bg_color  = Property()
-#    
-#    def _get_bg_color(self):
-#        if self.have_var_names and self.row == 0:
-#            return (230, 123, 123)
-#        elif self.row == 0:
-#            return (255, 255, 255)
 
 
     def _ncols_changed(self, info):
@@ -70,24 +58,12 @@ class PreviewTableEditor(TabularEditor):
 
 
 preview_table = PreviewTableEditor(
-    adapter = RawLineAdapter(),
-    operations = [],
-    # Can the user edit the values?
-    show_titles = True,
-    # show_row_titles = False,
-    editable = False,
-    # The optional extended name of the trait used to indicate that a complete
-    # table update is needed:
-    update = 'update_cells',
-    # Should the table update automatically when the table item's contents
-    # change? Note that in order for this feature to work correctly, the editor
-    # trait should be a list of objects derived from HasTraits. Also,
-    # performance can be affected when very long lists are used, since enabling
-    # this feature adds and removed Traits listeners to each item in the list.
-    # auto_update = Bool( False ),
-    # TabularEditorEvent
-    )
-
+    adapter=RawLineAdapter(),
+    operations=[],
+    show_titles=True,
+    editable=False,
+    update='update_cells',
+)
 
 
 class FilePreviewer(Handler):
@@ -102,7 +78,6 @@ class FilePreviewer(Handler):
 
 
     def object_have_var_names_changed(self, info):
-        # preview_table.adapter.have_var_names = info.object.have_var_names
         preview_table.update_cells = True
 
 
@@ -161,9 +136,7 @@ class ImporterTextFile(ImporterFileBase):
 
     delimiter = Enum('\t', ',', ' ', ';')
     decimal_mark = Enum('period', 'comma')
-    char_encoding = Enum(
-        ('ascii', 'utf_8', 'latin_1')
-        )
+    char_encoding = Str('utf_8')
 
 
     def import_data(self):
@@ -186,7 +159,7 @@ class ImporterTextFile(ImporterFileBase):
             keep_default_na=True,
             na_values=['?'],
             encoding=self.char_encoding,
-            )
+        )
 
         # FIXME: This is hackish
         # I have to know the matrix shape to use converters
@@ -207,26 +180,23 @@ class ImporterTextFile(ImporterFileBase):
                 na_values=['?'],
                 encoding=self.char_encoding,
                 converters=convs,
-                )
+            )
 
 
         if not self.have_var_names:
             dsdf.columns = ["V{0}".format(i+1) for i in range(dsdf.shape[1])]
-        else:
-            dsdf.columns = [str(n) for n in dsdf.columns]
         if not self.have_obj_names:
             dsdf.index = ["O{0}".format(i+1) for i in range(dsdf.shape[0])]
-        else:
-            dsdf.index = [str(n) for n in dsdf.index]
-
 
         # Check if we hav a column with class information
         grouping_names = [cn for cn in dsdf.columns if cn[0] == '_']
         groupings = [(gn, set(dsdf.loc[:,gn])) for gn in grouping_names]
 
         # List with index names
-        auto_colors = ["green", "lightgreen", "blue", "lightblue", "red",
-                       "pink", "darkgray", "silver"]
+        # auto_colors = ["green", "lightgreen",
+        #                "blue", "lightblue",
+        #                "red", "pink",
+        #                "darkgray", "silver"]
 
         subsets_groups = {}
         # grouping_name, classes_group
@@ -259,9 +229,7 @@ class ImporterTextFile(ImporterFileBase):
             Item('handler._parsed_data',
                  editor=preview_table,
                  id='table',
-                 show_label=False,
-                 ),
-            Item('char_encoding'),
+                 show_label=False),
             Item('delimiter',
                  editor=EnumEditor(
                      values={
@@ -269,11 +237,9 @@ class ImporterTextFile(ImporterFileBase):
                          ',': '2:Comma (,)',
                          ' ': '3:Space',
                          ';': '4:Semicolon (;)',
-                         }),
-                 style='custom',
-                 ),
+                     }),
+                 style='custom'),
             Item('decimal_mark'),
-            ## Item('transpose'),
             Item('ds_name', label='Data set name'),
             Item('kind', editor=EnumEditor(name='kind_list'), label='Data set type'),
             Item('have_var_names', label='Existing variable names',
@@ -281,7 +247,7 @@ class ImporterTextFile(ImporterFileBase):
             Item('have_obj_names', label='Existing object names',
                  tooltip='Is first column object names?'),
             show_labels=True,
-            ),
+        ),
         title='Raw data preview',
         width=0.45,
         height=0.6,
@@ -289,12 +255,13 @@ class ImporterTextFile(ImporterFileBase):
         buttons=[CancelButton, OKButton],
         handler=preview_handler,
         kind='livemodal',
-        )
+    )
 
 
 # Run the demo (if invoked from the command line):
 if __name__ == '__main__':
-    import os, sys
+    import os
+    import sys
     dpath = os.environ['CC_TESTDATA']
     dfile = dpath + '/Iris/iris_multiclass.csv'
     # dfile = dpath + '/Iris/irisNoClass.data'
@@ -302,7 +269,7 @@ if __name__ == '__main__':
         file_path=dfile,
         delimiter=',',
         have_obj_names=False
-        )
+    )
     # itf.configure_traits()
     ds = itf.import_data()
     print(ds.mat.shape)
