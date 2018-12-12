@@ -26,7 +26,7 @@ import os.path
 
 # Scipy imports
 import pandas as _pd
-import xlrd
+from xlrd import open_workbook
 
 # Enthought imports
 from traits.api import implements, HasTraits, File, Bool, Str, Int, List
@@ -71,7 +71,12 @@ class FilePreviewer(Handler):
 
 
     def _probe_read(self, obj, no_lines=100, length=7):
-        raw_data = xlrd.open_workbook(obj.file_path)
+        raw_data = open_workbook(obj.file_path)
+        # for n, s in enumerate(raw_data.sheets()):
+        #     print(n, s.name, s.nrows, s.ncols)
+        # sheet = book.sheet_by_name(name)
+        # sheet.cell_value(0,0)
+
         data_sheet = raw_data.sheet_by_index(0)
 
         if data_sheet.nrows < no_lines:
