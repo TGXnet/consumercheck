@@ -1,6 +1,6 @@
 '''ConsumerCheck
 '''
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (C) 2014 Thomas Graff <thomas.graff@tgxnet.no>
 #
 #  This file is part of ConsumerCheck.
@@ -17,7 +17,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with ConsumerCheck.  If not, see <http://www.gnu.org/licenses/>.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 # SciPy imports
 import numpy as np
@@ -38,6 +38,18 @@ from utilities import COLOR_PALETTE
 #Local imports
 from dataset import DataSet
 from plot_base import BasePlot, NoPlotControl
+
+
+def debug_trace():
+    '''Set a tracepoint in the Python debugger that works with Qt'''
+    from PyQt4.QtCore import pyqtRemoveInputHook
+    # Or for Qt5
+    # from PyQt5.QtCore import pyqtRemoveInputHook
+
+    from pdb import set_trace
+    pyqtRemoveInputHook()
+    set_trace()
+
 
 
 class ConjointBasePlot(BasePlot):
@@ -130,6 +142,7 @@ class MainEffectsPlot(ConjointBasePlot):
 
     def __init__(self, conj_res, attr_name):
         super(MainEffectsPlot, self).__init__()
+        attr_name = attr_name.encode('utf-8').decode('ascii', 'ignore')
         self.attr_name = attr_name
         res = slice_main_effect_ds(conj_res.lsmeansTable, attr_name)
         self.plot_data = DataSet(mat=res, display_name='Main effects')
@@ -165,13 +178,13 @@ class MainEffectsPlot(ConjointBasePlot):
         index = ArrayDataSource(range(len(self.index_labels)))
         value = self.mk_ads('values')
 
-        #Create lineplot
+        # Create lineplot
         plot_line = LinePlot(
             index=index, index_mapper=self.index_mapper,
             value=value, value_mapper=self.value_mapper,
             name='line')
 
-        #Add datapoint enhancement
+        # Add datapoint enhancement
         plot_scatter = ScatterPlot(
             index=index, index_mapper=self.index_mapper,
             value=value, value_mapper=self.value_mapper,
@@ -182,7 +195,7 @@ class MainEffectsPlot(ConjointBasePlot):
         self.add(plot_line, plot_scatter)
 
     def _add_ci_bars(self):
-        #Create vertical bars to indicate confidence interval
+        # Create vertical bars to indicate confidence interval
         # index = self.mk_ads('index')
         index = ArrayDataSource(range(len(self.index_labels)))
         value_lo = self.mk_ads('ylow')
@@ -232,6 +245,8 @@ class InteractionPlot(ConjointBasePlot):
 
     def __init__(self, conj_res, attr_one_name, attr_two_name):
         super(InteractionPlot, self).__init__()
+        attr_one_name = attr_one_name.encode('utf-8').decode('ascii', 'ignore')
+        attr_two_name = attr_two_name.encode('utf-8').decode('ascii', 'ignore')
         self.attr_one_name = attr_one_name
         self.attr_two_name = attr_two_name
         res = slice_interaction_ds(conj_res.lsmeansTable, attr_one_name, attr_two_name)

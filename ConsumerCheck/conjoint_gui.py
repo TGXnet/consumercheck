@@ -121,8 +121,7 @@ class ConjointController(ModelController):
         self._populate_int_plot_launchers()
 
     def _populate_me_plot_launchers(self):
-        vn = [n.encode('ascii') for n
-              in self.model.design_vars + self.model.consumers_vars]
+        vn = self.model.design_vars + self.model.consumers_vars
 
         self.me_plot_launchers = [
             WindowLauncher(
@@ -132,12 +131,11 @@ class ConjointController(ModelController):
             for name in vn]
 
     def _populate_int_plot_launchers(self):
-        vn = [n.encode('ascii') for n
-              in self.model.design_vars + self.model.consumers_vars]
+        vn = self.model.design_vars + self.model.consumers_vars
 
         if self.model.model_struct == 'Struct 2':
             int_plot_launchers = [
-                ("{0}:{1}".format(*comb), comb[0], comb[1])
+                (u"{0}:{1}".format(*comb), comb[0], comb[1])
                 for comb in combinations(vn, 2)]
         else:
             int_plot_launchers = []
@@ -321,7 +319,7 @@ class ConjointPluginController(PluginController):
             nn.append((k, len(_np.unique(v.values))))
         varn = []
         for k, v in nn:
-            varn.append((k, "{0} ({1})".format(k, v)))
+            varn.append((k, u"{0} ({1})".format(k, v)))
         self.design = d
         self.design_vars = varn
 
@@ -337,7 +335,7 @@ class ConjointPluginController(PluginController):
         # Check if some attribute have more than five categories
         for k, v in nn:
             if v > 5:
-                warn = """
+                warn = u"""
 {0} has {1} categories. Conjoint is not suitable
 for variables with a large number of categories.
 """.format(k, v)
@@ -345,7 +343,7 @@ for variables with a large number of categories.
                 cw.edit_traits()
         varn = []
         for k, v in nn:
-            varn.append((k, "{0} ({1})".format(k, v)))
+            varn.append((k, u"{0} ({1})".format(k, v)))
         self.consumers = d
         self.consumer_vars = varn
 

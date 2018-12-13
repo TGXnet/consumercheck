@@ -123,8 +123,8 @@ class HistPlot(DescStatBasePlot):
                                     title='Number of consumers')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
                                        title='Consumer rating',
-                                       positions = range(self.ds.n_vars),
-                                       labels = [str(vn) for vn in self.ds.var_n],
+                                       positions=range(self.ds.n_vars),
+                                       labels=[str(vn) for vn in self.ds.var_n],
                                        tick_interval=1.0,
                                        )
         renderer.underlays.append(left_axis)
@@ -150,7 +150,7 @@ class HistPlot(DescStatBasePlot):
 
     def get_plot_name(self):
         dsn = self.ds.display_name[19:]
-        return "Histogram plot: {0} - {1}".format(dsn, self.row_id)
+        return u"Histogram plot: {0} - {1}".format(dsn, self.row_id)
 
 
 class StackedHistPlot(DescStatBasePlot):
@@ -261,8 +261,8 @@ class StackedHistPlot(DescStatBasePlot):
 
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
                                        title='Consumer preference for products',
-                                       positions = range(self.ds.n_objs),
-                                       labels = [str(vn) for vn in self.ds.obj_n],
+                                       positions=range(self.ds.n_objs),
+                                       labels=self.ds.obj_n,
                                        tick_interval=1.0,
                                        )
         renderer.underlays.append(left_axis)
@@ -336,8 +336,8 @@ class BoxPlot(DescStatBasePlot):
                                     title='Liking')
         bottom_axis = _chaco.LabelAxis(renderer, orientation='bottom',
                                        title='Products',
-                                       positions = range(self.ds.n_objs),
-                                       labels = [str(vn) for vn in self.ds.obj_n],
+                                       positions=range(self.ds.n_objs),
+                                       labels=self.ds.obj_n,
                                        tick_interval=1.0,
                                        )
         renderer.underlays.append(left_axis)

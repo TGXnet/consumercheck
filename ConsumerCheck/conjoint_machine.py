@@ -184,7 +184,7 @@ class ConjointMachine(object):
         self.design = design
         self.selected_designVars = asciify(selected_designVars)
         self.consLiking = consLiking
-        self.consLikingTag = only_letters(consLiking.display_name)
+        self.consLikingTag = only_ascii(consLiking.display_name)
 
         # self._check_completeness()
         self._data_merge()
@@ -297,7 +297,8 @@ class ConjointMachine(object):
             allConsList.append(consArr)
 
         # Put all information into the final data array
-        self.finalData = _pd.DataFrame(np.vstack(allConsList), columns=self.headerList)
+        aheaders = asciify(self.headerList)
+        self.finalData = _pd.DataFrame(np.vstack(allConsList), columns=aheaders)
         # self.finalData.to_csv('ham_df.csv', sep=";")
         # print("Written data frame")
 
@@ -407,7 +408,7 @@ class ConjointMachine(object):
         """
         Returns residuals from R conjoint function.
         """
-        # Get size of liking data array. 
+        # Get size of liking data array.
         n_rows, n_cols = np.shape(self.consLiking.values)
 
         r_vec = self.r.get('res[[1]][5]$residuals')
@@ -445,16 +446,17 @@ class ConjointCalcThread(Thread):
 
 def asciify(names):
     """Take a list of unicodes and turn each elemet into ascii strings"""
-    return [str(n).encode('ascii', 'ignore') for n in names]
+    return [str(n.encode('utf-8').decode('ascii', 'ignore')) for n in names]
 
 
-def only_letters(name):
+def only_ascii(name):
     # Make list of character to trow away
-    throw_chrs = string.maketrans(
-        string.ascii_letters, ' '*len(string.ascii_letters))
-    # Filter data set name
-    ascii_name = name.encode('ascii', 'ignore')
-    return ascii_name.translate(None, throw_chrs)
+    # throw_chrs = string.maketrans(
+    #     string.ascii_letters, ' '*len(string.ascii_letters))
+    # ascii_name = name.encode('ascii', 'ignore')
+    # return ascii_name.translate(None, throw_chrs)
+    return name.encode('utf-8').decode('ascii', 'ignore')
+
 
 
 if __name__ == '__main__':

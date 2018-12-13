@@ -90,7 +90,7 @@ class SinglePWC(PWC):
         if info.object.res:
             wt = info.object.res.method_name
             pt = info.object.plot.model.get_plot_name()
-            info.object.title_text = "{0} | {1} - ConsumerCheck".format(wt, pt)
+            info.object.title_text = u"{0} | {1} - ConsumerCheck".format(wt, pt)
 
     def object_title_text_changed(self, info):
         """ Called when the title_text changes on the handled object.

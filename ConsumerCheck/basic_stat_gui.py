@@ -65,7 +65,7 @@ class BasicStatController(ModelController):
 
         wll = []
         for n in nl:
-            wl = WindowLauncher(owner_ref=self, node_name=str(n),
+            wl = WindowLauncher(owner_ref=self, node_name=n,
                                 view_creator=plot_histogram,
                                 func_parms=tuple([n]),
                                 loop_name='idx_win_launchers')
