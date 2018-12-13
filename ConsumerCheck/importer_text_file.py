@@ -184,9 +184,13 @@ class ImporterTextFile(ImporterFileBase):
 
 
         if not self.have_var_names:
-            dsdf.columns = ["V{0}".format(i+1) for i in range(dsdf.shape[1])]
+            dsdf.columns = [u"V{0}".format(i+1) for i in range(dsdf.shape[1])]
+        else:
+            dsdf.columns = [unicode(n) for n in dsdf.columns]
         if not self.have_obj_names:
-            dsdf.index = ["O{0}".format(i+1) for i in range(dsdf.shape[0])]
+            dsdf.index = [u"O{0}".format(i+1) for i in range(dsdf.shape[0])]
+        else:
+            dsdf.index = [unicode(n) for n in dsdf.index]
 
         # Check if we hav a column with class information
         grouping_names = [cn for cn in dsdf.columns if cn[0] == '_']

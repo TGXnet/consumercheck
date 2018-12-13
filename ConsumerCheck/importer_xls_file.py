@@ -120,6 +120,10 @@ class ImporterXlsFile(ImporterFileBase):
         else:
             hd = None
         matrix = xls.parse(sheet_name, header=hd, index_col=ic)
+        # Make sure names are strings and not numbers
+        matrix.columns = [unicode(n) for n in matrix.columns]
+        matrix.index = [unicode(n) for n in matrix.index]
+
         self.ds.mat = matrix
 
         return self.ds
