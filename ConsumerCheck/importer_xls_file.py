@@ -35,9 +35,10 @@ from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton, CancelButton
 
 # Local imports
-from dataset import DataSet
+from dataset import DataSet, SubSet, VisualStyle
 from importer_interfaces import IDataImporter
 from importer_file_base import ImporterFileBase
+from utilities import from_palette
 
 
 class RawLineAdapter(TabularAdapter):
@@ -124,7 +125,33 @@ class ImporterXlsFile(ImporterFileBase):
         matrix.columns = [unicode(n) for n in matrix.columns]
         matrix.index = [unicode(n) for n in matrix.index]
 
+        # Check if we hav a column with class information
+        grouping_names = [cn for cn in matrix.columns if cn[0] == '_']
+        groupings = [(gn, set(matrix.loc[:,gn])) for gn in grouping_names]
+
+        # List with index names
+        # auto_colors = ["green", "lightgreen",
+        #                "blue", "lightblue",
+        #                "red", "pink",
+        #                "darkgray", "silver"]
+
+        subsets_groups = {}
+        # grouping_name, classes_group
+        for gn, cg in groupings:
+            # subsets_group
+            ssg = []
+            for idx, cid in enumerate(cg):
+                ss = SubSet(id=str(cid), name='Class {}'.format(cid))
+                # ss.gr_style = VisualStyle(fg_color=auto_colors[idx % 8])
+                ss.gr_style = VisualStyle(fg_color=from_palette())
+                ss.row_selector = list(matrix[matrix.loc[:,gn] == cid].index)
+                ssg.append(ss)
+            ngn = gn[1:]
+            subsets_groups[ngn] = ssg
+            matrix.drop(gn, axis=1, inplace=True)
+
         self.ds.mat = matrix
+        self.ds.subs = subsets_groups
 
         return self.ds
 
