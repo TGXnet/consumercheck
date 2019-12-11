@@ -26,6 +26,7 @@ from traitsui.api import Controller, View, Item, TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import OKButton
 from pyface.api import clipboard
+from PyQt4 import QtGui
 
 
 class ArrayAdapter(TabularAdapter):
@@ -42,6 +43,19 @@ class ArrayAdapter(TabularAdapter):
         if isinstance(self.content, (_np.float64, float)):
             return '%.2f'
         return self._result_for( 'get_format', object, trait, row, column )
+
+    def get_bg_color(self, object, trait, row, column=0):
+        if len(object.subs) < 1:
+            return None
+        else:
+            kl = object.subs.keys()
+            ssn = kl[0]
+            k1 = object.subs[ssn]
+            cm = {ss.id: ss.gr_style.fg_color for ss in k1}
+            val = object.matcat.iloc[row][ssn]
+            fr, fg, fb, g = cm[val]
+            col = QtGui.QColor(fr*255, fg*255, fb*255)
+            return col
 
 
 
@@ -116,15 +130,17 @@ class DSTableViewer(Controller):
 
 if __name__ == '__main__':
     # from tests.conftest import simple_ds
+    import os
     from importer_text_file import ImporterTextFile
+    path_prefix = os.getenv('CC_TESTDATA', '.')
     itf = ImporterTextFile(
-        file_path='../problem/Ham_consumer_liking _withCateg_2.txt',
+        # file_path=os.path.join(path_prefix, 'HamData', 'Ham_consumer_attributes_categories.csv'),
+        file_path=os.path.join(path_prefix, 'HamData', 'Ham_consumer_attributes.txt'),
         delimiter='\t',
         have_obj_names=True
     )
     ds = itf.import_data()
     # import pudb; pu.db
-    # print(ds.valuescat)
     # ds = simple_ds()
     dstv = DSTableViewer(ds)
     dstv.configure_traits(view=dstv.get_view())
