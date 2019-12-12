@@ -115,6 +115,7 @@ class Pca(Model):
                 index=self.ds.var_n,
                 columns=["PC-{0}".format(i+1) for i in range(mP.shape[1])],
                 ),
+            subs=self.ds.rsubs,
             display_name='Loadings')
 
         # Correlation loadings

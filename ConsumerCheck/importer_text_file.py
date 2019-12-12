@@ -196,12 +196,6 @@ class ImporterTextFile(ImporterFileBase):
         grouping_names = [cn for cn in dsdf.columns if cn[0] == '_']
         groupings = [(gn, set(dsdf.loc[:,gn])) for gn in grouping_names]
 
-        # List with index names
-        # auto_colors = ["green", "lightgreen",
-        #                "blue", "lightblue",
-        #                "red", "pink",
-        #                "darkgray", "silver"]
-
         subsets_groups = {}
         # grouping_name, classes_group
         for gn, cg in groupings:
@@ -217,12 +211,35 @@ class ImporterTextFile(ImporterFileBase):
             subsets_groups[ngn] = ssg
             dsdf.drop(gn, axis=1, inplace=True)
 
+
+        # Check if we hav a row with class information
+        # import pudb; pu.db
+        grouping_names = [cn for cn in dsdf.index if cn[0] == '_']
+        groupings = [(gn, set(dsdf.loc[gn])) for gn in grouping_names]
+
+        subsets_groups = {}
+        # grouping_name, classes_group
+        for gn, cg in groupings:
+            # subsets_group
+            ssg = []
+            for idx, cid in enumerate(cg):
+                ss = SubSet(id=str(cid), name='Class {}'.format(cid))
+                # ss.gr_style = VisualStyle(fg_color=auto_colors[idx % 8])
+                ss.gr_style = VisualStyle(fg_color=from_palette())
+                ss.row_selector = list(dsdf.loc[:,dsdf.loc[gn] == cid].columns)
+                ssg.append(ss)
+            ngn = gn[1:]
+            subsets_groups[ngn] = ssg
+            dsdf.drop(gn, axis=0, inplace=True)
+
+
+
         # Make DataSet
         ds = DataSet(
             mat=dsdf,
             display_name=self.ds_name,
             kind=self.kind,
-            subs=subsets_groups,
+            rsubs=subsets_groups,
         )
         return ds
 
@@ -266,16 +283,16 @@ class ImporterTextFile(ImporterFileBase):
 if __name__ == '__main__':
     import os
     import sys
-    dpath = os.environ['CC_TESTDATA']
-    dfile = dpath + '/Iris/iris_multiclass.csv'
-    # dfile = dpath + '/Iris/irisNoClass.data'
+    dpath = os.getenv('CC_TESTDATA', '.')
+    dfile = os.path.join(dpath, 'Consumer liking data lowjuice grNationality.csv')
     itf = ImporterTextFile(
         file_path=dfile,
-        delimiter=',',
-        have_obj_names=False
+        delimiter='\t',
+        have_obj_names=True
     )
     # itf.configure_traits()
     ds = itf.import_data()
+    # import pudb; pu.db
     print(ds.mat.shape)
     print(ds.mat.head())
     print(ds.get_subset_groups())

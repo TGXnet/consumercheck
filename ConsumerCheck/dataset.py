@@ -98,7 +98,10 @@ class DataSet(_traits.HasTraits):
     style = _traits.Instance('VisualStyle', ())
 
     # Example: {'species': [SubSet, SubSet], 'location': [SubSet, SubSet]}
+    # Column subsets
     subs = _traits.Dict(_traits.Unicode, _traits.List)
+    # Row subsets
+    rsubs = _traits.Dict(_traits.Unicode, _traits.List)
 
     row_factors = _traits.List()
     col_factors = _traits.List()
