@@ -158,10 +158,19 @@ Data structure
 The following data structure is required for successful import:
 
 the data needs to be organised in typical two-way data matrices with rows and columns
-the data may or may not contain column names and row names 
+the data may or may not contain column names and row names
 the data should be separated by either comma, space or semicolon
 Only numerical values are allowed in the data (example: numbers should be used to indicate levels of design variables, consumer characteristics, etc.)
 ConsumerCheck doesn't handle non-English characters in the row and column names
+
+
+-----------------
+Import from Excel
+-----------------
+
+Excel files and sheets may contain cells that store information that is invisible to the user. This may lead to various import errors when trying to import from such Excel files. If you experience problems when reading data from Excel, you may do the following to remedy the problem:
+
+- mark only data you wish to import; copy and paste the data into a new Excel file sheet and try import from this new Excel file.
 
 
 --------------
@@ -193,15 +202,6 @@ columns represent design variables
 Example:
 With the analysis method "preference mapping", only data tagged "Descriptive analysis/sensory profiling" and "Consumer liking" will be available for selection.
 With the analysis method "conjoint analysis", only data tagged "Consumer liking", "Consumer characteristics" and "Product design" will be available for selection.
-
-
------------------
-Import from Excel
------------------
-
-Excel files and sheets may contain cells that store information that is invisible to the user. This may lead to various import errors when trying to import from such Excel files. If you experience problems when reading data from Excel, you may do the following to remedy the problem: 
-
-- mark only data you wish to import; copy and paste the data into a new Excel file sheet and try import from this new Excel file.
 
 
 ----------------------------------------
