@@ -84,7 +84,9 @@ class DSHandler(_traitsui.Handler):
         self.summary += "{k1:6s}:{v1:4.3g}\t{k2:6s}:{v2:4.3g}\n".format(
             k1='Mean', v1=vmean, k2='STD', v2=vstd)
         if len(info.object.subs) > 0:
-            self.summary += "Coloring classes: " + ", ".join(info.object.subs.keys())
+            self.summary += "Row coloring classes: " + ", ".join(info.object.subs.keys())
+        if len(info.object.rsubs) > 0:
+            self.summary += "Column coloring classes: " + ", ".join(info.object.rsubs.keys())
 
 
 transpose_action = _traitsui.Action(
