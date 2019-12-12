@@ -129,12 +129,6 @@ class ImporterXlsFile(ImporterFileBase):
         grouping_names = [cn for cn in matrix.columns if cn[0] == '_']
         groupings = [(gn, set(matrix.loc[:,gn])) for gn in grouping_names]
 
-        # List with index names
-        # auto_colors = ["green", "lightgreen",
-        #                "blue", "lightblue",
-        #                "red", "pink",
-        #                "darkgray", "silver"]
-
         subsets_groups = {}
         # grouping_name, classes_group
         for gn, cg in groupings:
@@ -150,8 +144,30 @@ class ImporterXlsFile(ImporterFileBase):
             subsets_groups[ngn] = ssg
             matrix.drop(gn, axis=1, inplace=True)
 
+
+        # Check if we hav a row with class information
+        grouping_names = [cn for cn in matrix.index if cn[0] == '_']
+        groupings = [(gn, set(matrix.loc[gn])) for gn in grouping_names]
+
+        rsubsets_groups = {}
+        # grouping_name, classes_group
+        for gn, cg in groupings:
+            # subsets_group
+            ssg = []
+            for idx, cid in enumerate(cg):
+                ss = SubSet(id=str(cid), name='Class {}'.format(cid))
+                # ss.gr_style = VisualStyle(fg_color=auto_colors[idx % 8])
+                ss.gr_style = VisualStyle(fg_color=from_palette())
+                ss.row_selector = list(matrix.loc[:,matrix.loc[gn] == cid].columns)
+                ssg.append(ss)
+            ngn = gn[1:]
+            rsubsets_groups[ngn] = ssg
+            matrix.drop(gn, axis=0, inplace=True)
+
+
         self.ds.mat = matrix
         self.ds.subs = subsets_groups
+        self.ds.rsubs = rsubsets_groups
 
         return self.ds
 

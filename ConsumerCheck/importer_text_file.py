@@ -213,11 +213,10 @@ class ImporterTextFile(ImporterFileBase):
 
 
         # Check if we hav a row with class information
-        # import pudb; pu.db
         grouping_names = [cn for cn in dsdf.index if cn[0] == '_']
         groupings = [(gn, set(dsdf.loc[gn])) for gn in grouping_names]
 
-        subsets_groups = {}
+        rsubsets_groups = {}
         # grouping_name, classes_group
         for gn, cg in groupings:
             # subsets_group
@@ -229,7 +228,7 @@ class ImporterTextFile(ImporterFileBase):
                 ss.row_selector = list(dsdf.loc[:,dsdf.loc[gn] == cid].columns)
                 ssg.append(ss)
             ngn = gn[1:]
-            subsets_groups[ngn] = ssg
+            rsubsets_groups[ngn] = ssg
             dsdf.drop(gn, axis=0, inplace=True)
 
 
@@ -239,7 +238,8 @@ class ImporterTextFile(ImporterFileBase):
             mat=dsdf,
             display_name=self.ds_name,
             kind=self.kind,
-            rsubs=subsets_groups,
+            subs=subsets_groups,
+            rsubs=rsubsets_groups,
         )
         return ds
 
