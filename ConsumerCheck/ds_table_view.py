@@ -45,16 +45,21 @@ class ArrayAdapter(TabularAdapter):
         return self._result_for( 'get_format', object, trait, row, column )
 
     def get_bg_color(self, object, trait, row, column=0):
-        if len(object.subs) < 1:
+        if len(object.subs) < 1 and len(object.rsubs) < 1:
             return None
         else:
-            kl = object.subs.keys()
-            ssn = kl[0]
-            k1 = object.subs[ssn]
-            cm = {ss.id: ss.gr_style.fg_color for ss in k1}
-            val = object.matcat.iloc[row][ssn]
-            fr, fg, fb, g = cm[val]
-            col = QtGui.QColor(fr*255, fg*255, fb*255)
+            colcat = object.subs.keys()
+            rowcat = object.rsubs.keys()
+            if column > 0:
+                ci = column - 1
+            else:
+                ci = 0
+            cn = object.matcat.columns[ci][1:]
+            rn = object.matcat.index[row][1:]
+            if cn in colcat or rn in rowcat:
+                col = QtGui.QColor(255, 71, 71)
+            else:
+                col = None
             return col
 
 
@@ -71,7 +76,7 @@ class DSTableViewer(Controller):
             for i, vn in enumerate(self.model.var_n):
                 varnames.append((unicode(vn), i))
         else:
-            self.model._make_matcat()
+            # self.model._make_matcat()
             for i, vn in enumerate(self.model.matcat.columns):
                 varnames.append((unicode(vn), i))
         return varnames
@@ -103,7 +108,7 @@ class DSTableViewer(Controller):
         
         aa = ArrayAdapter(
             columns = self.header,
-            obj_names = self.model.obj_n)
+            obj_names = list(self.model.matcat.index))
 
 
         if len(self.model.subs) < 1:
@@ -132,10 +137,10 @@ if __name__ == '__main__':
     # from tests.conftest import simple_ds
     import os
     from importer_text_file import ImporterTextFile
-    path_prefix = os.getenv('CC_TESTDATA', '.')
+    dpath = os.getenv('CC_TESTDATA', '.')
+    dfile = os.path.join(dpath, 'Apples_DescrAnalysis_row&col_Cat.txt')
     itf = ImporterTextFile(
-        # file_path=os.path.join(path_prefix, 'HamData', 'Ham_consumer_attributes_categories.csv'),
-        file_path=os.path.join(path_prefix, 'HamData', 'Ham_consumer_attributes.txt'),
+        file_path=dfile,
         delimiter='\t',
         have_obj_names=True
     )
