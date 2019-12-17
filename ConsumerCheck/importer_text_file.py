@@ -192,15 +192,18 @@ class ImporterTextFile(ImporterFileBase):
         else:
             dsdf.index = [unicode(n) for n in dsdf.index]
 
+        colgrname = [cn for cn in dsdf.columns if cn[0] == '_']
+        rowgrname = [cn for cn in dsdf.index if cn[0] == '_']
+
         # Check if we hav a column with class information
-        grouping_names = [cn for cn in dsdf.columns if cn[0] == '_']
-        groupings = [(gn, set(dsdf.loc[:,gn])) for gn in grouping_names]
+        ridx = dsdf.index.isin(rowgrname)
+        colgr = [(gn, set(dsdf.loc[~ridx,gn])) for gn in colgrname]
 
         matcat = dsdf.copy()
 
         subsets_groups = {}
         # grouping_name, classes_group
-        for gn, cg in groupings:
+        for gn, cg in colgr:
             # subsets_group
             ssg = []
             for idx, cid in enumerate(cg):
@@ -215,12 +218,12 @@ class ImporterTextFile(ImporterFileBase):
 
 
         # Check if we hav a row with class information
-        grouping_names = [cn for cn in dsdf.index if cn[0] == '_']
-        groupings = [(gn, set(dsdf.loc[gn])) for gn in grouping_names]
+        cidx = dsdf.columns.isin(colgrname)
+        rowgr = [(gn, set(dsdf.loc[gn,~cidx])) for gn in rowgrname]
 
         rsubsets_groups = {}
         # grouping_name, classes_group
-        for gn, cg in groupings:
+        for gn, cg in rowgr:
             # subsets_group
             ssg = []
             for idx, cid in enumerate(cg):
@@ -232,7 +235,6 @@ class ImporterTextFile(ImporterFileBase):
             ngn = gn[1:]
             rsubsets_groups[ngn] = ssg
             dsdf.drop(gn, axis=0, inplace=True)
-
 
 
         # Make DataSet

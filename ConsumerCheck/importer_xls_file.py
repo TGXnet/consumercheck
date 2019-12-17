@@ -125,15 +125,18 @@ class ImporterXlsFile(ImporterFileBase):
         matrix.columns = [unicode(n) for n in matrix.columns]
         matrix.index = [unicode(n) for n in matrix.index]
 
+        colgrname = [cn for cn in matrix.columns if cn[0] == '_']
+        rowgrname = [cn for cn in matrix.index if cn[0] == '_']
+
         # Check if we hav a column with class information
-        grouping_names = [cn for cn in matrix.columns if cn[0] == '_']
-        groupings = [(gn, set(matrix.loc[:,gn])) for gn in grouping_names]
+        ridx = matrix.index.isin(rowgrname)
+        colgr = [(gn, set(matrix.loc[~ridx,gn])) for gn in colgrname]
 
         matcat = matrix.copy()
 
         subsets_groups = {}
         # grouping_name, classes_group
-        for gn, cg in groupings:
+        for gn, cg in colgr:
             # subsets_group
             ssg = []
             for idx, cid in enumerate(cg):
@@ -148,12 +151,12 @@ class ImporterXlsFile(ImporterFileBase):
 
 
         # Check if we hav a row with class information
-        grouping_names = [cn for cn in matrix.index if cn[0] == '_']
-        groupings = [(gn, set(matrix.loc[gn])) for gn in grouping_names]
+        cidx = matrix.columns.isin(colgrname)
+        rowgr = [(gn, set(matrix.loc[gn,~cidx])) for gn in rowgrname]
 
         rsubsets_groups = {}
         # grouping_name, classes_group
-        for gn, cg in groupings:
+        for gn, cg in rowgr:
             # subsets_group
             ssg = []
             for idx, cid in enumerate(cg):
