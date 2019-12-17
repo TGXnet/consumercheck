@@ -137,6 +137,11 @@ class DataSet(_traits.HasTraits):
             for ss in ssl:
                 cs[list(ss.row_selector)] = ss.id
                 matcat[cn] = cs
+        for cn, ssl in self.rsubs.items():
+            cs = _pd.Series(index=self.mat.index)
+            for ss in ssl:
+                cs[list(ss.row_selector)] = ss.id
+                matcat[cn] = cs
         self.matcat = matcat
 
 
@@ -144,7 +149,7 @@ class DataSet(_traits.HasTraits):
         try:
             return self.matcat.values
         except AttributeError:
-            self._make_matcat()
+            # self._make_matcat()
             return self.matcat.values
 
 

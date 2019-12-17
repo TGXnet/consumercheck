@@ -129,6 +129,8 @@ class ImporterXlsFile(ImporterFileBase):
         grouping_names = [cn for cn in matrix.columns if cn[0] == '_']
         groupings = [(gn, set(matrix.loc[:,gn])) for gn in grouping_names]
 
+        matcat = matrix.copy()
+
         subsets_groups = {}
         # grouping_name, classes_group
         for gn, cg in groupings:
@@ -166,6 +168,7 @@ class ImporterXlsFile(ImporterFileBase):
 
 
         self.ds.mat = matrix
+        self.ds.matcat = matcat
         self.ds.subs = subsets_groups
         self.ds.rsubs = rsubsets_groups
 

@@ -196,6 +196,8 @@ class ImporterTextFile(ImporterFileBase):
         grouping_names = [cn for cn in dsdf.columns if cn[0] == '_']
         groupings = [(gn, set(dsdf.loc[:,gn])) for gn in grouping_names]
 
+        matcat = dsdf.copy()
+
         subsets_groups = {}
         # grouping_name, classes_group
         for gn, cg in groupings:
@@ -236,6 +238,7 @@ class ImporterTextFile(ImporterFileBase):
         # Make DataSet
         ds = DataSet(
             mat=dsdf,
+            matcat=matcat,
             display_name=self.ds_name,
             kind=self.kind,
             subs=subsets_groups,
@@ -284,7 +287,7 @@ if __name__ == '__main__':
     import os
     import sys
     dpath = os.getenv('CC_TESTDATA', '.')
-    dfile = os.path.join(dpath, 'Consumer liking data lowjuice grNationality.csv')
+    dfile = os.path.join(dpath, 'Apples_DescrAnalysis_row&col_Cat.txt')
     itf = ImporterTextFile(
         file_path=dfile,
         delimiter='\t',
@@ -292,7 +295,6 @@ if __name__ == '__main__':
     )
     # itf.configure_traits()
     ds = itf.import_data()
-    # import pudb; pu.db
     print(ds.mat.shape)
     print(ds.mat.head())
     print(ds.get_subset_groups())
