@@ -106,6 +106,7 @@ class DSTableViewer(Controller):
         else:
             header_txt=''
         
+        self.model._make_matcat()
         aa = ArrayAdapter(
             columns = self.header,
             obj_names = list(self.model.matcat.index))
