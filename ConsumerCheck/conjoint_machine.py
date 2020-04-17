@@ -82,7 +82,8 @@ class ConjointMachine(object):
                 '''Try to run R from system path
                 Give message if R is not found
                 '''
-                raise RNotFoundException()
+                self.r = pyper.R(use_pandas=True)
+                # raise RNotFoundException()
         else:
             '''Not Windows, assumed to be a POSIX system
 
