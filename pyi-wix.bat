@@ -5,4 +5,4 @@ rem *** Run compiler
 candle pyi-cc-files.wxs pyi-wix-cc-instinfo.wxs
 
 rem *** Run linker
-light -b dist\ccwin pyi-cc-files.wixobj pyi-wix-cc-instinfo.wixobj -ext WixUIExtension -out cc-install-2.3.1.msi
+light -b dist\ccwin pyi-cc-files.wixobj pyi-wix-cc-instinfo.wixobj -ext WixUIExtension -out ConsumerCheck_2.3.1_Win.msi
